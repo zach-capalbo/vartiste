@@ -16,6 +16,8 @@
     "aframe": "^1.0.2",
     "aframe-environment-component": "^2.0.0",
     "clean-webpack-plugin": "^2.0.0",
+    "color": "^3.1.2",
+    "colorsys": "^1.0.22",
     "css-loader": "^0.28.4",
     "csv-loader": "^2.1.1",
     "express": "^4.15.3",

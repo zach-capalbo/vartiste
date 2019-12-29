@@ -8,6 +8,7 @@ require('./color-picker')
 require('./paint-system')
 require('./compositor')
 require('./manipulator')
+require('./shelf')
 
 document.write(require('./scene.html.slm'))
 

@@ -1,43 +1,5 @@
 // Based on https://jsfiddle.net/gftruj/tLo2vh99/
-
-function hsb2rgb(hsb) {
-    var rgb = {};
-    console.log("hsb", hsb)
-    var h = Math.round(hsb.h * 360);
-    var s = Math.round(hsb.s * 255);
-    var v = Math.round(hsb.b * 255);
-    if(s === 0) {
-        rgb.r = rgb.g = rgb.b = v;
-    } else {
-        var t1 = v;
-        var t2 = (255 - s) * v / 255;
-        var t3 = (t1 - t2) * (h % 60) / 60;
-        if( h === 360 ) h = 0;
-        if( h < 60 ) { rgb.r = t1; rgb.b = t2; rgb.g = t2 + t3; }
-        else if( h < 120 ) {rgb.g = t1; rgb.b = t2; rgb.r = t1 - t3; }
-        else if( h < 180 ) {rgb.g = t1; rgb.r = t2; rgb.b = t2 + t3; }
-        else if( h < 240 ) {rgb.b = t1; rgb.r = t2; rgb.g = t1 - t3; }
-        else if( h < 300 ) {rgb.b = t1; rgb.g = t2; rgb.r = t2 + t3; }
-        else if( h < 360 ) {rgb.r = t1; rgb.g = t2; rgb.b = t1 - t3; }
-        else { rgb.r = 0; rgb.g = 0; rgb.b = 0; }
-    }
-    return {
-        r: Math.round(rgb.r),
-        g: Math.round(rgb.g),
-        b: Math.round(rgb.b)
-    };
-}
-
-function hsbToHex(h,s,bb)
-{
-  let {r,g,b} = hsb2rgb({h,s,b:bb})
-  const toHex = x => {
-    const hex = Math.round(x).toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-  console.log("rgb", r,g,b)
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
+const Color = require('color')
 
 AFRAME.registerComponent("color-picker", {
   schema: {brightness: {type: 'float', default: 0.5}},
@@ -104,35 +66,10 @@ AFRAME.registerComponent("color-picker", {
       s = polarPosition.r;
       l = this.data.brightness;
       console.log(this.data.brightness, l)
-      var color = hsbToHex(h, s,l)
+      var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
       this.handleColor(color)
     })
   },
-  hslToHex(h,s,l) {
-        let r, g, b;
-        if (s === 0) {
-          r = g = b = l; // achromatic
-        } else {
-          const hue2rgb = (p, q, t) => {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1 / 6) return p + (q - p) * 6 * t;
-            if (t < 1 / 2) return q;
-            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-            return p;
-          };
-          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-          const p = 2 * l - q;
-          r = hue2rgb(p, q, h + 1 / 3);
-          g = hue2rgb(p, q, h);
-          b = hue2rgb(p, q, h - 1 / 3);
-        }
-        const toHex = x => {
-          const hex = Math.round(x * 255).toString(16);
-          return hex.length === 1 ? '0' + hex : hex;
-        };
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-	},
   handleColor(color) {
     this.system.selectColor(color)
   },
@@ -176,6 +113,9 @@ AFRAME.registerComponent("brightness-picker", {
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
       this.data.target.setAttribute("color-picker", {brightness: point.y})
+
+      let color = this.system.data.color
+      this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
     })
   }
 })

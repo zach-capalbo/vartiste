@@ -42,9 +42,10 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      let x = width * intersection.uv.x
-      let y = height * (1 - intersection.uv.y)
-      this.el.components['draw-canvas'].brush.drawOutline(overlayCtx, x, y)
+      // let x = width * intersection.uv.x
+      // let y = height * (1 - intersection.uv.y)
+      // this.el.components['draw-canvas'].brush.drawOutline(overlayCtx, x, y)
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv)
     }
 
     ctx.globalCompositeOperation = 'difference'

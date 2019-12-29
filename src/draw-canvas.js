@@ -1,7 +1,11 @@
 import {ProceduralBrush} from './brush.js'
 
 AFRAME.registerComponent('draw-canvas', {
-  schema: {canvas: {type: 'selector'}},
+  schema: {
+    canvas: {type: 'selector'},
+    mirrorX: {type: 'bool', default: false},
+    mirrorY: {type: 'bool', default: false}
+  },
 
   init() {
     this.brush = new ProceduralBrush(this.data.canvas.getContext('2d'));
@@ -24,10 +28,38 @@ AFRAME.registerComponent('draw-canvas', {
   drawUV(uv, {pressure = 1.0, canvas = null}) {
     if (canvas == null) canvas = this.data.canvas
     let ctx = canvas.getContext('2d');
+    let {width, height} = canvas
 
     ctx.globalAlpha = pressure
-    this.brush.drawTo(ctx,  canvas.width * uv.x, canvas.height * (1 - uv.y))
+    let x = width * uv.x
+    let y = height * (1 - uv.y)
+    this.brush.drawTo(ctx,  x, y)
+    if (this.data.mirrorX) {
+        this.brush.drawTo(ctx, x + width, y)
+        this.brush.drawTo(ctx, x - width, y)
+    }
+    if (this.data.mirrorY) {
+      this.brush.drawTo(ctx, x, y + height)
+      this.brush.drawTo(ctx, x, y - height)
+    }
     ctx.globalAlpha = 1.0
+  },
+
+  drawOutlineUV(ctx, uv) {
+    let {width, height} = this.data.canvas
+    let x = width * uv.x
+    let y = height * (1 - uv.y)
+    this.brush.drawOutline(ctx, x, y)
+
+    if (this.data.mirrorX) {
+      this.brush.drawOutline(ctx, x + width, y)
+      this.brush.drawOutline(ctx, x - width, y)
+    }
+    if (this.data.mirrorX)
+    {
+      this.brush.drawOutline(ctx, x, y + height)
+      this.brush.drawOutline(ctx, x, y - height)
+    }
   },
 
   pickColorUV(uv) {

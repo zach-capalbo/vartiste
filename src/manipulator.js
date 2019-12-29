@@ -2,7 +2,7 @@ AFRAME.registerComponent('manipulator', {
   schema: {
     selector: {type: 'string'},
     useRay: {type:'boolean', default: true},
-    printUpdates: {type: 'boolean', default: true},
+    printUpdates: {type: 'boolean', default: false},
     lockAxes: {type: 'array', default: []} // NYI
   },
   init() {
@@ -31,9 +31,13 @@ AFRAME.registerComponent('manipulator', {
 
     this.raycaster = new THREE.Raycaster();
 
-    var geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
-    this.startPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0x00ff00} ) ))
-    this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
+
+    if (this.data.printUpdates)
+    {
+      var geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
+      this.startPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0x00ff00} ) ))
+      this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
+    }
 
   },
   startGrab() {
