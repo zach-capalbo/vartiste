@@ -5,9 +5,7 @@ AFRAME.registerComponent('joystick-turn', {
   },
   init() {
     this.dirX = 0;
-    console.log("Inited");
     this.el.addEventListener('axismove', e => {
-      console.log("Tuirning");
       const { detail } = e;
       const { amount } = this.data;
       if ((detail.axis[0] > 0.8) && (this.dirX !== 1)) {

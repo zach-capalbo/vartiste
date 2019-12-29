@@ -13,9 +13,14 @@ class ProceduralBrush extends Brush {
     overlayCanvas.height = height
     document.body.append(overlayCanvas)
 
-    overlayCanvas.getContext('2d').clearRect(0, 0, width, height)
-
     this.overlayCanvas = overlayCanvas;
+
+    this.changeColor('#000')
+  }
+
+  changeColor(color) {
+    this.color = color
+    this.color3 = new THREE.Color(this.color)
 
     this.createBrush()
   }
@@ -25,17 +30,20 @@ class ProceduralBrush extends Brush {
 
     const width = this.width
     const height = this.height
+
+    ctx.clearRect(0, 0, width, height)
+
     const innerRadius = 2
     const outerRadius = width / 2
 
     let x = width / 2
     let y = height / 2
 
+    let color = this.color3
     let gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius)
-    gradient.addColorStop(0, "rgba(0, 0, 0, 0.7)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(0, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, 0.7)`);
+    gradient.addColorStop(1, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, 0)`);
 
-    // ctx.fillStyle = 'rgba(0,0,0,0.3)'
     ctx.fillStyle = gradient
     ctx.fillRect(0,0,width,height)
   }

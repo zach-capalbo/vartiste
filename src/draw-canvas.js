@@ -4,15 +4,12 @@ AFRAME.registerComponent('draw-canvas', {
   schema: {canvas: {type: 'selector'}},
 
   init() {
-    this.clear()
     this.brush = new ProceduralBrush(this.data.canvas.getContext('2d'));
-  },
+    this.brush.changeColor(this.el.sceneEl.systems['paint-system'].data.color)
 
-  clear() {
-    let ctx = this.data.canvas.getContext('2d');
-    ctx.fillStyle = '#FFFFFF'
-    ctx.fillRect(0, 0, this.data.canvas.width, this.data.canvas.height)
-    ctx.strokeStyle = '#333'
+    this.el.sceneEl.addEventListener('colorchanged', (e) => {
+      this.brush.changeColor(e.detail.color)
+    })
   },
 
   drawUV(uv, {pressure = 1.0, canvas = null}) {

@@ -1,17 +1,22 @@
+import {Layer} from "./layer.js"
+
 AFRAME.registerComponent('compositor', {
   schema: {canvas: {type: 'selector'}},
 
   init() {
-    this.layers = [document.getElementById('layer1')]
     this.width = this.data.canvas.width
     this.height = this.data.canvas.height
 
-    this.overlayCanvas = document.createElement("canvas")
+    this.layers = [new Layer(this.width, this.height)]
+
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = this.width
     overlayCanvas.height = this.height
     document.body.append(overlayCanvas)
     this.overlayCanvas = overlayCanvas;
+
+    this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas})
+    // this.el.components['draw-canvas'].data.canvas = this.layers[0].canvas
   },
 
   tick() {
@@ -23,7 +28,7 @@ AFRAME.registerComponent('compositor', {
     const height = this.height
 
     for (let layer of this.layers) {
-      ctx.drawImage(layer, 0, 0)
+      layer.draw(ctx)
     }
 
     ctx.save()

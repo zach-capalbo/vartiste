@@ -18,7 +18,15 @@ AFRAME.registerComponent('hand-draw-tool', {
       for (var el of this.intersects)
       {
         let intersection = this.el.components.raycaster.getIntersection(el)
-        el.components['draw-canvas'].drawUV(intersection.uv, {pressure: this.pressure})
+
+        if ('draw-canvas' in el.components)
+        {
+          el.components['draw-canvas'].drawUV(intersection.uv, {pressure: this.pressure})
+        }
+        else
+        {
+          el.emit("draw", {intersection, pressure:this.pressure})
+        }
       }
     }
   }

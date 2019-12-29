@@ -2,7 +2,6 @@
 a-scene
   a-assets
     canvas id="composite" width=resolution.width height=resolution.height
-    canvas id="layer1" width=resolution.width height=resolution.height
 
   a-sky color="#333"
 
@@ -10,11 +9,16 @@ a-scene
     a-entity#camera-root
       a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .canvas; far: 500" hand-draw-tool=""
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
 
   a-entity#world-root
+    a-entity#ui
+      a-entity#left-shelf position="-3 0 0" rotation="0 90 0"
+        a-entity#color-selection
+          a-circle#color-picker.clickable material="" color-picker=""
+          a-circle radius="0.2" position="1.25 0 0" show-current-color=""
+          a-plane.clickable width="0.3" height="1.9" position="-1.35" brightness-picker="target:#color-picker"
     a-entity#canvas-view.canvas[
-      draw-canvas="canvas: #layer1"
       canvas-updater=""
       compositor="canvas: #composite"
       material="shader: flat; src: #composite"
