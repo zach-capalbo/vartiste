@@ -15,6 +15,7 @@
   "devDependencies": {
     "aframe": "^1.0.2",
     "aframe-environment-component": "^2.0.0",
+    "aframe-svg-extruder": "^1.0.2",
     "clean-webpack-plugin": "^2.0.0",
     "color": "^3.1.2",
     "colorsys": "^1.0.22",
@@ -31,6 +32,7 @@
     "stringify-loader": "^1.0.0",
     "style-loader": "^0.18.2",
     "stylus": "^0.54.7",
+    "url-loader": "^3.0.0",
     "webpack": "^4.30.0",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1",

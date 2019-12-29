@@ -7,7 +7,12 @@ AFRAME.registerComponent('compositor', {
     this.width = this.data.canvas.width
     this.height = this.data.canvas.height
 
-    this.layers = [new Layer(this.width, this.height)]
+    this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
+
+    let bgCtx = this.layers[0].canvas.getContext('2d')
+    bgCtx.fillStyle = "#FFF"
+    bgCtx.fillRect(0,0,this.width,this.height)
+
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = this.width
@@ -28,7 +33,10 @@ AFRAME.registerComponent('compositor', {
     const height = this.height
 
     for (let layer of this.layers) {
-      layer.draw(ctx)
+      if (layer.visible)
+      {
+        layer.draw(ctx)
+      }
     }
 
     ctx.save()

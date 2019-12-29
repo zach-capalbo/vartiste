@@ -26,6 +26,16 @@ module.exports = {
     rules: [
       { test: /\.html\.(slm|slim)$/, loader: 'html-loader!slm-loader' },
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
+      {test: /\.(png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192,
+            },
+          },
+        ]
+      },
     ]
   }
 };
