@@ -40,8 +40,20 @@ class ProceduralBrush extends Brush {
     ctx.fillRect(0,0,width,height)
   }
 
-  drawTo(ctx, x, y) {
-    ctx.drawImage(this.overlayCanvas, x - this.width, y + this.height / 2)
+  drawTo(ctx, x, y, opts = {}) {
+    ctx.drawImage(this.overlayCanvas, x - this.width / 2, y - this.height / 2)
+  }
+
+  drawOutline(ctx, x, y)
+  {
+    const width = this.width
+    const height = this.height
+
+    ctx.beginPath()
+    ctx.arc(x, y, width / 3, 0, 2 * Math.PI, false)
+    ctx.strokeStyle = '#FFFFFF'
+    ctx.stroke()
+
   }
 }
 

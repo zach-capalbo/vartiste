@@ -1,19 +1,24 @@
+- let resolution = {width: 1024, height: 512}
 a-scene
   a-assets
-    canvas id="layer1" width="1024" height="768"
+    canvas id="composite" width=resolution.width height=resolution.height
+    canvas id="layer1" width=resolution.width height=resolution.height
 
   a-sky color="#333"
 
-  a-entity#camera-root
-    a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
-    - for hand of ["left", "right"]
-      a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .canvas; far: 500" draw-checker=""
+  a-entity#artist-root
+    a-entity#camera-root
+      a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
+      - for hand of ["left", "right"]
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .canvas; far: 500" hand-draw-tool=""
 
-  a-entity#canvas-view.canvas[
-    draw-canvas="canvas: #layer1"
-    canvas-updater=""
-    material="shader: flat; src: #layer1"
-    geometry="primitive: plane; width: 160; height: 90"
-    position="0 60 -250"
-    rotation="0 0 0"
-  ]
+  a-entity#world-root
+    a-entity#canvas-view.canvas[
+      draw-canvas="canvas: #layer1"
+      canvas-updater=""
+      compositor="canvas: #composite"
+      material="shader: flat; src: #composite"
+      geometry="primitive: plane; width: 80; height: 35"
+      position="0 0 -20"
+      rotation="0 0 0"
+    ]
