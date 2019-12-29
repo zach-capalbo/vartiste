@@ -12,17 +12,20 @@ a-scene
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
 
   a-entity#world-root
+    a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#ui
       a-entity#left-shelf position="-3 0 0" rotation="0 90 0"
         a-entity#color-selection
           a-circle#color-picker.clickable material="" color-picker=""
           a-circle radius="0.2" position="1.25 0 0" show-current-color=""
           a-plane.clickable width="0.3" height="1.9" position="-1.35" brightness-picker="target:#color-picker"
-    a-entity#canvas-view.canvas[
-      canvas-updater=""
-      compositor="canvas: #composite"
-      material="shader: flat; src: #composite"
-      geometry="primitive: plane; width: 80; height: 35"
-      position="0 0 -20"
-      rotation="0 0 0"
-    ]
+    a-entity#canvas-root
+      a-entity#canvas-view.canvas[
+        canvas-updater=""
+        compositor="canvas: #composite"
+        material="shader: flat; src: #composite"
+        geometry="primitive: plane; width: 80; height: 35"
+        position="0 0.6 -3.14"
+        scale="0.1 0.1 0.1"
+        rotation="0 0 0"
+      ]

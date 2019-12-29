@@ -1,6 +1,7 @@
 AFRAME.registerComponent('hand-draw-tool', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
+    this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.el.addEventListener('triggerchanged', (e) => {
       this.isDrawing = e.detail.pressed
@@ -26,6 +27,18 @@ AFRAME.registerComponent('hand-draw-tool', {
         else
         {
           el.emit("draw", {intersection, pressure:this.pressure})
+        }
+      }
+    }
+    if (this.el.is("sampling"))
+    {
+      for (var el of this.intersects)
+      {
+        let intersection = this.el.components.raycaster.getIntersection(el)
+
+        if ('draw-canvas' in el.components)
+        {
+          this.system.selectColor(el.components['draw-canvas'].pickColorUV(intersection.uv))
         }
       }
     }

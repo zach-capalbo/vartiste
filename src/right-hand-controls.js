@@ -6,6 +6,8 @@ AFRAME.registerComponent('joystick-turn', {
   init() {
     this.dirX = 0;
     this.el.addEventListener('axismove', e => {
+      if (this.el.is('grabbing')) return;
+
       const { detail } = e;
       const { amount } = this.data;
       if ((detail.axis[0] > 0.8) && (this.dirX !== 1)) {
@@ -26,6 +28,30 @@ AFRAME.registerComponent('joystick-turn', {
 AFRAME.registerComponent('right-hand-controls', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
+    this.paintSystem = document.querySelector('a-scene').systems['paint-system']
     this.el.setAttribute('joystick-turn', "target: #camera-root")
+    this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: false})
+
+    this.scaleBrushAmmount = 0
+    this.el.addEventListener('axismove', e => {
+      this.scaleBrushAmmount = e.detail.axis[1]
+    })
+
+    this.el.addEventListener('bbuttondown', e => {
+      this.el.addState('sampling')
+    })
+
+    this.el.addEventListener('bbuttonup', e => {
+      this.el.removeState('sampling')
+    })
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
+  },
+
+  tick(t, dt) {
+    if (Math.abs(this.scaleBrushAmmount) > 0.08)
+    {
+      this.paintSystem.scaleBrush(- dt * this.scaleBrushAmmount)
+    }
   }
 });

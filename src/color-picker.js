@@ -182,9 +182,9 @@ AFRAME.registerComponent("brightness-picker", {
 
 AFRAME.registerComponent("show-current-color", {
   init() {
-    this.el.setAttribute('color', document.querySelector('a-scene').systems['paint-system'].data.color)
+    this.el.setAttribute('material', {shader: 'flat', color: document.querySelector('a-scene').systems['paint-system'].data.color})
     this.el.sceneEl.addEventListener('colorchanged', (e) => {
-      this.el.setAttribute('color', e.detail.color)
+      this.el.setAttribute('material', {color: e.detail.color})
     })
   }
 })

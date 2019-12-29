@@ -5,8 +5,11 @@ class ProceduralBrush extends Brush {
     super();
 
     let [width, height] = [20, 20]
+    this.baseWidth = width
+    this.baseHeight = height
     this.width = width
     this.height = height
+    this.scale = 1
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -21,6 +24,17 @@ class ProceduralBrush extends Brush {
   changeColor(color) {
     this.color = color
     this.color3 = new THREE.Color(this.color)
+
+    this.createBrush()
+  }
+
+  changeScale(scale) {
+    this.scale = scale
+
+    this.width = this.baseWidth * scale
+    this.height = this.baseHeight * scale
+    this.overlayCanvas.width = this.width
+    this.overlayCanvas.height = this.height
 
     this.createBrush()
   }
