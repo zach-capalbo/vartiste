@@ -1,0 +1,6 @@
+doctype html
+html
+  head
+    title VR Canvas
+    script src="https://aframe.io/releases/1.0.2/aframe.min.js"
+  body

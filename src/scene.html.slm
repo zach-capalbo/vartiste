@@ -1,0 +1,19 @@
+a-scene
+  a-assets
+    canvas id="layer1" width="1024" height="768"
+
+  a-sky color="#333"
+
+  a-entity#camera-root
+    a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
+    - for hand of ["left", "right"]
+      a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .canvas; far: 500" draw-checker=""
+
+  a-entity#canvas-view.canvas[
+    draw-canvas="canvas: #layer1"
+    canvas-updater=""
+    material="shader: flat; src: #layer1"
+    geometry="primitive: plane; width: 160; height: 90"
+    position="0 60 -250"
+    rotation="0 0 0"
+  ]
