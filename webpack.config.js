@@ -24,7 +24,14 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.html\.(slm|slim)$/, loader: 'html-loader!slm-loader' },
+      {
+        test: /\.html\.(slm|slim)$/,
+        use: [
+          {loader: 'html-loader'},
+          {loader: path.resolve('./slm-loader.js'), options: {useCache: false, cache: false} }
+
+        ]
+      },
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       {test: /\.(png|jpe?g|gif)$/i,

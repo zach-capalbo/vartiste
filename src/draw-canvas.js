@@ -9,21 +9,12 @@ AFRAME.registerComponent('draw-canvas', {
     // this.brush = new ProceduralBrush();
     let paintSystem = this.el.sceneEl.systems['paint-system']
     this.brush = paintSystem.brush
-    this.brush.changeColor(paintSystem.data.color)
 
     this.sampleCanvas = document.createElement('canvas')
     this.sampleCanvas.width = this.brush.width
     this.sampleCanvas.height = this.brush.height
     document.body.append(this.sampleCanvas)
-
-    this.el.sceneEl.addEventListener('colorchanged', (e) => {
-      this.brush.changeColor(e.detail.color)
-    })
-
-    this.el.sceneEl.addEventListener('brushscalechanged', (e) => {
-      this.brush.changeScale(e.detail.brushScale)
-    })
-
+    
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       this.brush = e.detail.brush
     })

@@ -4,6 +4,7 @@ require('./icon-button')
 require('./canvas-updater')
 require('./draw-canvas')
 require('./right-hand-controls')
+require('./left-hand-controls')
 require('./hand-draw-tool')
 require('./color-picker')
 require('./paint-system')
@@ -24,3 +25,4 @@ for (let asset of ['eye.png', 'brush.png', 'floppy.png', 'plus-box-multiple.png'
 }
 
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
+document.getElementById('left-hand').setAttribute('left-hand-controls', "")

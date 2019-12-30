@@ -9,6 +9,7 @@ class ProceduralBrush extends Brush {
     this.width = width
     this.height = height
     this.scale = 1
+    this.opacity = 1.0
     this.options = options
 
     let overlayCanvas = document.createElement("canvas")
@@ -39,6 +40,10 @@ class ProceduralBrush extends Brush {
     this.createBrush()
   }
 
+  changeOpacity(opacity) {
+    this.opacity = opacity
+  }
+
   createBrush() {
     let ctx = this.overlayCanvas.getContext("2d")
 
@@ -63,7 +68,10 @@ class ProceduralBrush extends Brush {
   }
 
   drawTo(ctx, x, y, opts = {}) {
+    ctx.save()
+    ctx.globalAlpha = this.opacity
     ctx.drawImage(this.overlayCanvas, x - this.width / 2, y - this.height / 2)
+    ctx.restore()
   }
 
   drawOutline(ctx, x, y)

@@ -91,7 +91,8 @@ AFRAME.registerComponent("opacity-picker", {
 
     var material = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
-      fragmentShader: fragmentShader
+      fragmentShader: fragmentShader,
+      transparent: true
     });
 
     this.mesh = this.el.getObject3D('mesh');
@@ -112,9 +113,13 @@ AFRAME.registerComponent("opacity-picker", {
 
 AFRAME.registerComponent("show-current-color", {
   init() {
-    this.el.setAttribute('material', {shader: 'flat', color: document.querySelector('a-scene').systems['paint-system'].data.color})
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.setAttribute('material', {shader: 'flat', transparent: true, color: this.system.data.color, opacity: this.system.data.opacity})
     this.el.sceneEl.addEventListener('colorchanged', (e) => {
       this.el.setAttribute('material', {color: e.detail.color})
+    })
+    this.el.sceneEl.addEventListener('opacitychanged', (e) => {
+      this.el.setAttribute('material', {opacity: e.detail.opacity})
     })
   }
 })
