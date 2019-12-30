@@ -47,7 +47,7 @@ class ProceduralBrush extends Brush {
 
     ctx.clearRect(0, 0, width, height)
 
-    const innerRadius = 2
+    const {innerRadius = 2} = this.options
     const outerRadius = width / 2
 
     let x = width / 2
@@ -80,12 +80,20 @@ class ProceduralBrush extends Brush {
 }
 
 class ImageBrush extends ProceduralBrush{
-  constructor(name) {
-    let image = new Image()
+  constructor(name, options = {}) {
+    let image;
+
+    if ('width' in options && 'height' in options) {
+      image = new Image(options.width, options.height)
+    }
+    else
+    {
+      image = new Image()
+    }
     image.src = require(`./brushes/${name}.png`).default
     let {width, height} = image
     console.log(image)
-    super({width, height})
+    super(Object.assign({}, options, {width, height}))
 
     this.image = image
     this.createBrush()
@@ -115,7 +123,7 @@ class ImageBrush extends ProceduralBrush{
       ctx.globalCompositeOperation = 'multiply'
       ctx.drawImage(this.image, 0, 0, width, height)
     }
-    
+
     ctx.restore()
   }
 }

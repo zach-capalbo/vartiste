@@ -6,6 +6,7 @@ AFRAME.registerComponent("layer-shelves", {
     this.built = false
   },
   addLayerShelf(layer, layerIdx) {
+    console.log("Adding shelf for", layer, layerIdx)
     var container = document.createElement('a-entity')
     container.innerHTML = layerShelfHTML
     this.el.prepend(container)
@@ -35,5 +36,11 @@ AFRAME.registerComponent("layer-shelves", {
   },
   editLayer(layer, layerIdx) {
     this.data.compositor.setAttribute('draw-canvas', {canvas: layer.canvas})
+  },
+  newLayer(layer, layerIdx) {
+    // Temp until I get re-ordering working
+    layerIdx = this.compositor.layers.length - 1
+
+    this.addLayerShelf(this.compositor.addLayer(layerIdx), parseInt(layerIdx) + 1)
   }
 })

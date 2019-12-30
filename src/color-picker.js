@@ -6,35 +6,9 @@ AFRAME.registerComponent("color-picker", {
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
-    var vertexShader = '\
-    varying vec2 vUv;\
-    void main() {\
-      vUv = uv;\
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);\
-      gl_Position = projectionMatrix * mvPosition;\
-    }\
-    ';
+    var vertexShader = require('./shaders/pass-through.vert')
 
-    var fragmentShader = '\
-    #define M_PI2 6.28318530718\n \
-    uniform float brightness;\
-    varying vec2 vUv;\
-    vec3 hsb2rgb(in vec3 c){\
-        vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, \
-                         0.0, \
-                         1.0 );\
-        rgb = rgb * rgb * (3.0 - 2.0 * rgb);\
-        return c.z * mix( vec3(1.0), rgb, c.y);\
-    }\
-    \
-    void main() {\
-      vec2 toCenter = vec2(0.5) - vUv;\
-      float angle = atan(toCenter.y, toCenter.x);\
-      float radius = length(toCenter) * 2.0;\
-      vec3 color = hsb2rgb(vec3((angle / M_PI2) + 0.5, radius, brightness));\
-      gl_FragColor = vec4(color, 1.0);\
-    }\
-    ';
+    var fragmentShader = require('./shaders/color-wheel.glsl')
 
     var material = new THREE.ShaderMaterial({
       uniforms: {
@@ -83,23 +57,9 @@ AFRAME.registerComponent("brightness-picker", {
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
-    var vertexShader = '\
-    varying vec2 vUv;\
-    void main() {\
-      vUv = uv;\
-      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);\
-      gl_Position = projectionMatrix * mvPosition;\
-    }\
-    ';
+    var vertexShader = require('./shaders/pass-through.vert')
 
-    var fragmentShader = '\
-    varying vec2 vUv;\
-    \
-    void main() {\
-      vec3 color = vec3(vUv.y); \
-      gl_FragColor = vec4(color, 1.0);\
-    }\
-    ';
+    var fragmentShader = require('./shaders/brightness-ramp.glsl')
 
     var material = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
@@ -116,6 +76,36 @@ AFRAME.registerComponent("brightness-picker", {
 
       let color = this.system.data.color
       this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+    })
+  }
+})
+
+AFRAME.registerComponent("opacity-picker", {
+  schema: {target: {type: 'selector'}},
+  init() {
+    this.system = document.querySelector('a-scene').systems['paint-system']
+
+    var vertexShader = require('./shaders/pass-through.vert')
+
+    var fragmentShader = require('./shaders/opacity-ramp.glsl')
+
+    var material = new THREE.ShaderMaterial({
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader
+    });
+
+    this.mesh = this.el.getObject3D('mesh');
+
+    this.mesh.material = material;
+
+    this.el.addEventListener("draw", (e)=>{
+      let point = e.detail.intersection.uv
+      // this.data.target.setAttribute("color-picker", {brightness: point.y})
+
+      this.system.selectOpacity(point.x)
+
+      // let color = this.system.data.color
+      // this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
     })
   }
 })

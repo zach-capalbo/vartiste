@@ -24,6 +24,13 @@ AFRAME.registerComponent('compositor', {
     // this.el.components['draw-canvas'].data.canvas = this.layers[0].canvas
   },
 
+  addLayer(position) {
+    let layer = new Layer(this.width, this.height)
+    this.layers.splice(position + 1, 0, layer)
+    console.log(this.layers)
+    return layer
+  },
+
   tick() {
     let ctx = this.data.canvas.getContext('2d')
     // ctx.fillStyle = "#FFFFFF"

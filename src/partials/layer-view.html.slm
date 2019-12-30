@@ -1,4 +1,6 @@
 a-entity.layer-shelf shelf=""
-  a-entity.clickable click-action="hide" icon-button="#asset-eye" position="-1.5 1.2 0"
-  a-entity.clickable click-action="edit" icon-button="#asset-brush" position="-1.5 1.2 0"
+  a-entity position="-1.5 1.2 0"
+    a-entity.clickable click-action="hide" icon-button="#asset-eye"
+    a-entity.clickable click-action="edit" icon-button="#asset-brush"
+    a-entity.clickable click-action="new" icon-button="#asset-plus-box-multiple"
   a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater=""

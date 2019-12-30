@@ -16,5 +16,10 @@ AFRAME.registerComponent('settings-shelf', {
     document.body.append(saveImg)
 
     let popup = window.open(saveImg.src, "_blank")
+  },
+
+  nextBrushAction() {
+    let paintSystem = this.el.sceneEl.systems['paint-system']
+    paintSystem.nextBrush()
   }
 })

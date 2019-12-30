@@ -1,5 +1,3 @@
-import {ImageBrush, ProceduralBrush} from './brush.js'
-
 AFRAME.registerComponent('draw-canvas', {
   schema: {
     canvas: {type: 'selector'},
@@ -9,8 +7,9 @@ AFRAME.registerComponent('draw-canvas', {
 
   init() {
     // this.brush = new ProceduralBrush();
-    this.brush = new ImageBrush("silky_textured")
-    this.brush.changeColor(this.el.sceneEl.systems['paint-system'].data.color)
+    let paintSystem = this.el.sceneEl.systems['paint-system']
+    this.brush = paintSystem.brush
+    this.brush.changeColor(paintSystem.data.color)
 
     this.sampleCanvas = document.createElement('canvas')
     this.sampleCanvas.width = this.brush.width
@@ -23,6 +22,10 @@ AFRAME.registerComponent('draw-canvas', {
 
     this.el.sceneEl.addEventListener('brushscalechanged', (e) => {
       this.brush.changeScale(e.detail.brushScale)
+    })
+
+    this.el.sceneEl.addEventListener('brushchanged', (e) => {
+      this.brush = e.detail.brush
     })
   },
 
