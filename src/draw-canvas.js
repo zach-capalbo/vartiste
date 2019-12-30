@@ -1,4 +1,4 @@
-import {ProceduralBrush} from './brush.js'
+import {ImageBrush, ProceduralBrush} from './brush.js'
 
 AFRAME.registerComponent('draw-canvas', {
   schema: {
@@ -8,7 +8,8 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   init() {
-    this.brush = new ProceduralBrush(this.data.canvas.getContext('2d'));
+    // this.brush = new ProceduralBrush();
+    this.brush = new ImageBrush("silky_textured")
     this.brush.changeColor(this.el.sceneEl.systems['paint-system'].data.color)
 
     this.sampleCanvas = document.createElement('canvas')

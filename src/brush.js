@@ -1,15 +1,15 @@
 class Brush {}
 
 class ProceduralBrush extends Brush {
-  constructor(ctx) {
+  constructor({width=20,height=20, ...options} = {}) {
     super();
 
-    let [width, height] = [20, 20]
     this.baseWidth = width
     this.baseHeight = height
     this.width = width
     this.height = height
     this.scale = 1
+    this.options = options
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -79,4 +79,45 @@ class ProceduralBrush extends Brush {
   }
 }
 
-export { Brush, ProceduralBrush };
+class ImageBrush extends ProceduralBrush{
+  constructor(name) {
+    let image = new Image()
+    image.src = require(`./brushes/${name}.png`).default
+    let {width, height} = image
+    console.log(image)
+    super({width, height})
+
+    this.image = image
+    this.createBrush()
+  }
+
+  createBrush() {
+    if (!this.image) return;
+
+    let ctx = this.overlayCanvas.getContext("2d")
+
+    const width = this.width
+    const height = this.height
+
+    ctx.clearRect(0, 0, width, height)
+
+    ctx.save()
+
+    ctx.drawImage(this.image, 0, 0, width, height)
+
+    ctx.globalCompositeOperation = 'source-in'
+
+    ctx.fillStyle = this.color
+    ctx.fillRect(0, 0, width, height)
+
+    if (this.options.textured)
+    {
+      ctx.globalCompositeOperation = 'multiply'
+      ctx.drawImage(this.image, 0, 0, width, height)
+    }
+    
+    ctx.restore()
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush };

@@ -26,8 +26,8 @@ AFRAME.registerComponent('compositor', {
 
   tick() {
     let ctx = this.data.canvas.getContext('2d')
-    ctx.fillStyle = "#FFFFFF"
-    ctx.fillRect(0,0, this.width, this.height)
+    // ctx.fillStyle = "#FFFFFF"
+    ctx.clearRect(0,0, this.width, this.height)
 
     const width = this.width
     const height = this.height
