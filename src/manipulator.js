@@ -50,6 +50,7 @@ AFRAME.registerComponent('manipulator', {
 
     this.grabLineObject.visible = false
     this.endPoint.visible = false
+    this.offset = new THREE.Vector3(0, 0, 0);
 
   },
   startGrab() {
@@ -62,12 +63,34 @@ AFRAME.registerComponent('manipulator', {
     this.startPoint.updateMatrixWorld()
     this.invM.getInverse(this.startPoint.matrixWorld)
 
-    // this.target.object3D.updateMatrixWorld()
+    this.target.object3D.updateMatrixWorld()
     // this.endPoint.matrix.copy(this.target.object3D.matrixWorld)
     // this.endPoint.applyMatrix(this.invM)
 
     this.target.object3D.getWorldPosition(this.endPoint.position)
     this.startPoint.worldToLocal(this.endPoint.position)
+    // this.endPoint.position.add(this.offset)
+
+    if (this.offset)
+    {
+      this.endPoint.position.copy(this.offset)
+      this.startPoint.worldToLocal(this.endPoint.position)
+      this.endPoint.updateMatrixWorld()
+
+      let twp = new THREE.Vector3(0,0,0)
+      this.target.object3D.getWorldPosition(twp)
+      this.offset.sub(twp)
+
+      let quart = new THREE.Quaternion();
+      this.target.object3D.getWorldQuaternion(quart)
+      this.offset.applyQuaternion(quart.conjugate());
+
+      let ws = new THREE.Vector3(0,0,0)
+      this.target.object3D.getWorldScale(ws)
+      // this.offset.divide(ws)
+      console.log("Offset", this.offset)
+    }
+
     this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
     this.grabLine.verticesNeedUpdate = true;
     this.grabLineObject.visible = true
@@ -99,8 +122,9 @@ AFRAME.registerComponent('manipulator', {
       }
 
       let targetEl = this.raycaster.intersectedEls[0]
+      let intersection = this.raycaster.getIntersection(targetEl)
 
-      console.log("GRABBING", targetEl)
+      console.log("GRABBING", targetEl, intersection)
       let redirection = targetEl['redirect-grab']
       if (redirection)
       {
@@ -112,11 +136,14 @@ AFRAME.registerComponent('manipulator', {
         this.target = targetEl
       }
 
+      this.offset.copy(intersection.point)
+
       this.startGrab()
     }
     else
     {
       this.target = document.querySelector(this.data.selector)
+      this.offset = undefined
       this.startGrab()
     }
   },
@@ -147,6 +174,8 @@ AFRAME.registerComponent('manipulator', {
 
       this.endPoint.getWorldPosition(this.target.object3D.position)
       if (this.target.object3D.parent) this.target.object3D.parent.worldToLocal(this.target.object3D.position)
+      this.target.object3D.updateMatrixWorld()
+      this.target.object3D.position.sub(this.offset)
       this.endPoint.getWorldQuaternion(quart)
       // this.target.object3D.setRotationFromQuaternion(quart)
 
