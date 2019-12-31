@@ -125,15 +125,12 @@ AFRAME.registerComponent('manipulator', {
       let intersection = this.raycaster.getIntersection(targetEl)
 
       console.log("GRABBING", targetEl, intersection)
-      let redirection = targetEl['redirect-grab']
-      if (redirection)
+      this.target = targetEl
+
+      for (let redirection = targetEl['redirect-grab']; redirection; redirection = this.target['redirect-grab'])
       {
         console.log("Redirecting grab to", typeof(redirection), redirection)
         this.target = redirection
-      }
-      else
-      {
-        this.target = targetEl
       }
 
       this.offset.copy(intersection.point)

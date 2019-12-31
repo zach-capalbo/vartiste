@@ -14,7 +14,7 @@ AFRAME.registerComponent('draw-canvas', {
     this.sampleCanvas.width = this.brush.width
     this.sampleCanvas.height = this.brush.height
     document.body.append(this.sampleCanvas)
-    
+
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       this.brush = e.detail.brush
     })
@@ -99,5 +99,32 @@ AFRAME.registerComponent('draw-canvas', {
     avg.b /= avg.alpha
 
     return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
-  }
+  },
+
+  eraseUV(uv, {pressure = 1.0, canvas = null} = {}) {
+    console.log("Erasing")
+    if (canvas == null) canvas = this.data.canvas
+    let ctx = canvas.getContext('2d');
+    let {width, height} = canvas
+
+    ctx.save()
+
+    ctx.globalAlpha = pressure
+    let x = width * uv.x
+    let y = height * (1 - uv.y)
+
+    ctx.globalCompositeOperation = 'destination-out'
+
+    this.brush.drawTo(ctx,  x, y)
+    if (this.data.mirrorX) {
+        this.brush.drawTo(ctx, x + width, y)
+        this.brush.drawTo(ctx, x - width, y)
+    }
+    if (this.data.mirrorY) {
+      this.brush.drawTo(ctx, x, y + height)
+      this.brush.drawTo(ctx, x, y - height)
+    }
+
+    ctx.restore()
+  },
 });

@@ -7,12 +7,12 @@ a-scene
   a-entity#artist-root
     a-entity#camera-root
       a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
+        a-entity position="0 0 0" light="type: point; castShadow: true"
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
 
   a-entity#world-root
     a-entity#environment position="0 -7 0" environment="preset:starry"
-    a-entity position="0.895 1.359 0.017" light="type: point; castShadow: true"
     a-entity#ui shadow="cast: true; receive: true"
       a-entity#left-shelf position="-2 0 0" rotation="0 90 0"
           a-entity#color-selection shelf="" position="0 0 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')

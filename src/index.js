@@ -19,7 +19,7 @@ require('./settings-shelf')
 
 document.write(require('./scene.html.slm'))
 
-for (let asset of ['eye.png', 'brush.png', 'floppy.png', 'plus-box-multiple.png', 'shelf.png']) {
+for (let asset of ['eye.png', 'brush.png', 'floppy.png', 'plus-box-multiple.png', 'shelf.png', 'delete.png', 'arrow-up-bold.png', 'arrow-down-bold.png', 'blur-linear.png']) {
   var element = document.createElement('a-asset-item')
   element.setAttribute("src", require(`./assets/${asset}`).default)
   element.id = `asset-${asset.split(".")[0]}`

@@ -37,13 +37,21 @@ AFRAME.registerComponent('right-hand-controls', {
       this.scaleBrushAmmount = e.detail.axis[1]
     })
 
-    this.el.addEventListener('bbuttondown', e => {
-      this.el.addState('sampling')
-    })
+    let buttonMap = {
+      'b': 'sampling',
+      'a': 'erasing'
+    }
 
-    this.el.addEventListener('bbuttonup', e => {
-      this.el.removeState('sampling')
-    })
+    for (let button in buttonMap) {
+      let state = buttonMap[button]
+      this.el.addEventListener(button + 'buttondown', e => {
+        this.el.addState(state)
+      })
+
+      this.el.addEventListener(button + 'buttonup', e => {
+        this.el.removeState(state)
+      })
+    }
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
   },

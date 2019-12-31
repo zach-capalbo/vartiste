@@ -29,8 +29,8 @@ AFRAME.registerComponent('compositor', {
   addLayer(position) {
     let layer = new Layer(this.width, this.height)
     this.layers.splice(position + 1, 0, layer)
-    console.log(this.layers)
-    return layer
+    this.el.emit('layeradded', {layer})
+    this.activateLayer(layer)
   },
 
   activateLayer(layer) {
@@ -42,6 +42,42 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('activelayerchanged', {layer, oldLayer})
   },
 
+  nextLayer() {
+    let idx = this.layers.indexOf(this.activeLayer)
+    this.activateLayer(this.layers[(idx + 1) % this.layers.length])
+  },
+
+  prevLayer() {
+    let idx = this.layers.indexOf(this.activeLayer) - 1
+    if (idx < 0) idx += this.layers.length
+    this.activateLayer(this.layers[idx])
+  },
+  swapLayers(layer1, layer2) {
+    let idx1 = this.layers.indexOf(layer1)
+    let idx2 = this.layers.indexOf(layer2)
+    this.layers[idx1] = layer2
+    this.layers[idx2] = layer1
+    this.el.emit('layersmoved', {layers: [layer1,layer2]})
+  },
+  deleteLayer(layer) {
+    let idx = this.layers.indexOf(layer)
+    if (idx < 0) throw new Error("Cannot find layer to delete", layer)
+    this.layers.splice(idx, 1)
+    if (this.layers.length == 0)
+    {
+      this.addLayer(0)
+    }
+    if (layer.active)
+    {
+      this.activateLayer(this.layers[idx % this.layers.length])
+    }
+
+    this.el.emit('layerdeleted', {layer})
+  },
+  setLayerBlendMode(layer,mode) {
+    layer.mode = mode
+    this.el.emit('layerupdated', {layer})
+  },
   tick() {
     let ctx = this.data.canvas.getContext('2d')
     // ctx.fillStyle = "#FFFFFF"

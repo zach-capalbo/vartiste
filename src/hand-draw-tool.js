@@ -66,5 +66,17 @@ AFRAME.registerComponent('hand-draw-tool', {
         }
       }
     }
+    if (this.el.is("erasing"))
+    {
+      for (var el of this.intersects)
+      {
+        let intersection = this.el.components.raycaster.getIntersection(el)
+
+        if ('draw-canvas' in el.components)
+        {
+          el.components['draw-canvas'].eraseUV(intersection.uv)
+        }
+      }
+    }
   }
 })
