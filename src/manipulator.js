@@ -30,8 +30,7 @@ AFRAME.registerComponent('manipulator', {
 
     this.invM = new THREE.Matrix4()
 
-    this.raycaster = new THREE.Raycaster();
-
+    this.raycaster = this.el.components.raycaster
 
     if (this.data.printUpdates)
     {
@@ -92,55 +91,28 @@ AFRAME.registerComponent('manipulator', {
     this.el.removeState('grabbing')
   },
   onGripClose(){
-    if (this.data.useRay) {
-
-      var bone = this.el.getObject3D('mesh');//.skeleton.getBoneByName('Palm')
-      var position = new THREE.Vector3()
-      bone.getWorldPosition(position)
-      var matrix = new THREE.Matrix4()
-      matrix.extractRotation(bone.matrixWorld)
-
-      var directions = [
-        [new THREE.Vector3(0, 0, -1), 0.3],
-        [new THREE.Vector3(0, -1, 0), 0.3],
-        [new THREE.Vector3(0, 1, 0), 0.3],
-        // [new THREE.Vector3(0, 1, 0), 0.01]
-      ]
-
-      for (var direction of directions)
+    if (this.data.useRay)
+    {
+      if (!this.raycaster.intersectedEls.length > 0)
       {
-        direction[0].applyMatrix4(matrix)
-        this.raycaster.set(position, direction[0])
-        this.raycaster.far=direction[1];
-
-        for (var el of document.querySelectorAll(this.data.selector))
-        {
-          if (!el.object3D)
-          {
-            continue;
-          }
-
-          if (el === this.el)
-          {
-            continue
-          }
-
-          if (el === this.el.sceneEl)
-          {
-            continue
-          }
-
-          var collisionDetail = this.raycaster.intersectObject(el.object3D, true)
-
-          if (collisionDetail.length > 0)
-          {
-            this.target = el
-            console.log("Grabbing", el)
-            this.startGrab()
-            return
-          }
-        }
+        return
       }
+
+      let targetEl = this.raycaster.intersectedEls[0]
+
+      console.log("GRABBING", targetEl)
+      let redirection = targetEl['redirect-grab']
+      if (redirection)
+      {
+        console.log("Redirecting grab to", typeof(redirection), redirection)
+        this.target = redirection
+      }
+      else
+      {
+        this.target = targetEl
+      }
+
+      this.startGrab()
     }
     else
     {

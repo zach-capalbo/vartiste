@@ -30,7 +30,7 @@ AFRAME.registerComponent('right-hand-controls', {
   init() {
     this.paintSystem = document.querySelector('a-scene').systems['paint-system']
     this.el.setAttribute('joystick-turn', "target: #camera-root")
-    this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: false})
+    this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: true})
 
     this.scaleBrushAmmount = 0
     this.el.addEventListener('axismove', e => {
