@@ -19,7 +19,7 @@ class ProceduralBrush extends Brush {
 
     this.overlayCanvas = overlayCanvas;
 
-    this.changeColor('#000')
+    this.changeColor('#FFF')
   }
 
   changeColor(color) {
@@ -65,6 +65,11 @@ class ProceduralBrush extends Brush {
 
     ctx.fillStyle = gradient
     ctx.fillRect(0,0,width,height)
+
+    if (!this.previewSrc)
+    {
+      this.previewSrc = this.overlayCanvas.toDataURL()
+    }
   }
 
   drawTo(ctx, x, y, opts = {}) {
@@ -104,6 +109,7 @@ class ImageBrush extends ProceduralBrush{
     super(Object.assign({}, options, {width, height}))
 
     this.image = image
+    this.previewSrc = image
     this.createBrush()
   }
 

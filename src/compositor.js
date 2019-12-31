@@ -8,8 +8,9 @@ AFRAME.registerComponent('compositor', {
     this.height = this.data.canvas.height
 
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
+    this.activeLayer = this.layers[0]
 
-    let bgCtx = this.layers[0].canvas.getContext('2d')
+    let bgCtx = this.activeLayer.canvas.getContext('2d')
     bgCtx.fillStyle = "#FFF"
     bgCtx.fillRect(0,0,this.width,this.height)
 
@@ -21,6 +22,7 @@ AFRAME.registerComponent('compositor', {
     this.overlayCanvas = overlayCanvas;
 
     this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas})
+    this.activateLayer(this.activeLayer)
     // this.el.components['draw-canvas'].data.canvas = this.layers[0].canvas
   },
 
@@ -29,6 +31,15 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, layer)
     console.log(this.layers)
     return layer
+  },
+
+  activateLayer(layer) {
+    this.activeLayer.active = false
+    let oldLayer = this.activeLayer
+    this.el.setAttribute('draw-canvas', {canvas: layer.canvas})
+    layer.active = true
+    this.activeLayer = layer
+    this.el.emit('activelayerchanged', {layer, oldLayer})
   },
 
   tick() {

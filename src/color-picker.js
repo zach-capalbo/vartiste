@@ -123,3 +123,17 @@ AFRAME.registerComponent("show-current-color", {
     })
   }
 })
+
+AFRAME.registerComponent("show-current-brush", {
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.baseWidth = this.el.getAttribute('width')
+    this.el.setAttribute('material', {shader: 'flat', transparent: true, color: '#fff'})
+    let brushChanged = (brush) => {
+      this.el.setAttribute('material', {src: brush.previewSrc})
+      this.el.setAttribute('height', this.baseWidth / brush.width * brush.height)
+    }
+    this.el.sceneEl.addEventListener('brushchanged', e => brushChanged(e.detail.brush))
+    brushChanged(this.system.brush)
+  },
+})

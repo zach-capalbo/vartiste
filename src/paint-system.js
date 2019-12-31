@@ -37,7 +37,9 @@ AFRAME.registerSystem('paint-system', {
   },
 
   prevBrush() {
-    this.selectBrush((this.data.brushIndex + BrushList.length - 1) % BrushList.length)
+    let idx = this.data.brushIndex - 1
+    if (idx < 0) idx += BrushList.length
+    this.selectBrush(idx % BrushList.length)
   },
   nextBrush() {
     this.selectBrush((this.data.brushIndex + 1) % BrushList.length)

@@ -4,6 +4,16 @@ AFRAME.registerComponent("layer-shelves", {
   schema: {compositor: {type: 'selector'}},
   init() {
     this.built = false
+    this.shelves = {}
+    this.onLayerChanged = this.onLayerChanged.bind(this)
+  },
+  update(oldData) {
+    if (oldData.compositor)
+    {
+      oldData.compositor.removeEventListener('activelayerchanged', this.onLayerChanged)
+    }
+
+    this.data.compositor.addEventListener('activelayerchanged', this.onLayerChanged)
   },
   addLayerShelf(layer, layerIdx) {
     console.log("Adding shelf for", layer, layerIdx)
@@ -17,6 +27,11 @@ AFRAME.registerComponent("layer-shelves", {
     container.setAttribute('position', {x: 0, y: layerIdx, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
     container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layerIdx}))
+    this.shelves[layer.id] = container
+
+    if (layer.active) {
+      container.querySelector('.active-indicator').setAttribute('visible', "true")
+    }
   },
   tick(t, dt) {
     if (!this.built && this.data.compositor.components.compositor) {
@@ -35,12 +50,23 @@ AFRAME.registerComponent("layer-shelves", {
     layer.visible = !layer.visible
   },
   editLayer(layer, layerIdx) {
-    this.data.compositor.setAttribute('draw-canvas', {canvas: layer.canvas})
+    this.compositor.activateLayer(layer)
   },
   newLayer(layer, layerIdx) {
     // Temp until I get re-ordering working
     layerIdx = this.compositor.layers.length - 1
 
     this.addLayerShelf(this.compositor.addLayer(layerIdx), parseInt(layerIdx) + 1)
+  },
+  onLayerChanged(e) {
+    let {layer, oldLayer} = e.detail
+    console.log("Activating layer", layer)
+    if (oldLayer && oldLayer.id in this.shelves) {
+      this.shelves[oldLayer.id].querySelector('.active-indicator').setAttribute('visible', "false")
+    }
+    if (layer && layer.id in this.shelves)
+    {
+      this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', "true")
+    }
   }
 })

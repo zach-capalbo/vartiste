@@ -1,4 +1,5 @@
 AFRAME.registerComponent('manipulator', {
+  dependencies: ['raycaster', 'laser-controls'],
   schema: {
     selector: {type: 'string'},
     useRay: {type:'boolean', default: true},
@@ -36,7 +37,7 @@ AFRAME.registerComponent('manipulator', {
     {
       var geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
       this.startPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0x00ff00} ) ))
-      this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
+
     }
 
     this.grabLine = new THREE.Geometry();
@@ -44,6 +45,12 @@ AFRAME.registerComponent('manipulator', {
     this.grabLine.vertices.push(new THREE.Vector3(0,0,4));
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 50 } ))
     this.startPoint.add(this.grabLineObject);
+
+    var geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
+    this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
+
+    this.grabLineObject.visible = false
+    this.endPoint.visible = false
 
   },
   startGrab() {
@@ -65,6 +72,7 @@ AFRAME.registerComponent('manipulator', {
     this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
     this.grabLine.verticesNeedUpdate = true;
     this.grabLineObject.visible = true
+    this.endPoint.visible = true;
   },
   stopGrab() {
     if (this.data.printUpdates)
@@ -80,6 +88,7 @@ AFRAME.registerComponent('manipulator', {
 
     this.target = undefined
     this.grabLineObject.visible = false
+    this.endPoint.visible = false
     this.el.removeState('grabbing')
   },
   onGripClose(){

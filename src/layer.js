@@ -1,3 +1,4 @@
+import shortid from 'shortid'
 export class Layer {
   constructor(width, height) {
     this.width = width
@@ -5,6 +6,8 @@ export class Layer {
     this.offset = {x: 0, y: 0}
     this.mode = "source-over"
     this.visible = true
+    this.active = false
+    this.id = shortid.generate()
 
     let canvas = document.createElement("canvas")
     canvas.width = this.width

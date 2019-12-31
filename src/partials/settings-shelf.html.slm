@@ -1,3 +1,4 @@
 a-entity position="-1.5 1.1 0"
   a-entity.clickable click-action="save" icon-button="#asset-floppy"
-  a-entity.clickable click-action="nextBrush" icon-button="#asset-brush"
+a-entity
+  a-entity text="value: VARTISTE by Zach Capalbo <https://zachcapalbo.com> @zach_geek; align: center; width: 4"
