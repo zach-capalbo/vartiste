@@ -1,5 +1,5 @@
 {
-  "name": "vr-canvas",
+  "name": "vartiste",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -10,7 +10,10 @@
     "build": "webpack"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Zach Capalbo",
+    "url": "https://zachcapalbo.com/"
+  },
   "license": "MIT",
   "devDependencies": {
     "aframe": "^1.0.2",

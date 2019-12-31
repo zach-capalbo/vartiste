@@ -39,6 +39,12 @@ AFRAME.registerComponent('manipulator', {
       this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
     }
 
+    this.grabLine = new THREE.Geometry();
+    this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
+    this.grabLine.vertices.push(new THREE.Vector3(0,0,4));
+    this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 50 } ))
+    this.startPoint.add(this.grabLineObject);
+
   },
   startGrab() {
     this.el.addState('grabbing')
@@ -56,7 +62,9 @@ AFRAME.registerComponent('manipulator', {
 
     this.target.object3D.getWorldPosition(this.endPoint.position)
     this.startPoint.worldToLocal(this.endPoint.position)
-
+    this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
+    this.grabLine.verticesNeedUpdate = true;
+    this.grabLineObject.visible = true
   },
   stopGrab() {
     if (this.data.printUpdates)
@@ -71,6 +79,7 @@ AFRAME.registerComponent('manipulator', {
     }
 
     this.target = undefined
+    this.grabLineObject.visible = false
     this.el.removeState('grabbing')
   },
   onGripClose(){

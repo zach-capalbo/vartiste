@@ -1,0 +1,15 @@
+image: node:10.18
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run-script build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - dist
