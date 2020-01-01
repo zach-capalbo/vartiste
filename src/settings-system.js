@@ -1,5 +1,9 @@
 AFRAME.registerSystem('settings-system', {
   init() {},
+  popup(url, description) {
+    this.el.emit('open-popup', description)
+    window.open(url)
+  },
   saveAction() {
     let saveImg = new Image()
     saveImg.src = document.getElementById('composite').toDataURL()
@@ -8,7 +12,7 @@ AFRAME.registerSystem('settings-system', {
 
     let popup = this.popup(saveImg.src, "Image to dowload")
   },
-  popup(url, description) {
-    this.el.emit('open-popup', description)
+  helpAction() {
+    this.popup("landing.html", "Instructions")
   }
 })

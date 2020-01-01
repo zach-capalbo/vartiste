@@ -11,7 +11,7 @@ AFRAME.registerComponent("popup-shelf", {
     })
 
     this.el.querySelector('*[text]').setAttribute('text', {
-      value: `We've attempted to open a popup. Please take off the headset and check your browser.`
+      value: `Attempted to open a popup window. Please take off the headset and check your browser. You may have to disable your popup blocker.`
     })
 
     this.desiredPosition = new THREE.Vector3()

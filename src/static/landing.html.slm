@@ -1,0 +1,15 @@
+doctype html
+html
+  head
+    title VARTISTE
+  body
+    #content
+    footer
+      span<> © 2020
+      a href="https://zachcapalbo.com)" Zachary Capalbo
+      span<> |
+      a href="license.html" License
+      span<> |
+      a href="https://gitlab.com/zach-geek/vartiste" Source
+      span<> |
+      a href="https://gitlab.com/zach-geek/vartiste/issues" Bugs
