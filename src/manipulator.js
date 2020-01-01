@@ -52,6 +52,22 @@ AFRAME.registerComponent('manipulator', {
     this.endPoint.visible = false
     this.offset = new THREE.Vector3(0, 0, 0);
 
+    let _refreshObjects = this.raycaster.refreshObjects
+    this.raycaster.refreshObjects = function(...args) {
+      _refreshObjects.call(this,...args)
+      this.objects = this.objects.filter(o => {
+        if (o.el.classList.contains("raycast-invisible")) return false
+        if (!o.visible) return false
+
+        let parentVisible = true
+        o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
+        if (!parentVisible) return false
+        
+        return true
+    })
+
+    }
+
   },
   startGrab() {
     this.el.addState('grabbing')
@@ -73,22 +89,32 @@ AFRAME.registerComponent('manipulator', {
 
     if (this.offset)
     {
+      let startOffset = new THREE.Vector3(0,0,0)
+      startOffset.copy(this.offset)
+
       this.endPoint.position.copy(this.offset)
       this.startPoint.worldToLocal(this.endPoint.position)
       this.endPoint.updateMatrixWorld()
 
+      // Offset still in world space
+
       let twp = new THREE.Vector3(0,0,0)
       this.target.object3D.getWorldPosition(twp)
       this.offset.sub(twp)
+
+      // offset now difference between intersection and target origin in world space
 
       let quart = new THREE.Quaternion();
       this.target.object3D.getWorldQuaternion(quart)
       this.offset.applyQuaternion(quart.conjugate());
 
       let ws = new THREE.Vector3(0,0,0)
-      this.target.object3D.getWorldScale(ws)
-      // this.offset.divide(ws)
+      this.target.object3D.parent.getWorldScale(ws)
+      this.offset.divide(ws)
       console.log("Offset", this.offset)
+      console.log("WS Offset", startOffset)
+      console.log("WS Target", twp)
+      console.log("Parent WS", ws)
     }
 
     this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
@@ -168,11 +194,21 @@ AFRAME.registerComponent('manipulator', {
       this.rightHand.object3D.getWorldQuaternion(quart)
       this.startPoint.setRotationFromQuaternion(quart)
       this.startPoint.updateMatrixWorld()
+      this.endPoint.updateMatrixWorld()
 
       this.endPoint.getWorldPosition(this.target.object3D.position)
       if (this.target.object3D.parent) this.target.object3D.parent.worldToLocal(this.target.object3D.position)
-      this.target.object3D.updateMatrixWorld()
-      this.target.object3D.position.sub(this.offset)
+
+      let localOffset = new THREE.Vector3()
+      localOffset.copy(this.offset)
+
+      let pws = new THREE.Vector3()
+
+      // if (this.target.object3D.parent) this.target.object3D.getWorldScale().worldToLocal(localOffset)
+
+      this.target.object3
+
+      this.target.object3D.position.sub(localOffset)
       this.endPoint.getWorldQuaternion(quart)
       // this.target.object3D.setRotationFromQuaternion(quart)
 

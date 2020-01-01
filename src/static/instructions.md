@@ -7,7 +7,8 @@ as the [Valve Index](https://store.steampowered.com/valveindex) or
 
 <a class="launch-button" href="/index.html">LAUNCH VARTISTE</a>
 
-## Controls (For Oculus Touch-like controllers)
+## Controls
+_For Oculus Touch-like controllers:_
 
  - Right Hand:
   - Trigger: Draw

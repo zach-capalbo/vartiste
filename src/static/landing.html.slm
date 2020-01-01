@@ -6,7 +6,7 @@ html
     #content
     footer
       span<> © 2020
-      a href="https://zachcapalbo.com)" Zachary Capalbo
+      a href="https://zachcapalbo.com" Zachary Capalbo
       span<> |
       a href="license.html" License
       span<> |

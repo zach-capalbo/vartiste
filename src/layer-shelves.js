@@ -120,6 +120,9 @@ AFRAME.registerComponent("layer-shelves", {
     if (nextLayerIdx < 0) nextLayerIdx += this.compositor.layers.length
     this.compositor.swapLayers(layer, this.compositor.layers[nextLayerIdx])
   },
+  grabLayer(layer) {
+    this.compositor.grabLayer(layer)
+  },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail
     console.log("Activating layer", layer)
@@ -150,6 +153,7 @@ AFRAME.registerComponent("layer-shelves", {
     this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
   },
   compositor_layersmoved(e) {
+    console.log("Layers moved")
     this.shuffle()
   }
 })

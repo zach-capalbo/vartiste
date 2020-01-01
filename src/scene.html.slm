@@ -32,4 +32,4 @@ a-scene
         scale="0.1 0.1 0.1"
         rotation="0 0 0"
       ]
-        a-entity#move-layer-redirection geometry="primitive: plane; width: 80; height: 35" material="shader: flat; wireframe: true; color: #000"
+        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" material="shader: flat; wireframe: true; color: #000"

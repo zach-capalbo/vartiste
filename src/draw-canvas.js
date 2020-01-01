@@ -1,3 +1,5 @@
+import {Layer} from './layer.js'
+
 AFRAME.registerComponent('draw-canvas', {
   schema: {
     canvas: {type: 'selector'},
@@ -15,9 +17,24 @@ AFRAME.registerComponent('draw-canvas', {
     this.sampleCanvas.height = this.brush.height
     document.body.append(this.sampleCanvas)
 
+    this.transform = Layer.EmptyTransform()
+
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       this.brush = e.detail.brush
     })
+  },
+
+  uvToPoint(uv, canvas = null) {
+    let {width, height} = canvas || this.data.canvas
+    let {translation, scale} = this.transform
+
+    let x = width * uv.x - (translation.x - width / 2 * scale.x + width / 2)
+    let y = height * (1 - uv.y) - (translation.y - height / 2 * scale.y + height / 2)
+
+    x = x / scale.x
+    y = y / scale.y
+
+    return {x,y}
   },
 
   drawUV(uv, {pressure = 1.0, canvas = null}) {
@@ -25,9 +42,10 @@ AFRAME.registerComponent('draw-canvas', {
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 
+    let {x,y} = this.uvToPoint(uv, canvas)
+
     ctx.globalAlpha = pressure
-    let x = width * uv.x
-    let y = height * (1 - uv.y)
+
     this.brush.drawTo(ctx,  x, y)
     if (this.data.mirrorX) {
         this.brush.drawTo(ctx, x + width, y)
@@ -42,8 +60,7 @@ AFRAME.registerComponent('draw-canvas', {
 
   drawOutlineUV(ctx, uv) {
     let {width, height} = this.data.canvas
-    let x = width * uv.x
-    let y = height * (1 - uv.y)
+    let {x,y} = this.uvToPoint(uv)
     this.brush.drawOutline(ctx, x, y)
 
     if (this.data.mirrorX) {
@@ -66,9 +83,11 @@ AFRAME.registerComponent('draw-canvas', {
     this.sampleCanvas.width = width
     this.sampleCanvas.height = height
     ctx.clearRect(0, 0, sampleCanvas.width, sampleCanvas.height)
+
+    let {x,y} = this.uvToPoint(uv)
     ctx.drawImage(canvas,
-      canvas.width * uv.x - width / 2,
-      canvas.height * (1 - uv.y) - height / 2,
+      x - width / 2,
+      y - height / 2,
       width, height,
       0, 0,
       width, height
@@ -110,8 +129,8 @@ AFRAME.registerComponent('draw-canvas', {
     ctx.save()
 
     ctx.globalAlpha = pressure
-    let x = width * uv.x
-    let y = height * (1 - uv.y)
+
+    let {x,y} = this.uvToPoint(uv, canvas)
 
     ctx.globalCompositeOperation = 'destination-out'
 

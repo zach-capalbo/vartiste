@@ -14,6 +14,7 @@ AFRAME.registerComponent('compositor', {
     bgCtx.fillStyle = "#FFF"
     bgCtx.fillRect(0,0,this.width,this.height)
 
+    this.activateLayer(this.layers[1])
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = this.width
@@ -23,7 +24,8 @@ AFRAME.registerComponent('compositor', {
 
     this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas})
     this.activateLayer(this.activeLayer)
-    // this.el.components['draw-canvas'].data.canvas = this.layers[0].canvas
+
+    this.redirector = this.el.querySelector('#move-layer-redirection')
   },
 
   addLayer(position) {
@@ -37,6 +39,7 @@ AFRAME.registerComponent('compositor', {
     this.activeLayer.active = false
     let oldLayer = this.activeLayer
     this.el.setAttribute('draw-canvas', {canvas: layer.canvas})
+    this.el.components['draw-canvas'].transform = layer.transform
     layer.active = true
     this.activeLayer = layer
     this.el.emit('activelayerchanged', {layer, oldLayer})
@@ -78,22 +81,17 @@ AFRAME.registerComponent('compositor', {
     layer.mode = mode
     this.el.emit('layerupdated', {layer})
   },
-  tick() {
-    let ctx = this.data.canvas.getContext('2d')
-    // ctx.fillStyle = "#FFFFFF"
-    ctx.clearRect(0,0, this.width, this.height)
-
-    const width = this.width
-    const height = this.height
-
-    for (let layer of this.layers) {
-      if (layer.visible)
-      {
-        layer.draw(ctx)
-      }
-    }
-
+  grabLayer(layer) {
+    // this.redirector.object3D.position.set(layer.transform.translation.x, layer.transform.translation.y, 0)
+    // this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
+    this.el['redirect-grab'] = this.redirector
+    layer.grabbed = true
+  },
+  drawOverlay(ctx) {
     ctx.save()
+    const {width, height} = this
+
+    this.el.components['draw-canvas'].transform = Layer.EmptyTransform()
 
     let overlayCtx = this.overlayCanvas.getContext('2d')
     overlayCtx.clearRect(0, 0, width, height)
@@ -113,5 +111,37 @@ AFRAME.registerComponent('compositor', {
     ctx.globalCompositeOperation = 'difference'
     ctx.drawImage(this.overlayCanvas, 0, 0)
     ctx.restore()
+  },
+  tick() {
+    if (this.el['redirect-grab'])
+    {
+      for (let layer of this.layers)
+      {
+        if (!layer.grabbed) continue
+
+        layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
+        layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+        layer.transform.scale.x = this.redirector.object3D.scale.x
+        layer.transform.scale.y = this.redirector.object3D.scale.y
+      }
+    }
+
+    let ctx = this.data.canvas.getContext('2d')
+    // ctx.fillStyle = "#FFFFFF"
+    ctx.clearRect(0,0, this.width, this.height)
+
+    const width = this.width
+    const height = this.height
+
+    for (let layer of this.layers) {
+      if (layer.visible)
+      {
+        layer.draw(ctx)
+      }
+    }
+
+    this.drawOverlay(ctx)
+
+    this.el.components['draw-canvas'].transform = this.activeLayer.transform
   }
 })

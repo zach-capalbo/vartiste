@@ -3,10 +3,11 @@ export class Layer {
   constructor(width, height) {
     this.width = width
     this.height = height
-    this.offset = {x: 0, y: 0}
+    this.transform = this.constructor.EmptyTransform()
     this.mode = "source-over"
     this.visible = true
     this.active = false
+    this.grabbed = false
     this.id = shortid.generate()
 
     let canvas = document.createElement("canvas")
@@ -21,12 +22,30 @@ export class Layer {
   draw(ctx) {
     ctx.save()
     ctx.globalCompositeOperation = this.mode
-    ctx.drawImage(this.canvas, 0, 0)
+    let {translation, scale} = this.transform
+
+    // ctx.drawImage(this.canvas, 0, 0, this.width, this.height,
+    //   translation.x,
+    //   translation.y,
+    //   this.width * scale.x, this.height * scale.y,
+    // )
+    ctx.drawImage(this.canvas, 0, 0, this.width, this.height,
+      translation.x - this.width / 2 * scale.x + this.width / 2,
+      translation.y- this.height / 2 * scale.y + this.height / 2,
+      this.width * scale.x, this.height * scale.y,
+    )
     ctx.restore()
   }
 
   clear() {
     let ctx = this.canvas.getContext('2d');
     ctx.clearRect(0, 0, this.width, this.height)
+  }
+
+  static EmptyTransform() {
+    return {
+      translation: {x: 0,y: 0},
+      scale: {x: 1,y: 1}
+    }
   }
 }
