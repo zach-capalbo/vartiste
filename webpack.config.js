@@ -32,7 +32,7 @@ module.exports = {
 
         ]
       },
-      {test: /oss-licenses-used/,loader: 'file-loader'},
+      {test: /oss-licenses-used/,loader: 'url-loader'},
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       {test: /\.(png|jpe?g|gif)$/i,

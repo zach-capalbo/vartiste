@@ -17,7 +17,6 @@ AFRAME.registerComponent('icon-button', {
       height: width
     })
     let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.getAttribute('icon-button')).indexOf(this.el)
-    console.log(this.el, indexId)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 

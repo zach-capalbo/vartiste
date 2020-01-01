@@ -6,6 +6,9 @@ AFRAME.registerSystem('settings-system', {
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
     document.body.append(saveImg)
 
-    let popup = window.open(saveImg.src, "_blank")
+    let popup = this.popup(saveImg.src, "Image to dowload")
+  },
+  popup(url, description) {
+    this.el.emit('open-popup', description)
   }
 })

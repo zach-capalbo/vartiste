@@ -6,11 +6,13 @@ a-scene
 
   a-entity#artist-root
     a-entity#camera-root
-      a-entity#camera camera="" position="" wasd-controls="" rotation="" look-controls="" aframe-injected=""
+      a-entity#camera camera="active: true" wasd-controls="" look-controls=""
         a-entity position="0 0 0" light="type: point; castShadow: true"
+
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
 
+  == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#ui shadow="cast: true; receive: true"
@@ -30,3 +32,4 @@ a-scene
         scale="0.1 0.1 0.1"
         rotation="0 0 0"
       ]
+        a-entity#move-layer-redirection geometry="primitive: plane; width: 80; height: 35" material="shader: flat; wireframe: true; color: #000"

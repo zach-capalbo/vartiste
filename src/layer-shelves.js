@@ -150,7 +150,6 @@ AFRAME.registerComponent("layer-shelves", {
     this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
   },
   compositor_layersmoved(e) {
-    console.log("Layers moved")
     this.shuffle()
   }
 })

@@ -1,6 +1,6 @@
 doctype html
 html
   head
-    title VR Canvas
+    title VARTISTE
     script src="https://aframe.io/releases/1.0.2/aframe.min.js"
   body

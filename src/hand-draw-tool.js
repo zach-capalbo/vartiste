@@ -11,6 +11,8 @@ AFRAME.registerComponent('hand-draw-tool', {
       {
         if (e.timeStamp - this.clickStamp > 100)
         {
+
+          // TODO use intersectedEls of raycaster
           for (let el of this.intersects)
           {
             let intersection = this.el.components.raycaster.getIntersection(el)

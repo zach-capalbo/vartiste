@@ -1,0 +1,4 @@
+a-entity popup-shelf="" position="0 0 -1.5" visible="false"
+  a-entity shelf="" scale="0.3 0.3 0.3"
+    a-entity text="value: .; width: 3.5; height: 1.5; baseline: top; "
+    a-entity.ok icon-button="#asset-check-outline" position="0 -1.0"
