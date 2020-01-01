@@ -3,11 +3,19 @@ AFRAME.registerComponent("popup-shelf", {
     this.el.sceneEl.addEventListener('open-popup', (e) => {
       this.el.setAttribute('visible', true)
       this.tick = this._tick
+      for (let el of document.querySelectorAll('*[raycaster]'))
+      {
+        el.components.raycaster.refreshObjects()
+      }
     })
 
     this.el.querySelector('.ok').addEventListener('click', (e) => {
       this.el.setAttribute('visible', false)
       this.tick = function() {}
+      for (let el of document.querySelectorAll('*[raycaster]'))
+      {
+        el.components.raycaster.refreshObjects()
+      }
     })
 
     this.el.querySelector('*[text]').setAttribute('text', {

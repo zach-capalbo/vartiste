@@ -42,7 +42,8 @@ AFRAME.registerComponent('compositor', {
     this.el.components['draw-canvas'].transform = layer.transform
     layer.active = true
     this.activeLayer = layer
-    this.el.emit('activelayerchanged', {layer, oldLayer})
+    this.el.emit('layerupdated', {layer: oldLayer})
+    this.el.emit('layerupdated', {layer})
   },
 
   nextLayer() {
@@ -82,10 +83,30 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layerupdated', {layer})
   },
   grabLayer(layer) {
-    // this.redirector.object3D.position.set(layer.transform.translation.x, layer.transform.translation.y, 0)
-    // this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
+    if (this.grabbedLayer == layer)
+    {
+      this.el['redirect-grab'] = undefined
+      this.grabbedLayer.grabbed = false
+      this.grabbedLayer = undefined
+      this.el.emit('layerupdated', {layer})
+      return
+    }
+
+    if (this.grabbedLayer)
+    {
+      this.grabbedLayer.grabbed = false
+      this.el.emit('layerupdated', {layer: this.grabbedLayer})
+    }
+
+    this.redirector.object3D.position.set(
+      layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
+      layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
+      0)
+    this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
+    this.grabbedLayer = layer
+    this.el.emit('layerupdated', {layer})
   },
   drawOverlay(ctx) {
     ctx.save()
@@ -115,15 +136,11 @@ AFRAME.registerComponent('compositor', {
   tick() {
     if (this.el['redirect-grab'])
     {
-      for (let layer of this.layers)
-      {
-        if (!layer.grabbed) continue
-
-        layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
-        layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
-        layer.transform.scale.x = this.redirector.object3D.scale.x
-        layer.transform.scale.y = this.redirector.object3D.scale.y
-      }
+      let layer = this.grabbedLayer
+      layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
+      layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+      layer.transform.scale.x = this.redirector.object3D.scale.x
+      layer.transform.scale.y = this.redirector.object3D.scale.y
     }
 
     let ctx = this.data.canvas.getContext('2d')

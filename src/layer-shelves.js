@@ -150,7 +150,12 @@ AFRAME.registerComponent("layer-shelves", {
   },
   compositor_layerupdated(e) {
     let {layer} = e.detail
+
+    if (!(layer.id in this.shelves)) return;
+
     this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
+    this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
+    this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)
   },
   compositor_layersmoved(e) {
     console.log("Layers moved")

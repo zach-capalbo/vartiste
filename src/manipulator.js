@@ -9,6 +9,11 @@ AFRAME.registerComponent('manipulator', {
   init() {
     this.rightHand = this.el
 
+    this.grabber = document.createElement('a-entity')
+    this.grabber.setAttribute('gltf-model', "#asset-hand")
+    this.grabber.setAttribute('visible', "false")
+    this.el.append(this.grabber)
+
     this.onGripClose = this.onGripClose.bind(this)
     this.onGripOpen = this.onGripOpen.bind(this)
 
@@ -45,9 +50,6 @@ AFRAME.registerComponent('manipulator', {
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 50 } ))
     this.startPoint.add(this.grabLineObject);
 
-    var geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
-    this.endPoint.add(new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {color: 0xff0000} ) ))
-
     this.grabLineObject.visible = false
     this.endPoint.visible = false
     this.offset = new THREE.Vector3(0, 0, 0);
@@ -62,7 +64,7 @@ AFRAME.registerComponent('manipulator', {
         let parentVisible = true
         o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
         if (!parentVisible) return false
-        
+
         return true
     })
 
@@ -121,6 +123,13 @@ AFRAME.registerComponent('manipulator', {
     this.grabLine.verticesNeedUpdate = true;
     this.grabLineObject.visible = true
     this.endPoint.visible = true;
+
+    this.grabber.object3D.visible = true
+    // this.grabber.object3D.parent.remove(this.grabber.object3D)
+    this.endPoint.attach(this.grabber.object3D)
+    this.grabber.object3D.position.set(0,0,0)
+    this.grabber.object3D.rotation.set(0,0,0)
+    this.grabber.object3D.scale.set(0.4, 0.4, 0.4)
   },
   stopGrab() {
     if (this.data.printUpdates)
