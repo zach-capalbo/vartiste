@@ -13,3 +13,14 @@ build:
     expire_in: 1 week
     paths:
       - dist
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - mv dist/* public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
