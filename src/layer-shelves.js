@@ -163,7 +163,10 @@ AFRAME.registerComponent("layer-shelves", {
     if (!(layer.id in this.shelves)) return;
 
     try {
-      this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
+      if (this.shelves[layer.id].querySelector('.mode-text').components.text)
+      {
+        this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
+      }
     } catch (e) {console.error("No text for", this.shelves[layer.id])}
 
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
