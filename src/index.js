@@ -17,10 +17,11 @@ require('./layer-preview')
 require('./layer-shelves')
 require('./settings-shelf')
 require('./popup-shelf')
+require('./file-upload')
 
 document.write(require('./scene.html.slm'))
 
-for (let asset of ['eye.png', 'brush.png', 'floppy.png', 'plus-box-multiple.png', 'shelf.png', 'delete.png', 'arrow-up-bold.png', 'arrow-down-bold.png', 'blur-linear.png', 'check-outline.png', 'help-circle-outline.png', 'arrow-all.png', 'hand.glb']) {
+for (let asset of ['eye.png', 'brush.png', 'floppy.png', 'plus-box-multiple.png', 'shelf.png', 'delete.png', 'arrow-up-bold.png', 'arrow-down-bold.png', 'blur-linear.png', 'check-outline.png', 'help-circle-outline.png', 'camera.png', 'arrow-all.png', 'hand.glb']) {
   var element = document.createElement('a-asset-item')
   element.setAttribute("src", require(`./assets/${asset}`).default)
   element.id = `asset-${asset.split(".")[0]}`

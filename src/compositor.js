@@ -63,15 +63,15 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
-  deleteLayer(layer) {
+  deleteLayer(layer, {force = false} = {}) {
     let idx = this.layers.indexOf(layer)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)
     this.layers.splice(idx, 1)
-    if (this.layers.length == 0)
+    if (this.layers.length == 0 && !force)
     {
       this.addLayer(0)
     }
-    if (layer.active)
+    if (layer.active && this.layers.length > 0)
     {
       this.activateLayer(this.layers[idx % this.layers.length])
     }
@@ -100,7 +100,7 @@ AFRAME.registerComponent('compositor', {
 
     this.redirector.object3D.position.set(
       layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
-      layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
+      -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
       0)
     this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
     this.el['redirect-grab'] = this.redirector
@@ -160,5 +160,40 @@ AFRAME.registerComponent('compositor', {
     this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
+  },
+  save() {
+    let layers = this.layers
+
+    return {
+      layers,
+      canvases: layers.map(l => l.canvas.toDataURL())
+    }
+  },
+  load(obj) {
+    console.log("Loading project")
+    for (let layer of this.layers) {
+      this.deleteLayer(layer, {force: true})
+    }
+
+    for (let i = 0; i < obj.layers.length; ++i)
+    {
+      let layerObj = obj.layers[i]
+      let canvasData = obj.canvases[i]
+
+      let layer = new Layer(layerObj.width, layerObj.height)
+      let canvas = layer.canvas
+      Object.assign(layer, layerObj)
+      layer.canvas = canvas
+
+      let img = new Image
+      img.src = canvasData
+      console.log("layer", img, img.complete)
+      layer.canvas.getContext('2d').drawImage(img, 0, 0)
+
+      this.layers.push(layer)
+      this.el.emit('layeradded', {layer})
+    }
+
+    this.activateLayer(this.layers.find(l => l.active))
   }
 })

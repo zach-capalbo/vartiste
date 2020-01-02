@@ -55,7 +55,7 @@ AFRAME.registerComponent("layer-shelves", {
     let layerIdx = this.compositor.layers.indexOf(layer)
     console.log("Adding shelf for", layer, layerIdx)
     var container = document.createElement('a-entity')
-    this.shelves[layer.id] = container
+
     container.innerHTML = layerShelfHTML
     this.el.prepend(container)
     container.addEventListener('click', (e) => {
@@ -70,6 +70,8 @@ AFRAME.registerComponent("layer-shelves", {
     if (layer.active) {
       container.querySelector('.active-indicator').setAttribute('visible', "true")
     }
+
+    this.shelves[layer.id] = container
   },
   shuffle() {
     for (let id in this.shelves)
@@ -153,7 +155,10 @@ AFRAME.registerComponent("layer-shelves", {
 
     if (!(layer.id in this.shelves)) return;
 
-    this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
+    if (this.shelves[layer.id].querySelector('.mode-text').components.text) {
+      this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
+    }
+
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
     this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)
   },
