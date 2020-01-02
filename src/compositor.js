@@ -42,8 +42,16 @@ AFRAME.registerComponent('compositor', {
     this.el.components['draw-canvas'].transform = layer.transform
     layer.active = true
     this.activeLayer = layer
-    this.el.emit('layerupdated', {layer: oldLayer})
-    this.el.emit('layerupdated', {layer})
+
+    if (this.layers.indexOf(oldLayer) >= 0)
+    {
+      this.el.emit('layerupdated', {layer: oldLayer})
+    }
+
+    if (this.layers.indexOf(layer) >= 0)
+    {
+      this.el.emit('layerupdated', {layer})
+    }
   },
 
   nextLayer() {
@@ -63,11 +71,14 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
-  deleteLayer(layer, {force = false} = {}) {
+  deleteLayer(layer) {
+
     let idx = this.layers.indexOf(layer)
+
+    console.log("Deleting layer", layer.id, idx)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)
     this.layers.splice(idx, 1)
-    if (this.layers.length == 0 && !force)
+    if (this.layers.length == 0)
     {
       this.addLayer(0)
     }
@@ -169,10 +180,15 @@ AFRAME.registerComponent('compositor', {
       canvases: layers.map(l => l.canvas.toDataURL())
     }
   },
-  load(obj) {
+  async load(obj) {
     console.log("Loading project")
+
+    let delay = () => new Promise(r => setTimeout(r, 100))
+
     for (let layer of this.layers) {
-      this.deleteLayer(layer, {force: true})
+      console.log("Deleting", layer)
+      this.deleteLayer(layer)
+      await delay()
     }
 
     for (let i = 0; i < obj.layers.length; ++i)
@@ -187,13 +203,22 @@ AFRAME.registerComponent('compositor', {
 
       let img = new Image
       img.src = canvasData
-      console.log("layer", img, img.complete)
+      await delay()
+      console.log("Loaded Layer", layer, img, img.complete)
+      await delay()
       layer.canvas.getContext('2d').drawImage(img, 0, 0)
+      await delay()
 
       this.layers.push(layer)
       this.el.emit('layeradded', {layer})
+      await delay()
+      this.el.emit('layerupdated', {layer})
+      await delay()
     }
 
+    this.deleteLayer(this.layers[0])
+
     this.activateLayer(this.layers.find(l => l.active))
+    console.log("Fully loaded")
   }
 })

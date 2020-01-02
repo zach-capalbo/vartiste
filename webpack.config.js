@@ -33,6 +33,7 @@ let config = {
             loader: 'url-loader',
             options: {
               limit: 81920000,
+              esModule: false
             },
           },
         ]

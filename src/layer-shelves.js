@@ -64,7 +64,7 @@ AFRAME.registerComponent("layer-shelves", {
     })
     container.setAttribute('position', {x: 0, y: layerIdx, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
-    container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layerIdx}))
+    container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layer.id}))
     container.querySelector('*[shelf]')['redirect-grab'] = this.el
 
     if (layer.active) {
@@ -138,9 +138,16 @@ AFRAME.registerComponent("layer-shelves", {
   },
   compositor_layerdeleted(e) {
     let {layer} = e.detail
-    this.el.removeChild(this.shelves[layer.id])
-    delete this.shelves[layer.id]
+
+    if (layer.id in this.shelves)
+    {
+      let shelf = this.shelves[layer.id]
+      delete this.shelves[layer.id]
+      this.el.removeChild(shelf)
+    }
+
     this.shuffle()
+    console.log("Full deleted")
   },
   compositor_layeradded(e) {
     let {layer} = e.detail
@@ -155,9 +162,9 @@ AFRAME.registerComponent("layer-shelves", {
 
     if (!(layer.id in this.shelves)) return;
 
-    if (this.shelves[layer.id].querySelector('.mode-text').components.text) {
+    try {
       this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
-    }
+    } catch (e) {console.error("No text for", this.shelves[layer.id])}
 
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
     this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)

@@ -103,7 +103,7 @@ class ImageBrush extends ProceduralBrush{
     {
       image = new Image()
     }
-    image.src = require(`./brushes/${name}.png`).default
+    image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
     console.log(image)
     super(Object.assign({}, options, {width, height}))

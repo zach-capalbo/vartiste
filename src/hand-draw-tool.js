@@ -39,12 +39,16 @@ AFRAME.registerComponent('hand-draw-tool', {
     })
   },
   tick() {
-    if (this.isDrawing) {
-      for (var el of this.intersects)
-      {
-        let intersection = this.el.components.raycaster.getIntersection(el)
+    if (this.el.components.raycaster.intersections.length == 0) return
 
-        if (!intersection) continue;
+    let intersection = this.el.components.raycaster.intersections.sort(i => - i.distance)[0]
+    let el = intersection.object.el
+    if (this.isDrawing) {
+
+      {
+        // let intersection = this.el.components.raycaster.getIntersection(el)
+
+        // if (!intersection) continue;
 
         if ('draw-canvas' in el.components)
         {
@@ -58,9 +62,9 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
     if (this.el.is("sampling"))
     {
-      for (var el of this.intersects)
+      // for (var el of this.intersects)
       {
-        let intersection = this.el.components.raycaster.getIntersection(el)
+        // let intersection = this.el.components.raycaster.getIntersection(el)
 
         if ('draw-canvas' in el.components)
         {
@@ -70,9 +74,9 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
     if (this.el.is("erasing"))
     {
-      for (var el of this.intersects)
+      // for (var el of this.intersects)
       {
-        let intersection = this.el.components.raycaster.getIntersection(el)
+        // let intersection = this.el.components.raycaster.getIntersection(el)
 
         if ('draw-canvas' in el.components)
         {

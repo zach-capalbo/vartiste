@@ -15,6 +15,7 @@ a-scene
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity#environment position="0 -7 0" environment="preset:starry"
+    a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
     a-entity#ui shadow="cast: true; receive: true"
       a-entity#left-shelf position="-2 0 0" rotation="0 90 0"
           a-entity#color-selection shelf="" position="0 0 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')

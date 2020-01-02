@@ -1,9 +1,11 @@
 # VARTISTE
 
-Pronounced Vee-Ar-tEEst. VARTISTE is a virtual reality app for doing 2D drawing and
+<img src="../assets/vartiste.png" class="logo">
+
+Pronounced Vee-Ar-tEEst. VARTISTE is a virtual reality app for 2D drawing and
 image editing. A virtual reality headset with tracked motion controllers, such
 as the [Valve Index](https://store.steampowered.com/valveindex) or
-[Oculus Rift S](https://www.oculus.com/rift-s/) are required to use it.
+[Oculus Rift S](https://www.oculus.com/rift-s/) is required to use it.
 
 <a class="launch-button" href="/index.html">LAUNCH VARTISTE</a>
 
@@ -28,14 +30,16 @@ _For Oculus Touch-like controllers:_
 
 ## Saving and loading
 
-Use the "File" icon to save to a VARTISTE project file. You'll need to take off
+Use the "File" ![File](../assets/floppy.png) icon to save to a VARTISTE project file. You'll need to take off
 your VR headset and click the download button from your browser. This will save
 all of the layers in the image.
 
 To load a VARTISTE file, drag and drop it onto the browser window where VARTISTE
 is running. **NOTE: This will replace your currently active scene.**
 
-To save a PNG, click the "Camera" icon. You'll need to take off your VR headset
+**NOTE: Saving and loading is currently very wonky. Make lots of backup saves.**
+
+To save a PNG, click the "Camera" ![Camera](../assets/camera.png) icon. You'll need to take off your VR headset
 and click the download button from your browser.
 
 _You cannot currently import images aside from the VARTISTE project file. I'm
