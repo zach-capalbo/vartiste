@@ -24,11 +24,6 @@ export class Layer {
     ctx.globalCompositeOperation = this.mode
     let {translation, scale} = this.transform
 
-    // ctx.drawImage(this.canvas, 0, 0, this.width, this.height,
-    //   translation.x,
-    //   translation.y,
-    //   this.width * scale.x, this.height * scale.y,
-    // )
     ctx.drawImage(this.canvas, 0, 0, this.width, this.height,
       translation.x - this.width / 2 * scale.x + this.width / 2,
       translation.y- this.height / 2 * scale.y + this.height / 2,
@@ -40,6 +35,13 @@ export class Layer {
   clear() {
     let ctx = this.canvas.getContext('2d');
     ctx.clearRect(0, 0, this.width, this.height)
+  }
+
+  resize(width, height) {
+    this.canvas.width = width
+    this.canvas.height = height
+    this.width = width
+    this.height = height
   }
 
   static EmptyTransform() {

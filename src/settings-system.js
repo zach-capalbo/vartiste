@@ -23,8 +23,10 @@ AFRAME.registerSystem('settings-system', {
     desktopLink.click()
   },
   exportAction() {
+    let compositor = document.getElementById('canvas-view').components.compositor;
+
     let saveImg = new Image()
-    saveImg.src = document.getElementById('composite').toDataURL()
+    saveImg.src = compositor.compositeCanvas.toDataURL()
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
 
