@@ -41,8 +41,8 @@ AFRAME.registerComponent('right-hand-controls', {
 
 
     let buttonMap = {
-      'b': 'sampling',
-      'a': 'erasing',
+      'bbutton': 'sampling',
+      'abutton': 'erasing',
       'trackpad': 'erasing',
     }
 
