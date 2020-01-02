@@ -10,7 +10,7 @@ as the [Valve Index](https://store.steampowered.com/valveindex) or
 <a class="launch-button" href="/index.html">LAUNCH VARTISTE</a>
 
 ## Controls
-_For Oculus Touch-like controllers:_
+For Oculus Touch controllers:
 
  - Right Hand:
   - Trigger: Draw
@@ -27,6 +27,25 @@ _For Oculus Touch-like controllers:_
   - Trigger: Draw
   - Joystick Right/Left: Next/Previous brush
   - Joystick Up/Down: Next/Previous layer
+
+For Vive Wands (and currently Valve Index controllers, although that should change soon):
+
+- Right Hand:
+ - Trigger: Draw
+ - Grip: Grab and move
+ - Press trackpad: Erase
+ - Trackpad Right/Left: Turn camera right/Left
+ - Trackpad Up/Down: Make brush bigger/smaller
+- Right Hand (While Grabbing)
+ - Trackpad Right/Left: Make grabbed object bigger / smaller
+ - Trackpad Up/Down: Push / pull grabbed object
+
+- Left Hand:
+ - Trigger: Draw
+ - Press trackpad: Pick color from canvas
+ - Trackpad Right/Left: Next/Previous brush
+ - Trackpad Up/Down: Next/Previous layer
+
 
 ## Saving and loading
 

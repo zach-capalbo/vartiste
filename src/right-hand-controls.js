@@ -39,18 +39,20 @@ AFRAME.registerComponent('right-hand-controls', {
 
     this.el.addEventListener('thumbstickdown', ()=> console.log(this.el.components.raycaster.intersectedEls[0]))
 
+
     let buttonMap = {
       'b': 'sampling',
-      'a': 'erasing'
+      'a': 'erasing',
+      'trackpad': 'erasing',
     }
 
     for (let button in buttonMap) {
       let state = buttonMap[button]
-      this.el.addEventListener(button + 'buttondown', e => {
+      this.el.addEventListener(button + 'down', e => {
         this.el.addState(state)
       })
 
-      this.el.addEventListener(button + 'buttonup', e => {
+      this.el.addEventListener(button + 'up', e => {
         this.el.removeState(state)
       })
     }
