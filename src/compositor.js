@@ -42,11 +42,12 @@ AFRAME.registerComponent('compositor', {
     this.redirector = this.el.querySelector('#move-layer-redirection')
   },
 
-  addLayer(position) {
-    let layer = new Layer(this.width, this.height)
+  addLayer(position, {layer} = {}) {
+    if (typeof(layer) === 'undefined') layer = new Layer(this.width, this.height)
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     this.activateLayer(layer)
+    console.log(this.layers)
   },
 
   activateLayer(layer) {

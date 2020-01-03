@@ -22,7 +22,8 @@ const LAYER_MODES = [
   // "luminosity",
 
   "source-atop",
-  "source-in"
+  "source-in",
+  "destination-in"
 ]
 
 AFRAME.registerComponent("layer-shelves", {
@@ -82,7 +83,6 @@ AFRAME.registerComponent("layer-shelves", {
   },
   tick(t, dt) {
     if (!this.built && this.data.compositor.components.compositor) {
-      console.log(this.data.compositor, this.data.compositor.components.compositor)
       this.compositor = this.data.compositor.components.compositor
 
       for (let layerIdx in this.compositor.layers)
@@ -161,9 +161,10 @@ AFRAME.registerComponent("layer-shelves", {
     let {layer} = e.detail
 
     if (!(layer.id in this.shelves)) return;
+    if (!this.shelves[layer.id].hasLoaded) return
 
     try {
-      if (this.shelves[layer.id].querySelector('.mode-text').components.text)
+      if (this.shelves[layer.id].querySelector('.mode-text').hasLoaded)
       {
         this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
       }
