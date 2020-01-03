@@ -51,5 +51,15 @@ AFRAME.registerSystem('settings-system', {
   formatFileDate() {
     let date = new Date()
     return date.toJSON().split(":")[0]
+  },
+  resetCamera() {
+    let cameraRoot = document.getElementById('camera-root').object3D
+    let camera = document.getElementById('camera').object3D
+
+    cameraRoot.position.x = -camera.position.x
+    cameraRoot.position.z = -camera.position.z
+    cameraRoot.position.y = -camera.position.y + 1.23
+
+    cameraRoot.rotation.y = -camera.rotation.y
   }
 })
