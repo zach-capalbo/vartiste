@@ -18,6 +18,14 @@ AFRAME.registerComponent('left-hand-controls', {
         this.el.removeState(state)
       })
     }
+
+    this.el.addEventListener('thumbstickdown', () => {
+      this.el.sceneEl.systems['settings-system'].resetCameraAction()
+    })
+
+    this.el.addEventListener('menudown', () => {
+      this.el.sceneEl.systems['settings-system'].resetCameraAction()
+    })
   },
 
   leftClick() {

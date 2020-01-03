@@ -1,11 +1,25 @@
 import {Layer} from "./layer.js"
 
 AFRAME.registerComponent('compositor', {
-  schema: {canvas: {type: 'selector'}},
+  schema: {
+    width: {default: 1024},
+    height: {default: 512},
+    baseWidth: {default: 1024},
+    geometryWidth: {default: 80}
+  },
 
   init() {
-    this.width = this.data.canvas.width
-    this.height = this.data.canvas.height
+    let {width, height} = this.data
+    this.width = width
+    this.height = height
+
+    let compositeCanvas = document.createElement("canvas")
+    compositeCanvas.width = width
+    compositeCanvas.height = height
+    document.body.append(compositeCanvas)
+    this.compositeCanvas = compositeCanvas
+
+    this.el.setAttribute('material', {src: compositeCanvas})
 
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
     this.activeLayer = this.layers[0]
@@ -72,7 +86,6 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
   deleteLayer(layer) {
-
     let idx = this.layers.indexOf(layer)
 
     console.log("Deleting layer", layer.id, idx)
@@ -134,9 +147,6 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      // let x = width * intersection.uv.x
-      // let y = height * (1 - intersection.uv.y)
-      // this.el.components['draw-canvas'].brush.drawOutline(overlayCtx, x, y)
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv)
     }
 
@@ -154,7 +164,7 @@ AFRAME.registerComponent('compositor', {
       layer.transform.scale.y = this.redirector.object3D.scale.y
     }
 
-    let ctx = this.data.canvas.getContext('2d')
+    let ctx = this.compositeCanvas.getContext('2d')
     // ctx.fillStyle = "#FFFFFF"
     ctx.clearRect(0,0, this.width, this.height)
 
@@ -172,11 +182,16 @@ AFRAME.registerComponent('compositor', {
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
   },
+  // clear() {
+  //   this.el.emit
+  // },
   save() {
     let layers = this.layers
 
     return {
       layers,
+      width: this.width,
+      height: this.height,
       canvases: layers.map(l => l.canvas.toDataURL())
     }
   },
@@ -190,6 +205,8 @@ AFRAME.registerComponent('compositor', {
       this.deleteLayer(layer)
       await delay()
     }
+
+    this.resize(obj.width, obj.height)
 
     for (let i = 0; i < obj.layers.length; ++i)
     {
@@ -220,5 +237,37 @@ AFRAME.registerComponent('compositor', {
 
     this.activateLayer(this.layers.find(l => l.active))
     console.log("Fully loaded")
+  },
+  resize(width, height)
+  {
+    let oldWidth = this.width
+    let oldHeight = this.height
+
+    this.width = width
+    this.height = height
+
+    this.compositeCanvas.width = width
+    this.compositeCanvas.height = height
+
+    this.overlayCanvas.width = this.width
+    this.overlayCanvas.height = this.height
+
+    for (let layer of this.layers)
+    {
+      layer.resize(width, height)
+    }
+
+    if (this.el.components['geometry'])
+    {
+      let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
+      let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
+      console.log(gWidth, gHeight)
+      this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+    }
+
+    for (let layer of this.layers)
+    {
+      this.el.emit('layerupdated', {layer})
+    }
   }
 })
