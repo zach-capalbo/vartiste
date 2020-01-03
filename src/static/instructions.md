@@ -25,6 +25,7 @@ For Oculus Touch controllers:
 
  - Left Hand:
   - Trigger: Draw
+  - Press Joystick: Reset camera
   - Joystick Right/Left: Next/Previous brush
   - Joystick Up/Down: Next/Previous layer
 
@@ -42,6 +43,7 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
 
 - Left Hand:
  - Trigger: Draw
+ - Menu: Reset camera
  - Press trackpad: Pick color from canvas
  - Trackpad Right/Left: Next/Previous brush
  - Trackpad Up/Down: Next/Previous layer

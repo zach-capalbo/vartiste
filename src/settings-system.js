@@ -52,7 +52,7 @@ AFRAME.registerSystem('settings-system', {
     let date = new Date()
     return date.toJSON().split(":")[0]
   },
-  resetCamera() {
+  resetCameraAction() {
     let cameraRoot = document.getElementById('camera-root').object3D
     let camera = document.getElementById('camera').object3D
 
