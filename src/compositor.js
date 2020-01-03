@@ -36,7 +36,7 @@ AFRAME.registerComponent('compositor', {
     document.body.append(overlayCanvas)
     this.overlayCanvas = overlayCanvas;
 
-    this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas})
+    this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas, compositor: this})
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
@@ -47,7 +47,6 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     this.activateLayer(layer)
-    console.log(this.layers)
   },
 
   activateLayer(layer) {
@@ -148,7 +147,7 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv)
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas})
     }
 
     ctx.globalCompositeOperation = 'difference'
