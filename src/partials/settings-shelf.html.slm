@@ -2,5 +2,9 @@ a-entity position="-1.5 1.1 0"
   a-entity.clickable click-action="save" icon-button="#asset-floppy"
   a-entity.clickable click-action="export" icon-button="#asset-camera"
   a-entity.clickable click-action="help" icon-button="#asset-help-circle-outline"
-a-entity
-  a-entity text="value: VARTISTE by Zach Capalbo <https://zachcapalbo.com> @zach_geek; align: center; width: 4"
+a-entity position="-1.5 0.6 0"
+  - let sizes = [[1024,768], [1024,1024],[2048,1024],[1024,512]]
+  - for (let i in sizes)
+    a-entity position="0 ${-0.5 * i}"
+      a-entity size="width: ${sizes[i][0]}; height: ${sizes[i][1]}" click-action="newComposition" icon-button="#asset-file-outline"
+      a-entity text="value: ${sizes[i][0]}x${sizes[i][1]}; align: left; width: 4" position="2.4 0 0"

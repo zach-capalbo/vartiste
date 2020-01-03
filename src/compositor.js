@@ -86,7 +86,6 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
   deleteLayer(layer) {
-
     let idx = this.layers.indexOf(layer)
 
     console.log("Deleting layer", layer.id, idx)
@@ -191,6 +190,8 @@ AFRAME.registerComponent('compositor', {
 
     return {
       layers,
+      width: this.width,
+      height: this.height,
       canvases: layers.map(l => l.canvas.toDataURL())
     }
   },
@@ -204,6 +205,8 @@ AFRAME.registerComponent('compositor', {
       this.deleteLayer(layer)
       await delay()
     }
+
+    this.resize(obj.width, obj.height)
 
     for (let i = 0; i < obj.layers.length; ++i)
     {
