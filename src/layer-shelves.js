@@ -107,6 +107,10 @@ AFRAME.registerComponent("layer-shelves", {
     this.compositor.addLayer(layerIdx)
     this.shuffle()
   },
+  duplicateLayer(layer) {
+    this.compositor.duplicateLayer(layer)
+    this.shuffle()
+  },
   toggleModeLayer(layer) {
     let modeIdx = (LAYER_MODES.indexOf(layer.mode) + 1) % LAYER_MODES.length
     this.compositor.setLayerBlendMode(layer, LAYER_MODES[modeIdx])

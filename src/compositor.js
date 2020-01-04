@@ -49,6 +49,17 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(layer)
   },
 
+  duplicateLayer(layer) {
+    let newLayer = new Layer(layer.width, layer.height)
+    newLayer.transform = JSON.parse(JSON.stringify(layer.transform))
+    newLayer.mode = layer.mode
+    newLayer.canvas.getContext('2d').drawImage(layer.canvas, 0, 0)
+    let position = this.layers.indexOf(layer)
+    this.layers.splice(position + 1, 0, newLayer)
+    this.el.emit('layeradded', {layer: newLayer})
+    this.activateLayer(layer)
+  },
+
   activateLayer(layer) {
     this.activeLayer.active = false
     let oldLayer = this.activeLayer
@@ -90,6 +101,12 @@ AFRAME.registerComponent('compositor', {
 
     console.log("Deleting layer", layer.id, idx)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)
+
+    if (this.grabbedLayer == layer)
+    {
+      this.grabLayer(layer)
+    }
+
     this.layers.splice(idx, 1)
     if (this.layers.length == 0)
     {
