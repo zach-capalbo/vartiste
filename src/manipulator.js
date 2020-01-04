@@ -66,10 +66,8 @@ AFRAME.registerComponent('manipulator', {
         if (!parentVisible) return false
 
         return true
-    })
-
+      })
     }
-
   },
   startGrab() {
     this.el.addState('grabbing')

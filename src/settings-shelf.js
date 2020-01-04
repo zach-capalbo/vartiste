@@ -19,8 +19,18 @@ AFRAME.registerComponent('settings-shelf', {
   },
   newCompositionAction(e) {
     let compositor = document.getElementById('canvas-view').components.compositor;
-    let {width, height} = AFRAME.utils.styleParser.parse(e.target.getAttribute('size'))
-    console.log("WH", width, height, AFRAME.utils.styleParser.parse(e.target.getAttribute('size')), e.target.getAttribute('size'))
+
+    if (e.target.hasAttribute('size'))
+    {
+      var {width, height} = AFRAME.utils.styleParser.parse(e.target.getAttribute('size'))
+    }
+    else
+    {
+      var width = parseInt(this.el.querySelector('.width').getAttribute('text').value)
+      var height = parseInt(this.el.querySelector('.height').getAttribute('text').value)
+    }
+
+    console.log("Creating new composition", width, height, AFRAME.utils.styleParser.parse(e.target.getAttribute('size')), e.target.getAttribute('size'))
     width = parseInt(width)
     height = parseInt(height)
 
