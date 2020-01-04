@@ -1,5 +1,8 @@
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text"],
+  schema: {
+    tooltip: {type: 'string'}
+  },
   init() {
     this.el.setAttribute('text', {align: 'right'})
     let numpad = document.createElement('a-entity')
@@ -12,11 +15,18 @@ AFRAME.registerComponent('edit-field', {
 
     let width = this.el.getAttribute('text').width
     let editButton = document.createElement('a-entity')
+    this.editButton = editButton
     editButton.setAttribute('icon-button', "#asset-lead-pencil")
     editButton.setAttribute('position', `${width / 2 + 0.3} 0 0`)
     this.el.append(editButton)
 
     editButton.addEventListener('click', e => this.launchNumpad())
+  },
+  update(oldData) {
+    if (this.data.tooltip)
+    {
+      this.editButton.setAttribute('tooltip', this.data.tooltip)
+    }
   },
   launchNumpad() {
     let numpad = this.numpad
