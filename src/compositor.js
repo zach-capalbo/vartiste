@@ -98,6 +98,9 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
+  mergeLayers(fromLayer, ontoLayer) {
+    fromLayer.draw(ontoLayer.canvas.getContext('2d'))
+  },
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
 

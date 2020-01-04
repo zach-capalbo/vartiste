@@ -127,9 +127,15 @@ AFRAME.registerComponent("layer-shelves", {
   },
   moveDownLayer(layer) {
     let layerIdx = this.compositor.layers.indexOf(layer)
-    let nextLayerIdx = layerIdx -1
+    let nextLayerIdx = layerIdx - 1
     if (nextLayerIdx < 0) nextLayerIdx += this.compositor.layers.length
     this.compositor.swapLayers(layer, this.compositor.layers[nextLayerIdx])
+  },
+  mergeDownLayer(layer) {
+    let layerIdx = this.compositor.layers.indexOf(layer)
+    let nextLayerIdx = layerIdx - 1
+    if (nextLayerIdx < 0) nextLayerIdx += this.compositor.layers.length
+    this.compositor.mergeLayers(layer, this.compositor.layers[nextLayerIdx])
   },
   grabLayer(layer) {
     this.compositor.grabLayer(layer)
