@@ -19,6 +19,7 @@ require('./settings-shelf')
 require('./popup-shelf')
 require('./file-upload')
 require('./edit-field')
+require('./tooltip')
 
 document.write(require('./scene.html.slm'))
 
