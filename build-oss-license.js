@@ -17,12 +17,21 @@ function readLicenseFile({name, path}) {
   return fs.readFileSync(licenses[0].full)
 }
 
+function brushesAndAssets(f) {
+  f.write("\n\n")
+  f.write(fs.readFileSync('src/brushes/a-painter-license.txt'))
+}
+
 function build() {
-  let f = fs.createWriteStream('src/assets/oss-licenses-used.txt')
+  let fws = fs.createWriteStream('src/static/oss-licenses-used.txt')
+
+  let f = {write: (t) => fws.write(t, 'utf8')}
 
   f.write("This software is licensed under the following agreement:\n\n", 'utf8')
 
   f.write(fs.readFileSync('LICENSE'), 'utf8')
+
+  brushesAndAssets(f)
 
   f.write("\n\nThis software incorporates the following components:", 'utf8')
 
