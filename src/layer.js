@@ -3,6 +3,10 @@ export class Layer {
   constructor(width, height) {
     this.width = width
     this.height = height
+
+    if (!(Number.isInteger(width) && width > 0)) throw new Error(`Invalid layer width ${width}`)
+    if (!(Number.isInteger(height) && height > 0)) throw new Error(`Invalid layer width ${height}`)
+
     this.transform = this.constructor.EmptyTransform()
     this.mode = "source-over"
     this.visible = true

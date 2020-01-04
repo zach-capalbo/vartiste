@@ -6,6 +6,7 @@ a-scene
     a-entity#camera-root
       a-entity#camera camera="active: true" wasd-controls="" look-controls=""
         a-entity position="0 0 0" light="type: point; castShadow: true"
+        a-entity cursor="rayOrigin: mouse"
 
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""

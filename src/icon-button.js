@@ -5,18 +5,20 @@ AFRAME.registerComponent('icon-button', {
     let width = 0.4
     let height = width
     let depth = 0.05
+
     this.el.setAttribute('material', {
       alphaTest: 0.01,
       color: '#FFF',
       fog: false,
-      src: this.data
+      src: this.data,
+      transparent: true
     })
     this.el.setAttribute('geometry', {
       primitive: 'plane',
       width: height,
       height: width
     })
-    let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.getAttribute('icon-button')).indexOf(this.el)
+    let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 

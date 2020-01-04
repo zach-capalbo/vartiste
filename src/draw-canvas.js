@@ -3,6 +3,7 @@ import {Layer} from './layer.js'
 AFRAME.registerComponent('draw-canvas', {
   schema: {
     canvas: {type: 'selector'},
+    compositor: {type: 'selector'},
     mirrorX: {type: 'bool', default: false},
     mirrorY: {type: 'bool', default: false}
   },
@@ -27,9 +28,10 @@ AFRAME.registerComponent('draw-canvas', {
   uvToPoint(uv, canvas = null) {
     let {width, height} = canvas || this.data.canvas
     let {translation, scale} = this.transform
+    let {width: uvWidth, height: uvHeight} = this.data.compositor
 
-    let x = width * uv.x - (translation.x - width / 2 * scale.x + width / 2)
-    let y = height * (1 - uv.y) - (translation.y - height / 2 * scale.y + height / 2)
+    let x = uvWidth * uv.x - (translation.x - width / 2 * scale.x + width / 2)
+    let y = uvHeight * (1 - uv.y) - (translation.y - height / 2 * scale.y + height / 2)
 
     x = x / scale.x
     y = y / scale.y
@@ -38,7 +40,7 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   drawUV(uv, {pressure = 1.0, canvas = null}) {
-    if (canvas == null) canvas = this.data.canvas
+    if (canvas === null) canvas = this.data.canvas
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 
@@ -58,9 +60,10 @@ AFRAME.registerComponent('draw-canvas', {
     ctx.globalAlpha = 1.0
   },
 
-  drawOutlineUV(ctx, uv) {
-    let {width, height} = this.data.canvas
-    let {x,y} = this.uvToPoint(uv)
+  drawOutlineUV(ctx, uv, {canvas = null} = {}) {
+    if (canvas === null) canvas = this.data.canvas
+    let {width, height} = canvas
+    let {x,y} = this.uvToPoint(uv, canvas)
     this.brush.drawOutline(ctx, x, y)
 
     if (this.data.mirrorX) {

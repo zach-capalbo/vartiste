@@ -36,16 +36,27 @@ AFRAME.registerComponent('compositor', {
     document.body.append(overlayCanvas)
     this.overlayCanvas = overlayCanvas;
 
-    this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas})
+    this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas, compositor: this})
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
   },
 
-  addLayer(position) {
-    let layer = new Layer(this.width, this.height)
+  addLayer(position, {layer} = {}) {
+    if (typeof(layer) === 'undefined') layer = new Layer(this.width, this.height)
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
+    this.activateLayer(layer)
+  },
+
+  duplicateLayer(layer) {
+    let newLayer = new Layer(layer.width, layer.height)
+    newLayer.transform = JSON.parse(JSON.stringify(layer.transform))
+    newLayer.mode = layer.mode
+    newLayer.canvas.getContext('2d').drawImage(layer.canvas, 0, 0)
+    let position = this.layers.indexOf(layer)
+    this.layers.splice(position + 1, 0, newLayer)
+    this.el.emit('layeradded', {layer: newLayer})
     this.activateLayer(layer)
   },
 
@@ -90,6 +101,12 @@ AFRAME.registerComponent('compositor', {
 
     console.log("Deleting layer", layer.id, idx)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)
+
+    if (this.grabbedLayer == layer)
+    {
+      this.grabLayer(layer)
+    }
+
     this.layers.splice(idx, 1)
     if (this.layers.length == 0)
     {
@@ -147,7 +164,7 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv)
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas})
     }
 
     ctx.globalCompositeOperation = 'difference'
