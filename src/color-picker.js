@@ -81,7 +81,6 @@ AFRAME.registerComponent("brightness-picker", {
 })
 
 AFRAME.registerComponent("opacity-picker", {
-  schema: {target: {type: 'selector'}},
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
@@ -101,12 +100,15 @@ AFRAME.registerComponent("opacity-picker", {
 
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
-      // this.data.target.setAttribute("color-picker", {brightness: point.y})
 
-      this.system.selectOpacity(point.x)
-
-      // let color = this.system.data.color
-      // this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+      if (this.layer)
+      {
+        this.layer.opacity = point.x
+      }
+      else
+      {
+        this.system.selectOpacity(point.x)
+      }
     })
   }
 })

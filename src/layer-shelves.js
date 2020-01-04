@@ -58,8 +58,9 @@ AFRAME.registerComponent("layer-shelves", {
     var container = document.createElement('a-entity')
 
     container.innerHTML = layerShelfHTML
-    this.el.prepend(container)
     container.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute('click-action')) return
+      
       console.log("Clicked", e.target.getAttribute("click-action"))
       this[e.target.getAttribute("click-action") + 'Layer'](layer, e)
     })
@@ -73,6 +74,10 @@ AFRAME.registerComponent("layer-shelves", {
     }
 
     this.shelves[layer.id] = container
+
+    container.addEventListener('loaded', e => this.compositor_layerupdated({detail: {layer}}))
+
+    this.el.prepend(container)
   },
   shuffle() {
     for (let id in this.shelves)

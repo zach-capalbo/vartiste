@@ -61,6 +61,8 @@ AFRAME.registerComponent('compositor', {
   },
 
   activateLayer(layer) {
+    if (layer === this.activeLayer) return
+    this.ungrabLayer(layer)
     this.activeLayer.active = false
     let oldLayer = this.activeLayer
     this.el.setAttribute('draw-canvas', {canvas: layer.canvas})
@@ -104,7 +106,7 @@ AFRAME.registerComponent('compositor', {
 
     if (this.grabbedLayer == layer)
     {
-      this.grabLayer(layer)
+      this.ungrabLayer(layer)
     }
 
     this.layers.splice(idx, 1)
@@ -126,10 +128,7 @@ AFRAME.registerComponent('compositor', {
   grabLayer(layer) {
     if (this.grabbedLayer == layer)
     {
-      this.el['redirect-grab'] = undefined
-      this.grabbedLayer.grabbed = false
-      this.grabbedLayer = undefined
-      this.el.emit('layerupdated', {layer})
+      this.ungrabLayer(layer)
       return
     }
 
@@ -147,6 +146,14 @@ AFRAME.registerComponent('compositor', {
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
     this.grabbedLayer = layer
+    this.el.emit('layerupdated', {layer})
+  },
+  ungrabLayer() {
+    if (!this.grabbedLayer) return
+    let layer = this.grabbedLayer
+    this.el['redirect-grab'] = undefined
+    layer.grabbed = false
+    this.grabbedLayer = undefined
     this.el.emit('layerupdated', {layer})
   },
   drawOverlay(ctx) {

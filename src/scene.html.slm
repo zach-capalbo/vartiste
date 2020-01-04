@@ -6,7 +6,7 @@ a-scene
     a-entity#camera-root
       a-entity#camera camera="active: true" wasd-controls="" look-controls=""
         a-entity position="0 0 0" light="type: point; castShadow: true"
-        a-entity cursor="rayOrigin: mouse"
+        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500"
 
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
@@ -14,7 +14,7 @@ a-scene
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -1"
-      
+
 
     a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
