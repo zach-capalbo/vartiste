@@ -160,6 +160,7 @@ AFRAME.registerComponent('compositor', {
       -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
       0)
     this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
+    this.redirector.object3D.rotation.z = layer.transform.rotation
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
     this.grabbedLayer = layer
@@ -203,6 +204,11 @@ AFRAME.registerComponent('compositor', {
       layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
       layer.transform.scale.x = this.redirector.object3D.scale.x
       layer.transform.scale.y = this.redirector.object3D.scale.y
+
+      if (this.redirector.grabbingManipulator)
+      {
+        //layer.transform.rotation = this.redirector.grabbingManipulator.el.object3D.rotation.z
+      }
     }
 
     let ctx = this.compositeCanvas.getContext('2d')

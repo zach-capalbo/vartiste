@@ -29,12 +29,15 @@ export class Layer {
     ctx.globalCompositeOperation = this.mode
     ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
-
     ctx.drawImage(this.canvas, 0, 0, this.width, this.height,
       translation.x - this.width / 2 * scale.x + this.width / 2,
       translation.y- this.height / 2 * scale.y + this.height / 2,
       this.width * scale.x, this.height * scale.y,
     )
+    // ctx.translate(translation.x + this.width / 2, translation.y + this.height / 2)
+    // ctx.scale(scale.x, scale.y)
+    // ctx.rotate(this.transform.rotation)
+    // ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
     ctx.restore()
   }
 
@@ -53,7 +56,8 @@ export class Layer {
   static EmptyTransform() {
     return {
       translation: {x: 0,y: 0},
-      scale: {x: 1,y: 1}
+      scale: {x: 1,y: 1},
+      rotation: 0.0
     }
   }
 }

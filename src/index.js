@@ -20,6 +20,7 @@ require('./popup-shelf')
 require('./file-upload')
 require('./edit-field')
 require('./tooltip')
+require('./brush-shelf')
 
 document.write(require('./scene.html.slm'))
 

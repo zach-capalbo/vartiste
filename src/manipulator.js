@@ -75,6 +75,14 @@ AFRAME.registerComponent('manipulator', {
   },
   startGrab() {
     this.el.addState('grabbing')
+
+    if (this.target.grabbingManipulator) {
+      stopGrab()
+      return
+    }
+
+    this.target.grabbingManipulator = this
+
     let targetQuart = new THREE.Quaternion()
     this.rightHand.object3D.getWorldQuaternion(targetQuart)
     this.startPoint.setRotationFromQuaternion(targetQuart)
@@ -143,6 +151,11 @@ AFRAME.registerComponent('manipulator', {
                     y: THREE.Math.radToDeg(this.target.object3D.rotation.y),
                     z: THREE.Math.radToDeg(this.target.object3D.rotation.z),
                   }) + "\"")
+    }
+
+    if (this.target)
+    {
+      this.target.grabbingManipulator = undefined
     }
 
     this.target = undefined
