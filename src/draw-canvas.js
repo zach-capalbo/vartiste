@@ -39,7 +39,7 @@ AFRAME.registerComponent('draw-canvas', {
     return {x,y}
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0}) {
     if (canvas === null) canvas = this.data.canvas
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
@@ -48,10 +48,10 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.globalAlpha = pressure
 
-    this.brush.drawTo(ctx,  x, y)
+    this.brush.drawTo(ctx,  x, y, {rotation})
     if (this.data.mirrorX) {
-        this.brush.drawTo(ctx, x + width, y)
-        this.brush.drawTo(ctx, x - width, y)
+        this.brush.drawTo(ctx, x + width, y, {rotation})
+        this.brush.drawTo(ctx, x - width, y, {rotation})
     }
     if (this.data.mirrorY) {
       this.brush.drawTo(ctx, x, y + height)
