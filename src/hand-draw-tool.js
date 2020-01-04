@@ -15,8 +15,17 @@ AFRAME.registerComponent('hand-draw-tool', {
 
     let intersection = this.el.components.raycaster.intersections.sort(i => - i.distance)[0]
     let el = intersection.object.el
-    let rotation = - this.el.object3D.rotation.z
-    if (!this.system.data.rotateBrush) rotation = 0
+
+    let rotation = 0
+
+    if (this.system.data.rotateBrush)
+    {
+      let rotationEuler = this.rotationEuler || new THREE.Euler()
+      rotationEuler.copy(this.el.object3D.rotation)
+      rotationEuler.reorder("ZYX")
+      rotation = - rotationEuler.z
+    }
+
     if (this.isDrawing) {
       if ('draw-canvas' in el.components)
       {

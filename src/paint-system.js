@@ -6,7 +6,7 @@ AFRAME.registerSystem('paint-system', {
     opacity: {type: 'float', default: 0.7},
     brushScale: {type: 'float', default: 1},
     brushIndex: {type: 'int', default: 0},
-    rotateBrush: {type: 'bool', default: false}
+    rotateBrush: {type: 'bool', default: true}
   },
 
   init() {
