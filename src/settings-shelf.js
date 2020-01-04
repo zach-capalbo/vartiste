@@ -23,6 +23,8 @@ AFRAME.registerComponent('settings-shelf', {
     if (e.target.hasAttribute('size'))
     {
       var {width, height} = AFRAME.utils.styleParser.parse(e.target.getAttribute('size'))
+      width = parseInt(width)
+      height = parseInt(height)
     }
     else
     {
