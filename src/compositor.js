@@ -61,6 +61,8 @@ AFRAME.registerComponent('compositor', {
   },
 
   activateLayer(layer) {
+    //if (layer === this.activeLayer) return
+    this.ungrabLayer(layer)
     this.activeLayer.active = false
     let oldLayer = this.activeLayer
     this.el.setAttribute('draw-canvas', {canvas: layer.canvas})
@@ -96,6 +98,21 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
   },
+  mergeLayers(fromLayer, ontoLayer) {
+    let ctx = ontoLayer.canvas.getContext('2d')
+    ctx.save()
+
+
+    ctx.translate(ontoLayer.width / 2, ontoLayer.height / 2)
+    ctx.scale(1/ontoLayer.transform.scale.x, 1/ontoLayer.transform.scale.y)
+    ctx.translate(-ontoLayer.width / 2, -ontoLayer.height / 2)
+
+    ctx.translate(-ontoLayer.transform.translation.x, -ontoLayer.transform.translation.y)
+
+    fromLayer.draw(ctx)
+    ctx.restore()
+
+  },
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
 
@@ -104,7 +121,7 @@ AFRAME.registerComponent('compositor', {
 
     if (this.grabbedLayer == layer)
     {
-      this.grabLayer(layer)
+      this.ungrabLayer(layer)
     }
 
     this.layers.splice(idx, 1)
@@ -126,10 +143,7 @@ AFRAME.registerComponent('compositor', {
   grabLayer(layer) {
     if (this.grabbedLayer == layer)
     {
-      this.el['redirect-grab'] = undefined
-      this.grabbedLayer.grabbed = false
-      this.grabbedLayer = undefined
-      this.el.emit('layerupdated', {layer})
+      this.ungrabLayer(layer)
       return
     }
 
@@ -147,6 +161,14 @@ AFRAME.registerComponent('compositor', {
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
     this.grabbedLayer = layer
+    this.el.emit('layerupdated', {layer})
+  },
+  ungrabLayer() {
+    if (!this.grabbedLayer) return
+    let layer = this.grabbedLayer
+    this.el['redirect-grab'] = undefined
+    layer.grabbed = false
+    this.grabbedLayer = undefined
     this.el.emit('layerupdated', {layer})
   },
   drawOverlay(ctx) {

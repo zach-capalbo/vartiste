@@ -81,7 +81,6 @@ AFRAME.registerComponent("brightness-picker", {
 })
 
 AFRAME.registerComponent("opacity-picker", {
-  schema: {target: {type: 'selector'}},
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
@@ -96,18 +95,45 @@ AFRAME.registerComponent("opacity-picker", {
     });
 
     this.mesh = this.el.getObject3D('mesh');
-
     this.mesh.material = material;
 
-    this.el.addEventListener("draw", (e)=>{
-      let point = e.detail.intersection.uv
-      // this.data.target.setAttribute("color-picker", {brightness: point.y})
+    let geometry = new THREE.Geometry()
+    geometry.vertices.push(new THREE.Vector3(0,0.05,0.01))
+    geometry.vertices.push(new THREE.Vector3(-0.05,0.2,0.01))
+    geometry.vertices.push(new THREE.Vector3(0.05,0.2,0.01))
+    geometry.faces.push(new THREE.Face3(0,1,2))
+    this.indicator = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0xa87732, side: THREE.DoubleSide}))
+    this.el.object3D.add(this.indicator)
 
-      this.system.selectOpacity(point.x)
+    this.adjustIndicator(this.system.data.opacity)
 
-      // let color = this.system.data.color
-      // this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+    this.el.addEventListener("click", (e)=>this.handleClick(e))
+    this.el.addEventListener("draw", (e)=>this.handleClick(e))
+
+    this.el.sceneEl.addEventListener('opacitychanged', (e) => {
+      if (this.layer) return
+      this.adjustIndicator(e.detail.opacity)
     })
+  },
+  adjustIndicator(opacity) {
+    let width = this.mesh.geometry.metadata.parameters.width
+    this.indicator.position.x = opacity * width - width / 2
+  },
+  handleClick(e) {
+    let point = e.detail.intersection.uv
+
+    this.adjustIndicator(point.x)
+
+    if (this.layer)
+    {
+      this.layer.opacity = point.x
+
+      console.log("Updating layer opacity", this.layer, this.layer.opacity)
+    }
+    else
+    {
+      this.system.selectOpacity(point.x)
+    }
   }
 })
 

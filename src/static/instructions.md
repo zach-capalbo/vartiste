@@ -58,13 +58,10 @@ all of the layers in the image.
 To load a VARTISTE file, drag and drop it onto the browser window where VARTISTE
 is running. **NOTE: This will replace your currently active scene.**
 
-**NOTE: Saving and loading is currently very wonky. Make lots of backup saves.**
-
 To save a PNG, click the "Camera" ![Camera](../assets/camera.png) icon. You'll need to take off your VR headset
 and click the download button from your browser.
 
-_You cannot currently import images aside from the VARTISTE project file. I'm
-working on that._
+To import an image as a new layer, drag and drop it onto the browser window.
 
 ## Issues
 

@@ -12,6 +12,7 @@ export class Layer {
     this.visible = true
     this.active = false
     this.grabbed = false
+    this.opacity = 1.0
     this.id = shortid.generate()
 
     let canvas = document.createElement("canvas")
@@ -26,6 +27,7 @@ export class Layer {
   draw(ctx) {
     ctx.save()
     ctx.globalCompositeOperation = this.mode
+    ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
 
     ctx.drawImage(this.canvas, 0, 0, this.width, this.height,

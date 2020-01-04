@@ -58,8 +58,9 @@ AFRAME.registerComponent("layer-shelves", {
     var container = document.createElement('a-entity')
 
     container.innerHTML = layerShelfHTML
-    this.el.prepend(container)
     container.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute('click-action')) return
+
       console.log("Clicked", e.target.getAttribute("click-action"))
       this[e.target.getAttribute("click-action") + 'Layer'](layer, e)
     })
@@ -73,6 +74,10 @@ AFRAME.registerComponent("layer-shelves", {
     }
 
     this.shelves[layer.id] = container
+
+    container.addEventListener('loaded', e => this.compositor_layerupdated({detail: {layer}}))
+
+    this.el.prepend(container)
   },
   shuffle() {
     for (let id in this.shelves)
@@ -122,9 +127,15 @@ AFRAME.registerComponent("layer-shelves", {
   },
   moveDownLayer(layer) {
     let layerIdx = this.compositor.layers.indexOf(layer)
-    let nextLayerIdx = layerIdx -1
+    let nextLayerIdx = layerIdx - 1
     if (nextLayerIdx < 0) nextLayerIdx += this.compositor.layers.length
     this.compositor.swapLayers(layer, this.compositor.layers[nextLayerIdx])
+  },
+  mergeDownLayer(layer) {
+    let layerIdx = this.compositor.layers.indexOf(layer)
+    let nextLayerIdx = layerIdx - 1
+    if (nextLayerIdx < 0) nextLayerIdx += this.compositor.layers.length
+    this.compositor.mergeLayers(layer, this.compositor.layers[nextLayerIdx])
   },
   grabLayer(layer) {
     this.compositor.grabLayer(layer)
@@ -176,6 +187,8 @@ AFRAME.registerComponent("layer-shelves", {
 
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
     this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)
+    this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].layer = layer
+    this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].adjustIndicator(layer.opacity)
   },
   compositor_layersmoved(e) {
     console.log("Layers moved")
