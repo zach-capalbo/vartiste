@@ -68,6 +68,10 @@ AFRAME.registerComponent('manipulator', {
         return true
       })
     }
+
+    this.el.sceneEl.addEventListener('refreshobjects', e => {
+      this.raycaster.refreshObjects()
+    })
   },
   startGrab() {
     this.el.addState('grabbing')

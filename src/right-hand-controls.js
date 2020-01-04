@@ -37,8 +37,10 @@ AFRAME.registerComponent('right-hand-controls', {
       this.scaleBrushAmmount = e.detail.axis[1]
     })
 
-    this.el.addEventListener('thumbstickdown', ()=> console.log(this.el.components.raycaster.intersectedEls[0]))
-
+    this.el.addEventListener('thumbstickdown', ()=> {
+      console.log(this.el.components.raycaster.refreshObjects())
+      console.log(this.el.components.raycaster.intersectedEls[0])
+    })
 
     let buttonMap = {
       'bbutton': 'sampling',
