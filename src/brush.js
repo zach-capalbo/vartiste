@@ -75,11 +75,11 @@ class ProceduralBrush extends Brush {
   drawTo(ctx, x, y, {rotation=0} = {}) {
     ctx.save()
     ctx.globalAlpha *= this.opacity
-    // ctx.translate(-x,-y)
-    // ctx.rotate(rotation)
-    // ctx.translate(2 * x, 2 * y)
-    // ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
-    ctx.drawImage(this.overlayCanvas, x - this.width / 2, y - this.height / 2)
+    ctx.translate(x,y)
+    ctx.rotate(rotation)
+    //ctx.translate(2 * x, 2 * y)
+    ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
+    //ctx.drawImage(this.overlayCanvas, x - this.width / 2, y - this.height / 2)
     ctx.restore()
   }
 
