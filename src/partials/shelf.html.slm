@@ -1,4 +1,3 @@
 a-entity
-  / color: #572f0c;
   a-entity material="shader: standard; metalness: 0.3; src:#asset-shelf" geometry="primitive: plane; width: 4; height: 3" position="0 0 -0.01"
     a-entity.clickable.handle geometry="primitive: cylinder; radius:0.1" position="0 -1.6 0" rotation="0 0 90" material="shader:standard; metalness: 0.8; color: #dff7f4"

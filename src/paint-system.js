@@ -5,7 +5,8 @@ AFRAME.registerSystem('paint-system', {
     color: {type: 'color', default: '#000'},
     opacity: {type: 'float', default: 0.7},
     brushScale: {type: 'float', default: 1},
-    brushIndex: {type: 'int', default: 0}
+    brushIndex: {type: 'int', default: 0},
+    rotateBrush: {type: 'bool', default: false}
   },
 
   init() {
@@ -52,4 +53,8 @@ AFRAME.registerSystem('paint-system', {
     this.brush.changeOpacity(this.data.opacity)
     this.el.emit('brushchanged', {brush: this.brush})
   },
+  setRotateBrush(shouldRotate) {
+    this.data.rotateBrush = shouldRotate
+    this.el.emit('rotatebrushchanged', shouldRotate)
+  }
 })

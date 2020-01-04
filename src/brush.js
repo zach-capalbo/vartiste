@@ -52,8 +52,13 @@ class ProceduralBrush extends Brush {
 
     ctx.clearRect(0, 0, width, height)
 
-    const {innerRadius = 2} = this.options
-    const outerRadius = width / 2
+    let {innerRadius = 2} = this.options
+    const {outerRadius = width / 2} = this.options
+
+    if (this.options.hardness)
+    {
+      innerRadius = width / 2 * this.options.hardness
+    }
 
     let x = width / 2
     let y = height / 2

@@ -38,7 +38,6 @@ AFRAME.registerComponent("layer-shelves", {
     }
   },
   update(oldData) {
-
     if (oldData.compositor)
     {
       for (let e of this.compositorEvents)
