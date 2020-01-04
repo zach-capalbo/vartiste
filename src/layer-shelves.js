@@ -60,7 +60,7 @@ AFRAME.registerComponent("layer-shelves", {
     container.innerHTML = layerShelfHTML
     container.addEventListener('click', (e) => {
       if (!e.target.hasAttribute('click-action')) return
-      
+
       console.log("Clicked", e.target.getAttribute("click-action"))
       this[e.target.getAttribute("click-action") + 'Layer'](layer, e)
     })
@@ -181,6 +181,7 @@ AFRAME.registerComponent("layer-shelves", {
 
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
     this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)
+    this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].layer = layer
   },
   compositor_layersmoved(e) {
     console.log("Layers moved")

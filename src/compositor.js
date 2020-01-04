@@ -61,7 +61,7 @@ AFRAME.registerComponent('compositor', {
   },
 
   activateLayer(layer) {
-    if (layer === this.activeLayer) return
+    //if (layer === this.activeLayer) return
     this.ungrabLayer(layer)
     this.activeLayer.active = false
     let oldLayer = this.activeLayer
