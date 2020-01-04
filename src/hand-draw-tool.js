@@ -4,9 +4,10 @@ AFRAME.registerComponent('hand-draw-tool', {
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.clickStamp = 0
+    let threshold = 0.1
     this.el.addEventListener('triggerchanged', (e) => {
-      this.pressure = 0 + e.detail.value
-      this.isDrawing = e.detail.pressed
+      this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
+      this.isDrawing = this.pressure > 0.1
     })
   },
   tick() {
