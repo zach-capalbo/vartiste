@@ -1,4 +1,6 @@
 import {Layer} from "./layer.js"
+import {Util} from "./util.js"
+import {ProjectFile} from "./project-file.js"
 
 AFRAME.registerComponent('compositor', {
   schema: {
@@ -235,9 +237,10 @@ AFRAME.registerComponent('compositor', {
     }
   },
   async load(obj) {
-    console.log("Loading project")
 
-    let delay = () => new Promise(r => setTimeout(r, 100))
+    ProjectFile.update(obj)
+
+    let delay = () => new Promise(r => setTimeout(r, 10))
 
     for (let layer of this.layers) {
       console.log("Deleting", layer)
@@ -277,10 +280,14 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.layers.find(l => l.active))
     console.log("Fully loaded")
   },
-  resize(width, height)
+  resize(newWidth, newHeight)
   {
     let oldWidth = this.width
     let oldHeight = this.height
+
+    let {width, height} = Util.validateSize({width: newWidth, height: newHeight})
+
+    console.log("Resizing from", oldWidth, oldHeight, "to", width, height)
 
     this.width = width
     this.height = height
