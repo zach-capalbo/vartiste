@@ -50,5 +50,17 @@ AFRAME.registerComponent('settings-shelf', {
     ctx.fillStyle = "#fff"
     ctx.fillRect(0,0,width,height)
     compositor.addLayer(1)
+  },
+  toggleShadingAction() {
+    let compositor = document.getElementById('canvas-view').components.compositor;
+
+    if (compositor.el.getAttribute('material').shader === 'flat')
+    {
+      compositor.el.setAttribute('material', {shader: 'standard'})
+    }
+    else
+    {
+      compositor.el.setAttribute('material', {shader: 'flat'})
+    }
   }
 })
