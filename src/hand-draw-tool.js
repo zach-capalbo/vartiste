@@ -16,6 +16,19 @@ AFRAME.registerComponent('hand-draw-tool', {
     let intersection = this.el.components.raycaster.intersections.sort(i => - i.distance)[0]
     let el = intersection.object.el
 
+    let isDrawable = false
+    let drawCanvas
+    if ('draw-canvas' in el.components)
+    {
+      isDrawable = true
+      drawCanvas = el.components['draw-canvas']
+    }
+    else if ('forward-draw' in el.components)
+    {
+      isDrawable = true
+      drawCanvas = el.components['forward-draw']
+    }
+
     let rotation = 0
 
     if (this.system.data.rotateBrush)
@@ -27,9 +40,9 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
 
     if (this.isDrawing) {
-      if ('draw-canvas' in el.components)
+      if (isDrawable)
       {
-        el.components['draw-canvas'].drawUV(intersection.uv, {pressure: this.pressure, rotation: rotation})
+        drawCanvas.drawUV(intersection.uv, {pressure: this.pressure, rotation: rotation})
       }
       else
       {
@@ -39,18 +52,16 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
     if (this.el.is("sampling"))
     {
+      if (isDrawable)
       {
-        if ('draw-canvas' in el.components)
-        {
-          this.system.selectColor(el.components['draw-canvas'].pickColorUV(intersection.uv))
-        }
+        this.system.selectColor(drawCanvas.pickColorUV(intersection.uv))
       }
     }
     if (this.el.is("erasing"))
     {
-      if ('draw-canvas' in el.components)
+      if (isDrawable)
       {
-        el.components['draw-canvas'].eraseUV(intersection.uv)
+        drawCanvas.eraseUV(intersection.uv)
       }
     }
   }

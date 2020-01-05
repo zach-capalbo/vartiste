@@ -21,6 +21,7 @@ require('./file-upload')
 require('./edit-field')
 require('./tooltip')
 require('./brush-shelf')
+require('./composition-view')
 
 document.write(require('./scene.html.slm'))
 
@@ -35,3 +36,7 @@ for (let fileName of require.context('./assets/', true, /.*/).keys()) {
 
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
 document.getElementById('left-hand').setAttribute('left-hand-controls', "")
+
+document.addEventListener('keydown', e => {
+  if (e.key == "r") document.querySelector('a-scene').systems['settings-system'].resetCameraAction()
+})
