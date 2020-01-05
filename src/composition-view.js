@@ -7,7 +7,7 @@ AFRAME.registerComponent('forward-draw', {
     this.target.drawUV(...args)
   },
   pickColorUV(...args) {
-    this.target.selectColor(...args)
+    this.target.pickColorUV(...args)
   },
   eraseUV(...args) {
     this.target.eraseUV(...args)

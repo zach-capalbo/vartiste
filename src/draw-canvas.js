@@ -3,9 +3,7 @@ import {Layer} from './layer.js'
 AFRAME.registerComponent('draw-canvas', {
   schema: {
     canvas: {type: 'selector'},
-    compositor: {type: 'selector'},
-    mirrorX: {type: 'bool', default: false},
-    mirrorY: {type: 'bool', default: false}
+    compositor: {type: 'selector'}
   },
 
   init() {
@@ -48,14 +46,22 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.globalAlpha = pressure
 
+    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
+
     this.brush.drawTo(ctx,  x, y, {rotation})
-    if (this.data.mirrorX) {
+    if (wrapX) {
         this.brush.drawTo(ctx, x + width, y, {rotation})
         this.brush.drawTo(ctx, x - width, y, {rotation})
     }
-    if (this.data.mirrorY) {
-      this.brush.drawTo(ctx, x, y + height)
-      this.brush.drawTo(ctx, x, y - height)
+    if (wrapY) {
+      this.brush.drawTo(ctx, x, y + height, {rotation})
+      this.brush.drawTo(ctx, x, y - height, {rotation})
+    }
+    if (wrapY && wrapX) {
+      this.brush.drawTo(ctx, x + width, y + height, {rotation})
+      this.brush.drawTo(ctx, x - width, y - height, {rotation})
+      this.brush.drawTo(ctx, x + width, y - height, {rotation})
+      this.brush.drawTo(ctx, x - width, y + height, {rotation})
     }
     ctx.globalAlpha = 1.0
   },
@@ -66,14 +72,21 @@ AFRAME.registerComponent('draw-canvas', {
     let {x,y} = this.uvToPoint(uv, canvas)
     this.brush.drawOutline(ctx, x, y)
 
-    if (this.data.mirrorX) {
+    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
+    if (wrapX) {
       this.brush.drawOutline(ctx, x + width, y)
       this.brush.drawOutline(ctx, x - width, y)
     }
-    if (this.data.mirrorX)
+    if (wrapY)
     {
       this.brush.drawOutline(ctx, x, y + height)
       this.brush.drawOutline(ctx, x, y - height)
+    }
+    if (wrapY && wrapX) {
+      this.brush.drawOutline(ctx, x + width, y + height)
+      this.brush.drawOutline(ctx, x - width, y - height)
+      this.brush.drawOutline(ctx, x + width, y - height)
+      this.brush.drawOutline(ctx, x - width, y + height)
     }
   },
 
@@ -123,7 +136,7 @@ AFRAME.registerComponent('draw-canvas', {
     return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
   },
 
-  eraseUV(uv, {pressure = 1.0, canvas = null} = {}) {
+  eraseUV(uv, {pressure = 1.0, canvas = null, rotation=0.0} = {}) {
     console.log("Erasing")
     if (canvas == null) canvas = this.data.canvas
     let ctx = canvas.getContext('2d');
@@ -137,16 +150,23 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.globalCompositeOperation = 'destination-out'
 
-    this.brush.drawTo(ctx,  x, y)
-    if (this.data.mirrorX) {
-        this.brush.drawTo(ctx, x + width, y)
-        this.brush.drawTo(ctx, x - width, y)
-    }
-    if (this.data.mirrorY) {
-      this.brush.drawTo(ctx, x, y + height)
-      this.brush.drawTo(ctx, x, y - height)
-    }
+    this.brush.drawTo(ctx,  x, y, {rotation})
 
+    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
+    if (wrapX) {
+        this.brush.drawTo(ctx, x + width, y, {rotation})
+        this.brush.drawTo(ctx, x - width, y, {rotation})
+    }
+    if (wrapY) {
+      this.brush.drawTo(ctx, x, y + height, {rotation})
+      this.brush.drawTo(ctx, x, y - height, {rotation})
+    }
+    if (wrapY && wrapX) {
+      this.brush.drawTo(ctx, x + width, y + height, {rotation})
+      this.brush.drawTo(ctx, x - width, y - height, {rotation})
+      this.brush.drawTo(ctx, x + width, y - height, {rotation})
+      this.brush.drawTo(ctx, x - width, y + height, {rotation})
+    }
     ctx.restore()
   },
 });

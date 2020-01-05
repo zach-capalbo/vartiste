@@ -32,5 +32,11 @@ AFRAME.registerComponent('brush-shelf', {
   },
   toggleRotationAction() {
     this.system.setRotateBrush(!this.system.data.rotateBrush)
+  },
+  toggleWrapXAction() {
+    this.system.data.wrapX = !this.system.data.wrapX
+  },
+  toggleWrapYAction() {
+    this.system.data.wrapY = !this.system.data.wrapY
   }
 })

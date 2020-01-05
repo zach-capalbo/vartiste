@@ -61,7 +61,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     {
       if (isDrawable)
       {
-        drawCanvas.eraseUV(intersection.uv)
+        drawCanvas.eraseUV(intersection.uv, {rotation})
       }
     }
   }
