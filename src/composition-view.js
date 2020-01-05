@@ -6,7 +6,7 @@ AFRAME.registerComponent('forward-draw', {
   drawUV(...args) {
     this.target.drawUV(...args)
   },
-  selectColor(...args) {
+  pickColorUV(...args) {
     this.target.selectColor(...args)
   },
   eraseUV(...args) {
@@ -31,6 +31,8 @@ AFRAME.registerComponent('composition-view', {
       this.setupCanvas()
     }
 
+    this.el.addEventListener('object3dset', e => this.updateMesh())
+
     // this.setAttribute("draw-canvas", {canvas: this.compositor.canvasthing})
   },
   setupCanvas(){
@@ -39,13 +41,11 @@ AFRAME.registerComponent('composition-view', {
     let {compositor} = this
     this.el.setAttribute('forward-draw', this.data.compositor)
   },
-  tick() {
-    if (!this.inited && this.el.getObject3D('mesh'))
-    {
-      this.el.getObject3D('mesh').traverse(o => {
-        if (o.type == "Mesh") { o.material = this.data.compositor.getObject3D('mesh').material}
-      })
-      this.inited = true
-    }
+  updateMesh() {
+    if (!this.el.getObject3D('mesh')) return
+
+    this.el.getObject3D('mesh').traverse(o => {
+      if (o.type == "Mesh") { o.material = this.data.compositor.getObject3D('mesh').material}
+    })
   }
 })
