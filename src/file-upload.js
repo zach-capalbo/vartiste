@@ -1,4 +1,5 @@
 import {Layer} from './layer.js'
+import shortid from 'shortid'
 
 async function addImageLayer(file) {
   let image = new Image()
@@ -13,6 +14,25 @@ async function addImageLayer(file) {
 
   let compositor = document.getElementById('canvas-view').components.compositor
   compositor.addLayer(compositor.layers.length - 1, {layer})
+}
+
+async function addGlbViewer(file) {
+  let id = shortid.generate()
+  let asset = document.createElement('a-asset-item')
+  asset.id = `asset-model-${id}`
+
+  let loader = new THREE.GLTFLoader()
+
+  let buffer = await file.arrayBuffer()
+  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+
+  let viewer = document.getElementById('composition-view')
+  viewer.setObject3D('mesh', model.scene || model.scenes[0])
+  viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
+
+  let mainCanvas = document.getElementById('canvas-view')
+  mainCanvas.setAttribute("position", "0 0.6 3.14")
+  mainCanvas.setAttribute("rotation", "0 180 0")
 }
 
 document.body.ondragover = (e) => {
@@ -36,6 +56,12 @@ document.body.ondrop = (e) => {
       if (/image\//.test(item.type))
       {
         addImageLayer(file)
+        return
+      }
+
+      if (/\.(glb)|(gltf)$/i.test(file.name))
+      {
+        addGlbViewer(file)
         return
       }
 

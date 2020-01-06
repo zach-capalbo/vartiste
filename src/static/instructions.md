@@ -63,6 +63,14 @@ and click the download button from your browser.
 
 To import an image as a new layer, drag and drop it onto the browser window.
 
+To import a 3D model, drag and drop it onto the browser window. The model should
+appear in front, and the 2D canvas view will flip to behind you.
+**Note the following:**
+ - Only `.glb` format is supported (GLTF binary)
+ - The UVs must be already present in the glb file
+ - Draco compression is not currently supported
+ - No existing textures or vertex colors are imported yet
+
 ## Issues
 
 This is a very early version of the software. It still needs a lot of love. If

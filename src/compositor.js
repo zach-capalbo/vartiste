@@ -185,7 +185,12 @@ AFRAME.registerComponent('compositor', {
 
     for (let hand of ['right-hand', 'left-hand'])
     {
-      let intersection = document.getElementById(hand).components.raycaster.getIntersection(this.el)
+      let raycaster = document.getElementById(hand).components.raycaster
+      let intersection = raycaster.intersections
+                            .filter(i => i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
+                            .sort(i => - i.distance)
+                            [0]
+
 
       if (!intersection) continue
 

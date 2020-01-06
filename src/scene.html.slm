@@ -38,3 +38,6 @@ a-scene
         compositor=""
       ]
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false"
+      a-entity position="0 0.6 -1.0"
+        a-entity#composition-view composition-view="compositor: #canvas-view"
+      / a-entity#hand-dup gltf-model="#asset-hand" composition-view="compositor: #canvas-view"
