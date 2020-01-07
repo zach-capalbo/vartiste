@@ -99,6 +99,28 @@ AFRAME.registerComponent('manipulator', {
     this.startPoint.worldToLocal(this.endPoint.position)
     // this.endPoint.position.add(this.offset)
 
+    //this.endPoint.position.set(0,0,0)
+    //this.endPoint.rotation.copy(this.target.object3D.rotation)
+
+    this.startPoint.updateMatrixWorld()
+
+
+    let pmw = this.pmw || new THREE.Matrix4()
+    pmw.getInverse(this.startPoint.matrixWorld)
+
+    this.target.object3D.getWorldQuaternion(targetQuart)
+
+    let id = this.id || new THREE.Matrix4()
+    id.identity()
+    id.extractRotation(pmw)
+    let invQuart = this.invQuart || new THREE.Quaternion()
+    invQuart.setFromRotationMatrix(id)
+    invQuart.multiply(targetQuart)
+
+    this.endPoint.setRotationFromQuaternion(invQuart)
+
+
+
     if (this.offset)
     {
       let startOffset = new THREE.Vector3(0,0,0)
@@ -220,6 +242,24 @@ AFRAME.registerComponent('manipulator', {
       this.startPoint.updateMatrixWorld()
       this.endPoint.updateMatrixWorld()
 
+
+      this.target.object3D.position.set(0,0,0)
+      let pmw = this.pmw || new THREE.Matrix4()
+      pmw.getInverse(this.target.object3D.parent.matrixWorld)
+
+      this.endPoint.getWorldQuaternion(quart)
+
+      let id = this.id || new THREE.Matrix4()
+      id.identity()
+      id.extractRotation(pmw)
+      let invQuart = this.invQuart || new THREE.Quaternion()
+      invQuart.setFromRotationMatrix(id)
+      invQuart.multiply(quart)
+
+      this.target.object3D.setRotationFromQuaternion(invQuart)
+
+
+
       this.endPoint.getWorldPosition(this.target.object3D.position)
       if (this.target.object3D.parent) this.target.object3D.parent.worldToLocal(this.target.object3D.position)
 
@@ -232,9 +272,14 @@ AFRAME.registerComponent('manipulator', {
 
       this.target.object3
 
+      localOffset.applyQuaternion(this.target.object3D.quaternion)
+
       this.target.object3D.position.sub(localOffset)
-      this.endPoint.getWorldQuaternion(quart)
+      // this.endPoint.getWorldQuaternion(quart)
       // this.target.object3D.setRotationFromQuaternion(quart)
+      // this.target.object3D.rotation.copy(this.endPoint.rotation)
+
+
 
       // this.target = undefined
     }
