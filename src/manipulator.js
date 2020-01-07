@@ -3,8 +3,7 @@ AFRAME.registerComponent('manipulator', {
   schema: {
     selector: {type: 'string'},
     useRay: {type:'boolean', default: true},
-    printUpdates: {type: 'boolean', default: false},
-    lockAxes: {type: 'array', default: []} // NYI
+    printUpdates: {type: 'boolean', default: false}
   },
   init() {
     this.rightHand = this.el
@@ -81,6 +80,8 @@ AFRAME.registerComponent('manipulator', {
       return
     }
 
+    let settings = this.el.sceneEl.systems['settings-system']
+
     this.target.grabbingManipulator = this
 
     let targetQuart = new THREE.Quaternion()
@@ -92,15 +93,9 @@ AFRAME.registerComponent('manipulator', {
     this.invM.getInverse(this.startPoint.matrixWorld)
 
     this.target.object3D.updateMatrixWorld()
-    // this.endPoint.matrix.copy(this.target.object3D.matrixWorld)
-    // this.endPoint.applyMatrix(this.invM)
 
     this.target.object3D.getWorldPosition(this.endPoint.position)
     this.startPoint.worldToLocal(this.endPoint.position)
-    // this.endPoint.position.add(this.offset)
-
-    //this.endPoint.position.set(0,0,0)
-    //this.endPoint.rotation.copy(this.target.object3D.rotation)
 
     this.startPoint.updateMatrixWorld()
 
@@ -249,15 +244,17 @@ AFRAME.registerComponent('manipulator', {
 
       this.endPoint.getWorldQuaternion(quart)
 
-      let id = this.id || new THREE.Matrix4()
-      id.identity()
-      id.extractRotation(pmw)
-      let invQuart = this.invQuart || new THREE.Quaternion()
-      invQuart.setFromRotationMatrix(id)
-      invQuart.multiply(quart)
+      if (this.el.is('rotating'))
+      {
+        let id = this.id || new THREE.Matrix4()
+        id.identity()
+        id.extractRotation(pmw)
+        let invQuart = this.invQuart || new THREE.Quaternion()
+        invQuart.setFromRotationMatrix(id)
+        invQuart.multiply(quart)
 
-      this.target.object3D.setRotationFromQuaternion(invQuart)
-
+        this.target.object3D.setRotationFromQuaternion(invQuart)
+      }
 
 
       this.endPoint.getWorldPosition(this.target.object3D.position)
@@ -268,20 +265,10 @@ AFRAME.registerComponent('manipulator', {
 
       let pws = new THREE.Vector3()
 
-      // if (this.target.object3D.parent) this.target.object3D.getWorldScale().worldToLocal(localOffset)
-
-      this.target.object3
 
       localOffset.applyQuaternion(this.target.object3D.quaternion)
 
       this.target.object3D.position.sub(localOffset)
-      // this.endPoint.getWorldQuaternion(quart)
-      // this.target.object3D.setRotationFromQuaternion(quart)
-      // this.target.object3D.rotation.copy(this.endPoint.rotation)
-
-
-
-      // this.target = undefined
     }
   }
 })

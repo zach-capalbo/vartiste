@@ -58,10 +58,48 @@ class JoystickDirectionHandler {
   }
 }
 
+class ButtonMaps {
+  constructor() {
+    this.maps = {}
+    this.buttons = []
+  }
+  setMap(map, preState = "") {
+    this.maps[preState] = map
+    this.buttons = this.buttons.concat(Object.keys(map))
+  }
+  install(where) {
+    console.log("Buttons", this.buttons)
+    for (let button of new Set(this.buttons))
+    {
+      console.log("Installing", button)
+      where.el.addEventListener(button + 'down', e => {
+        for (let preState of Object.keys(this.maps))
+        {
+          if (preState === "") continue
+          if (where.el.is(preState))
+          {
+            where.el.addState(this.maps[preState][button])
+            return
+          }
+        }
+
+        where.el.addState(this.maps[""][button])
+      })
+
+      where.el.addEventListener(button + 'up', e => {
+        for (let preState of Object.keys(this.maps))
+        {
+          where.el.removeState(this.maps[preState][button])
+        }
+      })
+    }
+  }
+}
+
 const JoystickDirections = {
   install(where) {
     new JoystickDirectionHandler(where)
   }
 }
 
-export { JoystickDirections }
+export { JoystickDirections, ButtonMaps }
