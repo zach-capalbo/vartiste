@@ -1,30 +1,7 @@
 const layerShelfHTML = require('./partials/layer-view.html.slm')
+const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
-const LAYER_MODES = [
-  "source-over",
-
-
-  "screen",
-  "overlay",
-  // "darken",
-  // "lighten",
-  "color-dodge",
-  "color-burn",
-  // "soft-light",
-  // "hard-light",
-
-  // "multiply",
-  // "difference",
-
-  // "hue",
-  // "saturation",
-  "color",
-  // "luminosity",
-
-  "source-atop",
-  "source-in",
-  "destination-in"
-]
+const {LAYER_MODES} = require('./layer-modes.js')
 
 AFRAME.registerComponent("layer-shelves", {
   schema: {compositor: {type: 'selector'}},
@@ -36,6 +13,15 @@ AFRAME.registerComponent("layer-shelves", {
     {
       this['compositor_' + e] = this['compositor_' + e].bind(this)
     }
+
+    this.modePopup = document.createElement('a-entity')
+    this.modePopup.innerHTML = modeSelectionHTML
+    this.modePopup.setAttribute('position', "0 -999999 0")
+    this.modePopup.setAttribute('scale', "0.3 0.3 0.3")
+    this.modePopup.setAttribute('visible', false)
+    this.el.append(this.modePopup)
+
+    this.modePopup.addEventListener('click', e => this.handleModeSelection(e))
   },
   update(oldData) {
     if (oldData.compositor)
@@ -116,8 +102,9 @@ AFRAME.registerComponent("layer-shelves", {
     this.shuffle()
   },
   toggleModeLayer(layer) {
-    let modeIdx = (LAYER_MODES.indexOf(layer.mode) + 1) % LAYER_MODES.length
-    this.compositor.setLayerBlendMode(layer, LAYER_MODES[modeIdx])
+    this.modePopup.setAttribute('visible', true)
+    this.modePopup.setAttribute('position', "0 0 0.3")
+    this.modePopup.activeLayer = layer
   },
   moveUpLayer(layer) {
     let layerIdx = this.compositor.layers.indexOf(layer)
@@ -138,6 +125,23 @@ AFRAME.registerComponent("layer-shelves", {
   },
   grabLayer(layer) {
     this.compositor.grabLayer(layer)
+  },
+  handleModeSelection(e) {
+
+    if (!this.modePopup.activeLayer) return
+
+    if (e.target.hasAttribute('layer-mode'))
+    {
+      let selection = e.target.getAttribute('layer-mode')
+      this.compositor.setLayerBlendMode(this.modePopup.activeLayer, selection)
+    }
+
+    if (e.target.hasAttribute('layer-mode') || e.target.getAttribute('click-action') === 'close-mode')
+    {
+      this.modePopup.setAttribute('visible', false)
+      this.modePopup.setAttribute('position', "0 -999999 0")
+      this.el.sceneEl.emit('refreshobjects')
+    }
   },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail

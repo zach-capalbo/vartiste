@@ -76,7 +76,7 @@ class ButtonMaps {
         for (let preState of Object.keys(this.maps))
         {
           if (preState === "") continue
-          if (where.el.is(preState))
+          if (where.el.is(preState) && button in this.maps[preState])
           {
             where.el.addState(this.maps[preState][button])
             return

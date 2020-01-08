@@ -20,6 +20,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+MODIFIED BY Zachary Capalbo 2020
 */
 
 'use strict';
@@ -46,6 +48,8 @@ module.exports = function(source) {
     addDep(dep)
     return oldPartial.apply(this, args)
   }
+
+  slm.template.VM.prototype.require = require
 
   var tmplFunc = slm.compile(source, options);
 

@@ -5,7 +5,7 @@ a-scene
   a-entity#artist-root
     a-entity#camera-root
       a-entity#camera camera="active: true" wasd-controls="" look-controls=""
-        a-entity position="0 0 0" light="type: point; castShadow: true"
+        a-entity position="0 0 0" light="type: point; castShadow: false"
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500"
 
       - for hand of ["left", "right"]
@@ -13,8 +13,7 @@ a-scene
 
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
-    a-entity position="0 0 -1"
-
+    a-entity position="0 0 -2.5"
 
     a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
@@ -40,4 +39,3 @@ a-scene
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false"
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view"
-      / a-entity#hand-dup gltf-model="#asset-hand" composition-view="compositor: #canvas-view"
