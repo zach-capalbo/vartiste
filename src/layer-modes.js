@@ -33,11 +33,9 @@ const MATH_MODES = [
 ]
 
 const THREED_MODES = [
-  "specular",
-  "emissive",
-  "roughness",
-  "metalness",
-  "displacement"
+  "displacementMap",
+  "normalMap",
+  "abc"
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)

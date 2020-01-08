@@ -49,7 +49,22 @@ module.exports = function(source) {
     return oldPartial.apply(this, args)
   }
 
-  slm.template.VM.prototype.require = require
+  options.require = (dep) => {
+    console.log("REQUIREING")
+    dep = path.resolve("src/" + dep)
+    this.addDependency(dep)
+    let oldCache = require.cache[require.resolve(dep)]
+    delete require.cache[require.resolve(dep)]
+
+    let ret = require(dep)
+
+    if (oldCache)
+    {
+      require.cache[require.resolve(dep)] = oldCache
+    }
+
+    return ret
+  }
 
   var tmplFunc = slm.compile(source, options);
 

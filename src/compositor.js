@@ -140,6 +140,11 @@ AFRAME.registerComponent('compositor', {
   },
   setLayerBlendMode(layer,mode) {
     layer.mode = mode
+    if (mode.endsWith("Map"))
+    {
+        this.el.setAttribute('materia', {[mode]: layer.canvas})
+    }
+
     this.el.emit('layerupdated', {layer})
   },
   grabLayer(layer) {
