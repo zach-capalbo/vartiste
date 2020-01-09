@@ -53,8 +53,8 @@ AFRAME.registerComponent('right-hand-controls', {
     })
 
     buttonMap.setMap({
-      'abutton': 'rotating',
-      'trackpad': 'rotating'
+      'abutton': buttonMap.toggle('rotating'),
+      'trackpad': buttonMap.toggle('rotating')
     }, "grabbing")
 
     buttonMap.install(this)

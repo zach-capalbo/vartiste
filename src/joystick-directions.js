@@ -63,6 +63,9 @@ class ButtonMaps {
     this.maps = {}
     this.buttons = []
   }
+  toggle(state) {
+    return {state, toggle: true}
+  }
   setMap(map, preState = "") {
     this.maps[preState] = map
     this.buttons = this.buttons.concat(Object.keys(map))
@@ -78,7 +81,16 @@ class ButtonMaps {
           if (preState === "") continue
           if (where.el.is(preState) && button in this.maps[preState])
           {
-            where.el.addState(this.maps[preState][button])
+            let state = this.maps[preState][button]
+            let toggle = state.toggle
+            if (typeof state === 'object') state = state.state
+            if (toggle && where.el.is(state))
+            {
+              where.el.removeState(state)
+              return
+            }
+
+            where.el.addState(state)
             return
           }
         }
@@ -89,6 +101,11 @@ class ButtonMaps {
       where.el.addEventListener(button + 'up', e => {
         for (let preState of Object.keys(this.maps))
         {
+          let state = this.maps[preState][button]
+          let toggle = state.toggle
+          if (typeof state === 'object') state = state.state
+
+          if (toggle) return
           where.el.removeState(this.maps[preState][button])
         }
       })
