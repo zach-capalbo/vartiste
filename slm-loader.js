@@ -50,7 +50,6 @@ module.exports = function(source) {
   }
 
   options.require = (dep) => {
-    console.log("REQUIREING")
     dep = path.resolve("src/" + dep)
     this.addDependency(dep)
     let oldCache = require.cache[require.resolve(dep)]

@@ -1,6 +1,7 @@
 import {Layer} from "./layer.js"
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
+import {THREED_MODES} from "./layer-modes.js"
 
 AFRAME.registerComponent('compositor', {
   schema: {
@@ -139,10 +140,19 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layerdeleted', {layer})
   },
   setLayerBlendMode(layer,mode) {
+    let oldMode = mode
+    if (oldMode.endsWith('Map'))
+    {
+      this.el.getObject3D('mesh').material[mode] = null
+      this.el.getObject3D('mesh').material.needsUpdate = true
+    }
     layer.mode = mode
     if (mode.endsWith("Map"))
     {
-        this.el.setAttribute('materia', {[mode]: layer.canvas})
+        this.el.getObject3D('mesh').material[mode] = new THREE.Texture()
+        this.el.getObject3D('mesh').material[mode].image = layer.canvas
+
+        this.el.getObject3D('mesh').material.needsUpdate = true
     }
 
     this.el.emit('layerupdated', {layer})
@@ -229,9 +239,13 @@ AFRAME.registerComponent('compositor', {
     const height = this.height
 
     for (let layer of this.layers) {
-      if (layer.visible)
+      if (layer.visible && THREED_MODES.indexOf(layer.mode) < 0)
       {
         layer.draw(ctx)
+      }
+      else if (THREED_MODES.indexOf(layer.mode) >= 0)
+      {
+        this.el.getObject3D('mesh').material[layer.mode].needsUpdate = true
       }
     }
 

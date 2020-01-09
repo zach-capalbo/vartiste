@@ -33,9 +33,12 @@ const MATH_MODES = [
 ]
 
 const THREED_MODES = [
+  "bumpMap",
   "displacementMap",
   "normalMap",
-  "abc"
+  "emissiveMap",
+  "metalnessMap",
+  "roughnessMap"
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)
