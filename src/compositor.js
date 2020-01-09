@@ -140,21 +140,7 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layerdeleted', {layer})
   },
   setLayerBlendMode(layer,mode) {
-    let oldMode = mode
-    if (oldMode.endsWith('Map'))
-    {
-      this.el.getObject3D('mesh').material[mode] = null
-      this.el.getObject3D('mesh').material.needsUpdate = true
-    }
     layer.mode = mode
-    if (mode.endsWith("Map"))
-    {
-        this.el.getObject3D('mesh').material[mode] = new THREE.Texture()
-        this.el.getObject3D('mesh').material[mode].image = layer.canvas
-
-        this.el.getObject3D('mesh').material.needsUpdate = true
-    }
-
     this.el.emit('layerupdated', {layer})
   },
   grabLayer(layer) {
@@ -238,20 +224,73 @@ AFRAME.registerComponent('compositor', {
     const width = this.width
     const height = this.height
 
+    let material = this.el.getObject3D('mesh').material
+
+    let modesUsed = new Set()
+
     for (let layer of this.layers) {
-      if (layer.visible && THREED_MODES.indexOf(layer.mode) < 0)
+      if (!layer.visible) continue
+      if (THREED_MODES.indexOf(layer.mode) < 0)
       {
         layer.draw(ctx)
       }
-      else if (THREED_MODES.indexOf(layer.mode) >= 0)
+      else
       {
-        this.el.getObject3D('mesh').material[layer.mode].needsUpdate = true
+        if (!material[layer.mode]) {
+          material[layer.mode] = new THREE.Texture()
+          material.needsUpdate = true
+        }
+        material[layer.mode].image = layer.canvas
+
+        switch (layer.mode)
+        {
+          case "displacementMap":
+            material.displacementBias = 0
+            material.displacementScale = layer.opacity
+          break
+          case "bumpMap":
+            material.bumpScale = layer.opacity
+          break
+          case "emissiveMap":
+            material.emissive.r = 1
+            material.emissive.g = 1
+            material.emissive.b = 1
+            material.emissiveIntensity = layer.opacity
+            break
+          case "normalMap":
+            material.normalScale = layer.opacity
+            break
+          case "metalnessMap":
+            material.metalness = layer.opacity
+            break
+          case "roughnessMap":
+            material.roughness = layer.opacity
+            break
+        }
+
+        material[layer.mode].needsUpdate = true
+        modesUsed.add(layer.mode)
       }
     }
 
     this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
+
+    for (let mode of THREED_MODES)
+    {
+      if  (material[mode] && !modesUsed.has(mode))
+      {
+        switch (mode)
+        {
+          case "emissiveMap":
+            material.emissiveIntensity = 0
+          break
+        }
+        material[mode] = null
+        material.needsUpdate = true
+      }
+    }
   },
   // clear() {
   //   this.el.emit

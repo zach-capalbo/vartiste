@@ -56,7 +56,7 @@ AFRAME.registerComponent('settings-shelf', {
 
     if (compositor.el.getAttribute('material').shader === 'flat')
     {
-      compositor.el.setAttribute('material', {shader: 'standard', displacementBias: 0.0})
+      compositor.el.setAttribute('material', {shader: 'standard'})
     }
     else
     {
