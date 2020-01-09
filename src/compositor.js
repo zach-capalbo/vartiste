@@ -233,50 +233,51 @@ AFRAME.registerComponent('compositor', {
       if (THREED_MODES.indexOf(layer.mode) < 0)
       {
         layer.draw(ctx)
+        continue
       }
-      else
+      if (material.type !== "MeshStandardMaterial") continue
+
+      if (!material[layer.mode]) {
+        material[layer.mode] = new THREE.Texture()
+        material.needsUpdate = true
+      }
+      material[layer.mode].image = layer.canvas
+
+      switch (layer.mode)
       {
-        if (!material[layer.mode]) {
-          material[layer.mode] = new THREE.Texture()
-          material.needsUpdate = true
-        }
-        material[layer.mode].image = layer.canvas
-
-        switch (layer.mode)
-        {
-          case "displacementMap":
-            material.displacementBias = 0
-            material.displacementScale = layer.opacity
+        case "displacementMap":
+          material.displacementBias = 0
+          material.displacementScale = layer.opacity
+        break
+        case "bumpMap":
+          material.bumpScale = layer.opacity
+        break
+        case "emissiveMap":
+          material.emissive.r = 1
+          material.emissive.g = 1
+          material.emissive.b = 1
+          material.emissiveIntensity = layer.opacity
           break
-          case "bumpMap":
-            material.bumpScale = layer.opacity
+        case "normalMap":
+          material.normalScale = layer.opacity
           break
-          case "emissiveMap":
-            material.emissive.r = 1
-            material.emissive.g = 1
-            material.emissive.b = 1
-            material.emissiveIntensity = layer.opacity
-            break
-          case "normalMap":
-            material.normalScale = layer.opacity
-            break
-          case "metalnessMap":
-            material.metalness = layer.opacity
-            break
-          case "roughnessMap":
-            material.roughness = layer.opacity
-            break
-        }
-
-        material[layer.mode].needsUpdate = true
-        modesUsed.add(layer.mode)
+        case "metalnessMap":
+          material.metalness = layer.opacity
+          break
+        case "roughnessMap":
+          material.roughness = layer.opacity
+          break
       }
+
+      material[layer.mode].needsUpdate = true
+      modesUsed.add(layer.mode)
     }
 
     this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
+    if (material.type !== "MeshStandardMaterial") return
     for (let mode of THREED_MODES)
     {
       if  (material[mode] && !modesUsed.has(mode))

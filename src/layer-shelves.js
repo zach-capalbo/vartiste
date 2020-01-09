@@ -103,7 +103,7 @@ AFRAME.registerComponent("layer-shelves", {
   },
   toggleModeLayer(layer) {
     this.modePopup.setAttribute('visible', true)
-    this.modePopup.setAttribute('position', "0 0 0.3")
+    this.modePopup.setAttribute('position', `0 ${this.shelves[layer.id].getAttribute('position').y} 0.3`)
     this.modePopup.activeLayer = layer
   },
   moveUpLayer(layer) {
