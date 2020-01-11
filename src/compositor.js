@@ -270,7 +270,7 @@ AFRAME.registerComponent('compositor', {
           material.displacementScale = layer.opacity
         break
         case "bumpMap":
-          material.bumpScale = layer.opacity
+          material.bumpScale = Math.pow(layer.opacity, 2.2)
         break
         case "emissiveMap":
           material.emissive.r = 1
@@ -324,12 +324,12 @@ AFRAME.registerComponent('compositor', {
   save() {
     let layers = this.layers
 
-    return {
+    return ProjectFile.save({
       layers,
       width: this.width,
       height: this.height,
       canvases: layers.map(l => l.canvas.toDataURL())
-    }
+    })
   },
   async load(obj) {
 

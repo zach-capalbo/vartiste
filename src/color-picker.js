@@ -163,3 +163,15 @@ AFRAME.registerComponent("show-current-brush", {
     brushChanged(this.system.brush)
   },
 })
+
+AFRAME.registerComponent("palette", {
+  init() {
+    this.el.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute("button-style")) return
+
+      let system = this.el.sceneEl.systems['paint-system']
+      system.selectOpacity(1.0)
+      system.selectColor(e.target.getAttribute('button-style').color)
+    })
+  }
+})
