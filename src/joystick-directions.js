@@ -102,6 +102,7 @@ class ButtonMaps {
         for (let preState of Object.keys(this.maps))
         {
           let state = this.maps[preState][button]
+          if (!state) return
           let toggle = state.toggle
           if (typeof state === 'object') state = state.state
 
