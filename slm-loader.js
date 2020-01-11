@@ -20,6 +20,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+MODIFIED BY Zachary Capalbo 2020
 */
 
 'use strict';
@@ -45,6 +47,22 @@ module.exports = function(source) {
     console.info("Adding a new dep", dep)
     addDep(dep)
     return oldPartial.apply(this, args)
+  }
+
+  options.require = (dep) => {
+    dep = path.resolve("src/" + dep)
+    this.addDependency(dep)
+    let oldCache = require.cache[require.resolve(dep)]
+    delete require.cache[require.resolve(dep)]
+
+    let ret = require(dep)
+
+    if (oldCache)
+    {
+      require.cache[require.resolve(dep)] = oldCache
+    }
+
+    return ret
   }
 
   var tmplFunc = slm.compile(source, options);

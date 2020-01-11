@@ -18,8 +18,10 @@ export class Layer {
     let canvas = document.createElement("canvas")
     canvas.width = this.width
     canvas.height = this.height
+    canvas.id = `layer-${this.id}`
     document.body.append(canvas)
     this.canvas = canvas;
+    document.body.append(canvas)
 
     this.clear()
   }

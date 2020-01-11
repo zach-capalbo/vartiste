@@ -22,6 +22,7 @@ For Oculus Touch controllers:
  - Right Hand (While Grabbing)
   - Joystick Right/Left: Make grabbed object bigger / smaller
   - Joystick Up/Down: Push / pull grabbed object
+  - A: Toggle Rotation Lock
 
  - Left Hand:
   - Trigger: Draw
@@ -40,6 +41,7 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
 - Right Hand (While Grabbing)
  - Trackpad Right/Left: Make grabbed object bigger / smaller
  - Trackpad Up/Down: Push / pull grabbed object
+ - Press Trackpad: Toggle Rotation Lock
 
 - Left Hand:
  - Trigger: Draw

@@ -1,13 +1,22 @@
 import {Layer} from "./layer.js"
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
+import {THREED_MODES} from "./layer-modes.js"
+
+function createTexture() {
+  let t = new THREE.Texture()
+  t.generateMipmaps = false
+  t.minFilter = THREE.LinearFilter
+  return t
+}
 
 AFRAME.registerComponent('compositor', {
   schema: {
     width: {default: 1024},
     height: {default: 512},
     baseWidth: {default: 1024},
-    geometryWidth: {default: 80}
+    geometryWidth: {default: 80},
+    throttle: {default: 10}
   },
 
   init() {
@@ -42,6 +51,8 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
 
   addLayer(position, {layer} = {}) {
@@ -201,7 +212,7 @@ AFRAME.registerComponent('compositor', {
     ctx.drawImage(this.overlayCanvas, 0, 0)
     ctx.restore()
   },
-  tick() {
+  tick(t, dt) {
     if (this.el['redirect-grab'])
     {
       let layer = this.grabbedLayer
@@ -223,16 +234,89 @@ AFRAME.registerComponent('compositor', {
     const width = this.width
     const height = this.height
 
+    let material = this.el.getObject3D('mesh').material
+
+    let modesUsed = new Set()
+
     for (let layer of this.layers) {
-      if (layer.visible)
+      if (!layer.visible) continue
+      if (THREED_MODES.indexOf(layer.mode) < 0)
       {
         layer.draw(ctx)
+        continue
       }
+      if (material.type !== "MeshStandardMaterial") continue
+
+      if (!material[layer.mode]) {
+        material[layer.mode] = createTexture()
+        material.needsUpdate = true
+      }
+
+      if (material[layer.mode].image !== layer.canvas)
+      {
+        material[layer.mode].image = layer.canvas
+        material[layer.mode].needsUpdate = true
+        console.log("Needs update", layer)
+      }
+      else if (layer.active)
+      {
+        material[layer.mode].needsUpdate = true
+      }
+
+      switch (layer.mode)
+      {
+        case "displacementMap":
+          material.displacementBias = 0
+          material.displacementScale = layer.opacity
+        break
+        case "bumpMap":
+          material.bumpScale = layer.opacity
+        break
+        case "emissiveMap":
+          material.emissive.r = 1
+          material.emissive.g = 1
+          material.emissive.b = 1
+          material.emissiveIntensity = layer.opacity
+          break
+        case "normalMap":
+          material.normalScale = layer.opacity
+          break
+        case "metalnessMap":
+          material.metalness = layer.opacity
+          break
+        case "roughnessMap":
+          material.roughness = layer.opacity
+          break
+      }
+
+
+      modesUsed.add(layer.mode)
     }
 
     this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
+
+
+    if (dt > 25) return
+
+    material.map.needsUpdate = true
+
+    if (material.type !== "MeshStandardMaterial") return
+    for (let mode of THREED_MODES)
+    {
+      if  (material[mode] && !modesUsed.has(mode))
+      {
+        switch (mode)
+        {
+          case "emissiveMap":
+            material.emissiveIntensity = 0
+          break
+        }
+        material[mode] = null
+        material.needsUpdate = true
+      }
+    }
   },
   // clear() {
   //   this.el.emit
@@ -270,6 +354,7 @@ AFRAME.registerComponent('compositor', {
       let canvas = layer.canvas
       Object.assign(layer, layerObj)
       layer.canvas = canvas
+      layer.active = false
 
       let img = new Image
       img.src = canvasData

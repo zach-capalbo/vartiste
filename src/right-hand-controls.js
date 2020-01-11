@@ -1,3 +1,5 @@
+import {ButtonMaps} from './joystick-directions.js'
+
 AFRAME.registerComponent('joystick-turn', {
   schema: {
     amount: {type: 'number', default: 3.14 / 4},
@@ -42,22 +44,20 @@ AFRAME.registerComponent('right-hand-controls', {
       console.log(this.el.components.raycaster.intersectedEls[0])
     })
 
-    let buttonMap = {
+    let buttonMap = new ButtonMaps()
+
+    buttonMap.setMap({
       'bbutton': 'sampling',
       'abutton': 'erasing',
       'trackpad': 'erasing',
-    }
+    })
 
-    for (let button in buttonMap) {
-      let state = buttonMap[button]
-      this.el.addEventListener(button + 'down', e => {
-        this.el.addState(state)
-      })
+    buttonMap.setMap({
+      'abutton': buttonMap.toggle('rotating'),
+      'trackpad': buttonMap.toggle('rotating')
+    }, "grabbing")
 
-      this.el.addEventListener(button + 'up', e => {
-        this.el.removeState(state)
-      })
-    }
+    buttonMap.install(this)
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
   },

@@ -1,5 +1,7 @@
 require('aframe-environment-component')
 
+require('./framework/GLTFExporter.js')
+
 require('./paint-system')
 require('./settings-system')
 
@@ -22,6 +24,8 @@ require('./edit-field')
 require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
+
+window.btn = require('./bump-to-normal')
 
 document.write(require('./scene.html.slm'))
 

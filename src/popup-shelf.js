@@ -1,7 +1,9 @@
 AFRAME.registerComponent("popup-shelf", {
   init() {
+    this.el.setAttribute('position', "0 -999999 0")
     this.el.sceneEl.addEventListener('open-popup', (e) => {
       this.el.setAttribute('visible', true)
+      this.el.setAttribute('position', "0 0 0")
       this.tick = this._tick
       for (let el of document.querySelectorAll('*[raycaster]'))
       {
@@ -11,6 +13,7 @@ AFRAME.registerComponent("popup-shelf", {
 
     this.el.querySelector('.ok').addEventListener('click', (e) => {
       this.el.setAttribute('visible', false)
+      this.el.setAttribute('position', "0 -999999 0")
       this.tick = function() {}
       for (let el of document.querySelectorAll('*[raycaster]'))
       {
@@ -29,7 +32,7 @@ AFRAME.registerComponent("popup-shelf", {
 
     this._tick = this.tick.bind(this)
 
-    // this.tick = function() {}
+    this.tick = function() {}
   },
 
   tick(t,dt) {

@@ -1,7 +1,9 @@
+import {THREED_MODES} from './layer-modes.js'
+import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
-    this.el.emit('open-popup', description)
+    // this.el.emit('open-popup', description)
     window.open(url)
 
     let desktopLink = document.createElement('a')
@@ -18,7 +20,7 @@ AFRAME.registerSystem('settings-system', {
     desktopLink.style = "z-index: 10000; position: absolute; top: 50%; left: 50%; padding: 5px; background-color: #eee; transform: translate(-50%,-50%)"
     desktopLink.innerHTML = "Open " + description
     desktopLink.download = filename
-    document.body.append(desktopLink)
+    // document.body.append(desktopLink)
 
     desktopLink.click()
   },
@@ -29,8 +31,17 @@ AFRAME.registerSystem('settings-system', {
     saveImg.src = compositor.compositeCanvas.toDataURL()
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
-
     this.download(saveImg.src, `VARTISTE-${this.formatFileDate()}.png`, "Image to dowload")
+
+    for (let mode of THREED_MODES)
+    {
+      for (let layer of compositor.layers)
+      {
+        if (layer.mode !== mode) continue
+
+        this.download(layer.canvas.toDataURL(), `VARTISTE-${this.formatFileDate()}-${mode}.png`, mode)
+      }
+    }
   },
   saveAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
@@ -38,6 +49,16 @@ AFRAME.registerSystem('settings-system', {
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
+  },
+  async exportModelAction() {
+    let exporter = new THREE.GLTFExporter()
+    let glb = await new Promise((r, e) => {
+      exporter.parse(document.getElementById('composition-view').getObject3D('mesh'), r, {binary: true})
+    })
+
+    console.log(glb)
+
+    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
   },
   load(text) {
     let loadObj = JSON.parse(text)

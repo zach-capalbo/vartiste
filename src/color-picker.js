@@ -145,7 +145,7 @@ AFRAME.registerComponent("show-current-color", {
       this.el.setAttribute('material', {color: e.detail.color})
     })
     this.el.sceneEl.addEventListener('opacitychanged', (e) => {
-      this.el.setAttribute('material', {opacity: e.detail.opacity})
+      //this.el.setAttribute('material', {opacity: e.detail.opacity})
     })
   }
 })

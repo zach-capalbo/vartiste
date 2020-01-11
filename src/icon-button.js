@@ -23,7 +23,7 @@ AFRAME.registerComponent('icon-button', {
     this.el.object3D.position.x += (width + 0.05) * indexId
 
     var bg = document.createElement('a-entity')
-    bg.setAttribute('material', 'shader: standard; color: #abe; metalness: 0.3')
+    bg.setAttribute('material', 'shader: standard; color: #abe; metalness: 0.3; roughness:1.0')
     bg.setAttribute('geometry', `primitive: box; width: ${width}; height: ${height}; depth: ${depth - 0.001}`)
     bg.setAttribute('position', `0 0 -${depth / 2}`)
     bg.classList.add("clickable")
@@ -35,7 +35,7 @@ AFRAME.registerComponent('icon-button', {
     this.el.append(bg)
 
     this.el.addEventListener('click', (e) => {
-      this.clickTime = e.timeStamp
+      this.clickTime = this.el.sceneEl.time
       this.bg.setAttribute('material', {color: '#aea'})
     })
 
@@ -53,8 +53,9 @@ AFRAME.registerComponent('icon-button', {
   tick(t,ts) {
     if (this.clickTime)
     {
-      if (t - this.clickTime > 500) {
+      if (t - this.clickTime > 300) {
         this.bg.setAttribute('material', {color: "#abe"})
+        this.clickTime = undefined
       }
     }
   }

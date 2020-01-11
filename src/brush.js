@@ -15,7 +15,7 @@ class ProceduralBrush extends Brush {
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
     overlayCanvas.height = height
-    document.body.append(overlayCanvas)
+    //document.body.append(overlayCanvas)
 
     this.overlayCanvas = overlayCanvas;
 
@@ -114,7 +114,7 @@ class ImageBrush extends ProceduralBrush{
     }
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
-    console.log(image)
+
     super(Object.assign({}, options, {width, height}))
 
     this.image = image

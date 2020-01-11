@@ -1,23 +1,15 @@
-import {JoystickDirections} from './joystick-directions'
+import {ButtonMaps, JoystickDirections} from './joystick-directions'
 
 AFRAME.registerComponent('left-hand-controls', {
   init() {
     JoystickDirections.install(this)
+    this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: true})
 
-    let buttonMap = {
+    let buttonMap = new ButtonMaps()
+    buttonMap.setMap({
       'trackpad': 'sampling',
-    }
-
-    for (let button in buttonMap) {
-      let state = buttonMap[button]
-      this.el.addEventListener(button + 'down', e => {
-        this.el.addState(state)
-      })
-
-      this.el.addEventListener(button + 'up', e => {
-        this.el.removeState(state)
-      })
-    }
+    })
+    buttonMap.install(this)
 
     this.el.addEventListener('thumbstickdown', () => {
       this.el.sceneEl.systems['settings-system'].resetCameraAction()
