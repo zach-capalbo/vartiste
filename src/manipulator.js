@@ -5,7 +5,13 @@ AFRAME.registerComponent('manipulator', {
     useRay: {type:'boolean', default: true},
     printUpdates: {type: 'boolean', default: false}
   },
+  pool(name, type) {
+    if (this._pool[name]) return this._pool[name]
+    this._pool[name] = new type()
+    return this._pool[name]
+  },
   init() {
+    this._pool = {}
     this.rightHand = this.el
 
     this.grabber = document.createElement('a-entity')
@@ -76,7 +82,7 @@ AFRAME.registerComponent('manipulator', {
     this.el.addState('grabbing')
 
     if (this.target.grabbingManipulator) {
-      stopGrab()
+      // stopGrab()
       return
     }
 
@@ -84,7 +90,7 @@ AFRAME.registerComponent('manipulator', {
 
     this.target.grabbingManipulator = this
 
-    let targetQuart = new THREE.Quaternion()
+    let targetQuart = this.pool("targetQuart", THREE.Quaternion)
     this.rightHand.object3D.getWorldQuaternion(targetQuart)
     this.startPoint.setRotationFromQuaternion(targetQuart)
     this.rightHand.object3D.getWorldPosition(this.startPoint.position)
@@ -99,26 +105,23 @@ AFRAME.registerComponent('manipulator', {
 
     this.startPoint.updateMatrixWorld()
 
-
-    let pmw = this.pmw || new THREE.Matrix4()
+    let pmw = this.pool('pmw', THREE.Matrix4)
     pmw.getInverse(this.startPoint.matrixWorld)
 
     this.target.object3D.getWorldQuaternion(targetQuart)
 
-    let id = this.id || new THREE.Matrix4()
+    let id = this.pool('identity', THREE.Matrix4)
     id.identity()
     id.extractRotation(pmw)
-    let invQuart = this.invQuart || new THREE.Quaternion()
+    let invQuart = this.pool('invQuart', THREE.Quaternion)
     invQuart.setFromRotationMatrix(id)
     invQuart.multiply(targetQuart)
 
     this.endPoint.setRotationFromQuaternion(invQuart)
 
-
-
     if (this.offset)
     {
-      let startOffset = new THREE.Vector3(0,0,0)
+      let startOffset = this.pool('startOffset', THREE.Vector3)
       startOffset.copy(this.offset)
 
       this.endPoint.position.copy(this.offset)
@@ -127,23 +130,23 @@ AFRAME.registerComponent('manipulator', {
 
       // Offset still in world space
 
-      let twp = new THREE.Vector3(0,0,0)
+      let twp = this.pool('twp', THREE.Vector3)
       this.target.object3D.getWorldPosition(twp)
       this.offset.sub(twp)
 
       // offset now difference between intersection and target origin in world space
 
-      let quart = new THREE.Quaternion();
+      let quart = this.pool('quart', THREE.Quaternion)
       this.target.object3D.getWorldQuaternion(quart)
       this.offset.applyQuaternion(quart.conjugate());
 
-      let ws = new THREE.Vector3(0,0,0)
+      let ws = this.pool('ws', THREE.Vector3)
       this.target.object3D.parent.getWorldScale(ws)
       this.offset.divide(ws)
-      console.log("Offset", this.offset)
-      console.log("WS Offset", startOffset)
-      console.log("WS Target", twp)
-      console.log("Parent WS", ws)
+      // console.log("Offset", this.offset)
+      // console.log("WS Offset", startOffset)
+      // console.log("WS Target", twp)
+      // console.log("Parent WS", ws)
     }
 
     this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
@@ -231,7 +234,7 @@ AFRAME.registerComponent('manipulator', {
 
       this.rightHand.object3D.getWorldPosition(this.startPoint.position)
 
-      var quart = new THREE.Quaternion()
+      var quart = this.pool('quart', THREE.Quaternion)
       this.rightHand.object3D.getWorldQuaternion(quart)
       this.startPoint.setRotationFromQuaternion(quart)
       this.startPoint.updateMatrixWorld()
@@ -239,32 +242,30 @@ AFRAME.registerComponent('manipulator', {
 
 
       this.target.object3D.position.set(0,0,0)
-      let pmw = this.pmw || new THREE.Matrix4()
+      let pmw = this.pool('pmw', THREE.Matrix4)
       pmw.getInverse(this.target.object3D.parent.matrixWorld)
 
       this.endPoint.getWorldQuaternion(quart)
 
       if (this.el.is('rotating'))
       {
-        let id = this.id || new THREE.Matrix4()
+        let id = this.pool('identity', THREE.Matrix4)
         id.identity()
         id.extractRotation(pmw)
-        let invQuart = this.invQuart || new THREE.Quaternion()
+        let invQuart = this.pool('invQuart', THREE.Quaternion)
         invQuart.setFromRotationMatrix(id)
         invQuart.multiply(quart)
 
         this.target.object3D.setRotationFromQuaternion(invQuart)
       }
 
-
       this.endPoint.getWorldPosition(this.target.object3D.position)
       if (this.target.object3D.parent) this.target.object3D.parent.worldToLocal(this.target.object3D.position)
 
-      let localOffset = new THREE.Vector3()
+      let localOffset = this.pool('localOffset', THREE.Vector3)
       localOffset.copy(this.offset)
 
-      let pws = new THREE.Vector3()
-
+      let pws = this.pool('pws', THREE.Vector3)
 
       localOffset.applyQuaternion(this.target.object3D.quaternion)
 

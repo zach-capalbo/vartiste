@@ -19,6 +19,9 @@ a-entity.layer-shelf shelf=""
     - for e of [{pos: -2.1, rot: -90}, {pos: 2.1, rot: 90}]
       a-entity gltf-model="#asset-hand" rotation="0 0 ${e.rot}" position="${e.pos} 0 0" scale="1 1 0.3" material="shader: standard; metalness: 0.4; color: #a88d32; emissive: #a88d32; emissiveIntensity: 0.8" shadow="cast: false; receive: false"
 
+  a-entity.invisible-indicator material="src: #asset-eye-off; alphaTest: 0.01; transparent: true; color: #fff" geometry="primitive: plane; width: 1; height: 1" position="0 0 0.01"
+    a-entity material="src: #asset-eye-off; alphaTest: 0.01; transparent: true; color: #fff; blending: subtractive" geometry="primitive: plane; width: 1; height: 1" position="0 0 0.01" scale="0.9 0.9 1"
+  /a-entity icon-button="#asset-eye-off"
 
   a-entity position="0.2 -1.3 0"
     a-entity.clickable click-action="toggleMode" icon-button="#asset-blur-linear" position="-1.8 0.1 0" tooltip="Change layer blend mode"

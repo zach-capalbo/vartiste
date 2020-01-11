@@ -9,13 +9,13 @@ a-scene
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500"
 
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; far: 50; interval: 10; showLine: false;" hand-draw-tool=""
 
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
 
-    a-entity#environment position="0 -7 0" environment="preset:starry"
+    /a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
     a-entity#ui shadow="cast: true; receive: true"
       a-entity#left-shelf position="-2 0 0" rotation="0 90 0"
@@ -27,7 +27,6 @@ a-scene
         a-entity layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
     a-entity#canvas-root
       a-entity#canvas-view.canvas[
-        canvas-updater="throttle:-1"
         material="shader: flat; transparent: true; npot: true"
         geometry="primitive: plane; width: 80; height: 35"
         _geometry="primitive: sphere; height: 35; radius: 10"

@@ -3,12 +3,20 @@ import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
 
+function createTexture() {
+  let t = new THREE.Texture()
+  t.generateMipmaps = false
+  t.minFilter = THREE.LinearFilter
+  return t
+}
+
 AFRAME.registerComponent('compositor', {
   schema: {
     width: {default: 1024},
     height: {default: 512},
     baseWidth: {default: 1024},
-    geometryWidth: {default: 80}
+    geometryWidth: {default: 80},
+    throttle: {default: 10}
   },
 
   init() {
@@ -43,6 +51,8 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
 
   addLayer(position, {layer} = {}) {
@@ -202,7 +212,7 @@ AFRAME.registerComponent('compositor', {
     ctx.drawImage(this.overlayCanvas, 0, 0)
     ctx.restore()
   },
-  tick() {
+  tick(t, dt) {
     if (this.el['redirect-grab'])
     {
       let layer = this.grabbedLayer
@@ -238,10 +248,20 @@ AFRAME.registerComponent('compositor', {
       if (material.type !== "MeshStandardMaterial") continue
 
       if (!material[layer.mode]) {
-        material[layer.mode] = new THREE.Texture()
+        material[layer.mode] = createTexture()
         material.needsUpdate = true
       }
-      material[layer.mode].image = layer.canvas
+
+      if (material[layer.mode].image !== layer.canvas)
+      {
+        material[layer.mode].image = layer.canvas
+        material[layer.mode].needsUpdate = true
+        console.log("Needs update", layer)
+      }
+      else if (layer.active)
+      {
+        material[layer.mode].needsUpdate = true
+      }
 
       switch (layer.mode)
       {
@@ -269,13 +289,18 @@ AFRAME.registerComponent('compositor', {
           break
       }
 
-      material[layer.mode].needsUpdate = true
+
       modesUsed.add(layer.mode)
     }
 
     this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
+
+
+    if (dt > 25) return
+
+    material.map.needsUpdate = true
 
     if (material.type !== "MeshStandardMaterial") return
     for (let mode of THREED_MODES)
@@ -329,6 +354,7 @@ AFRAME.registerComponent('compositor', {
       let canvas = layer.canvas
       Object.assign(layer, layerObj)
       layer.canvas = canvas
+      layer.active = false
 
       let img = new Image
       img.src = canvasData

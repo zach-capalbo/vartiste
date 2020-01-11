@@ -4,8 +4,8 @@ AFRAME.registerComponent('hand-draw-tool', {
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.clickStamp = 0
-    let threshold = 0.1
     this.el.addEventListener('triggerchanged', (e) => {
+      let threshold = 0.1
       this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
       this.isDrawing = this.pressure > 0.1
     })
@@ -34,6 +34,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     if (this.system.data.rotateBrush)
     {
       let rotationEuler = this.rotationEuler || new THREE.Euler()
+      this.rotationEuler = rotationEuler
       rotationEuler.copy(this.el.object3D.rotation)
       rotationEuler.reorder("ZYX")
       rotation = - rotationEuler.z

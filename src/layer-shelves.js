@@ -85,6 +85,7 @@ AFRAME.registerComponent("layer-shelves", {
   },
   hideLayer(layer) {
     layer.visible = !layer.visible
+    this.compositor.el.emit('layerupdated', {layer})
   },
   editLayer(layer) {
     this.compositor.activateLayer(layer)
@@ -192,6 +193,7 @@ AFRAME.registerComponent("layer-shelves", {
     this.shelves[layer.id].querySelector('.grabbing-indicator').setAttribute('visible', layer.grabbed)
     this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].layer = layer
     this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].adjustIndicator(layer.opacity)
+    this.shelves[layer.id].querySelector('.invisible-indicator').setAttribute('visible', !layer.visible)
   },
   compositor_layersmoved(e) {
     console.log("Layers moved")
