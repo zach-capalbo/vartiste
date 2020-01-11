@@ -32,7 +32,7 @@ AFRAME.registerComponent("popup-shelf", {
 
     this._tick = this.tick.bind(this)
 
-    // this.tick = function() {}
+    this.tick = function() {}
   },
 
   tick(t,dt) {

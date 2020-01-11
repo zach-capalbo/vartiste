@@ -48,5 +48,6 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1",
     "xml-loader": "^1.2.1"
-  }
+  },
+  "dependencies": {}
 }
