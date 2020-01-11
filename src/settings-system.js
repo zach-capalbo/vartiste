@@ -82,5 +82,11 @@ AFRAME.registerSystem('settings-system', {
     cameraRoot.position.y = -camera.position.y + 1.23
 
     cameraRoot.rotation.y = -camera.rotation.y
-  }
+  },
+  setQuality(scale) {
+    document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
+  },
+  lowQualityAction() { this.setQuality(0.25) },
+  mediumQualityAction() { this.setQuality(0.5) },
+  fullQualityAction() { this.setQuality(1.0) }
 })

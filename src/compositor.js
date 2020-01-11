@@ -16,7 +16,8 @@ AFRAME.registerComponent('compositor', {
     height: {default: 512},
     baseWidth: {default: 1024},
     geometryWidth: {default: 80},
-    throttle: {default: 10}
+    throttle: {default: 10},
+    textureScale: {default: 1}
   },
 
   init() {
@@ -53,6 +54,15 @@ AFRAME.registerComponent('compositor', {
     this.redirector = this.el.querySelector('#move-layer-redirection')
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+
+  update() {
+    if (this.data.textureScale != 1)
+    {
+      this.textureCanvas = this.textureCanvas || document.createElement("canvas")
+      this.textureCanvas.width = this.width * this.data.textureScale
+      this.textureCanvas.height = this.height * this.data.textureScale
+    }
   },
 
   addLayer(position, {layer} = {}) {
@@ -300,6 +310,16 @@ AFRAME.registerComponent('compositor', {
 
     if (dt > 25) return
 
+    if (this.data.textureScale != 1)
+    {
+      let textureCtx = this.textureCanvas.getContext('2d')
+      textureCtx.drawImage(this.compositeCanvas, 0, 0, this.textureCanvas.width, this.textureCanvas.height)
+      material.map.image = this.textureCanvas
+    }
+    else
+    {
+      material.map.image = this.compositeCanvas
+    }
     material.map.needsUpdate = true
 
     if (material.type !== "MeshStandardMaterial") return
