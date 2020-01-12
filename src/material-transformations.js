@@ -83,6 +83,27 @@ function putRoughnessInMetal(roughness, metalness)
   return metalness
 }
 
+function checkTransparency(material) {
+  let canvas = material.map.image
+  let ctx = canvas.getContext('2d')
+  let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+  const ALPHA_CUTOFF = 245
+
+  for (let j = 0; j < canvas.height; ++j)
+  {
+    for (let i = 0; i < canvas.width; ++i)
+    {
+      if (imgData.data[4*(j * canvas.width + i) + 3]  < ALPHA_CUTOFF)
+      {
+        console.log("Found transparent pixel", imgData.data[4*(j * canvas.width + i) + 3])
+        return
+      }
+    }
+  }
+  material.transparent = false
+}
+
 function prepareModelForExport(model, material) {
   console.log("Preparing", model, material)
   if (material.bumpMap) {
@@ -112,6 +133,7 @@ function prepareModelForExport(model, material) {
     material.roughnessMap = material.metalnessMap
     material.needsUpdate = true
   }
+  checkTransparency(material)
 }
 
 export {prepareModelForExport}

@@ -410,7 +410,6 @@ AFRAME.registerComponent('compositor', {
     {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
       let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
-      console.log(gWidth, gHeight)
       this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
     }
 
