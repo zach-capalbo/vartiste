@@ -25,6 +25,8 @@ require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
 
+require('./app.styl')
+
 document.write(require('./scene.html.slm'))
 
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {
