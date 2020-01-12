@@ -26,13 +26,7 @@ async function addGlbViewer(file) {
   let buffer = await file.arrayBuffer()
   let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
 
-  let viewer = document.getElementById('composition-view')
-  viewer.setObject3D('mesh', model.scene || model.scenes[0])
-  viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
-
-  let mainCanvas = document.getElementById('canvas-view')
-  mainCanvas.setAttribute("position", "0 0.6 3.14")
-  mainCanvas.setAttribute("rotation", "0 180 0")
+  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
 }
 
 document.body.ondragover = (e) => {

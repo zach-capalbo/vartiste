@@ -341,20 +341,7 @@ AFRAME.registerComponent('compositor', {
   // clear() {
   //   this.el.emit
   // },
-  save() {
-    let layers = this.layers
-
-    return ProjectFile.save({
-      layers,
-      width: this.width,
-      height: this.height,
-      canvases: layers.map(l => l.canvas.toDataURL())
-    })
-  },
   async load(obj) {
-
-    ProjectFile.update(obj)
-
     let delay = () => new Promise(r => setTimeout(r, 10))
 
     for (let layer of this.layers) {

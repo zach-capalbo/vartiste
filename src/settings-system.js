@@ -1,6 +1,7 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport} from './material-transformations.js'
+import {ProjectFile} from './project-file.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
@@ -44,9 +45,9 @@ AFRAME.registerSystem('settings-system', {
       }
     }
   },
-  saveAction() {
+  async saveAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
-    let saveObj = compositor.save()
+    let saveObj = await ProjectFile.save({compositor})
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
@@ -65,11 +66,18 @@ AFRAME.registerSystem('settings-system', {
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
   },
+  addModelView(model) {
+    let viewer = document.getElementById('composition-view')
+    viewer.setObject3D('mesh', model.scene || model.scenes[0])
+    viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
+
+    let mainCanvas = document.getElementById('canvas-view')
+    mainCanvas.setAttribute("position", "0 0.6 3.14")
+    mainCanvas.setAttribute("rotation", "0 180 0")
+  },
   load(text) {
     let loadObj = JSON.parse(text)
-
-    let compositor = document.getElementById('canvas-view').components.compositor;
-    compositor.load(loadObj)
+    ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
   },
   helpAction() {
     this.popup("landing.html", "Instructions")
