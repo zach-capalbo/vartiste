@@ -103,10 +103,10 @@ function prepareModelForExport(model, material) {
   else if (material.metalnessMap)
   {
     let roughCanvas = document.createElement('canvas')
-    roughCanvas.width = material.metalnessMap.width
-    roughCanvas.height = material.metalnessMap.height
+    roughCanvas.width = material.metalnessMap.image.width
+    roughCanvas.height = material.metalnessMap.image.height
     let roughCtx = roughCanvas.getContext('2d')
-    rouchCtx.fillStyle = "#000"
+    roughCtx.fillStyle = "#000"
     roughCtx.fillRect(0,0,roughCanvas.width,roughCanvas.height)
     putRoughnessInMetal(roughCanvas, material.metalnessMap.image)
     material.roughnessMap = material.metalnessMap

@@ -151,4 +151,28 @@ class ImageBrush extends ProceduralBrush{
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush };
+class LambdaBrush extends ProceduralBrush {
+  constructor(options={}, lambda) {
+    super(options)
+    this.lambda = lambda
+    this.createBrush()
+  }
+  createBrush() {
+    if (!this.lambda) return
+    let ctx = this.overlayCanvas.getContext("2d")
+
+    const width = this.width
+    const height = this.height
+    ctx.clearRect(0, 0, width, height)
+    ctx.fillStyle = this.color
+    ctx.strokeStyle = this.color
+    this.lambda(ctx, {width, height})
+
+    if (!this.previewSrc)
+    {
+      this.previewSrc = this.overlayCanvas.toDataURL()
+    }
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush };

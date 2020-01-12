@@ -19,6 +19,11 @@ AFRAME.registerComponent('brush-shelf', {
       }
     })
 
+    const BRUSHES_PER_ROW = 8
+
+    let brushRow = document.createElement('a-entity')
+    this.el.querySelector('.brushes').append(brushRow)
+
     this.brushButtons = []
     for (let idx = 0; idx < BrushList.length; ++idx) {
       let brush = BrushList[idx]
@@ -27,7 +32,14 @@ AFRAME.registerComponent('brush-shelf', {
       button.setAttribute('brush-idx', idx)
 
       this.brushButtons.push(button)
-      this.el.querySelector('.brushes').append(button)
+      brushRow.append(button)
+
+      if ((idx % BRUSHES_PER_ROW) == BRUSHES_PER_ROW - 1)
+      {
+        brushRow = document.createElement('a-entity')
+        brushRow.setAttribute('position', `0 ${-0.6 * this.el.querySelector('.brushes').children.length} 0`)
+        this.el.querySelector('.brushes').append(brushRow)
+      }
     }
   },
   toggleRotationAction() {

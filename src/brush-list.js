@@ -1,4 +1,4 @@
-import {ProceduralBrush, ImageBrush} from './brush.js'
+import {ProceduralBrush, ImageBrush, LambdaBrush} from './brush.js'
 const BrushList = [
   new ProceduralBrush(),
   new ImageBrush('silky_textured', {width: 20, height: 20}),
@@ -8,7 +8,13 @@ const BrushList = [
   new ImageBrush('line_grunge2', {width: 20, height: 20}),
   new ImageBrush('line_grunge1', {width: 64, height: 16, textured: true}),
   new ImageBrush('dots', {width: 20, height: 20}),
-  new ImageBrush('angle', {width: 20, height: 20}),
+  new LambdaBrush({}, (ctx, {width, height}) => {
+    ctx.beginPath()
+    ctx.moveTo(width / 2, 0)
+    ctx.lineTo(width / 2, height)
+    ctx.stroke()
+  }),
+  new LambdaBrush({}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  })
 ]
 
 export { BrushList }

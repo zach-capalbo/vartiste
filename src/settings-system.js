@@ -53,7 +53,7 @@ AFRAME.registerSystem('settings-system', {
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
   },
   async export3dAction() {
-    let mesh = document.getElementById('composition-view').getObject3D('mesh')
+    let mesh = document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
     let material = document.getElementById('canvas-view').getObject3D('mesh').material
     prepareModelForExport(mesh, material)
 
