@@ -14,7 +14,8 @@ const BrushList = [
     ctx.lineTo(width / 2, height)
     ctx.stroke()
   }),
-  new LambdaBrush({}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  })
+  new LambdaBrush({}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  }),
+  new ImageBrush('diamond', {width: 20, height: 20}),
 ]
 
 export { BrushList }
