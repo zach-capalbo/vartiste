@@ -8,6 +8,7 @@ const BrushList = [
   new ImageBrush('line_grunge2', {width: 20, height: 20}),
   new ImageBrush('line_grunge1', {width: 64, height: 16, textured: true}),
   new ImageBrush('dots', {width: 20, height: 20}),
+  new ImageBrush('angle', {width: 20, height: 20}),
 ]
 
 export { BrushList }

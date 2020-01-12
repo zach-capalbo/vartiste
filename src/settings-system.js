@@ -1,5 +1,6 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+import {prepareModelForExport} from './material-transformations.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
@@ -50,13 +51,17 @@ AFRAME.registerSystem('settings-system', {
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
   },
-  async exportModelAction() {
+  async export3dAction() {
+    let mesh = document.getElementById('composition-view').getObject3D('mesh')
+    let material = document.getElementById('canvas-view').getObject3D('mesh').material
+    prepareModelForExport(mesh, material)
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(document.getElementById('composition-view').getObject3D('mesh'), r, {binary: true})
+      exporter.parse(mesh, r, {binary: true})
     })
 
-    console.log(glb)
+    // console.log(glb)
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
   },

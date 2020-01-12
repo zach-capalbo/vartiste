@@ -25,8 +25,6 @@ require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
 
-window.btn = require('./bump-to-normal')
-
 document.write(require('./scene.html.slm'))
 
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {

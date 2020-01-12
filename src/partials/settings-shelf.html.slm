@@ -1,6 +1,7 @@
 a-entity position="-1.5 1.1 0"
   a-entity.clickable click-action="save" icon-button="#asset-floppy" tooltip="Save Composition"
   a-entity.clickable click-action="export" icon-button="#asset-camera" tooltip="Export as PNG"
+  a-entity.clickable click-action="export3d" icon-button="#asset-cube-send" tooltip="Export as GLB"
   a-entity.clickable click-action="toggleShading" icon-button="#asset-brightness-4" tooltip="Toggle 3D Shading"
   a-entity.clickable click-action="help" icon-button="#asset-help-circle-outline" tooltip="Help"
 a-entity position="-1.5 0.6 0"
