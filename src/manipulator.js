@@ -224,12 +224,49 @@ AFRAME.registerComponent('manipulator', {
     if (this.target) {
       if (Math.abs(this.zoomAmmount) > 0.08)
       {
-        this.endPoint.position.multiplyScalar(1.0 - (0.2 * this.zoomAmmount * dt / 100))
+        if (this.el.is("orbiting"))
+        {
+          // let quart = this.pool("quart", THREE.Quaternion)
+          let rotAxis = this.pool("axis", THREE.Vector3).set(1, 0, 0)
+
+          // quart.setFromAxisAngle(rotAxis, this.zoomAmmount * dt / 300)
+
+          // this.endPoint.quaternion.multiply(quart)
+          // let invm = this.pool("invm", THREE.Matrix4)
+          // invm.getInverse(this.endPoint.matrix)
+          // rotAxis.applyMatrix4(invm)
+          // rotAxis.normalize()
+
+          // this.startPoint.localToWorld(rotAxis)
+          // this.endPoint.worldToLocal(rotAxis)
+
+          // this.el.object3D.localToWorld(rotAxis)
+
+          rotAxis.normalize()
+
+          console.log(rotAxis)
+
+          this.endPoint.rotateOnAxis(rotAxis, this.zoomAmmount * dt / 300)
+        }
+        else
+        {
+          this.endPoint.position.multiplyScalar(1.0 - (0.2 * this.zoomAmmount * dt / 100))
+        }
       }
 
       if (Math.abs(this.scaleAmmount) > 0.08)
       {
-        this.target.object3D.scale.multiplyScalar(1.0 - (0.2 * this.scaleAmmount * dt / 100))
+        if (this.el.is("orbiting"))
+        {
+          let rotAxis = this.pool("axis", THREE.Vector3).set(0, 1, 0)
+          // this.el.object3D.localToWorld(rotAxis)
+          rotAxis.normalize()
+          this.endPoint.rotateOnAxis(rotAxis, this.scaleAmmount * dt / 300)
+        }
+        else
+        {
+          this.target.object3D.scale.multiplyScalar(1.0 - (0.2 * this.scaleAmmount * dt / 100))
+        }
       }
 
       this.rightHand.object3D.getWorldPosition(this.startPoint.position)
@@ -247,7 +284,7 @@ AFRAME.registerComponent('manipulator', {
 
       this.endPoint.getWorldQuaternion(quart)
 
-      if (this.el.is('rotating'))
+      if (this.el.is('rotating') || this.el.is('orbiting'))
       {
         let id = this.pool('identity', THREE.Matrix4)
         id.identity()

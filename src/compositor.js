@@ -16,7 +16,8 @@ AFRAME.registerComponent('compositor', {
     height: {default: 512},
     baseWidth: {default: 1024},
     geometryWidth: {default: 80},
-    throttle: {default: 10}
+    throttle: {default: 10},
+    textureScale: {default: 1}
   },
 
   init() {
@@ -53,6 +54,15 @@ AFRAME.registerComponent('compositor', {
     this.redirector = this.el.querySelector('#move-layer-redirection')
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+
+  update() {
+    if (this.data.textureScale != 1)
+    {
+      this.textureCanvas = this.textureCanvas || document.createElement("canvas")
+      this.textureCanvas.width = this.width * this.data.textureScale
+      this.textureCanvas.height = this.height * this.data.textureScale
+    }
   },
 
   addLayer(position, {layer} = {}) {
@@ -270,7 +280,7 @@ AFRAME.registerComponent('compositor', {
           material.displacementScale = layer.opacity
         break
         case "bumpMap":
-          material.bumpScale = layer.opacity
+          material.bumpScale = Math.pow(layer.opacity, 2.2)
         break
         case "emissiveMap":
           material.emissive.r = 1
@@ -300,6 +310,16 @@ AFRAME.registerComponent('compositor', {
 
     if (dt > 25) return
 
+    if (this.data.textureScale != 1)
+    {
+      let textureCtx = this.textureCanvas.getContext('2d')
+      textureCtx.drawImage(this.compositeCanvas, 0, 0, this.textureCanvas.width, this.textureCanvas.height)
+      material.map.image = this.textureCanvas
+    }
+    else
+    {
+      material.map.image = this.compositeCanvas
+    }
     material.map.needsUpdate = true
 
     if (material.type !== "MeshStandardMaterial") return
@@ -321,20 +341,7 @@ AFRAME.registerComponent('compositor', {
   // clear() {
   //   this.el.emit
   // },
-  save() {
-    let layers = this.layers
-
-    return {
-      layers,
-      width: this.width,
-      height: this.height,
-      canvases: layers.map(l => l.canvas.toDataURL())
-    }
-  },
   async load(obj) {
-
-    ProjectFile.update(obj)
-
     let delay = () => new Promise(r => setTimeout(r, 10))
 
     for (let layer of this.layers) {
@@ -403,7 +410,6 @@ AFRAME.registerComponent('compositor', {
     {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
       let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
-      console.log(gWidth, gHeight)
       this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
     }
 

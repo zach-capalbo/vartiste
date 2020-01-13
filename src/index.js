@@ -25,7 +25,7 @@ require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
 
-window.btn = require('./bump-to-normal')
+require('./app.styl')
 
 document.write(require('./scene.html.slm'))
 

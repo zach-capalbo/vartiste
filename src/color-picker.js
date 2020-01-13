@@ -163,3 +163,27 @@ AFRAME.registerComponent("show-current-brush", {
     brushChanged(this.system.brush)
   },
 })
+
+AFRAME.registerComponent("palette", {
+  init() {
+    this.el.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('click-action')) {
+        this[e.target.getAttribute('click-action')](e)
+        return
+      }
+      if (!e.target.hasAttribute("button-style")) return
+
+      let system = this.el.sceneEl.systems['paint-system']
+      system.selectOpacity(1.0)
+      system.selectColor(e.target.getAttribute('button-style').color)
+    })
+  },
+  addToPalette(e) {
+    let system = this.el.sceneEl.systems['paint-system']
+    let newButton = document.createElement('a-entity')
+    newButton.setAttribute('icon-button', "")
+    newButton.setAttribute('button-style', `color: ${system.data.color}`)
+    newButton.setAttribute('tooltip', system.data.color)
+    this.el.append(newButton)
+  }
+})

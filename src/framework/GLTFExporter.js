@@ -1,12 +1,7 @@
-import {bumpCanvasToNormalCanvas} from '../bump-to-normal.js'
-
 /**
  * @author fernandojsg / http://fernandojsg.com
  * @author Don McCurdy / https://www.donmccurdy.com
  * @author Takahiro / https://github.com/takahirox
- *
- * Modified 2020 by
- * @author Zach Capalbo / https://zachcapalbo.com
  */
 
 //------------------------------------------------------------------------------
@@ -985,11 +980,10 @@ THREE.GLTFExporter.prototype = {
 			// pbrMetallicRoughness.metallicRoughnessTexture
 			if ( material.metalnessMap || material.roughnessMap ) {
 
-				if ( true || material.metalnessMap === material.roughnessMap ) {
+				if ( material.metalnessMap === material.roughnessMap ) {
 
-          var mapToUse = material.metalnessMap || material.roughnessMap
-					var metalRoughMapDef = { index: processTexture( mapToUse ) };
-					applyTextureTransform( metalRoughMapDef, mapToUse );
+					var metalRoughMapDef = { index: processTexture( material.metalnessMap ) };
+					applyTextureTransform( metalRoughMapDef, material.metalnessMap );
 					gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture = metalRoughMapDef;
 
 				} else {
@@ -1046,13 +1040,6 @@ THREE.GLTFExporter.prototype = {
 				}
 
 			}
-
-      if (material.bumpMap) {
-          console.warn("Bump map detected. Obliterating normalMap")
-
-          material.normalMap = new THREE.Texture()
-          material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
-      }
 
 			// normalTexture
 			if ( material.normalMap ) {

@@ -1,5 +1,7 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+import {prepareModelForExport} from './material-transformations.js'
+import {ProjectFile} from './project-file.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
@@ -43,28 +45,39 @@ AFRAME.registerSystem('settings-system', {
       }
     }
   },
-  saveAction() {
+  async saveAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
-    let saveObj = compositor.save()
+    let saveObj = await ProjectFile.save({compositor})
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
   },
-  async exportModelAction() {
+  async export3dAction() {
+    let mesh = document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
+    let material = document.getElementById('canvas-view').getObject3D('mesh').material
+    prepareModelForExport(mesh, material)
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(document.getElementById('composition-view').getObject3D('mesh'), r, {binary: true})
+      exporter.parse(mesh, r, {binary: true})
     })
 
-    console.log(glb)
+    // console.log(glb)
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
   },
+  addModelView(model) {
+    let viewer = document.getElementById('composition-view')
+    viewer.setObject3D('mesh', model.scene || model.scenes[0])
+    viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
+
+    let mainCanvas = document.getElementById('canvas-view')
+    mainCanvas.setAttribute("position", "0 0.6 3.14")
+    mainCanvas.setAttribute("rotation", "0 180 0")
+  },
   load(text) {
     let loadObj = JSON.parse(text)
-
-    let compositor = document.getElementById('canvas-view').components.compositor;
-    compositor.load(loadObj)
+    ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
   },
   helpAction() {
     this.popup("landing.html", "Instructions")
@@ -82,5 +95,11 @@ AFRAME.registerSystem('settings-system', {
     cameraRoot.position.y = -camera.position.y + 1.23
 
     cameraRoot.rotation.y = -camera.rotation.y
-  }
+  },
+  setQuality(scale) {
+    document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
+  },
+  lowQualityAction() { this.setQuality(0.25) },
+  mediumQualityAction() { this.setQuality(0.5) },
+  fullQualityAction() { this.setQuality(1.0) }
 })

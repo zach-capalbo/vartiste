@@ -39,11 +39,6 @@ AFRAME.registerComponent('right-hand-controls', {
       this.scaleBrushAmmount = e.detail.axis[1]
     })
 
-    this.el.addEventListener('thumbstickdown', ()=> {
-      console.log(this.el.components.raycaster.refreshObjects())
-      console.log(this.el.components.raycaster.intersectedEls[0])
-    })
-
     let buttonMap = new ButtonMaps()
 
     buttonMap.setMap({
@@ -54,7 +49,8 @@ AFRAME.registerComponent('right-hand-controls', {
 
     buttonMap.setMap({
       'abutton': buttonMap.toggle('rotating'),
-      'trackpad': buttonMap.toggle('rotating')
+      'trackpad': buttonMap.toggle('rotating'),
+      'thumbstick': buttonMap.toggle('orbiting')
     }, "grabbing")
 
     buttonMap.install(this)

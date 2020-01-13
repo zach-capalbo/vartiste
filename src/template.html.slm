@@ -4,3 +4,6 @@ html
     title VARTISTE
     script src="https://aframe.io/releases/1.0.3/aframe.js"
   body
+    header
+      a href="landing.html" Need Help? Read the instructions here.
+      p VARTISTE is intended to be used with a virtual reality headset. Click the VR button on the bottom right hand corner to begin.
