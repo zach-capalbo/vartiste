@@ -46,6 +46,7 @@ AFRAME.registerComponent('icon-button', {
       e.stopPropagation()
       this.el.emit('click', e.detail)
     })
+    bg['redirect-grab'] = this.el
     this.bg = bg
     this.el.append(bg)
 
