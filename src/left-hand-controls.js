@@ -3,6 +3,7 @@ import {ButtonMaps, JoystickDirections} from './joystick-directions'
 AFRAME.registerComponent('left-hand-controls', {
   init() {
     JoystickDirections.install(this)
+    this.el.setAttribute('smooth-controller', "")
     this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: true})
 
     let buttonMap = new ButtonMaps()

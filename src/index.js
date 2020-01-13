@@ -24,6 +24,7 @@ require('./edit-field')
 require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
+require('./smooth-controller')
 
 require('./app.styl')
 

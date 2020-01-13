@@ -7,6 +7,7 @@ AFRAME.registerComponent('joystick-turn', {
   },
   init() {
     this.dirX = 0;
+    this.el.setAttribute('smooth-controller', "")
     this.el.addEventListener('axismove', e => {
       if (this.el.is('grabbing')) return;
 
