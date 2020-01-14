@@ -63,6 +63,7 @@ function updatePose () {
   }
 
   if (pose.orientation) {
+    // this._quart = this._quart || new THREE.Quaternion
     object3D.quaternion.fromArray(pose.orientation);
   }
 

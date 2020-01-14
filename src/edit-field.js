@@ -39,6 +39,7 @@ AFRAME.registerComponent('edit-field', {
     numpad.object3D.scale.copy(invScale)
     numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
     numpad.setAttribute('visible', true)
+    this.setValue("")
     this.el.sceneEl.emit('refreshobjects')
   },
   setValue(value) {

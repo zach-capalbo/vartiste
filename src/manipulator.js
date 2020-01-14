@@ -1,3 +1,5 @@
+import {Axes} from './joystick-directions.js'
+
 AFRAME.registerComponent('manipulator', {
   dependencies: ['raycaster', 'laser-controls'],
   schema: {
@@ -28,8 +30,8 @@ AFRAME.registerComponent('manipulator', {
     this.zoomAmmount = 0
     this.scaleAmmount = 0
     this.el.addEventListener('axismove', e => {
-      this.zoomAmmount = e.detail.axis[1]
-      this.scaleAmmount = - e.detail.axis[0]
+      this.zoomAmmount = e.detail.axis[Axes.UP_DOWN]
+      this.scaleAmmount = - e.detail.axis[Axes.LEFT_RIGHT]
     })
 
     this.startPoint = new THREE.Object3D()
