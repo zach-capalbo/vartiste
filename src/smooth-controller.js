@@ -11,7 +11,7 @@ function updatePose () {
   // Compose pose from Gamepad.
   pose = controller.pose;
 
-  const avgAmmount = 1
+  const avgAmmount = 20
 
   if (pose.position) {
     this._hasHadPose = true
@@ -58,24 +58,23 @@ function updatePose () {
   object3D.rotateY(this.data.orientationOffset.y * THREE.Math.DEG2RAD);
   object3D.rotateZ(this.data.orientationOffset.z * THREE.Math.DEG2RAD);
 
-  if (!this._rotVecs) {
-    this._rotVecs = []
+  if (!this._quarts) {
+    this._quarts = []
     for (let i = 0; i < avgAmmount; ++i)
     {
-      this._rotVecs[i] = new THREE.Vector3
+      this._quarts[i] = new THREE.Quaternion
     }
   }
-  object3D.rotation.toVector3(this._rotVecs[avgAmmount - 1])
+  this._quarts[avgAmmount - 1].copy(object3D.quaternion)
 
   for (let i = 1; i < avgAmmount; ++i)
   {
-    this._rotVecs[0].add(this._rotVecs[i])
+    this._quarts[0].slerp(this._quarts[i], 1.0 / avgAmmount)
   }
-  this._rotVecs[0].divideScalar(avgAmmount)
-  object3D.rotation.setFromVector3(this._rotVecs[0])
+  object3D.quaternion.copy(this._quarts[0])
   for (let i = 1; i < avgAmmount; ++i)
   {
-    this._rotVecs[i - 1].copy(this._rotVecs[i])
+    this._quarts[i - 1].copy(this._quarts[i])
   }
 }
 
@@ -91,7 +90,7 @@ function updatePoseXR() {
   object3D.rotateY(orientationOffset.y * THREE.Math.DEG2RAD);
   object3D.rotateZ(orientationOffset.z * THREE.Math.DEG2RAD);
 
-  const avgAmmount = 4
+  const avgAmmount = 20
   if (!this._poseVecs) {
     this._poseVecs = []
     for (let i = 0; i < avgAmmount; ++i)
@@ -110,6 +109,25 @@ function updatePoseXR() {
   for (let i = 1; i < avgAmmount; ++i)
   {
     this._poseVecs[i - 1].copy(this._poseVecs[i])
+  }
+
+  if (!this._quarts) {
+    this._quarts = []
+    for (let i = 0; i < avgAmmount; ++i)
+    {
+      this._quarts[i] = new THREE.Quaternion
+    }
+  }
+  this._quarts[avgAmmount - 1].copy(object3D.quaternion)
+
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._quarts[0].slerp(this._quarts[i], 1.0 / avgAmmount)
+  }
+  object3D.quaternion.copy(this._quarts[0])
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._quarts[i - 1].copy(this._quarts[i])
   }
 }
 
