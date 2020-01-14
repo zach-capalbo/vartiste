@@ -19,7 +19,7 @@ AFRAME.registerComponent('hand-draw-tool', {
   tick() {
     if (this.el.components.raycaster.intersections.length == 0) return
 
-    let intersection = this.el.components.raycaster.intersections.sort(i => - i.distance)[0]
+    let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
     let el = intersection.object.el
 
     let isDrawable = false
