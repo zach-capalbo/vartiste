@@ -9,7 +9,7 @@ a-scene
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500"
 
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; far: 50; interval: 10; showLine: false;" hand-draw-tool=""
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10; showLine: false;" hand-draw-tool=""
 
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root

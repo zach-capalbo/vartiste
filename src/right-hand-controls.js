@@ -1,4 +1,4 @@
-import {ButtonMaps} from './joystick-directions.js'
+import {ButtonMaps, Axes} from './joystick-directions.js'
 
 AFRAME.registerComponent('joystick-turn', {
   schema: {
@@ -6,6 +6,8 @@ AFRAME.registerComponent('joystick-turn', {
     target: {type: 'selector'}
   },
   init() {
+    let joystickXAxis = Axes.LEFT_RIGHT
+    let joystickYAxis = Axes.UP_DOWN
     this.dirX = 0;
     this.el.setAttribute('smooth-controller', "")
     this.el.addEventListener('axismove', e => {
@@ -13,12 +15,12 @@ AFRAME.registerComponent('joystick-turn', {
 
       const { detail } = e;
       const { amount } = this.data;
-      if ((detail.axis[0] > 0.8) && (this.dirX !== 1)) {
+      if ((detail.axis[joystickXAxis] > 0.8) && (this.dirX !== 1)) {
         this.dirX = 1;
         return this.data.target.object3D.rotation.y -= amount;
-      } else if ((-0.8 < detail.axis[0] && detail.axis[0] < 0.8) && (this.dirX !== 0)) {
+      } else if ((-0.8 < detail.axis[joystickXAxis] && detail.axis[joystickXAxis] < 0.8) && (this.dirX !== 0)) {
         return this.dirX = 0;
-      } else if ((detail.axis[0] < -0.8) && (this.dirX !== -1)) {
+      } else if ((detail.axis[joystickXAxis] < -0.8) && (this.dirX !== -1)) {
         this.dirX = -1;
         return this.data.target.object3D.rotation.y += amount;
       }
@@ -37,7 +39,7 @@ AFRAME.registerComponent('right-hand-controls', {
 
     this.scaleBrushAmmount = 0
     this.el.addEventListener('axismove', e => {
-      this.scaleBrushAmmount = e.detail.axis[1]
+      this.scaleBrushAmmount = e.detail.axis[Axes.UP_DOWN]
     })
 
     let buttonMap = new ButtonMaps()

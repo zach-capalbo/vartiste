@@ -1,5 +1,8 @@
 AFRAME.registerComponent('hand-draw-tool', {
   dependencies: ['raycaster', 'laser-controls'],
+  schema: {
+    throttle: {type: 'int', default: 10}
+  },
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
@@ -9,11 +12,14 @@ AFRAME.registerComponent('hand-draw-tool', {
       this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
       this.isDrawing = this.pressure > 0.1
     })
+
+    this._tick = this.tick
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
   tick() {
     if (this.el.components.raycaster.intersections.length == 0) return
 
-    let intersection = this.el.components.raycaster.intersections.sort(i => - i.distance)[0]
+    let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
     let el = intersection.object.el
 
     let isDrawable = false

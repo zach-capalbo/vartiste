@@ -2,7 +2,8 @@ AFRAME.registerComponent('button-style', {
   schema: {
     color: {type: 'color', default: "#abe"},
     clickColor: {type: 'color', default: '#aea'},
-    intersectedColor: {type: 'color', default: '#cef'}
+    intersectedColor: {type: 'color', default: '#cef'},
+    keepAspect: {type: 'bool', default: true}
   }
 })
 
@@ -20,6 +21,7 @@ AFRAME.registerComponent('icon-button', {
     }
 
     let buttonStyle = this.el.getAttribute('button-style')
+    this.style = buttonStyle
 
     this.el.setAttribute('material', {
       alphaTest: 0.01,
@@ -28,11 +30,13 @@ AFRAME.registerComponent('icon-button', {
       src: this.data,
       transparent: true
     })
+
     this.el.setAttribute('geometry', {
       primitive: 'plane',
       width: height,
       height: width
     })
+
     let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
@@ -65,6 +69,8 @@ AFRAME.registerComponent('icon-button', {
         this.bg.setAttribute('material', {color: buttonStyle.color})
       }
     })
+
+    this.el.addEventListener('object3dset', (e) => this.updateAspect())
   },
   update(oldData) {
     this.el.setAttribute('material', {
@@ -75,6 +81,17 @@ AFRAME.registerComponent('icon-button', {
       transparent: true,
       opacity: this.data === "" ? 0.0 : 1.0
     })
+    this.updateAspect()
+  },
+  updateAspect() {
+    if (this.style && this.style.keepAspect)
+    {
+      let material = this.el.getObject3D('mesh').material
+      if (!material || !material.map) return
+      let img = material.map.image
+      let aspect = img.width / img.height
+      this.el.setAttribute('geometry', {height: 0.4 / aspect})
+    }
   },
   tick(t,ts) {
     if (this.clickTime)

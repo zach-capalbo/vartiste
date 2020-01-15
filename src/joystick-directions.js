@@ -1,3 +1,10 @@
+let offset = navigator.xr ? 2 : 0
+
+const Axes = {
+  LEFT_RIGHT: 0 + offset,
+  UP_DOWN: 1 + offset,
+}
+
 class JoystickDirectionHandler {
   constructor(where) {
     this.dirX = 0;
@@ -31,12 +38,12 @@ class JoystickDirectionHandler {
 
       if (this.handleX)
       {
-        if ((detail.axis[0] > 0.8) && (this.dirX !== 1)) {
+        if ((detail.axis[Axes.LEFT_RIGHT] > 0.8) && (this.dirX !== 1)) {
           this.dirX = 1;
           this.rightClick(detail)
-        } else if ((-0.8 < detail.axis[0] && detail.axis[0] < 0.8) && (this.dirX !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.LEFT_RIGHT] && detail.axis[Axes.LEFT_RIGHT] < 0.8) && (this.dirX !== 0)) {
           return this.dirX = 0;
-        } else if ((detail.axis[0] < -0.8) && (this.dirX !== -1)) {
+        } else if ((detail.axis[Axes.LEFT_RIGHT] < -0.8) && (this.dirX !== -1)) {
           this.dirX = -1;
           this.leftClick(detail);
         }
@@ -44,12 +51,12 @@ class JoystickDirectionHandler {
 
       if (this.handleY)
       {
-        if ((detail.axis[1] > 0.8) && (this.dirY !== 1)) {
+        if ((detail.axis[Axes.UP_DOWN] > 0.8) && (this.dirY !== 1)) {
           this.dirY = 1;
           this.upClick(detail)
-        } else if ((-0.8 < detail.axis[1] && detail.axis[1] < 0.8) && (this.dirY !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.UP_DOWN] && detail.axis[Axes.UP_DOWN] < 0.8) && (this.dirY !== 0)) {
           return this.dirY = 0;
-        } else if ((detail.axis[1] < -0.8) && (this.dirY !== -1)) {
+        } else if ((detail.axis[Axes.UP_DOWN] < -0.8) && (this.dirY !== -1)) {
           this.dirY = -1;
           this.downClick(detail);
         }
@@ -120,4 +127,4 @@ const JoystickDirections = {
   }
 }
 
-export { JoystickDirections, ButtonMaps }
+export { JoystickDirections, ButtonMaps, Axes }
