@@ -48,20 +48,26 @@ AFRAME.registerComponent('draw-canvas', {
 
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
 
-    this.brush.drawTo(ctx,  x, y, {rotation})
-    if (wrapX) {
-        this.brush.drawTo(ctx, x + width, y, {rotation})
-        this.brush.drawTo(ctx, x - width, y, {rotation})
+    try {
+      this.brush.drawTo(ctx,  x, y, {rotation})
+      if (wrapX) {
+          this.brush.drawTo(ctx, x + width, y, {rotation})
+          this.brush.drawTo(ctx, x - width, y, {rotation})
+      }
+      if (wrapY) {
+        this.brush.drawTo(ctx, x, y + height, {rotation})
+        this.brush.drawTo(ctx, x, y - height, {rotation})
+      }
+      if (wrapY && wrapX) {
+        this.brush.drawTo(ctx, x + width, y + height, {rotation})
+        this.brush.drawTo(ctx, x - width, y - height, {rotation})
+        this.brush.drawTo(ctx, x + width, y - height, {rotation})
+        this.brush.drawTo(ctx, x - width, y + height, {rotation})
+      }
     }
-    if (wrapY) {
-      this.brush.drawTo(ctx, x, y + height, {rotation})
-      this.brush.drawTo(ctx, x, y - height, {rotation})
-    }
-    if (wrapY && wrapX) {
-      this.brush.drawTo(ctx, x + width, y + height, {rotation})
-      this.brush.drawTo(ctx, x - width, y - height, {rotation})
-      this.brush.drawTo(ctx, x + width, y - height, {rotation})
-      this.brush.drawTo(ctx, x - width, y + height, {rotation})
+    catch (e)
+    {
+      console.error("Drawing error", e)
     }
     ctx.globalAlpha = 1.0
   },

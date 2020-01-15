@@ -101,5 +101,11 @@ AFRAME.registerSystem('settings-system', {
   },
   lowQualityAction() { this.setQuality(0.25) },
   mediumQualityAction() { this.setQuality(0.5) },
-  fullQualityAction() { this.setQuality(1.0) }
+  fullQualityAction() { this.setQuality(1.0) },
+  setStabilizeAmount(amount) {
+    document.querySelectorAll('*[smooth-controller]').forEach((e) => e.setAttribute('smooth-controller', {amount}))
+  },
+  noStabilizationAction() { this.setStabilizeAmount(1) },
+  mediumStabilizationAction() { this.setStabilizeAmount(4) },
+  maxStabilizationAction() { this.setStabilizeAmount(12) },
 })

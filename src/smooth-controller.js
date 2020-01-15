@@ -1,3 +1,45 @@
+function stabilize(object3D, avgScale) {
+  const avgAmmount = this.el.components['smooth-controller'].data.amount * avgScale
+  if (!this._poseVecs || this._poseVecs.length !== avgAmmount) {
+    this._poseVecs = []
+    for (let i = 0; i < avgAmmount; ++i)
+    {
+      this._poseVecs[i] = new THREE.Vector3
+    }
+  }
+  this._poseVecs[avgAmmount - 1].copy(object3D.position)
+
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._poseVecs[0].add(this._poseVecs[i])
+  }
+  this._poseVecs[0].divideScalar(avgAmmount)
+  object3D.position.copy(this._poseVecs[0])
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._poseVecs[i - 1].copy(this._poseVecs[i])
+  }
+
+  if (!this._quarts || this._quarts.length !== avgAmmount) {
+    this._quarts = []
+    for (let i = 0; i < avgAmmount; ++i)
+    {
+      this._quarts[i] = new THREE.Quaternion
+    }
+  }
+  this._quarts[avgAmmount - 1].copy(object3D.quaternion)
+
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._quarts[0].slerp(this._quarts[i], 1.0 / avgAmmount)
+  }
+  object3D.quaternion.copy(this._quarts[0])
+  for (let i = 1; i < avgAmmount; ++i)
+  {
+    this._quarts[i - 1].copy(this._quarts[i])
+  }
+}
+
 function updatePose () {
   var controller = this.controller;
   var data = this.data;
@@ -11,31 +53,11 @@ function updatePose () {
   // Compose pose from Gamepad.
   pose = controller.pose;
 
-  const avgAmmount = 20
-
   if (pose.position) {
     this._hasHadPose = true
 
-    if (!this._poseVecs) {
-      this._poseVecs = []
-      for (let i = 0; i < avgAmmount; ++i)
-      {
-        this._poseVecs[i] = new THREE.Vector3
-      }
-    }
-    this._poseVecs[avgAmmount - 1].fromArray(pose.position)
+    object3D.position.fromArray(pose.position)
 
-    for (let i = 1; i < avgAmmount; ++i)
-    {
-      this._poseVecs[0].add(this._poseVecs[i])
-    }
-    this._poseVecs[0].divideScalar(avgAmmount)
-    object3D.position.copy(this._poseVecs[0])
-    for (let i = 1; i < avgAmmount; ++i)
-    {
-      this._poseVecs[i - 1].copy(this._poseVecs[i])
-    }
-    // console.log(this._poseVecs)
   } else if (!this._hasHadPose){
     // Controller not 6DOF, apply arm model.
     if (data.armModel) { this.applyArmModel(object3D.position); }
@@ -58,24 +80,7 @@ function updatePose () {
   object3D.rotateY(this.data.orientationOffset.y * THREE.Math.DEG2RAD);
   object3D.rotateZ(this.data.orientationOffset.z * THREE.Math.DEG2RAD);
 
-  if (!this._quarts) {
-    this._quarts = []
-    for (let i = 0; i < avgAmmount; ++i)
-    {
-      this._quarts[i] = new THREE.Quaternion
-    }
-  }
-  this._quarts[avgAmmount - 1].copy(object3D.quaternion)
-
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._quarts[0].slerp(this._quarts[i], 1.0 / avgAmmount)
-  }
-  object3D.quaternion.copy(this._quarts[0])
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._quarts[i - 1].copy(this._quarts[i])
-  }
+  stabilize.call(this, object3D, 1)
 }
 
 function updatePoseXR() {
@@ -90,50 +95,13 @@ function updatePoseXR() {
   object3D.rotateY(orientationOffset.y * THREE.Math.DEG2RAD);
   object3D.rotateZ(orientationOffset.z * THREE.Math.DEG2RAD);
 
-  const avgAmmount = 20
-  if (!this._poseVecs) {
-    this._poseVecs = []
-    for (let i = 0; i < avgAmmount; ++i)
-    {
-      this._poseVecs[i] = new THREE.Vector3
-    }
-  }
-  this._poseVecs[avgAmmount - 1].copy(object3D.position)
-
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._poseVecs[0].add(this._poseVecs[i])
-  }
-  this._poseVecs[0].divideScalar(avgAmmount)
-  object3D.position.copy(this._poseVecs[0])
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._poseVecs[i - 1].copy(this._poseVecs[i])
-  }
-
-  if (!this._quarts) {
-    this._quarts = []
-    for (let i = 0; i < avgAmmount; ++i)
-    {
-      this._quarts[i] = new THREE.Quaternion
-    }
-  }
-  this._quarts[avgAmmount - 1].copy(object3D.quaternion)
-
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._quarts[0].slerp(this._quarts[i], 1.0 / avgAmmount)
-  }
-  object3D.quaternion.copy(this._quarts[0])
-  for (let i = 1; i < avgAmmount; ++i)
-  {
-    this._quarts[i - 1].copy(this._quarts[i])
-  }
+  stabilize.call(this, object3D, 2)
 }
 
 AFRAME.registerComponent('smooth-controller', {
-  // dependencies: ['tracked-controls-webvr'],
-  schema: {  },
+  schema: {
+    amount: {default: 4}
+  },
   init() {
     this.el.addEventListener('componentinitialized', (e) => {
       if (e.detail.name === 'tracked-controls-webvr') this.install()
