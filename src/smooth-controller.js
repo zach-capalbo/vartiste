@@ -5,6 +5,7 @@ function stabilize(object3D, avgScale) {
     for (let i = 0; i < avgAmmount; ++i)
     {
       this._poseVecs[i] = new THREE.Vector3
+      this._poseVecs[i].copy(object3D.position)
     }
   }
   this._poseVecs[avgAmmount - 1].copy(object3D.position)
@@ -25,6 +26,7 @@ function stabilize(object3D, avgScale) {
     for (let i = 0; i < avgAmmount; ++i)
     {
       this._quarts[i] = new THREE.Quaternion
+      this._quarts[i].copy(object3D.quaternion)
     }
   }
   this._quarts[avgAmmount - 1].copy(object3D.quaternion)
