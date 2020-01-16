@@ -2,6 +2,7 @@ import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
+import {Undo} from './undo.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
@@ -108,4 +109,7 @@ AFRAME.registerSystem('settings-system', {
   noStabilizationAction() { this.setStabilizeAmount(1) },
   mediumStabilizationAction() { this.setStabilizeAmount(4) },
   maxStabilizationAction() { this.setStabilizeAmount(12) },
+  undoAction() {
+    Undo.undo()
+  }
 })

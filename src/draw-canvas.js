@@ -1,4 +1,5 @@
 import {Layer} from './layer.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('draw-canvas', {
   schema: {
@@ -37,8 +38,16 @@ AFRAME.registerComponent('draw-canvas', {
     return {x,y}
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined}) {
     if (canvas === null) canvas = this.data.canvas
+    if (!this.wasDrawing && sourceEl)
+    {
+      Undo.pushCanvas(canvas)
+      sourceEl.addEventListener('enddrawing', (e) => {
+        this.wasDrawing = false
+      }, {once: true})
+      this.wasDrawing = true
+    }
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 
@@ -142,9 +151,22 @@ AFRAME.registerComponent('draw-canvas', {
     return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
   },
 
-  eraseUV(uv, {pressure = 1.0, canvas = null, rotation=0.0} = {}) {
-    console.log("Erasing")
+  eraseUV(uv, {pressure = 1.0, canvas = null, rotation=0.0, sourceEl = undefined} = {}) {
     if (canvas == null) canvas = this.data.canvas
+    if (!this.wasErasing && sourceEl)
+    {
+      Undo.pushCanvas(canvas)
+      const eraseListener = (e) => {
+        if (e.detail === 'erasing')
+        {
+          this.wasErasing = false
+        }
+        sourceEl.removeEventListener('stateremoved', eraseListener)
+      }
+      sourceEl.addEventListener('stateremoved', eraseListener)
+      this.wasErasing = true
+    }
+
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 
