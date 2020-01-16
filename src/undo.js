@@ -2,6 +2,7 @@ class UndoStack {
   constructor() {
     this.stack = []
     this.maxSize = 10
+    this.pushAllowed = true
   }
   pushCanvas(canvas) {
     let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)
@@ -10,6 +11,7 @@ class UndoStack {
     })
   }
   push(f) {
+    if (!this.pushAllowed) return
     this.stack.push(f)
     if (this.stack.length > this.maxSize)
     {
@@ -18,7 +20,19 @@ class UndoStack {
   }
   undo() {
     if (this.stack.length === 0) return
-    this.stack.pop()()
+    this.block(this.stack.pop())
+  }
+  block(f) {
+    try {
+      this.pushAllowed = false
+      f()
+      this.pushAllowed = true
+    }
+    catch (e)
+    {
+      this.pushAllowed = true
+      throw e
+    }
   }
 }
 

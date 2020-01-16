@@ -64,7 +64,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       else
       {
         console.log("emitting draw to", el, intersection)
-        el.emit("draw", {intersection, pressure:this.pressure})
+        el.emit("draw", {intersection, pressure:this.pressure, rotation: rotation, sourceEl: this.el})
       }
     }
     if (this.el.is("sampling"))
