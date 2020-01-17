@@ -66,6 +66,8 @@ AFRAME.registerSystem('settings-system', {
     // console.log(glb)
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
+
+    document.getElementById('composition-view').emit('updatemesh')
   },
   addModelView(model) {
     let viewer = document.getElementById('composition-view')

@@ -33,6 +33,7 @@ AFRAME.registerComponent('composition-view', {
 
     this.el.addEventListener('object3dset', e => this.updateMesh())
     this.data.compositor.addEventListener('componentchanged', e => { if (e.detail.name === 'material') this.updateMesh() })
+    this.el.addEventListener('updatemesh', e => this.updateMesh())
 
     // this.setAttribute("draw-canvas", {canvas: this.compositor.canvasthing})
   },
