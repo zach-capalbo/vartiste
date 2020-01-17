@@ -111,5 +111,8 @@ AFRAME.registerSystem('settings-system', {
   maxStabilizationAction() { this.setStabilizeAmount(12) },
   undoAction() {
     Undo.undo()
+  },
+  toggleUndoAction() {
+    Undo.enabled = !Undo.enabled
   }
 })

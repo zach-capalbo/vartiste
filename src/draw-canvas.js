@@ -105,8 +105,8 @@ AFRAME.registerComponent('draw-canvas', {
     }
   },
 
-  pickColorUV(uv) {
-    let canvas = this.data.canvas
+  pickColorUV(uv, {canvas = null} = {}) {
+    if (canvas === null) canvas = document.getElementById('canvas-view').components.compositor.compositeCanvas
     let sampleCanvas = this.sampleCanvas
     let ctx = sampleCanvas.getContext('2d')
     let width = Math.round(this.brush.width)

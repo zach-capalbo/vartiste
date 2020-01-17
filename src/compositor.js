@@ -312,7 +312,10 @@ AFRAME.registerComponent('compositor', {
       modesUsed.add(layer.mode)
     }
 
-    this.drawOverlay(ctx)
+    if (!Array.from(document.querySelectorAll('*[hand-draw-tool]')).some(e => e.is('sampling')))
+    {
+      this.drawOverlay(ctx)
+    }
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 

@@ -3,8 +3,21 @@ class UndoStack {
     this.stack = []
     this.maxSize = 10
     this.pushAllowed = true
+    this._enabled = true
+  }
+  set enabled(value) {
+    this._enabled = !!value
+    if (!this.enabled)
+    {
+      this.stack = []
+      this.pushAllowed = true
+    }
+  }
+  get enabled() {
+    return this._enabled
   }
   pushCanvas(canvas) {
+    if (!this.enabled) return
     let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)
     this.push(() => {
       canvas.getContext('2d').putImageData(imageData, 0, 0)

@@ -25,6 +25,7 @@ require('./tooltip')
 require('./brush-shelf')
 require('./composition-view')
 require('./smooth-controller')
+require('./lathe')
 
 require('./app.styl')
 
