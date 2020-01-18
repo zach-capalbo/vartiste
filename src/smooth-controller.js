@@ -116,3 +116,12 @@ AFRAME.registerComponent('smooth-controller', {
     if (this.el.components['tracked-controls-webxr']) this.el.components['tracked-controls-webxr'].updatePose = updatePoseXR
   }
 })
+
+AFRAME.registerComponent('fix-raycaster', {
+  dependencies: ['raycaster', 'laser-controls'],
+  init() {
+    this.el.addEventListener('controllermodelready', e => {
+      this.el.setAttribute('raycaster', {origin: [0,0,0]})
+    })
+  }
+})

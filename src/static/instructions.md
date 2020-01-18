@@ -22,10 +22,15 @@ For Oculus Touch controllers:
  - Right Hand (While Grabbing)
   - Joystick Right/Left: Make grabbed object bigger / smaller
   - Joystick Up/Down: Push / pull grabbed object
+  - Joystick Press: Toggle Orbit Mode
   - A: Toggle Rotation Lock
+ - Right Hand (While Grabbing during Orbit Mode)
+  - Joystick Right/Left: Rotate grabbed object on Z axis
+  - Joystick Up/Down: Rotate grabbed object on Y axis
 
  - Left Hand:
   - Trigger: Draw
+  - X Button: Undo
   - Press Joystick: Reset camera
   - Joystick Right/Left: Next/Previous brush
   - Joystick Up/Down: Next/Previous layer
@@ -73,11 +78,38 @@ appear in front, and the 2D canvas view will flip to behind you.
  - Draco compression is not currently supported
  - No existing textures or vertex colors are imported yet
 
+## Tips And Tricks
+
+- **Tip:** If VARTISTE is slow, unresponsive, or laggy
+  - Use the Medium Quality ![Dice 4](../assets/dice-4.png) or Low Quality ![Dice 2](../assets/dice-2.png)
+  - Use a smaller canvas size
+  - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
+  - I've gotten the best performance out of [Chrome Canary](https://www.google.com/chrome/canary/)
+- **Trick:** To _Copy and Paste_ try this:
+  1. Duplicate ![Plus Box Multiple](../assets/plus-box-multiple.png) the layer
+  1. Erase the parts of the duplicated layer that you don't want copied
+  1. Use the Grab Layer ![Arrow All](../assets/arrow-all.png) button and then
+     grab and move the layer where you want it to go
+  1. Use the Stamp Down ![Archive Arrow Down](../assets/archive-arrow-down-outline.png)
+     button to stamp the layer onto the layer below
+  1. Grab and stamp again as many times as desired
+
+
 ## Issues
 
 This is a very early version of the software. It still needs a lot of love. If
 you encounter problems, you can [Submit an Issue Report](https://gitlab.com/zach-geek/vartiste/issues).
 If you feel inclined, you can also [Contribute code in the form of a Merge Request](https://gitlab.com/zach-geek/vartiste).
+
+## Privacy Policy
+
+VARTISTE is a client-side-only application. No information about you whatsoever
+is collected by VARTISTE. Any information you enter into the program stays on
+your browser.
+
+VARTISTE is hosted by [Gitlab Pages](https://about.gitlab.com/product/pages/).
+The Gitlab Pages server may collect  standard information under the [Gitlab
+Privacy Policy](https://about.gitlab.com/privacy/)
 
 ## About
 

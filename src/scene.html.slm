@@ -9,7 +9,7 @@ a-scene
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500"
 
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10; showLine: false;" hand-draw-tool=""
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10; showLine: false;" hand-draw-tool="" fix-raycaster=""
 
   == partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
@@ -37,4 +37,4 @@ a-scene
       ]
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false"
       a-entity position="0 0.6 -1.0"
-        a-entity#composition-view composition-view="compositor: #canvas-view"
+        a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"

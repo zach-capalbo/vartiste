@@ -2,6 +2,7 @@ import {Layer} from "./layer.js"
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
+import {Undo} from './undo.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -70,6 +71,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     this.activateLayer(layer)
+    Undo.push(e=> this.deleteLayer(layer))
   },
 
   duplicateLayer(layer) {
@@ -81,6 +83,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
     this.activateLayer(layer)
+    Undo.push(e=> this.deleteLayer(layer))
   },
 
   activateLayer(layer) {
@@ -120,8 +123,10 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx1] = layer2
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
+    Undo.push(e=> this.swapLayers(layer1, layer2))
   },
   mergeLayers(fromLayer, ontoLayer) {
+    Undo.pushCanvas(ontoLayer.canvas)
     let ctx = ontoLayer.canvas.getContext('2d')
     ctx.save()
 
@@ -138,6 +143,8 @@ AFRAME.registerComponent('compositor', {
   },
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
+
+    Undo.push(() => this.addLayer(idx, {layer}))
 
     console.log("Deleting layer", layer.id, idx)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)
@@ -160,6 +167,8 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layerdeleted', {layer})
   },
   setLayerBlendMode(layer,mode) {
+    let oldMode = layer.mode
+    Undo.push(() => this.setLayerBlendMode(layer, oldMode))
     layer.mode = mode
     this.el.emit('layerupdated', {layer})
   },
@@ -303,7 +312,10 @@ AFRAME.registerComponent('compositor', {
       modesUsed.add(layer.mode)
     }
 
-    this.drawOverlay(ctx)
+    if (!Array.from(document.querySelectorAll('*[hand-draw-tool]')).some(e => e.is('sampling')))
+    {
+      this.drawOverlay(ctx)
+    }
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 

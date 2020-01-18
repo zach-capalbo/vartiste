@@ -1,5 +1,6 @@
 // Based on https://jsfiddle.net/gftruj/tLo2vh99/
 const Color = require('color')
+const {Undo} = require('./undo.js')
 
 AFRAME.registerComponent("color-picker", {
   schema: {brightness: {type: 'float', default: 0.5}},
@@ -107,8 +108,28 @@ AFRAME.registerComponent("opacity-picker", {
 
     this.adjustIndicator(this.system.data.opacity)
 
-    this.el.addEventListener("click", (e)=>this.handleClick(e))
-    this.el.addEventListener("draw", (e)=>this.handleClick(e))
+    this.el.addEventListener("click", (e)=> {
+      if (this.layer && !this.wasDrawing) {
+        let oldOpacity = this.layer.oldOpacity
+        Undo.push(() => {
+          this.layer.opacity = oldOpacity
+        })
+      }
+      this.handleClick(e)
+    })
+    this.el.addEventListener("draw", (e)=>{
+      if (this.layer && !this.wasDrawing)
+      {
+        this.wasDrawing  = true
+        let oldOpacity = this.layer.opacity
+        Undo.push(() => {
+          this.layer.opacity = oldOpacity
+          this.adjustIndicator(oldOpacity)
+        })
+        e.detail.sourceEl.addEventListener('enddrawing', () => {this.wasDrawing = false}, {once: true})
+      }
+      this.handleClick(e)
+    })
 
     this.el.sceneEl.addEventListener('opacitychanged', (e) => {
       if (this.layer) return

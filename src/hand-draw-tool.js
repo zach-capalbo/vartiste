@@ -10,7 +10,17 @@ AFRAME.registerComponent('hand-draw-tool', {
     this.el.addEventListener('triggerchanged', (e) => {
       let threshold = 0.1
       this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
+      let wasDrawing = this.isDrawing
       this.isDrawing = this.pressure > 0.1
+
+      if (this.isDrawing && !wasDrawing) {
+        console.log("Start drawing")
+        this.el.emit('startdrawing')
+      }
+      if (!this.isDrawing && wasDrawing) {
+        console.log("End drawing")
+        this.el.emit('enddrawing')
+      }
     })
 
     this._tick = this.tick
@@ -49,12 +59,12 @@ AFRAME.registerComponent('hand-draw-tool', {
     if (this.isDrawing) {
       if (isDrawable)
       {
-        drawCanvas.drawUV(intersection.uv, {pressure: this.pressure, rotation: rotation})
+        drawCanvas.drawUV(intersection.uv, {pressure: this.pressure, rotation: rotation, sourceEl: this.el})
       }
       else
       {
         console.log("emitting draw to", el, intersection)
-        el.emit("draw", {intersection, pressure:this.pressure})
+        el.emit("draw", {intersection, pressure:this.pressure, rotation: rotation, sourceEl: this.el})
       }
     }
     if (this.el.is("sampling"))
@@ -68,7 +78,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     {
       if (isDrawable)
       {
-        drawCanvas.eraseUV(intersection.uv, {rotation})
+        drawCanvas.eraseUV(intersection.uv, {rotation, sourceEl: this.el})
       }
     }
   }

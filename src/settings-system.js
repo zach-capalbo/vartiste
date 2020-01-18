@@ -2,6 +2,7 @@ import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
+import {Undo} from './undo.js'
 AFRAME.registerSystem('settings-system', {
   init() {},
   popup(url, description) {
@@ -51,6 +52,8 @@ AFRAME.registerSystem('settings-system', {
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
+
+    document.getElementById('composition-view').emit('updatemesh')
   },
   async export3dAction() {
     let mesh = document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
@@ -62,9 +65,9 @@ AFRAME.registerSystem('settings-system', {
       exporter.parse(mesh, r, {binary: true})
     })
 
-    // console.log(glb)
-
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
+
+    document.getElementById('composition-view').emit('updatemesh')
   },
   addModelView(model) {
     let viewer = document.getElementById('composition-view')
@@ -108,4 +111,10 @@ AFRAME.registerSystem('settings-system', {
   noStabilizationAction() { this.setStabilizeAmount(1) },
   mediumStabilizationAction() { this.setStabilizeAmount(4) },
   maxStabilizationAction() { this.setStabilizeAmount(12) },
+  undoAction() {
+    Undo.undo()
+  },
+  toggleUndoAction() {
+    Undo.enabled = !Undo.enabled
+  }
 })

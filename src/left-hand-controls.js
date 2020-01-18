@@ -8,7 +8,7 @@ AFRAME.registerComponent('left-hand-controls', {
 
     let buttonMap = new ButtonMaps()
     buttonMap.setMap({
-      'trackpad': 'sampling',
+      'trackpad': 'sampling'
     })
     buttonMap.install(this)
 
@@ -18,6 +18,10 @@ AFRAME.registerComponent('left-hand-controls', {
 
     this.el.addEventListener('menudown', () => {
       this.el.sceneEl.systems['settings-system'].resetCameraAction()
+    })
+
+    this.el.addEventListener('xbuttondown', () => {
+      this.el.sceneEl.systems['settings-system'].undoAction()
     })
   },
 

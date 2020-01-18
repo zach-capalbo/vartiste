@@ -50,5 +50,8 @@ AFRAME.registerComponent('brush-shelf', {
   },
   toggleWrapYAction() {
     this.system.data.wrapY = !this.system.data.wrapY
+  },
+  toggleLatheAction() {
+    document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
   }
 })

@@ -1,4 +1,5 @@
 import {Axes} from './joystick-directions.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('manipulator', {
   dependencies: ['raycaster', 'laser-controls'],
@@ -81,12 +82,20 @@ AFRAME.registerComponent('manipulator', {
     })
   },
   startGrab() {
-    this.el.addState('grabbing')
-
     if (this.target.grabbingManipulator) {
       // stopGrab()
       return
     }
+
+    let startMatrix = new THREE.Matrix4
+    startMatrix.copy(this.target.object3D.matrix)
+    let obj3d = this.target.object3D
+    Undo.push(() => {
+      obj3d.matrix.copy(startMatrix)
+      obj3d.matrix.decompose(obj3d.position, obj3d.quaternion, obj3d.scale)
+    })
+
+    this.el.addState('grabbing')
 
     let settings = this.el.sceneEl.systems['settings-system']
 
