@@ -52,6 +52,8 @@ AFRAME.registerSystem('settings-system', {
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
     this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
+
+    document.getElementById('composition-view').emit('updatemesh')
   },
   async export3dAction() {
     let mesh = document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
@@ -62,8 +64,6 @@ AFRAME.registerSystem('settings-system', {
     let glb = await new Promise((r, e) => {
       exporter.parse(mesh, r, {binary: true})
     })
-
-    // console.log(glb)
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
 

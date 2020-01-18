@@ -121,10 +121,7 @@ AFRAME.registerComponent('fix-raycaster', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
     this.el.addEventListener('controllermodelready', e => {
-      // if (e.detail.name === 'raycaster' && this.el.getAttribute('raycaster').origin.x !== 0)
-      {
-        this.el.setAttribute('raycaster', {origin: [0,0,0]})
-      }
+      this.el.setAttribute('raycaster', {origin: [0,0,0]})
     })
   }
 })
