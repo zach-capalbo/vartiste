@@ -1,5 +1,5 @@
 AFRAME.registerComponent('hand-draw-tool', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   schema: {
     throttle: {type: 'int', default: 10}
   },
@@ -18,6 +18,23 @@ AFRAME.registerComponent('hand-draw-tool', {
         this.el.emit('startdrawing')
       }
       if (!this.isDrawing && wasDrawing) {
+        console.log("End drawing")
+        this.el.emit('enddrawing')
+      }
+    })
+
+    document.addEventListener('mousedown', e => {
+      if (!e.buttons || e.buttons == 1) return
+      this.pressure = 1.0
+      this.isDrawing = true
+      console.log("Start drawing")
+      this.el.emit('startdrawing')
+    })
+
+    document.addEventListener('mouseup', e=> {
+      if (e.button == 0) return
+      if (this.isDrawing) {
+        this.isDrawing = false
         console.log("End drawing")
         this.el.emit('enddrawing')
       }
