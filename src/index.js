@@ -26,6 +26,7 @@ require('./brush-shelf')
 require('./composition-view')
 require('./smooth-controller')
 require('./lathe')
+require('./url-loader')
 
 require('./app.styl')
 
