@@ -11,7 +11,7 @@ a-scene
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10; showLine: false;" hand-draw-tool="" fix-raycaster=""
 
-  == partial('./partials/popup-shelf.html.slm')
+  /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
 

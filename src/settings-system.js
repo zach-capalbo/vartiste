@@ -8,17 +8,17 @@ AFRAME.registerSystem('settings-system', {
     this.projectName = "vartiste-project"
   },
   popup(url, description) {
-    // this.el.emit('open-popup', description)
+    this.el.emit('open-popup', `Attempted to open a poup for ${description}. You may need to take off your headset to view it. You may also need to disable your popup blocker.`)
     window.open(url)
 
     let desktopLink = document.createElement('a')
     desktopLink.href = url
     desktopLink.style = "z-index: 10000; position: absolute; top: 50%; left: 50%; padding: 5px; background-color: #eee; transform: translate(-50%,-50%)"
     desktopLink.innerHTML = "Open " + description
-    document.body.append(desktopLink)
+    // document.body.append(desktopLink)
   },
   download(url, filename, description) {
-    this.el.emit('open-popup', description)
+    this.el.emit('open-popup', `Attempted to download the ${description}. You may need to take off your headset to download it.`)
 
     let desktopLink = document.createElement('a')
     desktopLink.href = url
@@ -36,7 +36,7 @@ AFRAME.registerSystem('settings-system', {
     saveImg.src = compositor.compositeCanvas.toDataURL()
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
-    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}.png`, "Image to dowload")
+    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}.png`, "Canvas Images")
 
     for (let mode of THREED_MODES)
     {
