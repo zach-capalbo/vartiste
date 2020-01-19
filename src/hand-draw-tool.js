@@ -23,22 +23,25 @@ AFRAME.registerComponent('hand-draw-tool', {
       }
     })
 
-    document.addEventListener('mousedown', e => {
-      if (!e.buttons || e.buttons == 1) return
-      this.pressure = 1.0
-      this.isDrawing = true
-      console.log("Start drawing")
-      this.el.emit('startdrawing')
-    })
+    if (this.el.hasAttribute('cursor'))
+    {
+      document.addEventListener('mousedown', e => {
+        if (!e.buttons || e.buttons == 1) return
+        this.pressure = 1.0
+        this.isDrawing = true
+        console.log("Start drawing")
+        this.el.emit('startdrawing')
+      })
 
-    document.addEventListener('mouseup', e=> {
-      if (e.button == 0) return
-      if (this.isDrawing) {
-        this.isDrawing = false
-        console.log("End drawing")
-        this.el.emit('enddrawing')
-      }
-    })
+      document.addEventListener('mouseup', e=> {
+        if (e.button == 0) return
+        if (this.isDrawing) {
+          this.isDrawing = false
+          console.log("End drawing")
+          this.el.emit('enddrawing')
+        }
+      })
+    }
 
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
@@ -80,7 +83,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       }
       else
       {
-        console.log("emitting draw to", el, intersection)
+        // console.log("emitting draw to", el, intersection)
         el.emit("draw", {intersection, pressure:this.pressure, rotation: rotation, sourceEl: this.el})
       }
     }
