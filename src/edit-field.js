@@ -1,7 +1,8 @@
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text"],
   schema: {
-    tooltip: {type: 'string'}
+    tooltip: {type: 'string'},
+    type: {type: 'string', default: 'number'}
   },
   init() {
     this.el.setAttribute('text', {align: 'right'})
@@ -27,6 +28,10 @@ AFRAME.registerComponent('edit-field', {
     {
       this.editButton.setAttribute('tooltip', this.data.tooltip)
     }
+
+    if (this.data.type === 'string') {
+      this.numpad.innerHTML = require('./partials/keyboard.html.slm')
+    }
   },
   launchNumpad() {
     let numpad = this.numpad
@@ -39,7 +44,10 @@ AFRAME.registerComponent('edit-field', {
     numpad.object3D.scale.copy(invScale)
     numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
     numpad.setAttribute('visible', true)
-    this.setValue("")
+    if (this.data.type === 'number')
+    {
+      this.setValue("")
+    }
     this.el.sceneEl.emit('refreshobjects')
   },
   setValue(value) {
@@ -71,5 +79,9 @@ AFRAME.registerComponent('edit-field', {
   ok(e) {
     this.numpad.setAttribute('visible', false)
     this.numpad.setAttribute('position', '0 -999999 0.1')
+    this.el.emit("editfinished", {value: this.el.getAttribute('text').value})
+  },
+  clear(e) {
+    this.setValue("")
   }
 })

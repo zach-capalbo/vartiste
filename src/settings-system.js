@@ -4,7 +4,9 @@ import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 AFRAME.registerSystem('settings-system', {
-  init() {},
+  init() {
+    this.projectName = "vartiste-project"
+  },
   popup(url, description) {
     // this.el.emit('open-popup', description)
     window.open(url)
@@ -34,7 +36,7 @@ AFRAME.registerSystem('settings-system', {
     saveImg.src = compositor.compositeCanvas.toDataURL()
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
-    this.download(saveImg.src, `VARTISTE-${this.formatFileDate()}.png`, "Image to dowload")
+    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}.png`, "Image to dowload")
 
     for (let mode of THREED_MODES)
     {
@@ -42,7 +44,7 @@ AFRAME.registerSystem('settings-system', {
       {
         if (layer.mode !== mode) continue
 
-        this.download(layer.canvas.toDataURL(), `VARTISTE-${this.formatFileDate()}-${mode}.png`, mode)
+        this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}-${mode}.png`, mode)
       }
     }
   },
@@ -51,7 +53,7 @@ AFRAME.registerSystem('settings-system', {
     let saveObj = await ProjectFile.save({compositor})
     let encoded = encodeURIComponent(JSON.stringify(saveObj))
 
-    this.download("data:application/x-binary," + encoded, `project-${this.formatFileDate()}.vartiste`, "Project File")
+    this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
 
     document.getElementById('composition-view').emit('updatemesh')
   },
@@ -65,7 +67,7 @@ AFRAME.registerSystem('settings-system', {
       exporter.parse(mesh, r, {binary: true})
     })
 
-    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `project-${this.formatFileDate()}.glb`, "GLB File")
+    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.glb`, "GLB File")
 
     document.getElementById('composition-view').emit('updatemesh')
   },
@@ -116,5 +118,9 @@ AFRAME.registerSystem('settings-system', {
   },
   toggleUndoAction() {
     Undo.enabled = !Undo.enabled
+  },
+  setProjectName(name) {
+    this.projectName = name
+    this.el.emit('projectnamechanged', {name})
   }
 })
