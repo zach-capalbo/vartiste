@@ -8,6 +8,7 @@ class ProjectFile {
     if (!('width' in obj)) obj.width = 1024
     if (!('height' in obj)) obj.height = 512
     if (!('layers' in obj)) obj.layers = []
+    if (!('projectName' in obj)) obj.projectName = 'project'
     for (let layer of obj.layers)
     {
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
@@ -25,6 +26,9 @@ class ProjectFile {
 
   static async load(obj, {compositor}) {
     ProjectFile.update(obj)
+    let settings = document.getElementsByTagName('a-scene')[0].systems['settings-system']
+    settings.setProjectName(obj.projectName)
+
     await compositor.load(obj)
     compositor.el.setAttribute('material', {shader: obj.shader})
 
@@ -34,13 +38,14 @@ class ProjectFile {
       let buffer = await base64ToBufferAsync(obj.glb)
       let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
 
-      document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+      settings.addModelView(model)
     }
   }
 
   async _save() {
     let obj = {}
     obj._fileVersion = FILE_VERSION
+    obj.projectName = document.querySelector('a-scene').systems['settings-system'].projectName
     Object.assign(obj, this.saveCompositor())
 
     let glbMesh = document.getElementById('composition-view').getObject3D('mesh')

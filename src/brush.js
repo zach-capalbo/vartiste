@@ -175,4 +175,40 @@ class LambdaBrush extends ProceduralBrush {
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush };
+class FillBrush extends Brush {
+  constructor({mode = "source-over", previewSrc} = {}) {
+    super();
+    this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
+    this.mode = mode
+  }
+  changeColor(color) {
+    this.color = color
+  }
+  changeScale() {}
+  changeOpacity(opacity) {
+    this.opacity = opacity
+  }
+  drawTo(ctx, x, y, {rotation=0} = {}) {
+    let oldOpacity = ctx.globalAlpha
+    let oldStyle = ctx.fillStyle
+    let oldMode = ctx.globalCompositeOperation
+    ctx.globalAlpha *= this.opacity
+    ctx.fillStyle = this.color
+    ctx.globalCompositeOperation = this.mode
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalAlpha = oldOpacity
+    ctx.fillStyle = oldStyle
+    ctx.globalCompositeOperation = oldMode
+  }
+  drawOutline(ctx, x, y) {
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(ctx.canvas.width, ctx.canvas.height)
+    ctx.moveTo(ctx.canvas.width, 0)
+    ctx.lineTo(0, ctx.canvas.height)
+    ctx.strokeStyle = "#FFF"
+    ctx.stroke()
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush };

@@ -1,6 +1,8 @@
+//require('./framework/aframe.js')
 require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')
+require('./framework/valve-index-controls.js')
 
 require('./paint-system')
 require('./settings-system')
@@ -26,6 +28,7 @@ require('./brush-shelf')
 require('./composition-view')
 require('./smooth-controller')
 require('./lathe')
+require('./url-loader')
 
 require('./app.styl')
 

@@ -16,6 +16,18 @@ AFRAME.registerComponent('settings-shelf', {
         this.system[action]()
       }
     })
+    this.el.querySelector('.project-name').addEventListener('editfinished', e=>{
+      this.system.setProjectName(e.detail.value)
+    })
+    this.el.querySelector('.project-name').addEventListener('loaded', e => {
+      e.target.setAttribute('text', {value: this.el.sceneEl.systems['settings-system'].projectName})
+    })
+    this.el.sceneEl.addEventListener('projectnamechanged', e => {
+      this.el.querySelector('.project-name').setAttribute('text', {value: this.el.sceneEl.systems['settings-system'].projectName})
+    })
+    this.el.sceneEl.addEventListener('open-popup', e => {
+      this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
+    })
   },
   newCompositionAction(e) {
     let compositor = document.getElementById('canvas-view').components.compositor;

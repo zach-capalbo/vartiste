@@ -1,8 +1,14 @@
-let offset = navigator.xr ? 2 : 0
-
 const Axes = {
-  LEFT_RIGHT: 0 + offset,
-  UP_DOWN: 1 + offset,
+  LEFT_RIGHT: 0,
+  UP_DOWN: 1,
+  up_down(el) {
+    let offset = (el.components['tracked-controls'].axis.length === 4) ? 2 : 0
+    return this.UP_DOWN + offset;
+  },
+  left_right(el) {
+    let offset = (el.components['tracked-controls'].axis.length === 4) ? 2 : 0
+    return this.LEFT_RIGHT + offset;
+  }
 }
 
 class JoystickDirectionHandler {
@@ -38,12 +44,12 @@ class JoystickDirectionHandler {
 
       if (this.handleX)
       {
-        if ((detail.axis[Axes.LEFT_RIGHT] > 0.8) && (this.dirX !== 1)) {
+        if ((detail.axis[Axes.left_right(where.el)] > 0.8) && (this.dirX !== 1)) {
           this.dirX = 1;
           this.rightClick(detail)
-        } else if ((-0.8 < detail.axis[Axes.LEFT_RIGHT] && detail.axis[Axes.LEFT_RIGHT] < 0.8) && (this.dirX !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.left_right(where.el)] && detail.axis[Axes.left_right(where.el)] < 0.8) && (this.dirX !== 0)) {
           return this.dirX = 0;
-        } else if ((detail.axis[Axes.LEFT_RIGHT] < -0.8) && (this.dirX !== -1)) {
+        } else if ((detail.axis[Axes.left_right(where.el)] < -0.8) && (this.dirX !== -1)) {
           this.dirX = -1;
           this.leftClick(detail);
         }
@@ -51,12 +57,12 @@ class JoystickDirectionHandler {
 
       if (this.handleY)
       {
-        if ((detail.axis[Axes.UP_DOWN] > 0.8) && (this.dirY !== 1)) {
+        if ((detail.axis[Axes.up_down(where.el)] > 0.8) && (this.dirY !== 1)) {
           this.dirY = 1;
           this.upClick(detail)
-        } else if ((-0.8 < detail.axis[Axes.UP_DOWN] && detail.axis[Axes.UP_DOWN] < 0.8) && (this.dirY !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.up_down(where.el)] && detail.axis[Axes.UP_DOWN] < 0.8) && (this.dirY !== 0)) {
           return this.dirY = 0;
-        } else if ((detail.axis[Axes.UP_DOWN] < -0.8) && (this.dirY !== -1)) {
+        } else if ((detail.axis[Axes.up_down(where.el)] < -0.8) && (this.dirY !== -1)) {
           this.dirY = -1;
           this.downClick(detail);
         }
