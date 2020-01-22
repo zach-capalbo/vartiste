@@ -16,7 +16,8 @@ const BrushList = [
   }),
   new LambdaBrush({}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  }),
   new ImageBrush('diamond', {width: 20, height: 20}),
-  new FillBrush()
+  new FillBrush(),
+  new FillBrush({mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')})
 ]
 
 export { BrushList }

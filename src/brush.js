@@ -176,9 +176,10 @@ class LambdaBrush extends ProceduralBrush {
 }
 
 class FillBrush extends Brush {
-  constructor() {
+  constructor({mode = "source-over", previewSrc} = {}) {
     super();
-    this.previewSrc = require('./assets/format-color-fill.png')
+    this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
+    this.mode = mode
   }
   changeColor(color) {
     this.color = color
@@ -190,11 +191,14 @@ class FillBrush extends Brush {
   drawTo(ctx, x, y, {rotation=0} = {}) {
     let oldOpacity = ctx.globalAlpha
     let oldStyle = ctx.fillStyle
+    let oldMode = ctx.globalCompositeOperation
     ctx.globalAlpha *= this.opacity
     ctx.fillStyle = this.color
+    ctx.globalCompositeOperation = this.mode
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.globalAlpha = oldOpacity
     ctx.fillStyle = oldStyle
+    ctx.globalCompositeOperation = oldMode
   }
   drawOutline(ctx, x, y) {
     ctx.beginPath()

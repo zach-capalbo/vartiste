@@ -31,8 +31,8 @@ AFRAME.registerComponent('manipulator', {
     this.zoomAmmount = 0
     this.scaleAmmount = 0
     this.el.addEventListener('axismove', e => {
-      this.zoomAmmount = e.detail.axis[Axes.UP_DOWN]
-      this.scaleAmmount = - e.detail.axis[Axes.LEFT_RIGHT]
+      this.zoomAmmount = e.detail.axis[Axes.up_down(this.el)]
+      this.scaleAmmount = - e.detail.axis[Axes.left_right(this.el)]
     })
 
     this.startPoint = new THREE.Object3D()

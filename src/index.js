@@ -1,6 +1,8 @@
+//require('./framework/aframe.js')
 require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')
+require('./framework/valve-index-controls.js')
 
 require('./paint-system')
 require('./settings-system')
