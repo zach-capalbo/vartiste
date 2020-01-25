@@ -37,6 +37,7 @@ document.write(require('./scene.html.slm'))
 
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {
   let asset = fileName.slice("./".length)
+  if (asset.startsWith(".")) continue
   var element = document.createElement('a-asset-item')
   element.setAttribute("src", require(`./assets/${asset}`))
   element.id = `asset-${asset.split(".")[0]}`
