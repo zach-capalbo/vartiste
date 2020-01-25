@@ -123,5 +123,8 @@ AFRAME.registerSystem('settings-system', {
   setProjectName(name) {
     this.projectName = name
     this.el.emit('projectnamechanged', {name})
+  },
+  changeEnvironmentAction() {
+    Environments.toggle()
   }
 })
