@@ -38,8 +38,20 @@ document.write(require('./scene.html.slm'))
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {
   let asset = fileName.slice("./".length)
   if (asset.startsWith(".")) continue
-  var element = document.createElement('a-asset-item')
-  element.setAttribute("src", require(`./assets/${asset}`))
+
+  let elementType = 'a-asset-item'
+
+  let assetSrc = require(`./assets/${asset}`)
+
+  if (assetSrc.startsWith("asset/") && assetSrc.endsWith(".png"))
+  {
+    assetSrc = `${assetSrc}`
+    elementType = 'img'
+  }
+
+  var element = document.createElement(elementType)
+
+  element.setAttribute("src", assetSrc)
   element.id = `asset-${asset.split(".")[0]}`
   document.getElementById('assets').append(element)
 }
