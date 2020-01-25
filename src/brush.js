@@ -1,7 +1,7 @@
 class Brush {}
 
 class ProceduralBrush extends Brush {
-  constructor({width=20,height=20, ...options} = {}) {
+  constructor({width=20,height=20, distanceBased=false, maxDistance=1.5, connected=false, ...options} = {}) {
     super();
 
     this.baseWidth = width
@@ -11,6 +11,9 @@ class ProceduralBrush extends Brush {
     this.scale = 1
     this.opacity = 1.0
     this.options = options
+    this.distanceBased=distanceBased
+    this.maxDistance=maxDistance
+    this.connected=connected
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -77,21 +80,40 @@ class ProceduralBrush extends Brush {
     }
   }
 
-  drawTo(ctx, x, y, {rotation=0} = {}) {
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0} = {}) {
     ctx.save()
+    if (this.distanceBased)
+    {
+      ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
+    }
+    else
+    {
+      ctx.globalAlpha = pressure
+    }
     ctx.globalAlpha *= this.opacity
     ctx.translate(x,y)
     ctx.rotate(rotation)
     //ctx.translate(2 * x, 2 * y)
+    if (this.distanceBased){
+      let scale = ctx.globalAlpha * 2
+      ctx.scale(1/scale, 1/scale)
+    }
+
     ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
     //ctx.drawImage(this.overlayCanvas, x - this.width / 2, y - this.height / 2)
     ctx.restore()
   }
 
-  drawOutline(ctx, x, y)
+  drawOutline(ctx, x, y, {distance=0} = {})
   {
     const width = this.width
     const height = this.height
+    let oldAlpha = ctx.globalAlpha
+
+    if (this.distanceBased)
+    {
+      ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
+    }
 
     ctx.beginPath()
     ctx.arc(x, y, width / 3, 0, 2 * Math.PI, false)
@@ -188,11 +210,11 @@ class FillBrush extends Brush {
   changeOpacity(opacity) {
     this.opacity = opacity
   }
-  drawTo(ctx, x, y, {rotation=0} = {}) {
+  drawTo(ctx, x, y, {rotation=0, pressure=1} = {}) {
     let oldOpacity = ctx.globalAlpha
     let oldStyle = ctx.fillStyle
     let oldMode = ctx.globalCompositeOperation
-    ctx.globalAlpha *= this.opacity
+    ctx.globalAlpha = pressure * this.opacity
     ctx.fillStyle = this.color
     ctx.globalCompositeOperation = this.mode
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)

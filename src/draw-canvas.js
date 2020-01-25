@@ -38,7 +38,7 @@ AFRAME.registerComponent('draw-canvas', {
     return {x,y}
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, lastParams = undefined}) {
     if (canvas === null) canvas = this.data.canvas
     if (!this.wasDrawing && sourceEl)
     {
@@ -53,25 +53,45 @@ AFRAME.registerComponent('draw-canvas', {
 
     let {x,y} = this.uvToPoint(uv, canvas)
 
-    ctx.globalAlpha = pressure
 
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
 
+    let drawOptions = {rotation, pressure, distance}
+
     try {
-      this.brush.drawTo(ctx,  x, y, {rotation})
+      if (this.brush.connected && lastParams) {
+        let oldPoint = this.uvToPoint(lastParams.uv, canvas)
+        let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )
+        let numPoints = Math.floor(distance)
+
+        for (let i = 1; i < numPoints; i++)
+        {
+          let lerp = i / numPoints
+          this.brush.drawTo(ctx,
+            THREE.Math.lerp(oldPoint.x, x, lerp),
+            THREE.Math.lerp(oldPoint.y, y, lerp),
+            {
+              rotation: THREE.Math.lerp(lastParams.rotation, rotation, lerp),
+              pressure: THREE.Math.lerp(lastParams.pressure, pressure, lerp),
+              distance: THREE.Math.lerp(lastParams.distance, distance, lerp),
+            })
+        }
+      }
+
+      this.brush.drawTo(ctx,  x, y, drawOptions)
       if (wrapX) {
-          this.brush.drawTo(ctx, x + width, y, {rotation})
-          this.brush.drawTo(ctx, x - width, y, {rotation})
+          this.brush.drawTo(ctx, x + width, y, drawOptions)
+          this.brush.drawTo(ctx, x - width, y, drawOptions)
       }
       if (wrapY) {
-        this.brush.drawTo(ctx, x, y + height, {rotation})
-        this.brush.drawTo(ctx, x, y - height, {rotation})
+        this.brush.drawTo(ctx, x, y + height, drawOptions)
+        this.brush.drawTo(ctx, x, y - height, drawOptions)
       }
       if (wrapY && wrapX) {
-        this.brush.drawTo(ctx, x + width, y + height, {rotation})
-        this.brush.drawTo(ctx, x - width, y - height, {rotation})
-        this.brush.drawTo(ctx, x + width, y - height, {rotation})
-        this.brush.drawTo(ctx, x - width, y + height, {rotation})
+        this.brush.drawTo(ctx, x + width, y + height, drawOptions)
+        this.brush.drawTo(ctx, x - width, y - height, drawOptions)
+        this.brush.drawTo(ctx, x + width, y - height, drawOptions)
+        this.brush.drawTo(ctx, x - width, y + height, drawOptions)
       }
     }
     catch (e)

@@ -3,7 +3,13 @@ AFRAME.registerComponent('hand-draw-tool', {
   schema: {
     throttle: {type: 'int', default: 10}
   },
+  pool(name, type) {
+    if (this._pool[name]) return this._pool[name]
+    this._pool[name] = new type()
+    return this._pool[name]
+  },
   init() {
+    this._pool = {}
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.clickStamp = 0
@@ -14,12 +20,10 @@ AFRAME.registerComponent('hand-draw-tool', {
       this.isDrawing = this.pressure > 0.1
 
       if (this.isDrawing && !wasDrawing) {
-        console.log("Start drawing")
-        this.el.emit('startdrawing')
+        this.startDraw()
       }
       if (!this.isDrawing && wasDrawing) {
-        console.log("End drawing")
-        this.el.emit('enddrawing')
+        this.endDraw()
       }
     })
 
@@ -29,22 +33,29 @@ AFRAME.registerComponent('hand-draw-tool', {
         if (!e.buttons || e.buttons == 1) return
         this.pressure = 1.0
         this.isDrawing = true
-        console.log("Start drawing")
-        this.el.emit('startdrawing')
+        this.startDraw()
       })
 
       document.addEventListener('mouseup', e=> {
         if (e.button == 0) return
         if (this.isDrawing) {
           this.isDrawing = false
-          console.log("End drawing")
-          this.el.emit('enddrawing')
+          this.endDraw()
         }
       })
     }
 
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+  startDraw() {
+    console.log("Start drawing")
+    this.el.emit('startdrawing')
+  },
+  endDraw() {
+    console.log("End drawing")
+    this.el.emit('enddrawing')
+    this.lastParams = undefined
   },
   tick() {
     if (this.el.components.raycaster.intersections.length == 0) return
@@ -76,15 +87,19 @@ AFRAME.registerComponent('hand-draw-tool', {
       rotation = - rotationEuler.z
     }
 
+    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, intersection: intersection}
+
     if (this.isDrawing) {
       if (isDrawable)
       {
-        drawCanvas.drawUV(intersection.uv, {pressure: this.pressure, rotation: rotation, sourceEl: this.el})
+        drawCanvas.drawUV(intersection.uv, Object.assign({lastParams: this.lastParams}, params))
+        this.lastParams = params
+        this.lastParams.uv = intersection.uv
       }
       else
       {
         // console.log("emitting draw to", el, intersection)
-        el.emit("draw", {intersection, pressure:this.pressure, rotation: rotation, sourceEl: this.el})
+        el.emit("draw", params)
       }
     }
     if (this.el.is("sampling"))
@@ -98,7 +113,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     {
       if (isDrawable)
       {
-        drawCanvas.eraseUV(intersection.uv, {rotation, sourceEl: this.el})
+        drawCanvas.eraseUV(intersection.uv, params)
       }
     }
   }

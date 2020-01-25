@@ -9,11 +9,26 @@ as the [Valve Index](https://store.steampowered.com/valveindex) or
 
 <a class="launch-button" href="index.html">LAUNCH VARTISTE</a>
 
+VARTISTE works similar to desktop image editing software you may be used to; it
+has layers, brushes, color wheels and palettes. However, it's specially designed
+for VR headset use, so it will respond to controller pressure and position, and
+you can move your canvas around to get the perfect vantage point for editing.
+No more being tethered to a monitor or drawing tablet!
+
+<img src="eg.JPG" class="screenshot">
+
+VARTISTE also takes advantage of being a VR image editor, by allowing you to
+draw textures right onto your model! You can still use all of the features like
+layers and brushes, and you can even draw onto the material properties like
+roughness and bump map!
+
+<img src="moose.png" class="screenshot">
+
 ## Controls
 For Oculus Touch controllers:
 
  - Right Hand:
-  - Trigger: Draw
+  - Trigger: Draw, Click buttons
   - Grip: Grab and move
   - A: Erase
   - B: Pick color from canvas
@@ -38,7 +53,7 @@ For Oculus Touch controllers:
 For Vive Wands (and currently Valve Index controllers, although that should change soon):
 
 - Right Hand:
- - Trigger: Draw
+ - Trigger: Draw, Click buttons
  - Grip: Grab and move
  - Press trackpad: Erase
  - Trackpad Right/Left: Turn camera right/Left
@@ -55,6 +70,8 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
  - Trackpad Right/Left: Next/Previous brush
  - Trackpad Up/Down: Next/Previous layer
 
+
+<img src="globe.JPG" class="screenshot">
 
 ## Saving and loading
 
@@ -100,6 +117,11 @@ appear in front, and the 2D canvas view will flip to behind you.
 This is a very early version of the software. It still needs a lot of love. If
 you encounter problems, you can [Submit an Issue Report](https://gitlab.com/zach-geek/vartiste/issues).
 If you feel inclined, you can also [Contribute code in the form of a Merge Request](https://gitlab.com/zach-geek/vartiste).
+
+## Open Source
+
+VARTISTE is an open source project under the Apache 2.0 license. You can find
+the source code here: <https://gitlab.com/zach-geek/vartiste>
 
 ## Privacy Policy
 

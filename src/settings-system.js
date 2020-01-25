@@ -3,6 +3,7 @@ import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
+import {Environments} from './environments.js'
 AFRAME.registerSystem('settings-system', {
   init() {
     this.projectName = "vartiste-project"
@@ -122,5 +123,8 @@ AFRAME.registerSystem('settings-system', {
   setProjectName(name) {
     this.projectName = name
     this.el.emit('projectnamechanged', {name})
+  },
+  changeEnvironmentAction() {
+    Environments.toggle()
   }
 })
