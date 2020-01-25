@@ -15,6 +15,7 @@ a-scene
   a-entity#world-root
     a-entity position="0 0 -2.5"
 
+    a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.3"
     /a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
     a-entity#ui shadow="cast: true; receive: true"
