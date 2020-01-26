@@ -3,6 +3,7 @@ import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
+import {Environments} from './environments.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -305,6 +306,10 @@ AFRAME.registerComponent('compositor', {
           break
         case "roughnessMap":
           material.roughness = layer.opacity
+          break
+        case "envMap":
+          Environments.installSkybox(layer.canvas, layer.opacity)
+          material.envMap.mapping = THREE.SphericalReflectionMapping
           break
       }
 

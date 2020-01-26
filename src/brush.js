@@ -1,7 +1,7 @@
 class Brush {}
 
 class ProceduralBrush extends Brush {
-  constructor({width=20,height=20, distanceBased=false, maxDistance=1.5, connected=false, ...options} = {}) {
+  constructor({width=20,height=20, distanceBased=false, maxDistance=1.5, connected=false, autoRotate=false, ...options} = {}) {
     super();
 
     this.baseWidth = width
@@ -14,6 +14,7 @@ class ProceduralBrush extends Brush {
     this.distanceBased=distanceBased
     this.maxDistance=maxDistance
     this.connected=connected
+    this.autoRotate = autoRotate
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -69,7 +70,7 @@ class ProceduralBrush extends Brush {
     let color = this.color3
     let gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius)
     gradient.addColorStop(0, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, 0.7)`);
-    gradient.addColorStop(1, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, 0)`);
+    gradient.addColorStop(1, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, 0.001)`);
 
     ctx.fillStyle = gradient
     ctx.fillRect(0,0,width,height)
@@ -92,7 +93,7 @@ class ProceduralBrush extends Brush {
     }
     ctx.globalAlpha *= this.opacity
     ctx.translate(x,y)
-    ctx.rotate(rotation)
+    ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
     //ctx.translate(2 * x, 2 * y)
     if (this.distanceBased){
       let scale = ctx.globalAlpha * 2
@@ -233,4 +234,43 @@ class FillBrush extends Brush {
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush };
+class GradientBrush extends ProceduralBrush {
+  constructor(...opts) {
+    super(...opts)
+  }
+  createBrush() {
+    if (this.previewSrc) return
+    super.createBrush()
+  }
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0} = {}) {
+    ctx.save()
+    ctx.translate(x,y)
+    ctx.rotate(Math.random() * Math.PI)
+
+    let {width, height} = this
+
+    let {innerRadius = 2} = this.options
+    const {outerRadius = width / 2} = this.options
+
+    if (this.options.hardness)
+    {
+      innerRadius = width / 2 * this.options.hardness
+    }
+
+    let xx = 0//width / 2
+    let yy = 0//height / 2
+
+    let color = this.color3
+    let gradient = ctx.createRadialGradient(xx, yy, innerRadius, xx, yy, outerRadius)
+    gradient.addColorStop(0, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${pressure * this.opacity + Math.random() * 0.01})`);
+    gradient.addColorStop(0.4 + Math.random() * 0.2, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${pressure * this.opacity / 2})`);
+    gradient.addColorStop(1, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${Math.random() * 0.01})`);
+
+    ctx.fillStyle = gradient
+    ctx.fillRect(-this.width / 2,-this.height / 2,this.width,this.height)
+
+    ctx.restore()
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, GradientBrush };

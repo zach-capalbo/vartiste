@@ -1,11 +1,35 @@
+import Color from 'color'
 class EnvironmentManager {
   constructor() {
   }
-  installSkybox(skybox) {
+  installSkybox(skybox, level) {
     // if (typeof skybox === 'undefined') skybox = require('./assets/skybox.jpg')
 
     let skyEl = document.getElementsByTagName('a-sky')[0]
-    skyEl.setAttribute('src', skybox)
+
+    if (typeof skybox === 'string')
+    {
+      skyEl.setAttribute('src', skybox)
+      return
+    }
+    if (!skyEl.getObject3D('mesh').material.map || skyEl.getObject3D('mesh').material.map.image != skybox)
+    {
+      console.log("Setting skybox")
+      if (!skyEl.getObject3D('mesh').material.map)
+      {
+        skyEl.getObject3D('mesh').material.map = new THREE.Texture()
+      }
+
+      skyEl.getObject3D('mesh').material.map.image = skybox
+      skyEl.getObject3D('mesh').material.map.needsUpdate = true
+      skyEl.getObject3D('mesh').material.needsUpdate = true
+    }
+
+    if (level !== this.skyboxLevel)
+    {
+      skyEl.setAttribute('color', Color.hsl(0,0, level * 100).rgb().string())
+      this.skyboxLevel = level
+    }
   }
   installPresetEnvironment(preset = "starry") {
     let envEl = document.querySelector('*[environment]')
