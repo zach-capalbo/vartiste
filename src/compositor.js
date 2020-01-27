@@ -3,6 +3,7 @@ import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
+import {Environments} from './environments.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -232,6 +233,12 @@ AFRAME.registerComponent('compositor', {
     ctx.restore()
   },
   tick(t, dt) {
+    if (dt > 25 && (t - this.drawnT) < 1000) {
+      return
+    }
+
+    this.drawnT = t
+
     if (this.el['redirect-grab'])
     {
       let layer = this.grabbedLayer
@@ -306,6 +313,10 @@ AFRAME.registerComponent('compositor', {
         case "roughnessMap":
           material.roughness = layer.opacity
           break
+        case "envMap":
+          Environments.installSkybox(layer.canvas, layer.opacity)
+          material.envMap.mapping = THREE.SphericalReflectionMapping
+          break
       }
 
 
@@ -320,7 +331,6 @@ AFRAME.registerComponent('compositor', {
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
 
-    if (dt > 25) return
 
     if (this.data.textureScale != 1)
     {

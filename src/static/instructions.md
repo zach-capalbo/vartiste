@@ -110,7 +110,13 @@ appear in front, and the 2D canvas view will flip to behind you.
   1. Use the Stamp Down ![Archive Arrow Down](../assets/archive-arrow-down-outline.png)
      button to stamp the layer onto the layer below
   1. Grab and stamp again as many times as desired
-
+- **Tip:** If you're working with a really smooth or metallic model, try adding
+  an Environment Map (`envMap`) layer
+  - You can find images to use for environment maps at [WikiMedia Commons 360° Panoramas](https://commons.wikimedia.org/w/index.php?title=Category:360°_panoramas#mw-category-media)
+  - Environment map layers don't need to be the same size as the rest of the
+    layers, so you can use higher or lower quality images if helpful.
+  - Environment maps only take effect if 3D Shading ![Sun Icon](../assets/brightness-4.png)
+    is enabled
 
 ## Issues
 

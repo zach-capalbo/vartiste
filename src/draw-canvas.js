@@ -198,7 +198,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.globalCompositeOperation = 'destination-out'
 
-    this.brush.drawTo(ctx,  x, y, {rotation})
+    this.brush.drawTo(ctx,  x, y, {rotation, eraser: true})
 
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
     if (wrapX) {
