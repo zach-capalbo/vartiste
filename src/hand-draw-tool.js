@@ -43,6 +43,10 @@ AFRAME.registerComponent('hand-draw-tool', {
           this.endDraw()
         }
       })
+
+      document.addEventListener('wheel', e => {
+        this.el.sceneEl.systems['paint-system'].scaleBrush(-e.deltaY * 100)
+      })
     }
 
     this._tick = this.tick

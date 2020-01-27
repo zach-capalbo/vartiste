@@ -1,5 +1,6 @@
 import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, GradientBrush} from './brush.js'
 const BrushList = [
+  new ProceduralBrush({connected: true, autoRotate: true, dithered: true}),
   new GradientBrush({connected: true}),
   new ImageBrush('silky_textured', {width: 20, height: 20, autoRotate: true}),
   new ImageBrush('silky_textured', {textured: true, width: 64, height:16}),
