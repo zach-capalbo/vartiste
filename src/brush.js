@@ -31,11 +31,6 @@ class ProceduralBrush extends Brush {
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
 
-    let ditherCanvas = document.createElement("canvas")
-    ditherCanvas.width = width
-    ditherCanvas.height = height
-    this.ditherCanvas = ditherCanvas
-
     this.changeColor('#FFF')
   }
 
@@ -53,9 +48,6 @@ class ProceduralBrush extends Brush {
     this.height = this.baseHeight * scale
     this.overlayCanvas.width = this.width
     this.overlayCanvas.height = this.height
-
-    this.ditherCanvas.width = this.width
-    this.ditherCanvas.height = this.height
 
     this.createBrush()
   }
@@ -95,40 +87,9 @@ class ProceduralBrush extends Brush {
     {
       this.previewSrc = this.overlayCanvas.toDataURL()
     }
-
-    width = Math.floor(width)
-    height = Math.floor(height)
-
-    let gradientData = ctx.getImageData(0, 0, width, height)
-    let ditherCtx = this.ditherCanvas.getContext('2d')
-    ditherCtx.clearRect(0, 0, width, height)
-    let ditherData = ditherCtx.getImageData(0, 0, width, height)
-
-    let sample = (data, c) => data.data[Math.floor(4 * (y * width + x) + c)]
-    let setData = (data, c, v) => data.data[Math.floor(4 * (y * width + x) + c)] = v
-
-    console.log("Dithering", width, height)
-
-    for (y = 0; y < height; ++y)
-    {
-      for (x = 0; x < width; ++x)
-      {
-        setData(ditherData, 0, color.r * 255)
-        setData(ditherData, 1, color.g * 255)
-        setData(ditherData, 2, color.b * 255)
-        setData(ditherData, 3,  0)
-
-        if (Math.random() < sample(gradientData, 3) / 255.0 * 0.005)
-        {
-          setData(ditherData, 3,  255)
-        }
-      }
-    }
-
-    // ditherCtx.putImageData(ditherData, 0, 0)
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0} = {}) {
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false} = {}) {
     ctx.save()
     if (this.distanceBased)
     {
@@ -147,13 +108,12 @@ class ProceduralBrush extends Brush {
       ctx.scale(1/scale, 1/scale)
     }
 
-    // ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
-    //
-    // if (true)
-    // {
-    //   ctx.globalAlpha = 0.5
-    //   ctx.drawImage(this.ditherCanvas, - this.width/2, -this.height / 2)
-    // }
+    if (!this.hqBlending || eraser || ctx.globalAlpha > 0.1)
+    {
+      ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
+      ctx.restore()
+      return
+    }
 
     let {width, height} = this
     width = Math.floor(width)
@@ -171,7 +131,7 @@ class ProceduralBrush extends Brush {
     let setData = (data, c, v) => data.data[Math.floor(4 * (yi * width + xi) + c)] = v
     let carry = (c) => {
       let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 255)
-      let f = Math.floor(val)
+      let f = Math.round(val)
       carryVal[c] = val - f
       return f
     }
@@ -185,19 +145,19 @@ class ProceduralBrush extends Brush {
         let lerp = sample(brushData, 3) * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
         let clerp = lerp//Math.max(lerp, 1.0 - sample(imageData, 3) )
         clerp += carryVal.clerp
-        carryVal.clerp = (Math.floor(clerp * 255) - clerp * 255) / 255
+        carryVal.clerp = (Math.round(clerp * 255) - clerp * 255) / 255
+
+        let targetAlpha = Math.max(sample(imageData, 3), sample(brushData, 3))
 
         // console.log(x, y, lerp)
         setData(imageData, 0, THREE.Math.lerp(sample(imageData, 0), carry('r'), clerp))
         setData(imageData, 1, THREE.Math.lerp(sample(imageData, 1), carry('g'), clerp))
         setData(imageData, 2, THREE.Math.lerp(sample(imageData, 2), carry('b'), clerp))
-        setData(imageData, 3, THREE.Math.lerp(sample(imageData, 3), 255, lerp))
+        setData(imageData, 3, THREE.Math.lerp(sample(imageData, 3), targetAlpha, lerp))
       }
     }
 
     ctx.putImageData(imageData, x -width / 2, y - height / 2)
-    // ctx.putImageData(0, 0)
-
 
     ctx.restore()
   }
