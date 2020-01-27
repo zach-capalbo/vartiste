@@ -233,12 +233,11 @@ AFRAME.registerComponent('compositor', {
     ctx.restore()
   },
   tick(t, dt) {
-    if (dt > 25 && !this.skipped) {
-      this.skipped = true
+    if (dt > 25 && (t - this.drawnT) < 1000) {
       return
     }
 
-    this.skipped = false
+    this.drawnT = t
 
     if (this.el['redirect-grab'])
     {
