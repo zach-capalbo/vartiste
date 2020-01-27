@@ -108,7 +108,8 @@ class ProceduralBrush extends Brush {
       ctx.scale(1/scale, 1/scale)
     }
 
-    if (!this.hqBlending || eraser || ctx.globalAlpha > 0.1)
+    const hqThreshold = 0.4
+    if (!this.hqBlending || eraser || this.opacity > hqThreshold)
     {
       ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
       ctx.restore()
@@ -130,7 +131,7 @@ class ProceduralBrush extends Brush {
     let sample = (data, c) => data.data[Math.floor(4 * (yi * width + xi) + c)]
     let setData = (data, c, v) => data.data[Math.floor(4 * (yi * width + xi) + c)] = v
     let carry = (c) => {
-      let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 255)
+      let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 254.4)
       let f = Math.round(val)
       carryVal[c] = val - f
       return f
@@ -143,17 +144,35 @@ class ProceduralBrush extends Brush {
       for (xi = 0; xi < width; ++xi)
       {
         let lerp = sample(brushData, 3) * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
-        let clerp = lerp//Math.max(lerp, 1.0 - sample(imageData, 3) )
-        clerp += carryVal.clerp
-        carryVal.clerp = (Math.round(clerp * 255) - clerp * 255) / 255
+        // lerp += carryVal.clerp
+        // let clerp = THREE.Math.clamp(lerp + 1.0 - sample(imageData, 3) / 255, 0, 1)
+        let clerp = lerp//THREE.Math.clamp(Math.max(lerp, 1.0 - sample(imageData, 3) / 255), 0, 1)
 
-        let targetAlpha = Math.max(sample(imageData, 3), sample(brushData, 3))
+        carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
+
+        let targetAlpha = THREE.Math.clamp(sample(imageData, 3) + sample(brushData, 3) * this.opacity * pressure, 0, 255)
+
+        // clerp = clerp + (1.0 - (targetAlpha - sample(imageData, 3)) / 255)
+
+        if (sample(imageData, 3) < (1 + Math.random() * 1) * sample(brushData, 3))
+        {
+          clerp = clerp + (1.0 - sample(imageData, 3) / 255.0)
+          // clerp = clerp +  (1.0 - sample(imageData, 3) / 255.0) * sample(brushData, 3) / 255.0 + Math.random() * 0.01
+        }
+
+        if (clerp * 255.0 < 1)
+        {
+          carryVal.clerp += clerp
+          continue
+        }
+
+        clerp = THREE.Math.clamp(clerp, 0, 1)
 
         // console.log(x, y, lerp)
         setData(imageData, 0, THREE.Math.lerp(sample(imageData, 0), carry('r'), clerp))
         setData(imageData, 1, THREE.Math.lerp(sample(imageData, 1), carry('g'), clerp))
         setData(imageData, 2, THREE.Math.lerp(sample(imageData, 2), carry('b'), clerp))
-        setData(imageData, 3, THREE.Math.lerp(sample(imageData, 3), targetAlpha, lerp))
+        setData(imageData, 3, THREE.Math.lerp(sample(imageData, 3), 255, lerp))
       }
     }
 
@@ -291,46 +310,4 @@ class FillBrush extends Brush {
   }
 }
 
-class GradientBrush extends ProceduralBrush {
-  constructor(...opts) {
-    super(...opts)
-  }
-  createBrush() {
-    if (this.previewSrc) return
-    super.createBrush()
-  }
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0} = {}) {
-    ctx.save()
-    ctx.translate(x,y)
-    ctx.rotate(Math.random() * Math.PI)
-
-    let {width, height} = this
-
-    let {innerRadius = 2} = this.options
-    const {outerRadius = width / 2} = this.options
-
-    if (this.options.hardness)
-    {
-      innerRadius = width / 2 * this.options.hardness
-    }
-
-    let xx = 0//width / 2
-    let yy = 0//height / 2
-
-    let color = this.color3
-    let gradient = ctx.createRadialGradient(xx, yy, innerRadius, xx, yy, outerRadius)
-    gradient.addColorStop(0, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${pressure * this.opacity + Math.random() * 0.01})`);
-    gradient.addColorStop(0.4 + Math.random() * 0.2, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${pressure * this.opacity / 2})`);
-    gradient.addColorStop(1, `rgba(${255 * color.r}, ${255 * color.g}, ${255 * color.b}, ${Math.random() * 0.01})`);
-
-    // ctx.fillStyle = gradient
-    // ctx.fillRect(-this.width / 2,-this.height / 2,this.width,this.height)
-
-
-
-
-    ctx.restore()
-  }
-}
-
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, GradientBrush };
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush};
