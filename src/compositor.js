@@ -233,6 +233,13 @@ AFRAME.registerComponent('compositor', {
     ctx.restore()
   },
   tick(t, dt) {
+    if (dt > 25 && !this.skipped) {
+      this.skipped = true
+      return
+    }
+
+    this.skipped = false
+
     if (this.el['redirect-grab'])
     {
       let layer = this.grabbedLayer
@@ -325,7 +332,6 @@ AFRAME.registerComponent('compositor', {
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
 
-    if (dt > 25) return
 
     if (this.data.textureScale != 1)
     {
