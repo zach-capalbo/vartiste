@@ -7,14 +7,14 @@ const BrushList = [
   new ImageBrush('lines2', {width: 20, height: 20, connected: true}),
   new ImageBrush('line_grunge2', {width: 20, height: 20}),
   new ImageBrush('line_grunge1', {width: 64, height: 16, textured: true}),
-  new ImageBrush('dots', {width: 20, height: 20, autoRotate: true}),
-  new LambdaBrush({connected: true}, (ctx, {width, height}) => {
+  new ImageBrush('dots', {width: 20, height: 20, autoRotate: true, drawEdges: false}),
+  new LambdaBrush({connected: true, drawEdges: true}, (ctx, {width, height}) => {
     ctx.beginPath()
     ctx.moveTo(width / 2, 0)
     ctx.lineTo(width / 2, height)
     ctx.stroke()
   }),
-  new LambdaBrush({connected: true}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  }),
+  new LambdaBrush({connected: true, drawEdges: true}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  }),
   new ImageBrush('diamond', {width: 20, height: 20, connected: true}),
   new FillBrush(),
   new FillBrush({mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')})

@@ -225,7 +225,15 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas})
+      let rotationEuler = this.rotationEuler || new THREE.Euler()
+      this.rotationEuler = rotationEuler
+      rotationEuler.copy(document.getElementById(hand).object3D.rotation)
+      rotationEuler.reorder("ZYX")
+      let rotation = - rotationEuler.z
+
+      console.log("Rotation", rotation)
+
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas, rotation: rotation})
     }
 
     ctx.globalCompositeOperation = 'difference'

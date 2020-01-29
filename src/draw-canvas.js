@@ -101,11 +101,11 @@ AFRAME.registerComponent('draw-canvas', {
     ctx.globalAlpha = 1.0
   },
 
-  drawOutlineUV(ctx, uv, {canvas = null} = {}) {
+  drawOutlineUV(ctx, uv, {canvas = null, rotation = 0.0} = {}) {
     if (canvas === null) canvas = this.data.canvas
     let {width, height} = canvas
     let {x,y} = this.uvToPoint(uv, canvas)
-    this.brush.drawOutline(ctx, x, y)
+    this.brush.drawOutline(ctx, x, y, {rotation})
 
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
     if (wrapX) {
