@@ -1,5 +1,6 @@
 import {Layer} from './layer.js'
 import shortid from 'shortid'
+import {THREED_MODES} from './layer-modes.js'
 
 async function addImageLayer(file) {
   let image = new Image()
@@ -25,6 +26,42 @@ async function addGlbViewer(file) {
 
   let buffer = await file.arrayBuffer()
   let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+
+  let materials = {}
+
+  model.scene.traverse(o => {
+    if (o.material)
+    {
+      materials[o.material.uuid] = o.material
+    }
+  })
+
+  let compositor = document.getElementById('canvas-view').components.compositor
+
+  for (let material of Object.values(materials))
+  {
+    for (let mode of ["map"].concat(THREED_MODES))
+    {
+      if (material[mode])
+      {
+        if (mode === "normalMap") continue
+        let image = material[mode].image
+        let {width, height} = compositor
+        let layer = new Layer(width, height)
+        let layerCtx = layer.canvas.getContext('2d')
+        layerCtx.save()
+        layerCtx.translate(width / 2, height / 2)
+        layerCtx.scale(1, -1)
+        layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+        layerCtx.restore()
+        if (mode !== "map")
+        {
+          layer.mode = mode
+        }
+        compositor.addLayer(compositor.layers.length - 1, {layer})
+      }
+    }
+  }
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
 }

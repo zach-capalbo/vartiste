@@ -53,5 +53,20 @@ AFRAME.registerComponent('brush-shelf', {
   },
   toggleLatheAction() {
     document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
+  },
+  toggleOrientationAction() {
+    document.querySelectorAll('*[hand-draw-tool]').forEach(e=>e.setAttribute('tracked-controls', {orientationOffset: {x: 43 + 90, y: 180, z: 90}}))
+  },
+  toggleGrabRotationAction() {
+    document.querySelectorAll('*[manipulator]').forEach(e=>{
+      if (e.is("rotating"))
+      {
+        e.removeState("rotating")
+      }
+      else
+      {
+        e.addState("rotating")
+      }
+    })
   }
 })
