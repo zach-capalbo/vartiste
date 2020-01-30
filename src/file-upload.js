@@ -44,7 +44,6 @@ async function addGlbViewer(file) {
     {
       if (material[mode])
       {
-        if (mode === "normalMap") continue
         let image = material[mode].image
         let {width, height} = compositor
         let layer = new Layer(width, height)

@@ -126,9 +126,5 @@ AFRAME.registerSystem('settings-system', {
   },
   changeEnvironmentAction() {
     Environments.toggle()
-  },
-  convertBumpMapToNormapAction() {
-    let canvas = document.getElementById('canvas-view').components.compositor.layers.find(l => l.mode == "bumpMap").canvas
-    bumpCanvasToNormalCanvas(canvas, canvas)
-  },
+  }
 })
