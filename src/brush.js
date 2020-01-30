@@ -1,3 +1,5 @@
+import Convolve from "convolve"
+
 class Brush {}
 
 class ProceduralBrush extends Brush {
@@ -9,6 +11,7 @@ class ProceduralBrush extends Brush {
     connected=false,
     autoRotate=false,
     hqBlending=false,
+    drawEdges=false,
     ...options} = {})
   {
     super();
@@ -25,6 +28,7 @@ class ProceduralBrush extends Brush {
     this.connected=connected
     this.autoRotate = autoRotate
     this.hqBlending = hqBlending
+    this.drawEdges = drawEdges
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -87,6 +91,46 @@ class ProceduralBrush extends Brush {
     {
       this.previewSrc = this.overlayCanvas.toDataURL()
     }
+
+    this.createOutline(this.overlayCanvas)
+  }
+
+  createOutline(source) {
+    if (!this.drawEdges) return
+    let {width, height} = source
+    this.outlineCanvas = this.outlineCanvas || document.createElement('canvas')
+    this.outlineCanvas.width = width
+    this.outlineCanvas.height = height
+
+    let outlineCtx = this.outlineCanvas.getContext('2d')
+    outlineCtx.drawImage(source, 1, 1, width-2,height-2)
+
+    outlineCtx.globalCompositeOperation = 'source-in'
+
+    outlineCtx.fillStyle = '#fff'
+    outlineCtx.fillRect(0,0, width, height)
+
+    const edge_filter = [
+                          [-1, -1, -1],
+                          [-1, 8.01, -1],
+                          [-1, -1, -1]
+                        ];
+
+
+    // const sharp_filter = [
+    //   [-1 / 9, -1 / 9, -1 / 9],
+    //   [-1 / 9, 2 - 1/ 9, - 1 / 9],
+    //   [-1 / 9, -1 / 9, -1 / 9],
+    // ]
+
+    const sharp_filter = [
+      [0, -1, 0],
+      [-1, 5, -1],
+      [0, -1, 0],
+    ]
+
+    Convolve(edge_filter).canvas(this.outlineCanvas)
+    // Convolve(sharp_filter).canvas(this.outlineCanvas)
   }
 
   drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false} = {}) {
@@ -181,7 +225,7 @@ class ProceduralBrush extends Brush {
     ctx.restore()
   }
 
-  drawOutline(ctx, x, y, {distance=0} = {})
+  drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
   {
     const width = this.width
     const height = this.height
@@ -191,6 +235,23 @@ class ProceduralBrush extends Brush {
     {
       ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
     }
+
+    if (this.drawEdges)
+    {
+      ctx.save()
+      ctx.translate(x,y)
+      ctx.rotate(rotation)
+
+      ctx.drawImage(this.outlineCanvas, -width / 2, - height / 2, width, height)
+
+      ctx.beginPath()
+      ctx.strokeStyle = '#FFFFFF'
+      ctx.rect(- width / 2,  - height / 2, width, height)
+      ctx.stroke()
+      ctx.restore()
+      return
+    }
+
 
     ctx.beginPath()
     ctx.arc(x, y, width / 3, 0, 2 * Math.PI, false)
@@ -214,7 +275,7 @@ class ImageBrush extends ProceduralBrush{
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
 
-    super(Object.assign({}, options, {width, height}))
+    super(Object.assign({drawEdges: true}, options, {width, height}))
 
     this.image = image
     this.previewSrc = image
@@ -247,6 +308,8 @@ class ImageBrush extends ProceduralBrush{
     }
 
     ctx.restore()
+
+    this.createOutline(this.overlayCanvas)
   }
 }
 
@@ -271,6 +334,8 @@ class LambdaBrush extends ProceduralBrush {
     {
       this.previewSrc = this.overlayCanvas.toDataURL()
     }
+
+    this.createOutline(this.overlayCanvas)
   }
 }
 

@@ -225,7 +225,13 @@ AFRAME.registerComponent('compositor', {
 
       if (!intersection) continue
 
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas})
+      let rotationEuler = this.rotationEuler || new THREE.Euler()
+      this.rotationEuler = rotationEuler
+      rotationEuler.copy(document.getElementById(hand).object3D.rotation)
+      rotationEuler.reorder("ZYX")
+      let rotation = - rotationEuler.z
+
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas, rotation: rotation})
     }
 
     ctx.globalCompositeOperation = 'difference'
@@ -305,7 +311,7 @@ AFRAME.registerComponent('compositor', {
           material.emissiveIntensity = layer.opacity
           break
         case "normalMap":
-          material.normalScale = layer.opacity
+          material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
           break
         case "metalnessMap":
           material.metalness = layer.opacity
@@ -388,7 +394,7 @@ AFRAME.registerComponent('compositor', {
       let img = new Image
       img.src = canvasData
       await delay()
-      console.log("Loaded Layer", layer, img, img.complete)
+      console.log("Loaded Layer", layer)
       await delay()
       layer.canvas.getContext('2d').drawImage(img, 0, 0)
       await delay()
@@ -405,7 +411,7 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.layers.find(l => l.active))
     console.log("Fully loaded")
   },
-  resize(newWidth, newHeight)
+  resize(newWidth, newHeight, {resample = false} = {})
   {
     let oldWidth = this.width
     let oldHeight = this.height
@@ -423,9 +429,28 @@ AFRAME.registerComponent('compositor', {
     this.overlayCanvas.width = this.width
     this.overlayCanvas.height = this.height
 
+    if (resample)
+    {
+      var resampleCanvas = document.createElement('canvas')
+      resampleCanvas.width = width
+      resampleCanvas.height = height
+      var resampleCtx = resampleCanvas.getContext('2d')
+      resampleCtx.globalCompositeOperation = 'copy'
+    }
+
     for (let layer of this.layers)
     {
+      if (resample)
+      {
+        resampleCtx.drawImage(layer.canvas, 0, 0, width, height)
+      }
+
       layer.resize(width, height)
+
+      if (resample)
+      {
+        layer.canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+      }
     }
 
     if (this.el.components['geometry'])

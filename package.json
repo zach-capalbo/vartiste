@@ -49,5 +49,7 @@
     "webpack-dev-server": "^3.10.1",
     "xml-loader": "^1.2.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "convolve": "^0.1.0"
+  }
 }
