@@ -311,7 +311,7 @@ AFRAME.registerComponent('compositor', {
           material.emissiveIntensity = layer.opacity
           break
         case "normalMap":
-          material.normalScale = layer.opacity
+          material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
           break
         case "metalnessMap":
           material.metalness = layer.opacity
