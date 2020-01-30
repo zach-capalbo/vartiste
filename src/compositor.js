@@ -231,8 +231,6 @@ AFRAME.registerComponent('compositor', {
       rotationEuler.reorder("ZYX")
       let rotation = - rotationEuler.z
 
-      console.log("Rotation", rotation)
-
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas, rotation: rotation})
     }
 

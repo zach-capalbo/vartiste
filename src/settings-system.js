@@ -1,6 +1,6 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
-import {prepareModelForExport} from './material-transformations.js'
+import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
@@ -126,5 +126,9 @@ AFRAME.registerSystem('settings-system', {
   },
   changeEnvironmentAction() {
     Environments.toggle()
-  }
+  },
+  convertBumpMapToNormapAction() {
+    let canvas = document.getElementById('canvas-view').components.compositor.layers.find(l => l.mode == "bumpMap").canvas
+    bumpCanvasToNormalCanvas(canvas, canvas)
+  },
 })

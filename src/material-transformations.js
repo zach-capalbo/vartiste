@@ -2,7 +2,7 @@ function bumpCanvasToNormalCanvas(bumpCanvas, normalCanvas) {
   let bumpCtx = bumpCanvas.getContext('2d')
   let bumpData = bumpCtx.getImageData(0, 0, bumpCanvas.width, bumpCanvas.height)
 
-  let sampleBump = (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0
+  let sampleBump = (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
 
   if (typeof normalCanvas === 'undefined') {
     normalCanvas = document.createElement('canvas')
@@ -30,6 +30,12 @@ function bumpCanvasToNormalCanvas(bumpCanvas, normalCanvas) {
   {
     for (let y = 0; y < bumpCanvas.height; ++y)
     {
+      if (x == 0 || x == bumpCanvas.width - 1 || y == 0 || y == bumpCanvas.height - 1)
+      {
+        vec.set(0.5, 0.5, 1)
+        setNormal(x, y, vec)
+        continue
+      }
       let height_pu = sampleBump(x + 1, y)
       let height_mu = sampleBump(x - 1, y)
       let height_pv = sampleBump(x, y + 1)
@@ -37,6 +43,8 @@ function bumpCanvasToNormalCanvas(bumpCanvas, normalCanvas) {
       let du = height_mu - height_pu
       let dv = height_mv - height_pv
       vec.set(du, dv, scale).normalize()
+      vec.x += 0.5
+      vec.y += 0.5
       setNormal(x,y,vec)
     }
   }
@@ -136,4 +144,4 @@ function prepareModelForExport(model, material) {
   checkTransparency(material)
 }
 
-export {prepareModelForExport}
+export {prepareModelForExport, bumpCanvasToNormalCanvas}
