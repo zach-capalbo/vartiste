@@ -38,6 +38,26 @@ AFRAME.registerComponent('draw-canvas', {
     return {x,y}
   },
 
+  wrap(x, y, width, height, f){
+    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
+    f(x, y)
+
+    if (wrapX) {
+        f(x + width, y)
+        f(x - width, y)
+    }
+    if (wrapY) {
+      f(x, y + height)
+      f(x, y - height)
+    }
+    if (wrapY && wrapX) {
+      f(x + width, y + height)
+      f(x - width, y - height)
+      f(x + width, y - height)
+      f(x - width, y + height)
+    }
+  },
+
   drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, lastParams = undefined}) {
     if (canvas === null) canvas = this.data.canvas
     if (!this.wasDrawing && sourceEl)
@@ -53,9 +73,6 @@ AFRAME.registerComponent('draw-canvas', {
 
     let {x,y} = this.uvToPoint(uv, canvas)
 
-
-    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
-
     let drawOptions = {rotation, pressure, distance}
 
     try {
@@ -67,32 +84,19 @@ AFRAME.registerComponent('draw-canvas', {
         for (let i = 1; i < numPoints; i++)
         {
           let lerp = i / numPoints
-          this.brush.drawTo(ctx,
-            THREE.Math.lerp(oldPoint.x, x, lerp),
-            THREE.Math.lerp(oldPoint.y, y, lerp),
-            {
+
+          let xx = THREE.Math.lerp(oldPoint.x, x, lerp)
+          let yy = THREE.Math.lerp(oldPoint.y, y, lerp)
+          let lerpedOpts = {
               rotation: THREE.Math.lerp(lastParams.rotation, rotation, lerp),
               pressure: THREE.Math.lerp(lastParams.pressure, pressure, lerp),
               distance: THREE.Math.lerp(lastParams.distance, distance, lerp),
-            })
+            }
+          this.wrap(xx,yy,width,height, (x,y) => this.brush.drawTo(ctx, x,y, lerpedOpts))
         }
       }
 
-      this.brush.drawTo(ctx,  x, y, drawOptions)
-      if (wrapX) {
-          this.brush.drawTo(ctx, x + width, y, drawOptions)
-          this.brush.drawTo(ctx, x - width, y, drawOptions)
-      }
-      if (wrapY) {
-        this.brush.drawTo(ctx, x, y + height, drawOptions)
-        this.brush.drawTo(ctx, x, y - height, drawOptions)
-      }
-      if (wrapY && wrapX) {
-        this.brush.drawTo(ctx, x + width, y + height, drawOptions)
-        this.brush.drawTo(ctx, x - width, y - height, drawOptions)
-        this.brush.drawTo(ctx, x + width, y - height, drawOptions)
-        this.brush.drawTo(ctx, x - width, y + height, drawOptions)
-      }
+      this.wrap(x,y,width,height, (x,y) => this.brush.drawTo(ctx,  x, y, drawOptions))
     }
     catch (e)
     {
