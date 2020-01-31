@@ -60,27 +60,38 @@ AFRAME.registerComponent('draw-canvas', {
 
   drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, lastParams = undefined}) {
     if (canvas === null) canvas = this.data.canvas
-    if (!this.wasDrawing && sourceEl)
-    {
-      Undo.pushCanvas(canvas)
-      sourceEl.addEventListener('enddrawing', (e) => {
-        this.wasDrawing = false
-      }, {once: true})
-      this.wasDrawing = true
-    }
+
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 
     let {x,y} = this.uvToPoint(uv, canvas)
 
-    let drawOptions = {rotation, pressure, distance}
+    let imageData
+
+    if (this.brush.hqBlending)
+    {
+      imageData = this.imageData || ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+      this.imageData = imageData
+    }
+
+    if (!this.wasDrawing && sourceEl)
+    {
+      Undo.pushCanvas(canvas)
+      sourceEl.addEventListener('enddrawing', (e) => {
+        this.wasDrawing = false
+        delete this.imageData
+      }, {once: true})
+      this.wasDrawing = true
+    }
+
+    let drawOptions = {rotation, pressure, distance, imageData}
 
     try {
       if (this.brush.connected && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )
         let numPoints = Math.max(Math.floor(distance ), 1)
-        let lerpedOpts = {}
+        let lerpedOpts = {imageData}
         let drawFn = (x,y) => this.brush.drawTo(ctx, x,y, lerpedOpts)
 
         for (let i = 0; i < numPoints; i++)
@@ -99,6 +110,11 @@ AFRAME.registerComponent('draw-canvas', {
       else
       {
         this.wrap(x,y,width,height, (x,y) => this.brush.drawTo(ctx,  x, y, drawOptions))
+      }
+
+      if (this.brush.hqBlending)
+      {
+        ctx.putImageData(imageData, 0, 0)
       }
     }
     catch (e)
