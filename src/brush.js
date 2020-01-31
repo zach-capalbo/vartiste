@@ -42,7 +42,7 @@ class ProceduralBrush extends Brush {
     this.color = color
     this.color3 = new THREE.Color(this.color)
 
-    this.createBrush()
+    this.updateBrush()
   }
 
   changeScale(scale) {
@@ -53,7 +53,7 @@ class ProceduralBrush extends Brush {
     this.overlayCanvas.width = this.width
     this.overlayCanvas.height = this.height
 
-    this.createBrush()
+    this.updateBrush()
   }
 
   changeOpacity(opacity) {
@@ -86,6 +86,16 @@ class ProceduralBrush extends Brush {
 
     ctx.fillStyle = gradient
     ctx.fillRect(0,0,width,height)
+  }
+
+  updateBrush() {
+    this.createBrush()
+    let ctx = this.overlayCanvas.getContext("2d")
+    let {width, height} = this
+    if (this.hqBlending)
+    {
+      this.brushData = ctx.getImageData(0, 0, width, height)
+    }
 
     if (!this.previewSrc)
     {
@@ -164,19 +174,22 @@ class ProceduralBrush extends Brush {
     width = Math.floor(width)
     height = Math.floor(height)
 
-    let brushCtx = this.overlayCanvas.getContext('2d')
+    let brushCtx = this.brushCtx || this.overlayCanvas.getContext('2d')
+    this.brushCtx = this.brushCtx
     let imageData = ctx.getImageData(x-width / 2, y- height / 2, width, height)
-    let brushData = brushCtx.getImageData(0, 0, width, height)
+    let brushData = this.brushData
 
     let yi, xi
 
     let carryVal = {r:0,g:0,b:0,clerp:0}
 
-    let sample = (data, c) => data.data[Math.floor(4 * (yi * width + xi) + c)]
-    let setData = (data, c, v) => data.data[Math.floor(4 * (yi * width + xi) + c)] = v
+    let bufIdx
+    let sample = (data, c) => data.data[bufIdx + c]
+    let setData = (data, c, v) => data.data[bufIdx + c] = v
+    let val, f
     let carry = (c) => {
-      let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 254.4)
-      let f = Math.round(val)
+      val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 254.4)
+      f = Math.round(val)
       carryVal[c] = val - f
       return f
     }
@@ -187,21 +200,15 @@ class ProceduralBrush extends Brush {
     {
       for (xi = 0; xi < width; ++xi)
       {
+        bufIdx = (4 * (yi * width + xi))
         let lerp = sample(brushData, 3) * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
-        // lerp += carryVal.clerp
-        // let clerp = THREE.Math.clamp(lerp + 1.0 - sample(imageData, 3) / 255, 0, 1)
-        let clerp = lerp//THREE.Math.clamp(Math.max(lerp, 1.0 - sample(imageData, 3) / 255), 0, 1)
-
+        let clerp = lerp
         carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
-
         let targetAlpha = THREE.Math.clamp(sample(imageData, 3) + sample(brushData, 3) * this.opacity * pressure, 0, 255)
-
-        // clerp = clerp + (1.0 - (targetAlpha - sample(imageData, 3)) / 255)
 
         if (sample(imageData, 3) < (1 + Math.random() * 1) * sample(brushData, 3))
         {
           clerp = clerp + (1.0 - sample(imageData, 3) / 255.0)
-          // clerp = clerp +  (1.0 - sample(imageData, 3) / 255.0) * sample(brushData, 3) / 255.0 + Math.random() * 0.01
         }
 
         if (clerp * 255.0 < 1)
@@ -212,7 +219,6 @@ class ProceduralBrush extends Brush {
 
         clerp = THREE.Math.clamp(clerp, 0, 1)
 
-        // console.log(x, y, lerp)
         setData(imageData, 0, THREE.Math.lerp(sample(imageData, 0), carry('r'), clerp))
         setData(imageData, 1, THREE.Math.lerp(sample(imageData, 1), carry('g'), clerp))
         setData(imageData, 2, THREE.Math.lerp(sample(imageData, 2), carry('b'), clerp))
@@ -279,7 +285,7 @@ class ImageBrush extends ProceduralBrush{
 
     this.image = image
     this.previewSrc = image
-    this.createBrush()
+    this.updateBrush()
   }
 
   createBrush() {
@@ -308,8 +314,6 @@ class ImageBrush extends ProceduralBrush{
     }
 
     ctx.restore()
-
-    this.createOutline(this.overlayCanvas)
   }
 }
 
@@ -317,7 +321,7 @@ class LambdaBrush extends ProceduralBrush {
   constructor(options={}, lambda) {
     super(options)
     this.lambda = lambda
-    this.createBrush()
+    this.updateBrush()
   }
   createBrush() {
     if (!this.lambda) return
@@ -334,8 +338,6 @@ class LambdaBrush extends ProceduralBrush {
     {
       this.previewSrc = this.overlayCanvas.toDataURL()
     }
-
-    this.createOutline(this.overlayCanvas)
   }
 }
 

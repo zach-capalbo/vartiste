@@ -79,24 +79,27 @@ AFRAME.registerComponent('draw-canvas', {
       if (this.brush.connected && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )
-        let numPoints = Math.floor(distance)
+        let numPoints = Math.max(Math.floor(distance ), 1)
+        let lerpedOpts = {}
+        let drawFn = (x,y) => this.brush.drawTo(ctx, x,y, lerpedOpts)
 
-        for (let i = 1; i < numPoints; i++)
+        for (let i = 0; i < numPoints; i++)
         {
           let lerp = i / numPoints
 
           let xx = THREE.Math.lerp(oldPoint.x, x, lerp)
           let yy = THREE.Math.lerp(oldPoint.y, y, lerp)
-          let lerpedOpts = {
-              rotation: THREE.Math.lerp(lastParams.rotation, rotation, lerp),
-              pressure: THREE.Math.lerp(lastParams.pressure, pressure, lerp),
-              distance: THREE.Math.lerp(lastParams.distance, distance, lerp),
-            }
-          this.wrap(xx,yy,width,height, (x,y) => this.brush.drawTo(ctx, x,y, lerpedOpts))
+          lerpedOpts.rotation = THREE.Math.lerp(lastParams.rotation, rotation, lerp)
+          lerpedOpts.pressure = THREE.Math.lerp(lastParams.pressure, pressure, lerp)
+          lerpedOpts.distance = THREE.Math.lerp(lastParams.distance, distance, lerp)
+
+          this.wrap(xx,yy,width,height, drawFn)
         }
       }
-
-      this.wrap(x,y,width,height, (x,y) => this.brush.drawTo(ctx,  x, y, drawOptions))
+      else
+      {
+        this.wrap(x,y,width,height, (x,y) => this.brush.drawTo(ctx,  x, y, drawOptions))
+      }
     }
     catch (e)
     {

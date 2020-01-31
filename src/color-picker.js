@@ -158,8 +158,6 @@ AFRAME.registerComponent("opacity-picker", {
     if (this.layer)
     {
       this.layer.opacity = opacity
-
-      console.log("Updating layer opacity", this.layer, this.layer.opacity)
     }
     else
     {
