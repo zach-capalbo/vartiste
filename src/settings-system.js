@@ -7,6 +7,7 @@ import {Environments} from './environments.js'
 AFRAME.registerSystem('settings-system', {
   init() {
     this.projectName = "vartiste-project"
+    this.quality = 1.0
   },
   popup(url, description) {
     this.el.emit('open-popup', `Attempted to open a poup for ${description}. You may need to take off your headset to view it. You may also need to disable your popup blocker.`)
@@ -104,6 +105,7 @@ AFRAME.registerSystem('settings-system', {
   },
   setQuality(scale) {
     document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
+    this.quality = scale
   },
   lowQualityAction() { this.setQuality(0.25) },
   mediumQualityAction() { this.setQuality(0.5) },

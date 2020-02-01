@@ -10,7 +10,7 @@ class ProceduralBrush extends Brush {
     maxDistance=1.5,
     connected=false,
     autoRotate=false,
-    hqBlending=true,
+    hqBlending=false,
     drawEdges=false,
     ...options} = {})
   {
@@ -198,6 +198,13 @@ class ProceduralBrush extends Brush {
     let imageOpacity
     let brushOpacity
 
+    let lerp
+    let clerp
+    let targetAlpha
+
+    let imageDataData = imageData.data
+    let brushDataData = brushData.data
+
     ctx.globalAlpha = 1
 
     for (yi = 0; yi < height; ++yi)
@@ -206,12 +213,12 @@ class ProceduralBrush extends Brush {
       {
         bufIdx = (4 * (yi * width + xi))
         canvasIdx = Math.floor(4 * ((yi + y) * cwidth + (xi + x)))
-        brushOpacity = brushData.data[bufIdx + 3]
-        imageOpacity = imageData.data[canvasIdx + 3]
-        let lerp = brushOpacity * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
-        let clerp = lerp
+        brushOpacity = brushDataData[bufIdx + 3]
+        imageOpacity = imageDataData[canvasIdx + 3]
+        lerp = brushOpacity * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
+        clerp = lerp
         carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
-        let targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * this.opacity * pressure, 0, 255)
+        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * this.opacity * pressure, 0, 255)
 
         if (imageOpacity < (1 + Math.random() * 1) * brushOpacity)
         {
@@ -226,10 +233,10 @@ class ProceduralBrush extends Brush {
 
         clerp = THREE.Math.clamp(clerp, 0, 1)
 
-        imageData.data[canvasIdx + 0] = THREE.Math.lerp(imageData.data[canvasIdx + 0], this.carry(carryVal, 'r'), clerp)
-        imageData.data[canvasIdx + 1] = THREE.Math.lerp(imageData.data[canvasIdx + 1], this.carry(carryVal, 'g'), clerp)
-        imageData.data[canvasIdx + 2] = THREE.Math.lerp(imageData.data[canvasIdx + 2], this.carry(carryVal, 'b'), clerp)
-        imageData.data[canvasIdx + 3] = THREE.Math.lerp(imageData.data[canvasIdx + 3], 255, lerp)
+        imageDataData[canvasIdx + 0] = THREE.Math.lerp(imageDataData[canvasIdx + 0], this.carry(carryVal, 'r'), clerp)
+        imageDataData[canvasIdx + 1] = THREE.Math.lerp(imageDataData[canvasIdx + 1], this.carry(carryVal, 'g'), clerp)
+        imageDataData[canvasIdx + 2] = THREE.Math.lerp(imageDataData[canvasIdx + 2], this.carry(carryVal, 'b'), clerp)
+        imageDataData[canvasIdx + 3] = THREE.Math.lerp(imageDataData[canvasIdx + 3], 255, lerp)
       }
     }
   }

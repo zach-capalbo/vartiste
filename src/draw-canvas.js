@@ -22,6 +22,8 @@ AFRAME.registerComponent('draw-canvas', {
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       this.brush = e.detail.brush
     })
+
+    this.wrappedDraw = this.wrappedDraw.bind(this)
   },
 
   uvToPoint(uv, canvas = null) {
@@ -38,24 +40,28 @@ AFRAME.registerComponent('draw-canvas', {
     return {x,y}
   },
 
-  wrap(x, y, width, height, f){
+  wrap(x, y, width, height, f, ...opts){
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
-    f(x, y)
+    f(x, y, ...opts)
 
     if (wrapX) {
-        f(x + width, y)
-        f(x - width, y)
+        f(x + width, y, ...opts)
+        f(x - width, y, ...opts)
     }
     if (wrapY) {
-      f(x, y + height)
-      f(x, y - height)
+      f(x, y + height, ...opts)
+      f(x, y - height, ...opts)
     }
     if (wrapY && wrapX) {
-      f(x + width, y + height)
-      f(x - width, y - height)
-      f(x + width, y - height)
-      f(x - width, y + height)
+      f(x + width, y + height, ...opts)
+      f(x - width, y - height, ...opts)
+      f(x + width, y - height, ...opts)
+      f(x - width, y + height, ...opts)
     }
+  },
+
+  wrappedDraw(x,y, ctx, drawOptions) {
+    this.brush.drawTo(ctx,  x, y, drawOptions)
   },
 
   drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, lastParams = undefined}) {
@@ -68,7 +74,11 @@ AFRAME.registerComponent('draw-canvas', {
 
     let imageData
 
-    if (this.brush.hqBlending)
+    let highQuality = this.el.sceneEl.systems['settings-system'].quality > 0.75
+
+    let hqBlending = this.brush.hqBlending && highQuality && this.brush.opacity < 0.3
+
+    if (hqBlending)
     {
       imageData = this.imageData || ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
       this.imageData = imageData
@@ -76,6 +86,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     if (!this.wasDrawing && sourceEl)
     {
+      console.log("Qualit", highQuality, this.el.sceneEl.systems['settings-system'].quality)
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false
@@ -84,15 +95,12 @@ AFRAME.registerComponent('draw-canvas', {
       this.wasDrawing = true
     }
 
-    let drawOptions = {rotation, pressure, distance, imageData}
-
     try {
-      if (this.brush.connected && lastParams) {
+      if (this.brush.connected && highQuality && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )
         let numPoints = Math.max(Math.floor(distance ), 1)
         let lerpedOpts = {imageData}
-        let drawFn = (x,y) => this.brush.drawTo(ctx, x,y, lerpedOpts)
 
         for (let i = 0; i < numPoints; i++)
         {
@@ -104,15 +112,16 @@ AFRAME.registerComponent('draw-canvas', {
           lerpedOpts.pressure = THREE.Math.lerp(lastParams.pressure, pressure, lerp)
           lerpedOpts.distance = THREE.Math.lerp(lastParams.distance, distance, lerp)
 
-          this.wrap(xx,yy,width,height, drawFn)
+          this.wrap(xx,yy,width,height, this.wrappedDraw, ctx, lerpedOpts)
         }
       }
       else
       {
-        this.wrap(x,y,width,height, (x,y) => this.brush.drawTo(ctx,  x, y, drawOptions))
+        let drawOptions = {rotation, pressure, distance, imageData}
+        this.wrap(x,y,width,height, this.wrappedDraw, ctx, drawOptions)
       }
 
-      if (this.brush.hqBlending)
+      if (hqBlending)
       {
         ctx.putImageData(imageData, 0, 0)
       }
