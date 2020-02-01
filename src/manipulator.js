@@ -321,3 +321,16 @@ AFRAME.registerComponent('manipulator', {
     }
   }
 })
+
+AFRAME.registerComponent('propogate-grab', {
+  init() {
+    for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
+    {
+      if (parent['redirect-grab'] || parent.classList.contains('clickable') || parent.classList.contains('grab-root'))
+      {
+        this.el['redirect-grab'] = parent
+        break;
+      }
+    }
+  }
+})
