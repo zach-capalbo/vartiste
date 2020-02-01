@@ -17,6 +17,7 @@ class ProjectFile {
       {
         if (layer.mode === 'bumpMap')
         {
+          console.log("Updating old bump map")
           layer.opacity = Math.pow(layer.opacity, 1/2.2)
         }
       }

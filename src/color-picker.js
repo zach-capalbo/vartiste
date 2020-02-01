@@ -157,6 +157,7 @@ AFRAME.registerComponent("opacity-picker", {
 
     if (this.layer)
     {
+      console.log("Setting layer opacity", opacity)
       this.layer.opacity = opacity
     }
     else
