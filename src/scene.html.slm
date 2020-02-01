@@ -14,6 +14,7 @@ a-scene
   /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
+      a-entity pencil-tool=""
 
     a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.3"
     /a-entity#environment position="0 -7 0" environment="preset:starry"

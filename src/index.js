@@ -30,6 +30,7 @@ require('./smooth-controller')
 require('./lathe')
 require('./url-loader')
 require('./environments.js')
+require('./pencil-tool')
 
 require('./app.styl')
 
