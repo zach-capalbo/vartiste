@@ -279,6 +279,8 @@ AFRAME.registerComponent('compositor', {
       }
       if (material.type !== "MeshStandardMaterial") continue
 
+      if (modesUsed.has(layer.mode)) continue;
+
       if (!material[layer.mode]) {
         material[layer.mode] = createTexture()
         material.needsUpdate = true

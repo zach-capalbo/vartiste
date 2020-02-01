@@ -42,7 +42,7 @@ class ProceduralBrush extends Brush {
     this.color = color
     this.color3 = new THREE.Color(this.color)
 
-    this.createBrush()
+    this.updateBrush()
   }
 
   changeScale(scale) {
@@ -53,7 +53,7 @@ class ProceduralBrush extends Brush {
     this.overlayCanvas.width = this.width
     this.overlayCanvas.height = this.height
 
-    this.createBrush()
+    this.updateBrush()
   }
 
   changeOpacity(opacity) {
@@ -86,6 +86,16 @@ class ProceduralBrush extends Brush {
 
     ctx.fillStyle = gradient
     ctx.fillRect(0,0,width,height)
+  }
+
+  updateBrush() {
+    this.createBrush()
+    let ctx = this.overlayCanvas.getContext("2d")
+    let {width, height} = this
+    if (this.hqBlending)
+    {
+      this.brushData = ctx.getImageData(0, 0, width, height)
+    }
 
     if (!this.previewSrc)
     {
@@ -93,6 +103,7 @@ class ProceduralBrush extends Brush {
     }
 
     this.createOutline(this.overlayCanvas)
+    this.brushData = ctx.getImageData(0, 0, width, height)
   }
 
   createOutline(source) {
@@ -133,28 +144,35 @@ class ProceduralBrush extends Brush {
     // Convolve(sharp_filter).canvas(this.outlineCanvas)
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false} = {}) {
-    ctx.save()
-    if (this.distanceBased)
-    {
-      ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
-    }
-    else
-    {
-      ctx.globalAlpha = pressure
-    }
-    ctx.globalAlpha *= this.opacity
-    ctx.translate(x,y)
-    ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
-    //ctx.translate(2 * x, 2 * y)
-    if (this.distanceBased){
-      let scale = ctx.globalAlpha * 2
-      ctx.scale(1/scale, 1/scale)
-    }
+  carry(carryVal, c) {
+    let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 254.4)
+    let f = Math.round(val)
+    carryVal[c] = val - f
+    return f
+  }
 
-    const hqThreshold = 0.4
-    if (!this.hqBlending || eraser || this.opacity > hqThreshold)
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, imageData=undefined} = {}) {
+    if (!imageData)
     {
+      ctx.save()
+
+      if (this.distanceBased)
+      {
+        ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
+      }
+      else
+      {
+        ctx.globalAlpha = pressure
+      }
+      ctx.globalAlpha *= this.opacity
+      ctx.translate(x,y)
+      ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
+
+      if (this.distanceBased){
+        let scale = ctx.globalAlpha * 2
+        ctx.scale(1/scale, 1/scale)
+      }
+
       ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
       ctx.restore()
       return
@@ -164,22 +182,28 @@ class ProceduralBrush extends Brush {
     width = Math.floor(width)
     height = Math.floor(height)
 
-    let brushCtx = this.overlayCanvas.getContext('2d')
-    let imageData = ctx.getImageData(x-width / 2, y- height / 2, width, height)
-    let brushData = brushCtx.getImageData(0, 0, width, height)
+    let brushData = this.brushData
 
     let yi, xi
 
     let carryVal = {r:0,g:0,b:0,clerp:0}
 
-    let sample = (data, c) => data.data[Math.floor(4 * (yi * width + xi) + c)]
-    let setData = (data, c, v) => data.data[Math.floor(4 * (yi * width + xi) + c)] = v
-    let carry = (c) => {
-      let val = THREE.Math.clamp(this.color3[c] * 255 + carryVal[c], 0, 254.4)
-      let f = Math.round(val)
-      carryVal[c] = val - f
-      return f
-    }
+    let bufIdx
+    let canvasIdx
+    x = Math.floor(x - width / 2)
+    y = Math.floor(y - height / 2)
+    let cwidth = Math.floor(ctx.canvas.width)
+    let setData = (data, c, v) => data.data[Math.floor(4 * ((yi + y) * cwidth + (xi + x))) + c] = v
+    let val, f
+    let imageOpacity
+    let brushOpacity
+
+    let lerp
+    let clerp
+    let targetAlpha
+
+    let imageDataData = imageData.data
+    let brushDataData = brushData.data
 
     ctx.globalAlpha = 1
 
@@ -187,21 +211,18 @@ class ProceduralBrush extends Brush {
     {
       for (xi = 0; xi < width; ++xi)
       {
-        let lerp = sample(brushData, 3) * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
-        // lerp += carryVal.clerp
-        // let clerp = THREE.Math.clamp(lerp + 1.0 - sample(imageData, 3) / 255, 0, 1)
-        let clerp = lerp//THREE.Math.clamp(Math.max(lerp, 1.0 - sample(imageData, 3) / 255), 0, 1)
-
+        bufIdx = (4 * (yi * width + xi))
+        canvasIdx = Math.floor(4 * ((yi + y) * cwidth + (xi + x)))
+        brushOpacity = brushDataData[bufIdx + 3]
+        imageOpacity = imageDataData[canvasIdx + 3]
+        lerp = brushOpacity * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
+        clerp = lerp
         carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
+        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * this.opacity * pressure, 0, 255)
 
-        let targetAlpha = THREE.Math.clamp(sample(imageData, 3) + sample(brushData, 3) * this.opacity * pressure, 0, 255)
-
-        // clerp = clerp + (1.0 - (targetAlpha - sample(imageData, 3)) / 255)
-
-        if (sample(imageData, 3) < (1 + Math.random() * 1) * sample(brushData, 3))
+        if (imageOpacity < (1 + Math.random() * 1) * brushOpacity)
         {
-          clerp = clerp + (1.0 - sample(imageData, 3) / 255.0)
-          // clerp = clerp +  (1.0 - sample(imageData, 3) / 255.0) * sample(brushData, 3) / 255.0 + Math.random() * 0.01
+          clerp = clerp + (1.0 - imageOpacity / 255.0)
         }
 
         if (clerp * 255.0 < 1)
@@ -212,17 +233,12 @@ class ProceduralBrush extends Brush {
 
         clerp = THREE.Math.clamp(clerp, 0, 1)
 
-        // console.log(x, y, lerp)
-        setData(imageData, 0, THREE.Math.lerp(sample(imageData, 0), carry('r'), clerp))
-        setData(imageData, 1, THREE.Math.lerp(sample(imageData, 1), carry('g'), clerp))
-        setData(imageData, 2, THREE.Math.lerp(sample(imageData, 2), carry('b'), clerp))
-        setData(imageData, 3, THREE.Math.lerp(sample(imageData, 3), 255, lerp))
+        imageDataData[canvasIdx + 0] = THREE.Math.lerp(imageDataData[canvasIdx + 0], this.carry(carryVal, 'r'), clerp)
+        imageDataData[canvasIdx + 1] = THREE.Math.lerp(imageDataData[canvasIdx + 1], this.carry(carryVal, 'g'), clerp)
+        imageDataData[canvasIdx + 2] = THREE.Math.lerp(imageDataData[canvasIdx + 2], this.carry(carryVal, 'b'), clerp)
+        imageDataData[canvasIdx + 3] = THREE.Math.lerp(imageDataData[canvasIdx + 3], 255, lerp)
       }
     }
-
-    ctx.putImageData(imageData, x -width / 2, y - height / 2)
-
-    ctx.restore()
   }
 
   drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
@@ -279,7 +295,7 @@ class ImageBrush extends ProceduralBrush{
 
     this.image = image
     this.previewSrc = image
-    this.createBrush()
+    this.updateBrush()
   }
 
   createBrush() {
@@ -308,8 +324,6 @@ class ImageBrush extends ProceduralBrush{
     }
 
     ctx.restore()
-
-    this.createOutline(this.overlayCanvas)
   }
 }
 
@@ -317,7 +331,8 @@ class LambdaBrush extends ProceduralBrush {
   constructor(options={}, lambda) {
     super(options)
     this.lambda = lambda
-    this.createBrush()
+    this.previewSrc = undefined
+    this.updateBrush()
   }
   createBrush() {
     if (!this.lambda) return
@@ -334,8 +349,6 @@ class LambdaBrush extends ProceduralBrush {
     {
       this.previewSrc = this.overlayCanvas.toDataURL()
     }
-
-    this.createOutline(this.overlayCanvas)
   }
 }
 
@@ -344,6 +357,7 @@ class FillBrush extends Brush {
     super();
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
     this.mode = mode
+    this.hqBlending = false
   }
   changeColor(color) {
     this.color = color

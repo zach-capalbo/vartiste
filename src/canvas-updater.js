@@ -8,7 +8,7 @@ AFRAME.registerComponent('canvas-updater', {
     this._tick = this.tick
     if (this.data.throttle > 0)
     {
-      this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+      this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle + Math.random() * 100, this)
     }
   },
 

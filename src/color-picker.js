@@ -108,6 +108,11 @@ AFRAME.registerComponent("opacity-picker", {
 
     this.adjustIndicator(this.system.data.opacity)
 
+    let edges = new THREE.EdgesGeometry( this.mesh.geometry );
+    let edgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 1 } );
+    let edgeSegments = new THREE.LineSegments( edges, edgeMaterial );
+    this.el.object3D.add( edgeSegments );
+
     this.el.addEventListener("click", (e)=> {
       if (this.layer && !this.wasDrawing) {
         let oldOpacity = this.layer.oldOpacity
@@ -138,22 +143,26 @@ AFRAME.registerComponent("opacity-picker", {
   },
   adjustIndicator(opacity) {
     let width = this.mesh.geometry.metadata.parameters.width
-    this.indicator.position.x = opacity * width - width / 2
+    let x = Math.pow(opacity, 1/2.2)
+    this.indicator.position.x = x * width - width / 2
   },
   handleClick(e) {
     let point = e.detail.intersection.uv
 
-    this.adjustIndicator(point.x)
+    let opacity = Math.pow(point.x, 2.2)
+
+    if (opacity > 0.95) opacity = 1
+
+    this.adjustIndicator(opacity)
 
     if (this.layer)
     {
-      this.layer.opacity = point.x
-
-      console.log("Updating layer opacity", this.layer, this.layer.opacity)
+      console.log("Setting layer opacity", opacity)
+      this.layer.opacity = opacity
     }
     else
     {
-      this.system.selectOpacity(point.x)
+      this.system.selectOpacity(opacity)
     }
   }
 })
