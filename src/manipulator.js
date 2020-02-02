@@ -80,6 +80,9 @@ AFRAME.registerComponent('manipulator', {
     this.el.sceneEl.addEventListener('refreshobjects', e => {
       this.raycaster.refreshObjects()
     })
+
+    // Default grab-options
+    this.el.setAttribute('grab-options', "")
   },
   startGrab() {
     if (this.target.grabbingManipulator) {
@@ -88,6 +91,8 @@ AFRAME.registerComponent('manipulator', {
     }
 
     this.target.addState("grabbed")
+
+    this.grabOptions = this.target.hasAttribute('grab-options') ? this.target.getAttribute('grab-options') : this.el.getAttribute('grab-options')
 
     let startMatrix = new THREE.Matrix4
     startMatrix.copy(this.target.object3D.matrix)
@@ -167,7 +172,7 @@ AFRAME.registerComponent('manipulator', {
     this.grabLineObject.visible = true
     this.endPoint.visible = true;
 
-    this.grabber.object3D.visible = true
+    this.grabber.object3D.visible = this.grabOptions.showHand
     // this.grabber.object3D.parent.remove(this.grabber.object3D)
     this.endPoint.attach(this.grabber.object3D)
     this.grabber.object3D.position.set(0,0,0)
@@ -279,7 +284,10 @@ AFRAME.registerComponent('manipulator', {
         }
         else
         {
-          this.target.object3D.scale.multiplyScalar(1.0 - (0.2 * this.scaleAmmount * dt / 100))
+          if (this.grabOptions.scalable)
+          {
+            this.target.object3D.scale.multiplyScalar(1.0 - (0.2 * this.scaleAmmount * dt / 100))
+          }
         }
       }
 
@@ -335,5 +343,12 @@ AFRAME.registerComponent('propogate-grab', {
         break;
       }
     }
+  }
+})
+
+AFRAME.registerComponent('grab-options', {
+  schema: {
+    showHand: {type: 'boolean', default: true},
+    scalable: {type: 'boolean', default: true}
   }
 })

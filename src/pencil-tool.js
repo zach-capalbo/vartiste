@@ -61,6 +61,7 @@ AFRAME.registerComponent('pencil-tool', {
     })
 
     this.el.setAttribute('hand-draw-tool', "")
+    this.el.setAttribute('grab-options', "showHand: false")
 
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
