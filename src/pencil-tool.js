@@ -3,13 +3,16 @@ AFRAME.registerComponent('pencil-tool', {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
     pressureTip: {type: 'boolean', default: false},
+
+    radius: {default: 0.03},
+    tipRatio: {default: 0.2}
   },
   init() {
     this.el.classList.add('grab-root')
 
-    let radius = 0.03
+    let radius = this.data.radius
     let height = 0.3
-    let tipHeight = height * 0.2
+    let tipHeight = height * this.data.tipRatio
     let cylinderHeight = height - tipHeight
     let cylinder = document.createElement('a-cylinder')
     this.height = height
