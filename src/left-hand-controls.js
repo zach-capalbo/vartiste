@@ -10,6 +10,10 @@ AFRAME.registerComponent('left-hand-controls', {
     buttonMap.setMap({
       'trackpad': 'sampling'
     })
+    buttonMap.setMap({
+      'xbutton': buttonMap.toggle('rotating'),
+      'trackpad': buttonMap.toggle('rotating')
+    }, "grabbing")
     buttonMap.install(this)
 
     this.el.addEventListener('thumbstickdown', () => {
@@ -21,7 +25,10 @@ AFRAME.registerComponent('left-hand-controls', {
     })
 
     this.el.addEventListener('xbuttondown', () => {
-      this.el.sceneEl.systems['settings-system'].undoAction()
+      if (!this.el.is("grabbing"))
+      {
+        this.el.sceneEl.systems['settings-system'].undoAction()
+      }
     })
   },
 

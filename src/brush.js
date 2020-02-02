@@ -151,7 +151,7 @@ class ProceduralBrush extends Brush {
     return f
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, imageData=undefined} = {}) {
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, imageData=undefined} = {}) {
     if (!imageData)
     {
       ctx.save()
@@ -172,6 +172,8 @@ class ProceduralBrush extends Brush {
         let scale = ctx.globalAlpha * 2
         ctx.scale(1/scale, 1/scale)
       }
+
+      ctx.scale(scale, scale)
 
       ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
       ctx.restore()

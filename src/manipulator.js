@@ -87,6 +87,8 @@ AFRAME.registerComponent('manipulator', {
       return
     }
 
+    this.target.addState("grabbed")
+
     let startMatrix = new THREE.Matrix4
     startMatrix.copy(this.target.object3D.matrix)
     let obj3d = this.target.object3D
@@ -187,6 +189,7 @@ AFRAME.registerComponent('manipulator', {
     if (this.target)
     {
       this.target.grabbingManipulator = undefined
+      this.target.removeState("grabbed")
     }
 
     this.target = undefined

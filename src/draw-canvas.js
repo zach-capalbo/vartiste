@@ -64,7 +64,7 @@ AFRAME.registerComponent('draw-canvas', {
     this.brush.drawTo(ctx,  x, y, drawOptions)
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, lastParams = undefined}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined}) {
     if (canvas === null) canvas = this.data.canvas
 
     let ctx = canvas.getContext('2d');
@@ -111,13 +111,14 @@ AFRAME.registerComponent('draw-canvas', {
           lerpedOpts.rotation = THREE.Math.lerp(lastParams.rotation, rotation, lerp)
           lerpedOpts.pressure = THREE.Math.lerp(lastParams.pressure, pressure, lerp)
           lerpedOpts.distance = THREE.Math.lerp(lastParams.distance, distance, lerp)
+          lerpedOpts.scale = THREE.Math.lerp(lastParams.scale, scale, lerp)
 
           this.wrap(xx,yy,width,height, this.wrappedDraw, ctx, lerpedOpts)
         }
       }
       else
       {
-        let drawOptions = {rotation, pressure, distance, imageData}
+        let drawOptions = {rotation, pressure, distance, imageData, scale}
         this.wrap(x,y,width,height, this.wrappedDraw, ctx, drawOptions)
       }
 
