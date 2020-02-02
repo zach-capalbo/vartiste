@@ -94,7 +94,7 @@ AFRAME.registerComponent('hand-draw-tool', {
 
     let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection}
 
-    if (this.isDrawing) {
+    if (this.isDrawing && !this.el.is("erasing")) {
       if (isDrawable)
       {
         drawCanvas.drawUV(intersection.uv, Object.assign({lastParams: this.lastParams}, params))

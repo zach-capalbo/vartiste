@@ -204,7 +204,8 @@ AFRAME.registerComponent('draw-canvas', {
     return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
   },
 
-  eraseUV(uv, {pressure = 1.0, canvas = null, rotation=0.0, sourceEl = undefined} = {}) {
+  eraseUV(uv, rawParams = {}) {
+    let {pressure = 1.0, canvas = null, rotation=0.0, scale=1.0, sourceEl = undefined} = rawParams
     if (canvas == null) canvas = this.data.canvas
     if (!this.wasErasing && sourceEl)
     {
@@ -225,29 +226,13 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.save()
 
-    ctx.globalAlpha = pressure
+    // ctx.globalAlpha = pressure
 
     let {x,y} = this.uvToPoint(uv, canvas)
 
     ctx.globalCompositeOperation = 'destination-out'
 
-    this.brush.drawTo(ctx,  x, y, {rotation, eraser: true})
-
-    let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
-    if (wrapX) {
-        this.brush.drawTo(ctx, x + width, y, {rotation})
-        this.brush.drawTo(ctx, x - width, y, {rotation})
-    }
-    if (wrapY) {
-      this.brush.drawTo(ctx, x, y + height, {rotation})
-      this.brush.drawTo(ctx, x, y - height, {rotation})
-    }
-    if (wrapY && wrapX) {
-      this.brush.drawTo(ctx, x + width, y + height, {rotation})
-      this.brush.drawTo(ctx, x - width, y - height, {rotation})
-      this.brush.drawTo(ctx, x + width, y - height, {rotation})
-      this.brush.drawTo(ctx, x - width, y + height, {rotation})
-    }
+    this.wrap(x, y, width, height, this.wrappedDraw, ctx, Object.assign({eraser: true}, rawParams))
     ctx.restore()
   },
 });

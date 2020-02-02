@@ -5,10 +5,16 @@ AFRAME.registerComponent('pencil-tool', {
     pressureTip: {type: 'boolean', default: false},
 
     radius: {default: 0.03},
-    tipRatio: {default: 0.2}
+    tipRatio: {default: 0.2},
+    extraStates: {type: 'array'}
   },
   init() {
     this.el.classList.add('grab-root')
+
+    for (let s of this.data.extraStates)
+    {
+      this.el.addState(s)
+    }
 
     let radius = this.data.radius
     let height = 0.3
@@ -20,7 +26,6 @@ AFRAME.registerComponent('pencil-tool', {
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', cylinderHeight)
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
-    // cylinder.setAttribute('position', `0 ${tipHeight / 2} 0`)
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
     this.el.append(cylinder)
@@ -45,10 +50,19 @@ AFRAME.registerComponent('pencil-tool', {
     }
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 -${cylinderHeight / 2 + tipHeight / 2} 0`)
-    tip.setAttribute("show-current-color", "")
+
+    if (this.el.is("erasing"))
+    {
+      tip.setAttribute('material', 'metalness: 0; roughness: 0.9; color: #eee')
+    }
+    else
+    {
+      tip.setAttribute("show-current-color", "")
+    }
     tip.classList.add('clickable')
     tip.setAttribute('propogate-grab', "")
     this.el.append(tip)
+    tip.setAttribute('material', 'side: double')
 
     this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
 
