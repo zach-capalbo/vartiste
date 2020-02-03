@@ -112,10 +112,24 @@ AFRAME.registerComponent('pencil-tool', {
     }
   },
   tick() {
-    if (!this.el.is("grabbed")) return
-
     let handDrawTool = this.el.components['hand-draw-tool']
     if (!handDrawTool.isDrawing) return
     this.updateDrawTool()
+  }
+})
+
+AFRAME.registerComponent('spike-ball', {
+  init() {
+    this.el.classList.add('grab-root')
+    for (let i = 0; i < 10; i++)
+    {
+      let pencil = document.createElement('a-entity')
+      pencil.setAttribute('pencil-tool', "")
+      pencil.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`)
+      pencil['redirect-grab'] = this.el
+      this.el.append(pencil)
+    }
+
+    // TODO: Need to make each pencil's far value match the parent scale
   }
 })
