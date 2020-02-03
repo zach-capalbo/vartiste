@@ -170,7 +170,7 @@ AFRAME.registerComponent("opacity-picker", {
 AFRAME.registerComponent("show-current-color", {
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
-    this.el.setAttribute('material', {shader: 'flat', transparent: true, color: this.system.data.color, opacity: this.system.data.opacity})
+    this.el.setAttribute('material', {shader: 'flat', transparent: true, color: this.system.data.color})
     this.el.sceneEl.addEventListener('colorchanged', (e) => {
       this.el.setAttribute('material', {color: e.detail.color})
     })

@@ -37,6 +37,8 @@ AFRAME.registerComponent('icon-button', {
       height: width
     })
 
+    this.el.setAttribute('propogate-grab', "")
+
     let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId

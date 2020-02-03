@@ -19,12 +19,18 @@ a-scene
     /a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
     a-entity#ui shadow="cast: true; receive: true"
-      a-entity#left-shelf position="-2 0 0" rotation="0 90 0"
-          a-entity#color-selection shelf="" position="0 1.6 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')
-          a-entity settings-shelf="" shelf="" position="0 0 0" scale="0.3 0.3 1"
-          a-entity brush-shelf="" shelf="" position="-1.5 1.6 0" scale="0.3 0.3 1"
+      a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
+          a-entity#color-selection.grab-root shelf="" position="0 1.6 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')
+          a-entity.grab-root settings-shelf="" shelf="" position="0 0 0" scale="0.3 0.3 1"
+          a-entity.grab-root brush-shelf="" shelf="" position="-1.5 1.6 0" scale="0.3 0.3 1"
           == partial('./partials/about-shelf.html.slm')
-      a-entity#right-shelf position="2 1.6 0" rotation="0 -90 0"
+          a-entity position="-2.7 1.6 0"
+            a-entity pencil-tool=""
+            a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="0.1 0 0"
+            a-entity pencil-tool="scaleTip: false" position="0.2 0 0"
+            a-entity pencil-tool="pressureTip: true" position="0.3 0 0"
+            a-entity pencil-tool="pressureTip: true; extraStates: erasing" position="0.4 0 0"
+      a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
         a-entity layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
     a-entity#canvas-root
       a-entity#canvas-view.canvas[

@@ -53,7 +53,7 @@ AFRAME.registerComponent('right-hand-controls', {
   },
 
   tick(t, dt) {
-    if (Math.abs(this.scaleBrushAmmount) > 0.08)
+    if (!this.el.is("grabbing") && Math.abs(this.scaleBrushAmmount) > 0.08)
     {
       this.paintSystem.scaleBrush(- dt * this.scaleBrushAmmount)
     }

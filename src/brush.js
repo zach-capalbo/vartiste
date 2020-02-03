@@ -151,7 +151,7 @@ class ProceduralBrush extends Brush {
     return f
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, imageData=undefined} = {}) {
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, imageData=undefined} = {}) {
     if (!imageData)
     {
       ctx.save()
@@ -172,6 +172,8 @@ class ProceduralBrush extends Brush {
         let scale = ctx.globalAlpha * 2
         ctx.scale(1/scale, 1/scale)
       }
+
+      ctx.scale(scale, scale)
 
       ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
       ctx.restore()
@@ -205,7 +207,15 @@ class ProceduralBrush extends Brush {
     let imageDataData = imageData.data
     let brushDataData = brushData.data
 
+    let scaleYi, scaleXi
+
     ctx.globalAlpha = 1
+
+    let opacity = this.opacity
+
+    if (scale > 1.01 || scale < 0.99) {
+      opacity = opacity * scale
+    }
 
     for (yi = 0; yi < height; ++yi)
     {
@@ -213,12 +223,20 @@ class ProceduralBrush extends Brush {
       {
         bufIdx = (4 * (yi * width + xi))
         canvasIdx = Math.floor(4 * ((yi + y) * cwidth + (xi + x)))
+
+        if (scale > 1.01 || scale < 0.99) {
+          scaleYi = Math.floor(yi * scale + height / 2 - height / 2 * scale)
+          scaleXi = Math.floor(xi * scale + width / 2 - width / 2 * scale)
+          // bufIdx = (4 * (scaleYi * width + scaleXi))
+          canvasIdx = Math.floor(4 * (((scaleYi + y) * cwidth + (scaleXi + x))))
+        }
+
         brushOpacity = brushDataData[bufIdx + 3]
         imageOpacity = imageDataData[canvasIdx + 3]
-        lerp = brushOpacity * this.opacity * pressure / 255 + Math.random() * this.opacity * 0.01
+        lerp = brushOpacity *opacity * pressure / 255 + Math.random() *opacity * 0.01
         clerp = lerp
         carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
-        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * this.opacity * pressure, 0, 255)
+        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * opacity * pressure, 0, 255)
 
         if (imageOpacity < (1 + Math.random() * 1) * brushOpacity)
         {

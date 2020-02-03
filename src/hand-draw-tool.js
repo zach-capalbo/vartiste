@@ -13,6 +13,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.clickStamp = 0
+    this.distanceScale = 1.0
     this.el.addEventListener('triggerchanged', (e) => {
       let threshold = 0.1
       this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
@@ -91,9 +92,9 @@ AFRAME.registerComponent('hand-draw-tool', {
       rotation = - rotationEuler.z
     }
 
-    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, intersection: intersection}
+    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection}
 
-    if (this.isDrawing) {
+    if (this.isDrawing && !this.el.is("erasing")) {
       if (isDrawable)
       {
         drawCanvas.drawUV(intersection.uv, Object.assign({lastParams: this.lastParams}, params))
