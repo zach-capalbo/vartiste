@@ -35,7 +35,7 @@ AFRAME.registerComponent('pencil-tool', {
     if (this.data.pressureTip)
     {
       tip = document.createElement('a-sphere')
-      tip.setAttribute('radius', radius)
+      tip.setAttribute('radius', tipHeight / 2)
     }
     else if (this.data.scaleTip)
     {

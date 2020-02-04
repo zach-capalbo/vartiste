@@ -93,7 +93,8 @@ appear in front, and the 2D canvas view will flip to behind you.
  - Only `.glb` format is supported (GLTF binary)
  - The UVs must be already present in the glb file
  - Draco compression is not currently supported
- - No existing textures or vertex colors are imported yet
+ - Existing textures will be resized to the main canvas size
+ - Vertex colors are not currently imported
 
 ## Tips And Tricks
 
@@ -117,6 +118,13 @@ appear in front, and the 2D canvas view will flip to behind you.
     layers, so you can use higher or lower quality images if helpful.
   - Environment maps only take effect if 3D Shading ![Sun Icon](../assets/brightness-4.png)
     is enabled
+- **Trick:** Some brushes, like the default smooth circle brush, will draw
+  connected lines as you move your hand around. If you're drawing onto a 3D
+  model, and the UV map is discontinuous, this can cause a big line to go
+  through to all sorts of areas where you don't expect. Some ways to deal with
+  that:
+  - Use a brush that doesn't connect lines (most of the textured brushes)
+  - Use a different method for unwrapping your model UV map
 
 ## Issues
 
