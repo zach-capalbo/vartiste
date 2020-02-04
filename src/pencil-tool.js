@@ -35,7 +35,7 @@ AFRAME.registerComponent('pencil-tool', {
     if (this.data.pressureTip)
     {
       tip = document.createElement('a-sphere')
-      tip.setAttribute('radius', radius)
+      tip.setAttribute('radius', tipHeight / 2)
     }
     else if (this.data.scaleTip)
     {
@@ -83,8 +83,11 @@ AFRAME.registerComponent('pencil-tool', {
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
+  calcFar() {
+    return this.tipHeight * this.el.object3D.scale.x
+  },
   updateDrawTool() {
-    let far = this.tipHeight * this.el.object3D.scale.x
+    let far = this.calcFar()
     this.el.setAttribute('raycaster', {far})
     let handDrawTool = this.el.components['hand-draw-tool']
     let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
@@ -118,9 +121,29 @@ AFRAME.registerComponent('pencil-tool', {
   }
 })
 
+AFRAME.registerComponent('pencil-broom', {
+  init() {
+    this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', "showHand: false")
+    for (let j = 0; j < 4; j++)
+    {
+      for (let i = 0; i < 3; i++)
+      {
+        let pencil = document.createElement('a-entity')
+        pencil.setAttribute('pencil-tool', "")
+        pencil.setAttribute('position', `${j * 0.05 + (j % 2) *0.02} 0 ${i * 0.05}`)
+        pencil['redirect-grab'] = this.el
+        this.el.append(pencil)
+        pencil.components['pencil-tool'].calcFar = () => pencil.components['pencil-tool'].tipHeight * this.el.object3D.scale.x
+      }
+    }
+  },
+})
+
 AFRAME.registerComponent('spike-ball', {
   init() {
     this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', "showHand: false")
     for (let i = 0; i < 10; i++)
     {
       let pencil = document.createElement('a-entity')
@@ -128,6 +151,7 @@ AFRAME.registerComponent('spike-ball', {
       pencil.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`)
       pencil['redirect-grab'] = this.el
       this.el.append(pencil)
+      pencil.components['pencil-tool'].calcFar = () => pencil.components['pencil-tool'].tipHeight * this.el.object3D.scale.x
     }
 
     // TODO: Need to make each pencil's far value match the parent scale
