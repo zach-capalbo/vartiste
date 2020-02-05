@@ -24,6 +24,7 @@ a-scene
           a-entity.grab-root settings-shelf="" shelf="" position="0 0 0" scale="0.3 0.3 1"
           a-entity.grab-root brush-shelf="" shelf="" position="-1.5 1.6 0" scale="0.3 0.3 1"
           == partial('./partials/about-shelf.html.slm')
+          == partial('./partials/timeline-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity pencil-tool=""
             a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.1 0 0"

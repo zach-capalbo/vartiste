@@ -19,7 +19,9 @@ AFRAME.registerComponent('compositor', {
     baseWidth: {default: 1024},
     geometryWidth: {default: 80},
     throttle: {default: 10},
-    textureScale: {default: 1}
+    textureScale: {default: 1},
+    frameRate: {default: 10},
+    onionSkin: {default: false}
   },
 
   init() {
@@ -32,6 +34,10 @@ AFRAME.registerComponent('compositor', {
     compositeCanvas.height = height
     document.body.append(compositeCanvas)
     this.compositeCanvas = compositeCanvas
+
+    this.currentFrame = 0
+    this.isAnimating = false
+    this.lastFrameChangeTime = 0
 
     this.el.setAttribute('material', {src: compositeCanvas})
 
@@ -238,7 +244,86 @@ AFRAME.registerComponent('compositor', {
 
     ctx.globalCompositeOperation = 'difference'
     ctx.drawImage(this.overlayCanvas, 0, 0)
+
+    if (this.data.onionSkin && this.activeLayer.frames.length > 1)
+    {
+      const onionSkins = [[1, "#4a75e0"], [-1, "#e04a6d"]]
+      for (let [frameOffset, color] of onionSkins)
+      {
+        overlayCtx.clearRect(0, 0, width, height)
+        overlayCtx.globalCompositeOperation = 'copy'
+        this.activeLayer.draw(overlayCtx, this.activeLayer.frameIdx(this.currentFrame + frameOffset))
+        overlayCtx.globalCompositeOperation = 'source-in'
+        overlayCtx.fillStyle = color
+        overlayCtx.fillRect(0, 0, width, height)
+
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = 0.5
+        ctx.drawImage(this.overlayCanvas, 0, 0)
+      }
+    }
     ctx.restore()
+  },
+  playPauseAnimation() {
+    this.isPlayingAnimation = !this.isPlayingAnimation
+  },
+  jumpToFrame(frame) {
+    this.currentFrame = frame
+    if (this.activeLayer.frames.length > 1)
+    {
+      this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
+    }
+    this.el.emit('framechanged', {frame: this.currentFrame})
+  },
+  nextFrame() {
+    this.jumpToFrame(++this.currentFrame)
+  },
+  previousFrame() {
+    this.jumpToFrame(--this.currentFrame)
+  },
+  addFrameAfter() {
+    this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
+    this.activeLayer.insertFrame(this.currentFrame)
+    this.nextFrame()
+    console.log(this.activeLayer.frameIdx(this.currentFrame), this.activeLayer.frames)
+    this.el.emit('layerupdated', {layer: this.activeLayer})
+  },
+  addFrameBefore() {
+    this.currentFrame = this.activeLayer.frameIdx(this.currentFrame - 1)
+    this.activeLayer.insertFrame(this.activeLayer.frameIdx(this.currentFrame))
+    this.nextFrame()
+    console.log(this.activeLayer.frameIdx(this.currentFrame), this.activeLayer.frames)
+    this.el.emit('layerupdated', {layer: this.activeLayer})
+  },
+  duplicateFrameAfter() {
+    let sourceCanvas = this.activeLayer.frame(this.currentFrame)
+    this.addFrameAfter()
+    let destinationCanvas = this.activeLayer.frame(this.currentFrame)
+    let ctx = destinationCanvas.getContext('2d')
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(sourceCanvas, 0, 0)
+    ctx.globalCompositeOperation = 'source-over'
+  },
+  duplicateFrameBefore() {
+    let sourceCanvas = this.activeLayer.frame(this.currentFrame)
+    this.addFrameBefore()
+    let destinationCanvas = this.activeLayer.frame(this.currentFrame)
+    let ctx = destinationCanvas.getContext('2d')
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(sourceCanvas, 0, 0)
+    ctx.globalCompositeOperation = 'source-over'
+  },
+  deleteFrame() {
+    if (this.activeLayer.frames.length > 1)
+    {
+      this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
+      this.activeLayer.deleteFrame(this.currentFrame)
+      this.jumpToFrame(this.activeLayer.frameIdx(this.currentFrame))
+      this.el.emit('layerupdated', {layer: this.activeLayer})
+    }
+  },
+  toggleOnionSkin() {
+    this.data.onionSkin = !this.data.onionSkin
   },
   tick(t, dt) {
     if (dt > 25 && (t - this.drawnT) < 1000) {
@@ -246,6 +331,12 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.drawnT = t
+
+    if (this.isPlayingAnimation && t - this.lastFrameChangeTime > 1000.0 / this.data.frameRate)
+    {
+      this.lastFrameChangeTime = t
+      this.nextFrame()
+    }
 
     if (this.el['redirect-grab'])
     {
@@ -276,21 +367,28 @@ AFRAME.registerComponent('compositor', {
       if (!layer.visible) continue
       if (THREED_MODES.indexOf(layer.mode) < 0)
       {
-        layer.draw(ctx)
+        layer.draw(ctx, this.currentFrame)
         continue
       }
       if (material.type !== "MeshStandardMaterial") continue
 
       if (modesUsed.has(layer.mode)) continue;
 
+      let layerCanvas = layer.canvas
+
+      if (layer.frames.length > 1)
+      {
+        layerCanvas = layer.frame(this.currentFrame)
+      }
+
       if (!material[layer.mode]) {
         material[layer.mode] = createTexture()
         material.needsUpdate = true
       }
 
-      if (material[layer.mode].image !== layer.canvas)
+      if (material[layer.mode].image !== layerCanvas)
       {
-        material[layer.mode].image = layer.canvas
+        material[layer.mode].image = layerCanvas
         material[layer.mode].needsUpdate = true
         console.log("Needs update", layer)
       }
@@ -324,7 +422,7 @@ AFRAME.registerComponent('compositor', {
           material.roughness = layer.opacity
           break
         case "envMap":
-          Environments.installSkybox(layer.canvas, layer.opacity)
+          Environments.installSkybox(layerCanvas, layer.opacity)
           material.envMap.mapping = THREE.SphericalReflectionMapping
           break
       }
@@ -376,7 +474,7 @@ AFRAME.registerComponent('compositor', {
   async load(obj) {
     let delay = () => new Promise(r => setTimeout(r, 10))
 
-    for (let layer of this.layers) {
+    for (let layer of this.layers.slice()) {
       console.log("Deleting", layer)
       this.deleteLayer(layer)
       await delay()
@@ -387,20 +485,28 @@ AFRAME.registerComponent('compositor', {
     for (let i = 0; i < obj.layers.length; ++i)
     {
       let layerObj = obj.layers[i]
-      let canvasData = obj.canvases[i]
 
       let layer = new Layer(layerObj.width, layerObj.height)
       let canvas = layer.canvas
       Object.assign(layer, layerObj)
       layer.canvas = canvas
       layer.active = false
+      layer.frames = [canvas]
 
-      let img = new Image
-      img.src = canvasData
-      await delay()
-      console.log("Loaded Layer", layer)
-      await delay()
-      layer.canvas.getContext('2d').drawImage(img, 0, 0)
+      for (let j = 0; j < obj.canvases[i].length; ++j)
+      {
+        let img = new Image
+        let canvasData = obj.canvases[i][j]
+        img.src = canvasData
+        console.log("Loaded Layer", layer, j, obj.canvases[i].length)
+        await delay()
+        while (j >= layer.frames.length)
+        {
+          layer.insertFrame(layer.frames.length)
+        }
+        layer.frames[j].getContext('2d').drawImage(img, 0, 0)
+      }
+
       await delay()
 
       this.layers.push(layer)

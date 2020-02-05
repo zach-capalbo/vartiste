@@ -1,7 +1,7 @@
 import {Layer} from './layer.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
-const FILE_VERSION = 1
+const FILE_VERSION = 2
 class ProjectFile {
   static update(obj) {
     if (!('_fileVersion') in obj) obj._fileVersion = 0
@@ -23,6 +23,13 @@ class ProjectFile {
       }
     }
     if (!('shader' in obj)) obj.shader = 'flat'
+    for (let i in obj.canvases)
+    {
+      if (obj._fileVersion < 2)
+      {
+        obj.canvases[i] = [obj.canvases[i]]
+      }
+    }
   }
 
   static async load(obj, {compositor}) {
@@ -84,7 +91,7 @@ class ProjectFile {
       width: compositor.width,
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,
-      canvases: layers.map(l => l.canvas.toDataURL())
+      canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
   }
 }

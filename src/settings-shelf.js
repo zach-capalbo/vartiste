@@ -51,10 +51,9 @@ AFRAME.registerComponent('settings-shelf', {
     width = parseInt(width)
     height = parseInt(height)
 
-    for (let layer of compositor.layers)
-    {
+    compositor.layers.slice().forEach(layer => {
       compositor.deleteLayer(layer)
-    }
+    })
 
     compositor.resize(width, height)
 

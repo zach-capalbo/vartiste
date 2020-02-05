@@ -58,11 +58,14 @@ class JoystickDirectionHandler {
       if (this.handleY)
       {
         if ((detail.axis[Axes.up_down(where.el)] > 0.8) && (this.dirY !== 1)) {
+          console.log("Clicking up", detail.axis[Axes.up_down(where.el)], this.dirY)
           this.dirY = 1;
           this.upClick(detail)
-        } else if ((-0.8 < detail.axis[Axes.up_down(where.el)] && detail.axis[Axes.UP_DOWN] < 0.8) && (this.dirY !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.up_down(where.el)] && detail.axis[Axes.up_down(where.el)] < 0.8) && (this.dirY !== 0)) {
+          console.log("Clicking reset", detail.axis[Axes.up_down(where.el)], this.dirY)
           return this.dirY = 0;
         } else if ((detail.axis[Axes.up_down(where.el)] < -0.8) && (this.dirY !== -1)) {
+          console.log("Clicking down", detail.axis[Axes.up_down(where.el)], this.dirY)
           this.dirY = -1;
           this.downClick(detail);
         }
