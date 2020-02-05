@@ -267,23 +267,19 @@ AFRAME.registerComponent('compositor', {
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
   },
-  nextFrame() {
-    this.currentFrame++
+  jumpToFrame(frame) {
+    this.currentFrame = frame
     if (this.activeLayer.frames.length > 1)
     {
-      let layer = this.activeLayer
-      this.el.setAttribute('draw-canvas', {canvas: layer.frame(this.currentFrame)})
+      this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
     }
     this.el.emit('framechanged', {frame: this.currentFrame})
   },
+  nextFrame() {
+    this.jumpToFrame(++this.currentFrame)
+  },
   previousFrame() {
-    this.currentFrame--
-    if (this.activeLayer.frames.length > 1)
-    {
-      let layer = this.activeLayer
-      this.el.setAttribute('draw-canvas', {canvas: layer.frame(this.currentFrame)})
-    }
-    this.el.emit('framechanged', {frame: this.currentFrame})
+    this.jumpToFrame(--this.currentFrame)
   },
   addFrameAfter() {
     this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
@@ -322,8 +318,8 @@ AFRAME.registerComponent('compositor', {
     {
       this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
       this.activeLayer.deleteFrame(this.currentFrame)
-      this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
-      this.el.emit('framechanged', {frame: this.currentFrame})
+      this.jumpToFrame(this.activeLayer.frameIdx(this.currentFrame))
+      this.el.emit('layerupdated', {layer: this.activeLayer})
     }
   },
   toggleOnionSkin() {
@@ -478,7 +474,7 @@ AFRAME.registerComponent('compositor', {
   async load(obj) {
     let delay = () => new Promise(r => setTimeout(r, 10))
 
-    for (let layer of this.layers) {
+    for (let layer of this.layers.slice()) {
       console.log("Deleting", layer)
       this.deleteLayer(layer)
       await delay()

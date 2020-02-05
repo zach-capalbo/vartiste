@@ -23,6 +23,10 @@ AFRAME.registerComponent('draw-canvas', {
       this.brush = e.detail.brush
     })
 
+    this.el.addEventListener('framechanged', (e) => {
+      delete this.imageData
+    })
+
     this.wrappedDraw = this.wrappedDraw.bind(this)
   },
 

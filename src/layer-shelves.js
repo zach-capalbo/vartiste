@@ -189,7 +189,7 @@ AFRAME.registerComponent("layer-shelves", {
       }
       if (this.shelves[layer.id].querySelector('.frame-count').hasLoaded)
       {
-        this.shelves[layer.id].querySelector('.frame-count').setAttribute('text', {value: `${layer.frames.length > 1 ? layer.frames.length + "#" : ""}`})
+        this.shelves[layer.id].querySelector('.frame-count').setAttribute('text', {value: `${layer.frames.length > 1 ? layer.frames.length : ""}`})
       }
     } catch (e) {console.error("No text for", this.shelves[layer.id])}
 
