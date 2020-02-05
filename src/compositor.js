@@ -20,7 +20,8 @@ AFRAME.registerComponent('compositor', {
     geometryWidth: {default: 80},
     throttle: {default: 10},
     textureScale: {default: 1},
-    frameRate: {default: 10}
+    frameRate: {default: 10},
+    onionSkin: {default: false}
   },
 
   init() {
@@ -243,6 +244,24 @@ AFRAME.registerComponent('compositor', {
 
     ctx.globalCompositeOperation = 'difference'
     ctx.drawImage(this.overlayCanvas, 0, 0)
+
+    if (this.data.onionSkin && this.activeLayer.frames.length > 1)
+    {
+      const onionSkins = [[1, "#4a75e0"], [-1, "#e04a6d"]]
+      for (let [frameOffset, color] of onionSkins)
+      {
+        overlayCtx.clearRect(0, 0, width, height)
+        overlayCtx.globalCompositeOperation = 'copy'
+        this.activeLayer.draw(overlayCtx, this.activeLayer.frameIdx(this.currentFrame + frameOffset))
+        overlayCtx.globalCompositeOperation = 'source-in'
+        overlayCtx.fillStyle = color
+        overlayCtx.fillRect(0, 0, width, height)
+
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = 0.5
+        ctx.drawImage(this.overlayCanvas, 0, 0)
+      }
+    }
     ctx.restore()
   },
   playPauseAnimation() {
@@ -306,6 +325,9 @@ AFRAME.registerComponent('compositor', {
       this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
       this.el.emit('framechanged', {frame: this.currentFrame})
     }
+  },
+  toggleOnionSkin() {
+    this.data.onionSkin = !this.data.onionSkin
   },
   tick(t, dt) {
     if (dt > 25 && (t - this.drawnT) < 1000) {

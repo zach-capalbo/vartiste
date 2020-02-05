@@ -187,6 +187,10 @@ AFRAME.registerComponent("layer-shelves", {
       {
         this.shelves[layer.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${layer.mode}`})
       }
+      if (this.shelves[layer.id].querySelector('.frame-count').hasLoaded)
+      {
+        this.shelves[layer.id].querySelector('.frame-count').setAttribute('text', {value: `${layer.frames.length > 1 ? layer.frames.length + "#" : ""}`})
+      }
     } catch (e) {console.error("No text for", this.shelves[layer.id])}
 
     this.shelves[layer.id].querySelector('.active-indicator').setAttribute('visible', layer.active && !layer.grabbed)
