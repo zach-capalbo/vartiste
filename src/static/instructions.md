@@ -106,6 +106,9 @@ appear in front, and the 2D canvas view will flip to behind you.
 - **Tip:** If VARTISTE is slow, unresponsive, or laggy
   - Use the Medium Quality ![Dice 4](../assets/dice-4.png) or Low Quality ![Dice 2](../assets/dice-2.png)
   - Use a smaller canvas size
+  - Break up large models into smaller chunks, or use lower-resolution verions.
+    As long as everything shares the same UV map, you can import the large model
+    at the end to combine it all.
   - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
   - I've gotten the best performance out of [Chrome Canary](https://www.google.com/chrome/canary/)
 - **Trick:** To _Copy and Paste_ try this:
