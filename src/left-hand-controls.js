@@ -33,15 +33,15 @@ AFRAME.registerComponent('left-hand-controls', {
   },
 
   leftClick() {
-    this.el.sceneEl.systems['paint-system'].prevBrush()
+    document.querySelector('#canvas-view').components.compositor.previousFrame()
   },
   rightClick() {
-    this.el.sceneEl.systems['paint-system'].nextBrush()
+    document.querySelector('#canvas-view').components.compositor.nextFrame()
   },
   upClick() {
-    document.querySelector('#canvas-view').components.compositor.nextLayer()
+    document.querySelector('#canvas-view').components.compositor.addFrameAfter()
   },
   downClick() {
-    document.querySelector('#canvas-view').components.compositor.prevLayer()
+    document.querySelector('#canvas-view').components.compositor.duplicateFrameAfter()
   }
 })

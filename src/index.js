@@ -31,6 +31,7 @@ require('./lathe')
 require('./url-loader')
 require('./environments.js')
 require('./pencil-tool')
+require('./timeline-shelf.js')
 
 require('./app.styl')
 

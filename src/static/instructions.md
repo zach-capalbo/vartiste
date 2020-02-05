@@ -47,8 +47,9 @@ For Oculus Touch controllers:
   - Trigger: Draw
   - X Button: Undo
   - Press Joystick: Reset camera
-  - Joystick Right/Left: Next/Previous brush
-  - Joystick Up/Down: Next/Previous layer
+  - Joystick Right/Left: Next/Previous frame
+  - Joystick Up: Add blank frame
+  - Joystick Down: Duplicate current frame
 
 For Vive Wands (and currently Valve Index controllers, although that should change soon):
 
@@ -67,8 +68,9 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
  - Trigger: Draw
  - Menu: Reset camera
  - Press trackpad: Pick color from canvas
- - Trackpad Right/Left: Next/Previous brush
- - Trackpad Up/Down: Next/Previous layer
+ - Trackpad Right/Left: Next/Previous frame
+ - Trackpad Up: Add blank frame
+ - Trackpad Down: Duplicate current frame
 
 
 <img src="globe.JPG" class="screenshot">
@@ -95,6 +97,9 @@ appear in front, and the 2D canvas view will flip to behind you.
  - Draco compression is not currently supported
  - Existing textures will be resized to the main canvas size
  - Vertex colors are not currently imported
+
+ **NOTE:** Animations are not currently imported or exported. They are, however,
+ saved into the project file
 
 ## Tips And Tricks
 
