@@ -9,6 +9,8 @@ class ProjectFile {
     if (!('height' in obj)) obj.height = 512
     if (!('layers' in obj)) obj.layers = []
     if (!('projectName' in obj)) obj.projectName = 'project'
+    if (!('shader' in obj)) obj.shader = 'flat'
+    if (!('frameRate' in obj)) obj.frameRate = 10
     for (let layer of obj.layers)
     {
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
@@ -22,7 +24,6 @@ class ProjectFile {
         }
       }
     }
-    if (!('shader' in obj)) obj.shader = 'flat'
     for (let i in obj.canvases)
     {
       if (obj._fileVersion < 2)
@@ -91,6 +92,7 @@ class ProjectFile {
       width: compositor.width,
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,
+      frameRate: compositor.data.frameRate,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
   }

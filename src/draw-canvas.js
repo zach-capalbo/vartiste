@@ -24,6 +24,7 @@ AFRAME.registerComponent('draw-canvas', {
     })
 
     this.el.addEventListener('framechanged', (e) => {
+      // this.currentFrame = e.details.frame
       delete this.imageData
     })
 
@@ -90,13 +91,18 @@ AFRAME.registerComponent('draw-canvas', {
 
     if (!this.wasDrawing && sourceEl)
     {
-      console.log("Qualit", highQuality, this.el.sceneEl.systems['settings-system'].quality)
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false
         delete this.imageData
       }, {once: true})
       this.wasDrawing = true
+      this.undoFrame = this.currentFrame
+    }
+    else if (sourceEl && this.currentFrame !== this.undoFrame)
+    {
+      Undo.pushCanvas(canvas)
+      this.undoFrame = this.currentFrame
     }
 
     try {
