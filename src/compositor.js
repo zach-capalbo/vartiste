@@ -142,9 +142,8 @@ AFRAME.registerComponent('compositor', {
   },
   mergeLayers(fromLayer, ontoLayer) {
     Undo.pushCanvas(ontoLayer.canvas)
-    let ctx = ontoLayer.canvas.getContext('2d')
+    let ctx = ontoLayer.frame(this.currentFrame).getContext('2d')
     ctx.save()
-
 
     ctx.translate(ontoLayer.width / 2, ontoLayer.height / 2)
     ctx.scale(1/ontoLayer.transform.scale.x, 1/ontoLayer.transform.scale.y)
@@ -152,7 +151,7 @@ AFRAME.registerComponent('compositor', {
 
     ctx.translate(-ontoLayer.transform.translation.x, -ontoLayer.transform.translation.y)
 
-    fromLayer.draw(ctx)
+    fromLayer.draw(ctx, this.currentFrame)
     ctx.restore()
 
   },
@@ -499,6 +498,9 @@ AFRAME.registerComponent('compositor', {
       this.deleteLayer(layer)
       await delay()
     }
+
+    this.data.frameRate = obj.frameRate
+    this.el.setAttribute('compositor', {frameRate: obj.frameRate})
 
     this.resize(obj.width, obj.height)
 
