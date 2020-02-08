@@ -3,6 +3,7 @@ require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
+require('./framework/hide-in-ar.js')
 
 require('./paint-system')
 require('./settings-system')

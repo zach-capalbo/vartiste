@@ -2,7 +2,7 @@ doctype html
 html
   head
     title VARTISTE
-    script src="https://aframe.io/releases/1.0.3/aframe.js"
+    script src="https://aframe.io/releases/1.0.4/aframe.js"
   body
     header
       a href="landing.html" Need Help? Read the instructions here.

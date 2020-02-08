@@ -31,7 +31,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     if (this.el.hasAttribute('cursor'))
     {
       document.addEventListener('mousedown', e => {
-        if (!e.buttons || e.buttons == 1) return
+        if (!e.buttons || (e.buttons == 1 && !this.el.sceneEl.is('ar-mode'))) return
         this.pressure = 1.0
         this.isDrawing = true
         this.startDraw()

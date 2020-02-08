@@ -64,6 +64,15 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.append(tip)
     tip.setAttribute('material', 'side: double')
 
+    // let brushPreview = document.createElement('a-plane')
+    // brushPreview.setAttribute("show-current-brush", "")
+    // brushPreview.setAttribute('width', radius)
+    // brushPreview.setAttribute('height', radius)
+    // brushPreview.setAttribute('rotation', '-90 0 0')
+    // brushPreview.setAttribute('position', `0 ${cylinderHeight / 2 + 0.0001} 0`)
+    // this.el.append(brushPreview)
+
+
     this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
 
     this.el.addEventListener('raycaster-intersection', e => {

@@ -1,6 +1,6 @@
 a-scene
   a-assets#assets
-  a-sky color="#333"
+  a-sky color="#333" hide-in-ar=""
 
   a-entity#artist-root
     a-entity#camera-root
