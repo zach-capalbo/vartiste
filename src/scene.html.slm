@@ -1,10 +1,10 @@
 a-scene
   a-assets#assets
-  a-sky color="#333" hide-in-ar=""
+  a-sky color="#333" hide-in-ar-mode=""
 
   a-entity#artist-root
     a-entity#camera-root
-      a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls=""
+      a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls="" mobile-camera=""
         a-entity position="0 0 0" light="type: point; castShadow: false"
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
 

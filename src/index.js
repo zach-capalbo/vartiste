@@ -33,6 +33,7 @@ require('./url-loader')
 require('./environments.js')
 require('./pencil-tool')
 require('./timeline-shelf.js')
+require('./mobile-camera.js')
 
 require('./app.styl')
 
