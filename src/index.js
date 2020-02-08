@@ -67,3 +67,7 @@ document.getElementById('left-hand').setAttribute('left-hand-controls', "")
 document.addEventListener('keydown', e => {
   if (e.key == "r") document.querySelector('a-scene').systems['settings-system'].resetCameraAction()
 })
+
+document.getElementById('got-it').addEventListener('click', e => {
+  document.getElementById('need-help-notification').classList.add('hidden')
+})
