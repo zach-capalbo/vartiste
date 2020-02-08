@@ -27,9 +27,26 @@ AFRAME.registerComponent('timeline-shelf', {
       }
     })
 
-    compositor.addEventListener('framechanged', (e) => {
-      let activeLayer = document.getElementById('canvas-view').components.compositor.activeLayer
-      this.el.querySelector('.frame-counter').setAttribute('text', {value: `Frame ${activeLayer.frameIdx(e.detail.frame) + 1} / ${activeLayer.frames.length} (${e.detail.frame})`})
-    })
+    this.updateFrame = this.updateFrame.bind(this)
+    compositor.addEventListener('framechanged', this.updateFrame)
+    compositor.addEventListener('layerupdated', this.updateFrame)
+
+    if (compositor.hasLoaded)
+    {
+      this.updateFrame()
+    }
+    else
+    {
+      compositor.addEventListener('componentinitialized', this.updateFrame)
+    }
+  },
+  updateFrame()
+  {
+    let {activeLayer, currentFrame} = document.getElementById('canvas-view').components.compositor
+    this.el.querySelector('.frame-counter').setAttribute('text', {value: `Frame ${activeLayer.frameIdx(currentFrame) + 1} / ${activeLayer.frames.length} (${currentFrame})`})
+  },
+  firstFrameAction()
+  {
+    document.getElementById('canvas-view').components.compositor.jumpToFrame(0)
   }
 })
