@@ -28,6 +28,11 @@ AFRAME.registerComponent('settings-shelf', {
     this.el.sceneEl.addEventListener('open-popup', e => {
       this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
     })
+
+    document.getElementById('canvas-view').addEventListener('resized', e => {
+      this.el.querySelector('.width').setAttribute('text', {value: e.detail.width})
+      this.el.querySelector('.height').setAttribute('text', {value: e.detail.height})
+    })
   },
   newCompositionAction(e) {
     let compositor = document.getElementById('canvas-view').components.compositor;

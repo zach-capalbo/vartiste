@@ -85,7 +85,15 @@ AFRAME.registerComponent('compositor', {
     let newLayer = new Layer(layer.width, layer.height)
     newLayer.transform = JSON.parse(JSON.stringify(layer.transform))
     newLayer.mode = layer.mode
-    newLayer.canvas.getContext('2d').drawImage(layer.canvas, 0, 0)
+
+    for (let i = 0; i < layer.frames.length; ++i)
+    {
+      if (i >= newLayer.frames.length)
+      {
+        newLayer.insertFrame(i)
+      }
+      newLayer.frames[i].getContext('2d').drawImage(layer.frames[i], 0, 0)
+    }
     let position = this.layers.indexOf(layer)
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
@@ -134,9 +142,8 @@ AFRAME.registerComponent('compositor', {
   },
   mergeLayers(fromLayer, ontoLayer) {
     Undo.pushCanvas(ontoLayer.canvas)
-    let ctx = ontoLayer.canvas.getContext('2d')
+    let ctx = ontoLayer.frame(this.currentFrame).getContext('2d')
     ctx.save()
-
 
     ctx.translate(ontoLayer.width / 2, ontoLayer.height / 2)
     ctx.scale(1/ontoLayer.transform.scale.x, 1/ontoLayer.transform.scale.y)
@@ -144,7 +151,7 @@ AFRAME.registerComponent('compositor', {
 
     ctx.translate(-ontoLayer.transform.translation.x, -ontoLayer.transform.translation.y)
 
-    fromLayer.draw(ctx)
+    fromLayer.draw(ctx, this.currentFrame)
     ctx.restore()
 
   },
@@ -276,22 +283,27 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('framechanged', {frame: this.currentFrame})
   },
   nextFrame() {
+    this.isPlayingAnimation = false
     this.jumpToFrame(++this.currentFrame)
   },
   previousFrame() {
+    this.isPlayingAnimation = false
     this.jumpToFrame(--this.currentFrame)
   },
   addFrameAfter() {
     this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
     this.activeLayer.insertFrame(this.currentFrame)
     this.nextFrame()
-    console.log(this.activeLayer.frameIdx(this.currentFrame), this.activeLayer.frames)
+    let frameToUndo = this.currentFrame
+    Undo.push(() => this.deleteFrame(frameToUndo))
     this.el.emit('layerupdated', {layer: this.activeLayer})
   },
   addFrameBefore() {
     this.currentFrame = this.activeLayer.frameIdx(this.currentFrame - 1)
     this.activeLayer.insertFrame(this.activeLayer.frameIdx(this.currentFrame))
     this.nextFrame()
+    let frameToUndo = this.currentFrame
+    Undo.push(() => this.deleteFrame(frameToUndo))
     console.log(this.activeLayer.frameIdx(this.currentFrame), this.activeLayer.frames)
     this.el.emit('layerupdated', {layer: this.activeLayer})
   },
@@ -313,10 +325,11 @@ AFRAME.registerComponent('compositor', {
     ctx.drawImage(sourceCanvas, 0, 0)
     ctx.globalCompositeOperation = 'source-over'
   },
-  deleteFrame() {
+  deleteFrame(frame) {
+    if (typeof frame === 'undefined') frame = this.currentFrame
     if (this.activeLayer.frames.length > 1)
     {
-      this.currentFrame = this.activeLayer.frameIdx(this.currentFrame)
+      this.currentFrame = this.activeLayer.frameIdx(frame)
       this.activeLayer.deleteFrame(this.currentFrame)
       this.jumpToFrame(this.activeLayer.frameIdx(this.currentFrame))
       this.el.emit('layerupdated', {layer: this.activeLayer})
@@ -330,12 +343,19 @@ AFRAME.registerComponent('compositor', {
       return
     }
 
-    this.drawnT = t
-
-    if (this.isPlayingAnimation && t - this.lastFrameChangeTime > 1000.0 / this.data.frameRate)
+    if (this.isPlayingAnimation)
     {
-      this.lastFrameChangeTime = t
-      this.nextFrame()
+      if (!this.playingStartTime)
+      {
+        this.playingStartTime = t
+        this.startingFrame = this.currentFrame
+      }
+
+      this.jumpToFrame(Math.round((t - this.playingStartTime) * this.data.frameRate / 1000.0) + this.startingFrame)
+    }
+    else
+    {
+      delete this.playingStartTime
     }
 
     if (this.el['redirect-grab'])
@@ -390,7 +410,6 @@ AFRAME.registerComponent('compositor', {
       {
         material[layer.mode].image = layerCanvas
         material[layer.mode].needsUpdate = true
-        console.log("Needs update", layer)
       }
       else if (layer.active)
       {
@@ -479,6 +498,9 @@ AFRAME.registerComponent('compositor', {
       this.deleteLayer(layer)
       await delay()
     }
+
+    this.data.frameRate = obj.frameRate
+    this.el.setAttribute('compositor', {frameRate: obj.frameRate})
 
     this.resize(obj.width, obj.height)
 
@@ -574,5 +596,7 @@ AFRAME.registerComponent('compositor', {
     {
       this.el.emit('layerupdated', {layer})
     }
+
+    this.el.emit('resized', {width, height})
   }
 })
