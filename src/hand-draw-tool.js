@@ -1,19 +1,18 @@
+import {Pool} from './pool.js'
+import shortid from 'shortid'
+
 AFRAME.registerComponent('hand-draw-tool', {
   dependencies: ['raycaster'],
   schema: {
     throttle: {type: 'int', default: 10}
   },
-  pool(name, type) {
-    if (this._pool[name]) return this._pool[name]
-    this._pool[name] = new type()
-    return this._pool[name]
-  },
   init() {
-    this._pool = {}
+    Pool.init(this)
     this.system = this.el.sceneEl.systems['paint-system']
     this.intersects = []
     this.clickStamp = 0
     this.distanceScale = 1.0
+    this.id = shortid.generate()
     this.el.addEventListener('triggerchanged', (e) => {
       let threshold = 0.1
       this.pressure = (0 + e.detail.value - threshold)  / (1 - threshold)
@@ -86,11 +85,30 @@ AFRAME.registerComponent('hand-draw-tool', {
 
     if (this.system.data.rotateBrush)
     {
-      let rotationEuler = this.rotationEuler || new THREE.Euler()
-      this.rotationEuler = rotationEuler
-      rotationEuler.copy(this.el.object3D.rotation)
-      rotationEuler.reorder("ZYX")
-      rotation = - rotationEuler.z
+      let objRot = this.pool('objRot', THREE.Quaternion)
+      intersection.object.getWorldQuaternion(objRot)
+      let objUp = this.pool('objUp', THREE.Vector3)
+      objUp.set(0, 1, 0)
+      objUp.applyQuaternion(objRot)
+      // console.log("Obj World Up", objUp)
+      let objRight = this.pool('objRight', THREE.Vector3)
+      objRight.set(1, 0, 0)
+      objRight.applyQuaternion(objRot)
+      // console.log("Obj World Right", objRight)
+
+      let thisRot = this.pool('thisRot', THREE.Quaternion)
+      this.el.object3D.getWorldQuaternion(thisRot)
+      let thisUp = this.pool('thisUp', THREE.Vector3)
+      thisUp.copy(this.el.object3D.up)
+      thisUp.applyQuaternion(thisRot)
+
+      // console.log("This World Up", thisUp)
+
+      rotation = Math.atan2(thisUp.dot(objUp), thisUp.dot(objRight))
+
+      rotation = Math.PI / 2 - rotation
+
+      // console.log("Rotation", thisUp.dot(objUp), thisUp.dot(objRight), rotation)
     }
 
     let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection}
@@ -123,6 +141,15 @@ AFRAME.registerComponent('hand-draw-tool', {
       if (isDrawable)
       {
         drawCanvas.eraseUV(intersection.uv, params)
+      }
+    }
+
+    if (isDrawable)
+    {
+      let targetCompositor = (drawCanvas.target || drawCanvas).el
+      if (targetCompositor.components.compositor)
+      {
+        targetCompositor.components.compositor.overlays[this.id] = Object.assign({uv: intersection.uv, el: this.el}, params)
       }
     }
   }

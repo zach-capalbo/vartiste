@@ -44,6 +44,8 @@ AFRAME.registerComponent('compositor', {
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
     this.activeLayer = this.layers[0]
 
+    this.overlays = {}
+
     let bgCtx = this.activeLayer.canvas.getContext('2d')
     bgCtx.fillStyle = "#FFF"
     bgCtx.fillRect(0,0,this.width,this.height)
@@ -227,11 +229,11 @@ AFRAME.registerComponent('compositor', {
     let overlayCtx = this.overlayCanvas.getContext('2d')
     overlayCtx.clearRect(0, 0, width, height)
 
-    for (let hand of ['right-hand', 'left-hand'])
+    for (let overlay of Object.values(this.overlays))
     {
-      let handEl = document.getElementById(hand)
-      if (handEl.is("grabbing")) continue;
-      let raycaster = handEl.components.raycaster
+      if (!overlay.el.id.endsWith('-hand')) continue
+      let raycaster = overlay.el.components.raycaster
+      if (!raycaster) continue
       let intersection = raycaster.intersections
                             .filter(i => i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
                             .sort(i => - i.distance)
@@ -239,14 +241,7 @@ AFRAME.registerComponent('compositor', {
 
 
       if (!intersection) continue
-
-      let rotationEuler = this.rotationEuler || new THREE.Euler()
-      this.rotationEuler = rotationEuler
-      rotationEuler.copy(document.getElementById(hand).object3D.rotation)
-      rotationEuler.reorder("ZYX")
-      let rotation = - rotationEuler.z
-
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, intersection.uv, {canvas: this.overlayCanvas, rotation: rotation})
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
     }
 
     ctx.globalCompositeOperation = 'difference'
