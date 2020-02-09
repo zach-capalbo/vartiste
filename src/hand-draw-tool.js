@@ -91,10 +91,21 @@ AFRAME.registerComponent('hand-draw-tool', {
       objUp.set(0, 1, 0)
       objUp.applyQuaternion(objRot)
       // console.log("Obj World Up", objUp)
+
+      let objDir = this.pool('objForward', THREE.Vector3)
+      // objDir.copy(intersection.face.normal)
+      objDir.copy(intersection.point)
+      let thisPos = this.pool('thisPos', THREE.Vector3)
+      // thisPos.copy(this.el.components.raycaster.raycaster.ray.origin)
+      this.el.object3D.getWorldPosition(thisPos)
+      objDir.sub(thisPos)
+      objDir.normalize()
+      // objDir.applyQuaternion(objRot)
+
       let objRight = this.pool('objRight', THREE.Vector3)
-      objRight.set(1, 0, 0)
-      objRight.applyQuaternion(objRot)
+      objRight.crossVectors(objDir, objUp)
       // console.log("Obj World Right", objRight)
+
 
       let thisRot = this.pool('thisRot', THREE.Quaternion)
       this.el.object3D.getWorldQuaternion(thisRot)
