@@ -166,3 +166,101 @@ AFRAME.registerComponent('spike-ball', {
     // TODO: Need to make each pencil's far value match the parent scale
   }
 })
+
+AFRAME.registerComponent('hammer-tool', {
+  schema: {
+    throttle: {type: 'int', default: 30},
+    scaleTip: {type: 'boolean', default: true},
+    pressureTip: {type: 'boolean', default: false},
+  },
+  init() {
+    this.el.classList.add('grab-root')
+
+    let handleHeight = 0.3
+    let handleRadius = 0.03
+    let handle = document.createElement('a-cylinder')
+    handle.setAttribute('radius', handleRadius)
+    handle.setAttribute('height', handleHeight)
+    handle.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    handle.classList.add('clickable')
+    handle.setAttribute('propogate-grab', "")
+    this.el.append(handle)
+
+    let headRadius = 0.05
+    let headLength = 0.2
+    let headHolder = document.createElement('a-entity')
+    headHolder.setAttribute('rotation', '0 0 90')
+    headHolder.setAttribute('rotation', '0 0 90')
+    headHolder.setAttribute('position', `0 ${handleHeight / 2.0} 0`)
+    this.el.append(headHolder)
+    let head = document.createElement('a-cylinder')
+    this.head = head
+    head.setAttribute('radius', headRadius)
+    head.setAttribute('height', headLength)
+    // head.classList.add('clickable')
+    head.setAttribute('propogate-grab', "")
+    head.setAttribute('material', 'side: double; color: #eee; metalness: 0.9; roughness: 0.4')
+    head.setAttribute('raycaster', `objects: .canvas; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${headLength / 2}`)
+    head.setAttribute('hand-draw-tool', "")
+    headHolder.append(head)
+
+    let tip = document.createElement('a-sphere')
+    tip.setAttribute('radius', 0.01)
+    tip.setAttribute('show-current-color', "")
+    tip.setAttribute('position', `0 ${headLength / 2} 0`)
+    tip.setAttribute('propogate-grab', "")
+    head.append(tip)
+    this.tip = tip
+
+    this._tick = this.tick
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+
+    head.addEventListener('raycaster-intersection', e => {
+      let pct = THREE.Math.clamp(this.speed * 100, 0, 1)
+      console.log("Hit", this.speed, pct)
+      // this.updateDrawTool()
+      let handDrawTool = head.components['hand-draw-tool']
+      handDrawTool.pressure = pct
+      handDrawTool.distanceScale = pct
+      handDrawTool.isDrawing = true
+      handDrawTool.hasDrawn = false
+      handDrawTool.singleShot = true
+      handDrawTool.startDraw()
+      this.el.addState('hitting')
+    })
+
+    head.addEventListener('raycaster-intersection-cleared', e => {
+      console.log("Hit cleared")
+      this.el.removeState('hitting')
+    })
+  },
+  tick(t, dt) {
+    if (!this.velocity)
+    {
+      this.velocity = new THREE.Vector3()
+      this.lastPosition = new THREE.Vector3()
+      this.position = new THREE.Vector3()
+      this.tip.object3D.getWorldPosition(this.lastPosition)
+      return
+    }
+
+    if (this.el.is("hitting"))
+    {
+      let handDrawTool = this.head.components['hand-draw-tool']
+      if (handDrawTool.hasDrawn)
+      {
+        handDrawTool.isDrawing = false
+        handDrawTool.hasDrawn = false
+        handDrawTool.endDraw()
+      }
+      return
+    }
+
+    let {lastPosition, position, velocity} = this
+    this.tip.object3D.getWorldPosition(position)
+    velocity.subVectors(position, lastPosition)
+    this.speed = velocity.length() / dt
+    lastPosition.copy(position)
+    // console.log(this.speed)
+  }
+})
