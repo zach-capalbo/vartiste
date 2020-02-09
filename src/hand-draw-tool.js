@@ -1,4 +1,5 @@
 import {Pool} from './pool.js'
+import {Sfx} from './sfx.js'
 import shortid from 'shortid'
 
 AFRAME.registerComponent('hand-draw-tool', {
@@ -129,6 +130,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       this.hasDrawn = true
       if (isDrawable)
       {
+        Sfx.draw(this.el)
         drawCanvas.drawUV(intersection.uv, Object.assign({lastParams: this.lastParams}, params))
         this.lastParams = params
         this.lastParams.uv = intersection.uv

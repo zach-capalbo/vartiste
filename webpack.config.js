@@ -27,7 +27,7 @@ let config = {
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
-      {test: /\.(png|jpe?g|gif|obj|mtl|glb)$/i,
+      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav)$/i,
         use: [
           {
             loader: 'url-loader',

@@ -52,6 +52,10 @@ for (let fileName of require.context('./assets/', true, /.*/).keys()) {
     assetSrc = `${assetSrc}`
     elementType = 'img'
   }
+  else if (assetSrc.startsWith("asset/") && assetSrc.endsWith(".wav"))
+  {
+    elementType = 'audio'
+  }
 
   var element = document.createElement(elementType)
 

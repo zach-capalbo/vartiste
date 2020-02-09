@@ -1,3 +1,5 @@
+import {Sfx} from './sfx.js'
+
 AFRAME.registerComponent('button-style', {
   schema: {
     color: {type: 'color', default: "#abe"},
@@ -58,6 +60,10 @@ AFRAME.registerComponent('icon-button', {
 
     this.el.addEventListener('click', (e) => {
       this.clickTime = this.el.sceneEl.time
+      if (e.detail.cursorEl)
+      {
+        Sfx.click(e.detail.cursorEl)
+      }
       this.bg.setAttribute('material', {color: buttonStyle.clickColor})
     })
 

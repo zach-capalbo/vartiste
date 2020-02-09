@@ -6,10 +6,10 @@ a-scene
     a-entity#camera-root
       a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls="" mobile-camera=""
         a-entity position="0 0 0" light="type: point; castShadow: false"
-        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
+        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound=""
 
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}"
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound=""
 
   /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
