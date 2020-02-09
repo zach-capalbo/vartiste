@@ -195,6 +195,9 @@ AFRAME.registerComponent("show-current-brush", {
 })
 
 AFRAME.registerComponent("palette", {
+  schema: {
+    colors: {type: 'array'}
+  },
   init() {
     this.el.addEventListener('click', (e) => {
       if (e.target.hasAttribute('click-action')) {
@@ -208,12 +211,25 @@ AFRAME.registerComponent("palette", {
       system.selectColor(e.target.getAttribute('button-style').color)
     })
   },
+  update(oldData) {
+    this.el.querySelectorAll('.custom').forEach(e => this.el.removeChild(e))
+
+    for (let color of this.data.colors)
+    {
+      this.addButton(color)
+    }
+  },
   addToPalette(e) {
     let system = this.el.sceneEl.systems['paint-system']
+    this.addButton(system.data.color)
+    this.data.colors.push(system.data.color)
+  },
+  addButton(color) {
     let newButton = document.createElement('a-entity')
     newButton.setAttribute('icon-button', "")
-    newButton.setAttribute('button-style', `color: ${system.data.color}`)
-    newButton.setAttribute('tooltip', system.data.color)
+    newButton.setAttribute('button-style', `color: ${color}`)
+    newButton.setAttribute('tooltip', color)
+    newButton.classList.add('custom')
     this.el.append(newButton)
   }
 })
