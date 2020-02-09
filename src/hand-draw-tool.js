@@ -63,6 +63,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     this.lastParams = undefined
   },
   tick() {
+    if (this.lastCompositor) delete this.lastCompositor.components.compositor.overlays[this.id]
     if (this.el.components.raycaster.intersections.length == 0) return
 
     let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
@@ -90,21 +91,16 @@ AFRAME.registerComponent('hand-draw-tool', {
       let objUp = this.pool('objUp', THREE.Vector3)
       objUp.set(0, 1, 0)
       objUp.applyQuaternion(objRot)
-      // console.log("Obj World Up", objUp)
 
       let objDir = this.pool('objForward', THREE.Vector3)
-      // objDir.copy(intersection.face.normal)
       objDir.copy(intersection.point)
       let thisPos = this.pool('thisPos', THREE.Vector3)
-      // thisPos.copy(this.el.components.raycaster.raycaster.ray.origin)
       this.el.object3D.getWorldPosition(thisPos)
       objDir.sub(thisPos)
       objDir.normalize()
-      // objDir.applyQuaternion(objRot)
 
       let objRight = this.pool('objRight', THREE.Vector3)
       objRight.crossVectors(objDir, objUp)
-      // console.log("Obj World Right", objRight)
 
 
       let thisRot = this.pool('thisRot', THREE.Quaternion)
@@ -113,13 +109,16 @@ AFRAME.registerComponent('hand-draw-tool', {
       thisUp.copy(this.el.object3D.up)
       thisUp.applyQuaternion(thisRot)
 
-      // console.log("This World Up", thisUp)
-
       rotation = Math.atan2(thisUp.dot(objUp), thisUp.dot(objRight))
 
-      rotation = Math.PI / 2 - rotation
-
-      // console.log("Rotation", thisUp.dot(objUp), thisUp.dot(objRight), rotation)
+      if (intersection.object.el.hasAttribute('geometry'))
+      {
+        rotation = Math.PI / 2 - rotation
+      }
+      else
+      {
+        rotation = Math.PI / 2 + rotation
+      }
     }
 
     let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection}
@@ -161,7 +160,9 @@ AFRAME.registerComponent('hand-draw-tool', {
       if (targetCompositor.components.compositor)
       {
         targetCompositor.components.compositor.overlays[this.id] = Object.assign({uv: intersection.uv, el: this.el}, params)
+        this.lastCompositor = targetCompositor
       }
+
     }
   }
 })
