@@ -1,3 +1,5 @@
+import {Sfx} from './sfx.js'
+
 AFRAME.registerComponent('pencil-tool', {
   schema: {
     throttle: {type: 'int', default: 30},
@@ -217,16 +219,17 @@ AFRAME.registerComponent('hammer-tool', {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
     head.addEventListener('raycaster-intersection', e => {
-      let pct = THREE.Math.clamp(this.speed * 100, 0, 1)
+      let pct = THREE.Math.mapLinear(this.speed, 0, 0.008, 0, 1)
       console.log("Hit", this.speed, pct)
       // this.updateDrawTool()
       let handDrawTool = head.components['hand-draw-tool']
       handDrawTool.pressure = pct
-      handDrawTool.distanceScale = pct
+      // handDrawTool.distanceScale = pct
       handDrawTool.isDrawing = true
       handDrawTool.hasDrawn = false
       handDrawTool.singleShot = true
       handDrawTool.startDraw()
+      Sfx.bang(this.el)
       this.el.addState('hitting')
     })
 

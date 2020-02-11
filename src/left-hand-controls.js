@@ -40,11 +40,11 @@ AFRAME.registerComponent('left-hand-controls', {
     document.querySelector('#canvas-view').components.compositor.nextFrame()
   },
   upClick() {
-    Sfx.clock(this.el)
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.addFrameAfter()
   },
   downClick() {
-    Sfx.clock(this.el)
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.duplicateFrameAfter()
   }
 })
