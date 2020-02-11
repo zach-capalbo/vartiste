@@ -11,6 +11,7 @@ class ProjectFile {
     if (!('projectName' in obj)) obj.projectName = 'project'
     if (!('shader' in obj)) obj.shader = 'flat'
     if (!('frameRate' in obj)) obj.frameRate = 10
+    if (!('palette' in obj)) obj.palette = []
     for (let layer of obj.layers)
     {
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
@@ -37,6 +38,8 @@ class ProjectFile {
     ProjectFile.update(obj)
     let settings = document.getElementsByTagName('a-scene')[0].systems['settings-system']
     settings.setProjectName(obj.projectName)
+
+    document.querySelector('*[palette]').setAttribute('palette', {colors: obj.palette})
 
     await compositor.load(obj)
     compositor.el.setAttribute('material', {shader: obj.shader})
@@ -71,6 +74,8 @@ class ProjectFile {
       })
       obj.glb = base64ArrayBuffer(glb)
     }
+
+    obj.palette = document.querySelector('*[palette]').getAttribute('palette').colors
 
     return obj
   }

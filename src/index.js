@@ -3,6 +3,7 @@ require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
+require('./framework/hide-in-ar.js')
 
 require('./paint-system')
 require('./settings-system')
@@ -32,6 +33,7 @@ require('./url-loader')
 require('./environments.js')
 require('./pencil-tool')
 require('./timeline-shelf.js')
+require('./mobile-camera.js')
 
 require('./app.styl')
 
@@ -50,6 +52,10 @@ for (let fileName of require.context('./assets/', true, /.*/).keys()) {
     assetSrc = `${assetSrc}`
     elementType = 'img'
   }
+  else if (asset.endsWith(".wav"))
+  {
+    elementType = 'audio'
+  }
 
   var element = document.createElement(elementType)
 
@@ -64,4 +70,8 @@ document.getElementById('left-hand').setAttribute('left-hand-controls', "")
 
 document.addEventListener('keydown', e => {
   if (e.key == "r") document.querySelector('a-scene').systems['settings-system'].resetCameraAction()
+})
+
+document.getElementById('got-it').addEventListener('click', e => {
+  document.getElementById('need-help-notification').classList.add('hidden')
 })

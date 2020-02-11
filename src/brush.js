@@ -166,7 +166,6 @@ class ProceduralBrush extends Brush {
       }
       ctx.globalAlpha *= this.opacity
       ctx.translate(x,y)
-      ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
 
       if (this.distanceBased){
         let scale = ctx.globalAlpha * 2
@@ -174,6 +173,7 @@ class ProceduralBrush extends Brush {
       }
 
       ctx.scale(scale, scale)
+      ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
 
       ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
       ctx.restore()

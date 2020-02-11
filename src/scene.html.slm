@@ -1,19 +1,20 @@
 a-scene
   a-assets#assets
-  a-sky color="#333"
+  a-sky color="#333" hide-in-ar-mode=""
 
   a-entity#artist-root
     a-entity#camera-root
-      a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls=""
+      a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls="" mobile-camera=""
         a-entity position="0 0 0" light="type: point; castShadow: false"
-        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool=""
+        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound=""
 
       - for hand of ["left", "right"]
-        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}"
+        a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound=""
 
   /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
+    a-entity position="0 0 -0.5"
 
     a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.3"
     /a-entity#environment position="0 -7 0" environment="preset:starry"
@@ -31,6 +32,7 @@ a-scene
             a-entity pencil-tool="scaleTip: false" position="-0.2 0 0"
             a-entity pencil-tool="pressureTip: true" position="-0.3 0 0"
             a-entity pencil-tool="pressureTip: true; extraStates: erasing" position="-0.4 0 0"
+            a-entity hammer-tool="" position="-0.5 0 0"
             /a-entity pencil-broom="" position="-0.55 0 0"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
         a-entity layer-shelves="compositor: #canvas-view" position="0 -1.5 0"

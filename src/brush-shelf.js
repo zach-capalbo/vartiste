@@ -68,5 +68,11 @@ AFRAME.registerComponent('brush-shelf', {
         e.addState("rotating")
       }
     })
+  },
+  increaseBrushSizeAction() {
+    this.system.scaleBrush(100)
+  },
+  decreaseBrushSizeAction() {
+    this.system.scaleBrush(-100)
   }
 })

@@ -1,4 +1,5 @@
 import {ButtonMaps, JoystickDirections} from './joystick-directions'
+import {Sfx} from './sfx.js'
 
 AFRAME.registerComponent('left-hand-controls', {
   init() {
@@ -39,9 +40,11 @@ AFRAME.registerComponent('left-hand-controls', {
     document.querySelector('#canvas-view').components.compositor.nextFrame()
   },
   upClick() {
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.addFrameAfter()
   },
   downClick() {
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.duplicateFrameAfter()
   }
 })
