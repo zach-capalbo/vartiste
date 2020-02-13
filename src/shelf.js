@@ -24,7 +24,7 @@ AFRAME.registerComponent('shelf', {
 
     if (!inBillboard)
     {
-      this.el.setAttribute('billboard', "")
+      // this.el.setAttribute('billboard', "")
     }
   },
   update() {

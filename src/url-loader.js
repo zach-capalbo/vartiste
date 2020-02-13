@@ -7,8 +7,21 @@ AFRAME.registerSystem('url-loader', {
 
       console.info("Loading querystring url", url)
 
+      this.el.emit('open-popup', `Loading ${url}`)
+
+      let compositor = document.getElementById('canvas-view').components.compositor
+      let ctx = compositor.layers[0].canvas.getContext('2d')
+      ctx.fillStyle = "#000"
+      ctx.font = "58px Arial";
+      ctx.fillText("Loading...", ctx.canvas.width / 2 - 40, ctx.canvas.height / 2)
+
       let f = await fetch(url)
-      this.el.systems['settings-system'].load(await f.text())
+      await this.el.systems['settings-system'].load(await f.text())
+
+      if (compositor.layers.some(l => l.frames.length > 1))
+      {
+        document.getElementById('canvas-view').components.compositor.playPauseAnimation()
+      }
     })
   }
 })

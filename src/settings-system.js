@@ -95,9 +95,9 @@ AFRAME.registerSystem('settings-system', {
     mainCanvas.setAttribute("position", "0 0.6 3.14")
     mainCanvas.setAttribute("rotation", "0 180 0")
   },
-  load(text) {
+  async load(text) {
     let loadObj = JSON.parse(text)
-    ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
+    await ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
   },
   helpAction() {
     this.popup("landing.html", "Instructions")
