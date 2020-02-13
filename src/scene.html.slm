@@ -26,6 +26,7 @@ a-scene
           a-entity.grab-root brush-shelf="" shelf="" position="-1.5 1.6 0" scale="0.3 0.3 1"
           == partial('./partials/about-shelf.html.slm')
           == partial('./partials/timeline-shelf.html.slm')
+          == partial('./partials/toolbox-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity pencil-tool=""
             a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.1 0 0"
@@ -35,7 +36,7 @@ a-scene
             a-entity hammer-tool="" position="-0.5 0 0"
             /a-entity pencil-broom="" position="-0.55 0 0"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
+        a-entity lock-axes="z: 0" billboard="enabled: false" layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
     a-entity#canvas-root
       a-entity#canvas-view.canvas[
         material="shader: flat; transparent: true; npot: true"

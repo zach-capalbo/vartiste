@@ -352,3 +352,22 @@ AFRAME.registerComponent('grab-options', {
     scalable: {type: 'boolean', default: true}
   }
 })
+
+AFRAME.registerComponent('lock-axes', {
+  schema: {
+    x: {type: 'float', default: NaN},
+    y: {type: 'float', default: NaN},
+    z: {type: 'float', default: NaN},
+  },
+  tick() {
+    return
+    for (let axis in this.data)
+    {
+      let val = this.data[axis];
+      if (Number.isFinite(val))
+      {
+        this.el.object3D.rotation[axis] = val * Math.PI / 180
+      }
+    }
+  }
+})

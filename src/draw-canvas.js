@@ -169,7 +169,21 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   pickColorUV(uv, {canvas = null} = {}) {
-    if (canvas === null) canvas = document.getElementById('canvas-view').components.compositor.compositeCanvas
+    if (canvas === null) {
+      let compositor = document.getElementById('canvas-view').components.compositor
+      if (compositor.activeLayer.mode.endsWith("Map"))
+      {
+        canvas = compositor.activeLayer.frame(compositor.currentFrame)
+      }
+      else if (compositor.data.usePreOverlayCanvas)
+      {
+        canvas = compositor.preOverlayCanvas
+      }
+      else
+      {
+        canvas = compositor.compositeCanvas
+      }
+    }
     let sampleCanvas = this.sampleCanvas
     let ctx = sampleCanvas.getContext('2d')
     let width = Math.round(this.brush.width)

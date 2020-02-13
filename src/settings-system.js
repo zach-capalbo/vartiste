@@ -4,6 +4,7 @@ import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transf
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
+import {CanvasRecorder} from './canvas-recorder.js'
 AFRAME.registerSystem('settings-system', {
   init() {
     this.projectName = "vartiste-project"
@@ -73,6 +74,18 @@ AFRAME.registerSystem('settings-system', {
 
     document.getElementById('composition-view').emit('updatemesh')
   },
+  async recordAction() {
+    let delay = () => new Promise(r => setTimeout(r, 1000))
+    let compositor = document.getElementById('canvas-view').components.compositor
+    let compositeRecorder = new CanvasRecorder({canvas: compositor.compositeCanvas, frameRate: compositor.data.frameRate})
+    compositor.data.drawOverlay = false
+    compositeRecorder.mediaRecorder.start()
+    await delay()
+    await compositeRecorder.stop()
+    this.download(compositeRecorder.createURL(), `${this.projectName}-${this.formatFileDate()}.webm`, "Video Recording")
+    compositor.data.drawOverlay = true
+
+  },
   addModelView(model) {
     let viewer = document.getElementById('composition-view')
     viewer.setObject3D('mesh', model.scene || model.scenes[0])
@@ -82,9 +95,9 @@ AFRAME.registerSystem('settings-system', {
     mainCanvas.setAttribute("position", "0 0.6 3.14")
     mainCanvas.setAttribute("rotation", "0 180 0")
   },
-  load(text) {
+  async load(text) {
     let loadObj = JSON.parse(text)
-    ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
+    await ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
   },
   helpAction() {
     this.popup("landing.html", "Instructions")

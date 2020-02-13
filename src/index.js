@@ -4,6 +4,7 @@ require('aframe-environment-component')
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
 require('./framework/hide-in-ar.js')
+require('./framework/billboard.js')
 
 require('./paint-system')
 require('./settings-system')
@@ -34,6 +35,7 @@ require('./environments.js')
 require('./pencil-tool')
 require('./timeline-shelf.js')
 require('./mobile-camera.js')
+require('./toolbox-shelf.js')
 
 require('./app.styl')
 
