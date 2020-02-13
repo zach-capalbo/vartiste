@@ -11,6 +11,21 @@ AFRAME.registerComponent('shelf', {
     container.querySelectorAll('.clickable').forEach((e) => e['redirect-grab'] = this.el)
     this.container = container
     this.el.prepend(container)
+
+    let inBillboard = false
+    for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
+    {
+      if (parent.hasAttribute('billboard'))
+      {
+        inBillboard = true
+        break
+      }
+    }
+
+    if (!inBillboard)
+    {
+      this.el.setAttribute('billboard', "")
+    }
   },
   update() {
     if (this.container.hasLoaded)

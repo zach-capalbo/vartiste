@@ -4,6 +4,7 @@ import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
+import {CanvasRecorder} from './canvas-recorder.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -21,7 +22,9 @@ AFRAME.registerComponent('compositor', {
     throttle: {default: 10},
     textureScale: {default: 1},
     frameRate: {default: 10},
-    onionSkin: {default: false}
+    onionSkin: {default: false},
+    drawOverlay: {default: true},
+    usePreOverlayCanvas: {default: true}
   },
 
   init() {
@@ -34,6 +37,10 @@ AFRAME.registerComponent('compositor', {
     compositeCanvas.height = height
     document.body.append(compositeCanvas)
     this.compositeCanvas = compositeCanvas
+
+    this.preOverlayCanvas = document.createElement("canvas")
+    this.preOverlayCanvas.width = width
+    this.preOverlayCanvas.height = height
 
     this.currentFrame = 0
     this.isAnimating = false
@@ -155,7 +162,7 @@ AFRAME.registerComponent('compositor', {
 
     fromLayer.draw(ctx, this.currentFrame)
     ctx.restore()
-
+    ontoLayer.needsUpdate = true
   },
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
@@ -379,6 +386,8 @@ AFRAME.registerComponent('compositor', {
     let modesUsed = new Set()
 
     for (let layer of this.layers) {
+      let neededUpdate = layer.needsUpdate
+      delete layer.needsUpdate
       if (!layer.visible) continue
       if (THREED_MODES.indexOf(layer.mode) < 0)
       {
@@ -406,7 +415,7 @@ AFRAME.registerComponent('compositor', {
         material[layer.mode].image = layerCanvas
         material[layer.mode].needsUpdate = true
       }
-      else if (layer.active)
+      else if (layer.active || neededUpdate)
       {
         material[layer.mode].needsUpdate = true
       }
@@ -445,10 +454,14 @@ AFRAME.registerComponent('compositor', {
       modesUsed.add(layer.mode)
     }
 
-    if (!Array.from(document.querySelectorAll('*[hand-draw-tool]')).some(e => e.is('sampling')))
+    if (this.data.usePreOverlayCanvas)
     {
-      this.drawOverlay(ctx)
+      let preOverlayCtx = this.preOverlayCanvas.getContext('2d')
+      preOverlayCtx.globalCompositeOperation = 'copy'
+      preOverlayCtx.drawImage(this.compositeCanvas, 0, 0)
     }
+
+    this.drawOverlay(ctx)
 
     this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
@@ -555,6 +568,9 @@ AFRAME.registerComponent('compositor', {
 
     this.overlayCanvas.width = this.width
     this.overlayCanvas.height = this.height
+
+    this.preOverlayCanvas.width = this.width
+    this.preOverlayCanvas.height = this.height
 
     if (resample)
     {
