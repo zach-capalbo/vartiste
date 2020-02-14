@@ -98,5 +98,8 @@ AFRAME.registerComponent('settings-shelf', {
     {
       compositor.el.setAttribute('material', {shader: 'flat'})
     }
+  },
+  toggleReferenceImportAction() {
+    this.system.data.addReferences = !this.system.data.addReferences
   }
 })

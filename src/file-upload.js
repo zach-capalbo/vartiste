@@ -17,6 +17,22 @@ async function addImageLayer(file) {
   compositor.addLayer(compositor.layers.length - 1, {layer})
 }
 
+async function addImageReference(file) {
+  let image = new Image()
+  image.src = URL.createObjectURL(file)
+  image.id = "img"
+
+  await new Promise((r,e) => image.onload = r)
+  image.onload = undefined
+
+  let viewer = document.createElement('a-entity')
+  viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
+  viewer.setAttribute('material', {src: image, shader: 'flat'})
+  viewer.setAttribute('position')
+  viewer.classList.add("clickable")
+  document.querySelector('#reference-spawn').append(viewer)
+}
+
 async function addGlbViewer(file) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
@@ -65,6 +81,22 @@ async function addGlbViewer(file) {
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
 }
 
+async function addGlbReference(file) {
+  let id = shortid.generate()
+  let asset = document.createElement('a-asset-item')
+  asset.id = `asset-model-${id}`
+
+  let loader = new THREE.GLTFLoader()
+
+  let buffer = await file.arrayBuffer()
+  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+
+  let entity = document.createElement('a-entity')
+  entity.classList.add("clickable")
+  entity.setObject3D("mesh", model.scene)
+  document.querySelector('#reference-spawn').append(entity)
+}
+
 document.body.ondragover = (e) => {
   console.log("Drag over", e.detail)
   e.preventDefault()
@@ -75,6 +107,8 @@ document.body.ondrop = (e) => {
   e.preventDefault()
 
   if (e.dataTransfer.items) {
+    let settings = document.querySelector('a-scene').systems['settings-system']
+
     for (let item of e.dataTransfer.items)
     {
       if (item.kind !== 'file') continue
@@ -85,19 +119,33 @@ document.body.ondrop = (e) => {
 
       if (/image\//.test(item.type))
       {
-        addImageLayer(file)
+        if (settings.data.addReferences)
+        {
+          addImageReference(file)
+        }
+        else
+        {
+          addImageLayer(file)
+        }
         return
       }
 
       if (/\.(glb)|(gltf)$/i.test(file.name))
       {
-        addGlbViewer(file)
+        if (settings.data.addReferences)
+        {
+          addGlbReference(file)
+        }
+        else
+        {
+          addGlbViewer(file)
+        }
         return
       }
 
       file.text().then(t => {
         console.log("Texted")
-        document.querySelector('a-scene').systems['settings-system'].load(t)
+        settings.load(t)
       }).catch(e => console.error("Couldn't load", e))
     }
   }
