@@ -91,10 +91,25 @@ async function addGlbReference(file) {
   let buffer = await file.arrayBuffer()
   let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
 
+
   let entity = document.createElement('a-entity')
-  entity.classList.add("clickable")
-  entity.setObject3D("mesh", model.scene)
   document.querySelector('#reference-spawn').append(entity)
+  entity.classList.add("clickable")
+  entity.classList.add("reference")
+  entity.setObject3D("mesh", model.scene || model.scenes[0])
+
+  // Change image encoding to linear. Don't know if this is right, or if we
+  // should change the export, but all models seem to look better this way
+  entity.getObject3D('mesh').traverse(o => {
+    if (o.type == "Mesh") {
+      if (o.material && o.material.map) {
+          o.material.map.encoding = THREE.LinearEncoding
+          o.material.needsUpdate = true
+      }
+    }
+  })
+  entity.emit('model-loaded', {format: 'gltf', model: model});
+
 }
 
 document.body.ondragover = (e) => {
