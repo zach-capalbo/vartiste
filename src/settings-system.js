@@ -6,6 +6,9 @@ import {Undo} from './undo.js'
 import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
 AFRAME.registerSystem('settings-system', {
+  schema: {
+    addReferences: {default: false}
+  },
   init() {
     this.projectName = "vartiste-project"
     this.quality = 1.0

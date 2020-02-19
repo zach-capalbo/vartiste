@@ -8,7 +8,9 @@ AFRAME.registerComponent('pencil-tool', {
 
     radius: {default: 0.03},
     tipRatio: {default: 0.2},
-    extraStates: {type: 'array'}
+    extraStates: {type: 'array'},
+
+    enabled: {default: true}
   },
   init() {
     this.el.classList.add('grab-root')
@@ -65,6 +67,7 @@ AFRAME.registerComponent('pencil-tool', {
     tip.setAttribute('propogate-grab', "")
     this.el.append(tip)
     tip.setAttribute('material', 'side: double')
+    this.tip = tip
 
     let brushPreview = document.createElement('a-plane')
     brushPreview.setAttribute("show-current-brush", "")
@@ -79,21 +82,34 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.object3D.up.set(0, 0, 1)
 
     this.el.addEventListener('raycaster-intersection', e => {
-      console.log("Hand draw initialized")
+      if (!this.data.enabled) return
       this.updateDrawTool()
       this.el.components['hand-draw-tool'].isDrawing = true
       this.el.components['hand-draw-tool'].startDraw()
     })
 
     this.el.addEventListener('raycaster-intersection-cleared', e => {
+      if (!this.data.enabled) return
       this.el.components['hand-draw-tool'].endDraw()
+      this.el.components['hand-draw-tool'].isDrawing = false
     })
 
     this.el.setAttribute('hand-draw-tool', "")
     this.el.setAttribute('grab-options', "showHand: false")
 
+    this.el.addEventListener('click', e => {
+      if (this.el.is('grabbed'))
+      {
+        this.data.enabled = !this.data.enabled
+        this.updateEnabled()
+      }
+    })
+
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+  update(oldData) {
+    this.updateEnabled()
   },
   calcFar() {
     return this.tipHeight * this.el.object3D.scale.x
@@ -127,9 +143,23 @@ AFRAME.registerComponent('pencil-tool', {
     }
   },
   tick() {
-    let handDrawTool = this.el.components['hand-draw-tool']
-    if (!handDrawTool.isDrawing) return
     this.updateDrawTool()
+  },
+  updateEnabled() {
+    this.tip.setAttribute('visible', this.data.enabled)
+
+    let handDrawTool = this.el.components['hand-draw-tool']
+    if (!this.data.enabled && handDrawTool.isDrawing)
+    {
+      console.log("Ending draw")
+      handDrawTool.endDraw()
+      handDrawTool.isDrawing = false
+    }
+    else if (this.data.enabled && this.el.components.raycaster.intersectedEls.length > 0)
+    {
+      handDrawTool.isDrawing = true
+      handDrawTool.startDraw()
+    }
   }
 })
 
