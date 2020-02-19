@@ -1,4 +1,5 @@
 import Convolve from "convolve"
+import Color from "color"
 
 class Brush {}
 
@@ -41,6 +42,7 @@ class ProceduralBrush extends Brush {
   changeColor(color) {
     this.color = color
     this.color3 = new THREE.Color(this.color)
+    this.ccolor = Color(color)
 
     this.updateBrush()
   }
@@ -407,4 +409,85 @@ class FillBrush extends Brush {
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush};
+class NoiseBrush extends ProceduralBrush {
+  constructor({
+    rainbow=false,
+    lightness=true,
+    opacityness=false,
+    round=false,
+    ...options} = {})
+  {
+    super(options)
+    this.superInitialized
+    this.rainbow = rainbow
+    this.lightness = lightness
+    this.opacityness = opacityness
+    this.round = round
+    this.previewSrc = undefined
+    this.updateBrush()
+  }
+  createBrush()
+  {
+    let ctx = this.overlayCanvas.getContext('2d')
+    let {width, height} = this
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    ctx.clearRect(0, 0, width, height)
+    this.brushData = ctx.getImageData(0, 0, width, height)
+
+    let hsl = this.ccolor.hsl()
+    let noiseColor = this.ccolor
+
+    let radius = width / 2
+
+    for (let y = 0; y < height; ++y)
+    {
+      for (let x = 0; x < width; ++x)
+      {
+        if (this.rainbow)
+        {
+          this.brushData.data[((y * width) + x) * 4 + 0] = THREE.Math.randInt(0, 255)
+          this.brushData.data[((y * width) + x) * 4 + 1] = THREE.Math.randInt(0, 255)
+          this.brushData.data[((y * width) + x) * 4 + 2] = THREE.Math.randInt(0, 255)
+        }
+        else if (this.lightness)
+        {
+          let currentLightness = hsl.lightness()
+          noiseColor = hsl.lightness(THREE.Math.randInt(currentLightness - currentLightness * this.opacity, currentLightness * this.opacity))
+          this.brushData.data[((y * width) + x) * 4 + 0] = noiseColor.red()
+          this.brushData.data[((y * width) + x) * 4 + 1] = noiseColor.green()
+          this.brushData.data[((y * width) + x) * 4 + 2] = noiseColor.blue()
+        }
+        else
+        {
+          this.brushData.data[((y * width) + x) * 4 + 0] = noiseColor.red()
+          this.brushData.data[((y * width) + x) * 4 + 1] = noiseColor.green()
+          this.brushData.data[((y * width) + x) * 4 + 2] = noiseColor.blue()
+        }
+
+        if (this.opacityness)
+        {
+          this.brushData.data[((y * width) + x) * 4 + 3] = THREE.Math.randInt(0, 255)
+        }
+        else
+        {
+          this.brushData.data[((y * width) + x) * 4 + 3] = 255
+        }
+
+        if (this.round)
+        {
+          this.brushData.data[((y * width) + x) * 4 + 3] = Math.round(255 * (1 - Math.sqrt((x - width / 2) * (x - width / 2) + (y - width / 2) * (y - width / 2)) / radius))
+        }
+      }
+    }
+
+    ctx.putImageData(this.brushData, 0, 0)
+  }
+  drawTo(...args) {
+    this.createBrush()
+    super.drawTo(...args)
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush};

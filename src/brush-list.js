@@ -1,4 +1,4 @@
-import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush} from './brush.js'
+import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush} from './brush.js'
 const BrushList = [
   new ProceduralBrush({connected: true, hqBlending: true}),
   new ImageBrush('silky_textured', {width: 20, height: 20, autoRotate: true}),
@@ -17,7 +17,9 @@ const BrushList = [
   new LambdaBrush({connected: true, drawEdges: true, hqBlending: true}, (ctx, {width, height}) => { ctx.fillRect(0,0,width,height)  }),
   new ImageBrush('diamond', {width: 20, height: 20, connected: true, hqBlending: true}),
   new FillBrush(),
-  new FillBrush({mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')})
+  new FillBrush({mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')}),
+  new NoiseBrush(),
+  new NoiseBrush({round: true})
 ]
 
 export { BrushList }
