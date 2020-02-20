@@ -2,6 +2,7 @@ const layerShelfHTML = require('./partials/layer-view.html.slm')
 const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
 const {LAYER_MODES} = require('./layer-modes.js')
+const {LayerNode} = require('./layer.js')
 
 AFRAME.registerComponent("layer-shelves", {
   schema: {compositor: {type: 'selector'}},
@@ -41,6 +42,7 @@ AFRAME.registerComponent("layer-shelves", {
     let layerIdx = this.compositor.layers.indexOf(layer)
     console.log("Adding shelf for", layer, layerIdx)
     var container = document.createElement('a-entity')
+    container.layer = layer
 
     container.innerHTML = layerShelfHTML
     container.addEventListener('click', (e) => {
@@ -52,7 +54,16 @@ AFRAME.registerComponent("layer-shelves", {
     container.setAttribute('position', {x: 0, y: layerIdx, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
     container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layer.id}))
-    container.querySelector('*[shelf]')['redirect-grab'] = this.el
+
+
+    if (this.compositor.data.useNodes)
+    {
+      container.querySelector('*[shelf]')['redirect-grab'] = container
+    }
+    else
+    {
+      container.querySelector('*[shelf]')['redirect-grab'] = this.el
+    }
 
     if (layer.active) {
       container.querySelector('.active-indicator').setAttribute('visible', "true")
@@ -63,6 +74,42 @@ AFRAME.registerComponent("layer-shelves", {
     container.addEventListener('loaded', e => this.compositor_layerupdated({detail: {layer}}))
 
     this.el.prepend(container)
+  },
+  addNodeShelf(node) {
+    console.log("Adding shelf for ", node)
+    let container = document.createElement('a-entity')
+    container.node = node
+    container.innerHTML = require('./partials/node-view.html.slm')
+    container.addEventListener('click', e => {
+      if (!e.target.hasAttribute('click-action')) return
+
+      console.log("Clicked", e.target.getAttribute('click-action'))
+      this[e.target.getAttribute('click-action')](node, e)
+    })
+    container.setAttribute('position', {x: 1.4, y: Math.random(), z: 0})
+    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
+
+    for (let inputType of ['Source', 'Destination'])
+    {
+      container.querySelector(`.input-${inputType}`).addEventListener('snappedtoinput', e => {
+        let snappedEl = e.detail.snapped
+        while (!(snappedEl.layer || snappedEl.node))
+        {
+          snappedEl = snappedEl.parentEl
+        }
+        let connector = snappedEl.layer || snappedEl.node
+        console.log("Should connect something to", node, connector, e.detail)
+        node[`connect${inputType}`](connector)
+      })
+
+      container.querySelector(`.input-${inputType}`).addEventListener('unsnapped', e => {
+        node[`disconnect${inputType}`]()
+      })
+    }
+
+    this.shelves[node.id] = container
+
+    this.el.append(container)
   },
   shuffle() {
     for (let id in this.shelves)
@@ -79,6 +126,11 @@ AFRAME.registerComponent("layer-shelves", {
       {
         let layer = this.compositor.layers[layerIdx]
         this.addLayerShelf(layer, layerIdx)
+      }
+
+      for (let node of this.compositor.allNodes)
+      {
+        this.addNodeShelf(node)
       }
       this.tick = function() {}
     }
@@ -144,6 +196,9 @@ AFRAME.registerComponent("layer-shelves", {
       this.el.sceneEl.emit('refreshobjects')
     }
   },
+  newNode(n) {
+    this.addNodeShelf(new LayerNode(this.compositor))
+  },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail
     console.log("Activating layer", layer)
@@ -202,5 +257,13 @@ AFRAME.registerComponent("layer-shelves", {
   compositor_layersmoved(e) {
     console.log("Layers moved")
     this.shuffle()
+  },
+  compositor_nodeadded(e) {
+    console.log("Node added")
+    let {node} = e.detail
+    if (!(node.id in this.shelves))
+    {
+      this.addNodeShelf(node)
+    }
   }
 })

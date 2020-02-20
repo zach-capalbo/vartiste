@@ -94,3 +94,54 @@ export class Layer {
     }
   }
 }
+
+export class LayerNode {
+  constructor(compositor) {
+    this.id = shortid.generate()
+    this.compositor = compositor
+    this.compositor.allNodes.push(this)
+
+    this.canvas = document.createElement('canvas')
+    this.canvas.width = compositor.width
+    this.canvas.height = compositor.height
+
+    this.mode = 'source-over'
+    this.sources = []
+  }
+
+  connectDestination(layer) {
+    this.destination = layer
+  }
+  connectSource(layer)
+  {
+    this.sources = [layer]
+  }
+  disconnectSource()
+  {
+    this.sources = []
+  }
+  disconnectDestination()
+  {
+    this.destination = undefined
+    let ctx = this.canvas.getContext('2d')
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  }
+  updateCanvas(frame) {
+    if (!this.destination) return
+    let ctx = this.canvas.getContext('2d')
+    let oldDestinationMode = this.destination.mode
+    this.destination.mode = 'copy'
+    this.destination.draw(ctx, frame)
+    this.destination.mode = oldDestinationMode
+
+    for (let source of this.sources)
+    {
+      source.draw(ctx, frame)
+    }
+  }
+  draw(ctx, frame) {
+    this.updateCanvas(frame)
+    ctx.globalCompositeOperation = this.mode
+    ctx.drawImage(this.canvas, 0, 0)
+  }
+}

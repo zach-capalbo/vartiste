@@ -1,4 +1,4 @@
-import {Layer} from "./layer.js"
+import {Layer, LayerNode} from "./layer.js"
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
@@ -24,7 +24,8 @@ AFRAME.registerComponent('compositor', {
     frameRate: {default: 10},
     onionSkin: {default: false},
     drawOverlay: {default: true},
-    usePreOverlayCanvas: {default: true}
+    usePreOverlayCanvas: {default: true},
+    useNodes: {default: true}
   },
 
   init() {
@@ -71,6 +72,17 @@ AFRAME.registerComponent('compositor', {
     this.redirector = this.el.querySelector('#move-layer-redirection')
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+
+    this.materialNodes = {}
+    this.allNodes = []
+    for (let mode of THREED_MODES)
+    {
+      // this.materialNodes[mode] = new LayerNode(this)
+    }
+    this.materialNodes['canvas'] = new LayerNode(this)
+    // this.materialNodes['canvas'].connectDestination(this.layers[0])
+    // this.materialNodes['canvas'].connectSource(this.activeLayer)
+
   },
 
   update() {
@@ -374,6 +386,16 @@ AFRAME.registerComponent('compositor', {
       }
     }
 
+    if (this.data.useNodes)
+    {
+      this.drawNodes()
+    }
+    else
+    {
+      this.drawLayers()
+    }
+  },
+  drawNodes() {
     let ctx = this.compositeCanvas.getContext('2d')
     // ctx.fillStyle = "#FFFFFF"
     ctx.clearRect(0,0, this.width, this.height)
@@ -385,115 +407,133 @@ AFRAME.registerComponent('compositor', {
 
     let modesUsed = new Set()
 
-    for (let layer of this.layers) {
-      let neededUpdate = layer.needsUpdate
-      delete layer.needsUpdate
-      if (!layer.visible) continue
-      if (THREED_MODES.indexOf(layer.mode) < 0)
-      {
-        layer.draw(ctx, this.currentFrame)
-        continue
-      }
-      if (material.type !== "MeshStandardMaterial") continue
+    let node = this.materialNodes.canvas
+    node.draw(ctx, this.currentFrame)
 
-      if (modesUsed.has(layer.mode)) continue;
-
-      let layerCanvas = layer.canvas
-
-      if (layer.frames.length > 1)
-      {
-        layerCanvas = layer.frame(this.currentFrame)
-      }
-
-      if (!material[layer.mode]) {
-        material[layer.mode] = createTexture()
-        material.needsUpdate = true
-      }
-
-      if (material[layer.mode].image !== layerCanvas)
-      {
-        material[layer.mode].image = layerCanvas
-        material[layer.mode].needsUpdate = true
-      }
-      else if (layer.active || neededUpdate)
-      {
-        material[layer.mode].needsUpdate = true
-      }
-
-      switch (layer.mode)
-      {
-        case "displacementMap":
-          material.displacementBias = 0
-          material.displacementScale = layer.opacity
-        break
-        case "bumpMap":
-          material.bumpScale = Math.pow(layer.opacity, 2.2)
-        break
-        case "emissiveMap":
-          material.emissive.r = 1
-          material.emissive.g = 1
-          material.emissive.b = 1
-          material.emissiveIntensity = layer.opacity
-          break
-        case "normalMap":
-          material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
-          break
-        case "metalnessMap":
-          material.metalness = layer.opacity
-          break
-        case "roughnessMap":
-          material.roughness = layer.opacity
-          break
-        case "envMap":
-          Environments.installSkybox(layerCanvas, layer.opacity)
-          material.envMap.mapping = THREE.SphericalReflectionMapping
-          break
-      }
-
-
-      modesUsed.add(layer.mode)
-    }
-
-    if (this.data.usePreOverlayCanvas)
-    {
-      let preOverlayCtx = this.preOverlayCanvas.getContext('2d')
-      preOverlayCtx.globalCompositeOperation = 'copy'
-      preOverlayCtx.drawImage(this.compositeCanvas, 0, 0)
-    }
-
-    this.drawOverlay(ctx)
-
-    this.el.components['draw-canvas'].transform = this.activeLayer.transform
-
-
-
-    if (this.data.textureScale != 1)
-    {
-      let textureCtx = this.textureCanvas.getContext('2d')
-      textureCtx.drawImage(this.compositeCanvas, 0, 0, this.textureCanvas.width, this.textureCanvas.height)
-      material.map.image = this.textureCanvas
-    }
-    else
-    {
-      material.map.image = this.compositeCanvas
-    }
+    material.map.image = this.compositeCanvas
     material.map.needsUpdate = true
+  },
+  drawLayers() {
+      let ctx = this.compositeCanvas.getContext('2d')
+      // ctx.fillStyle = "#FFFFFF"
+      ctx.clearRect(0,0, this.width, this.height)
 
-    if (material.type !== "MeshStandardMaterial") return
-    for (let mode of THREED_MODES)
-    {
-      if  (material[mode] && !modesUsed.has(mode))
-      {
-        switch (mode)
+      const width = this.width
+      const height = this.height
+
+      let material = this.el.getObject3D('mesh').material
+
+      let modesUsed = new Set()
+
+      for (let layer of this.layers) {
+        let neededUpdate = layer.needsUpdate
+        delete layer.needsUpdate
+        if (!layer.visible) continue
+        if (THREED_MODES.indexOf(layer.mode) < 0)
         {
-          case "emissiveMap":
-            material.emissiveIntensity = 0
-          break
+          layer.draw(ctx, this.currentFrame)
+          continue
         }
-        material[mode] = null
-        material.needsUpdate = true
+        if (material.type !== "MeshStandardMaterial") continue
+
+        if (modesUsed.has(layer.mode)) continue;
+
+        let layerCanvas = layer.canvas
+
+        if (layer.frames.length > 1)
+        {
+          layerCanvas = layer.frame(this.currentFrame)
+        }
+
+        if (!material[layer.mode]) {
+          material[layer.mode] = createTexture()
+          material.needsUpdate = true
+        }
+
+        if (material[layer.mode].image !== layerCanvas)
+        {
+          material[layer.mode].image = layerCanvas
+          material[layer.mode].needsUpdate = true
+        }
+        else if (layer.active || neededUpdate)
+        {
+          material[layer.mode].needsUpdate = true
+        }
+
+        switch (layer.mode)
+        {
+          case "displacementMap":
+            material.displacementBias = 0
+            material.displacementScale = layer.opacity
+          break
+          case "bumpMap":
+            material.bumpScale = Math.pow(layer.opacity, 2.2)
+          break
+          case "emissiveMap":
+            material.emissive.r = 1
+            material.emissive.g = 1
+            material.emissive.b = 1
+            material.emissiveIntensity = layer.opacity
+            break
+          case "normalMap":
+            material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
+            break
+          case "metalnessMap":
+            material.metalness = layer.opacity
+            break
+          case "roughnessMap":
+            material.roughness = layer.opacity
+            break
+          case "envMap":
+            Environments.installSkybox(layerCanvas, layer.opacity)
+            material.envMap.mapping = THREE.SphericalReflectionMapping
+            break
+        }
+
+
+        modesUsed.add(layer.mode)
       }
-    }
+
+      if (this.data.usePreOverlayCanvas)
+      {
+        let preOverlayCtx = this.preOverlayCanvas.getContext('2d')
+        preOverlayCtx.globalCompositeOperation = 'copy'
+        preOverlayCtx.drawImage(this.compositeCanvas, 0, 0)
+      }
+
+      this.drawOverlay(ctx)
+
+      this.el.components['draw-canvas'].transform = this.activeLayer.transform
+
+
+
+      if (this.data.textureScale != 1)
+      {
+        let textureCtx = this.textureCanvas.getContext('2d')
+        textureCtx.drawImage(this.compositeCanvas, 0, 0, this.textureCanvas.width, this.textureCanvas.height)
+        material.map.image = this.textureCanvas
+      }
+      else
+      {
+        material.map.image = this.compositeCanvas
+      }
+      material.map.needsUpdate = true
+
+      if (material.type !== "MeshStandardMaterial") return
+      for (let mode of THREED_MODES)
+      {
+        if  (material[mode] && !modesUsed.has(mode))
+        {
+          switch (mode)
+          {
+            case "emissiveMap":
+              material.emissiveIntensity = 0
+            break
+          }
+          material[mode] = null
+          material.needsUpdate = true
+        }
+      }
   },
   // clear() {
   //   this.el.emit
