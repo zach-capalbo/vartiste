@@ -8,6 +8,8 @@ a-entity.node-shelf shelf=""
   a-entity position="1.6 -1.2 0" icon-button="#asset-archive-arrow-down-outline" click-action="mergeDown" tooltip="Convert to layer"
   a-entity node-output="" position="2.1 1.2 0.01"
 
+  a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
+
   a-entity node-input="label: Destination; type: destination" position="-2.1 1.2 0.01" material="color: #34d8eb"
 
   - for (let i = 0; i < 5; ++i)

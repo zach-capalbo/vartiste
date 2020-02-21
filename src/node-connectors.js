@@ -19,6 +19,7 @@ AFRAME.registerComponent('node-grabber', {
     }
   },
   remove() {
+    let grabber = this.el
     this.el.parentEl.components['node-output'].remove(grabber.grabLineObject)
   }
 })
@@ -42,7 +43,7 @@ AFRAME.registerComponent('node-output', {
       grabber.object3D.position.set(0, 0, 0)
       grabber.snappedTo = undefined
 
-      if (!grabber.grabber.is('grabbed'))
+      if (!grabber.is('grabbed'))
       {
         grabber.grabLine.vertices[1].set(0, 0, 0)
         grabber.grabLine.verticesNeedUpdate = true
@@ -162,7 +163,7 @@ AFRAME.registerComponent('node-input', {
       if (this.snappedTo !== snapped) {
         if (this.snappedTo)
         {
-          this.snappedTo.emit('unsnapped')
+          this.snappedTo.emit('unsnapped', {snapped: this.snappedTo, grabber: this.snappedGrabber})
         }
 
         this.snappedTo = snapped
@@ -187,5 +188,11 @@ AFRAME.registerComponent('node-input', {
       this.snappedGrabber.object3D.position.copy(grabLine.vertices[1])
       grabLine.verticesNeedUpdate = true
     }
+  }
+})
+
+AFRAME.registerComponent('node-control-panel', {
+  init() {
+    this.el.querySelector('.globe-control')['redirect-grab'] = document.querySelector('*[layer-shelves]')
   }
 })

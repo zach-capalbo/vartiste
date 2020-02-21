@@ -1,0 +1,5 @@
+a-entity shelf="height: 1.5" node-control-panel=""
+  a-entity scale="1 1 ${1 / 0.3}"
+    a-entity icon-button="#asset-plus-box-outline"
+  a-entity position="0 1.7 0"
+    a-sphere.clickable.globe-control radius="0.6" material="wireframe: true"

@@ -104,7 +104,6 @@ AFRAME.registerComponent("layer-shelves", {
           snappedEl = snappedEl.parentEl
         }
         let connector = snappedEl.layer || snappedEl.node
-        console.log("Should connect something to", node, connector, e.detail)
         node.connectInput(connector, inputNode.getAttribute('node-input'))
       })
 
@@ -112,6 +111,12 @@ AFRAME.registerComponent("layer-shelves", {
         node.disconnectInput(inputNode.getAttribute('node-input'))
       })
     })
+
+    let canvas = container.querySelector('*[canvas-updater]')
+    let setCanvasMaterial = () => {
+      canvas.setAttribute('material', {src: node.canvas})
+    }
+    if (canvas.hasLoaded) { setCanvasMaterial() } else {  canvas.addEventListener('initialized', setCanvasMaterial) }
 
     this.shelves[node.id] = container
 

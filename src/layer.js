@@ -26,9 +26,10 @@ export class Layer {
     this.clear()
   }
 
-  draw(ctx, frame=0) {
+  draw(ctx, frame=0, {mode} = {}) {
+    if (typeof mode === 'undefined') mode = this.mode
     ctx.save()
-    ctx.globalCompositeOperation = this.mode
+    ctx.globalCompositeOperation = mode
     ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
     try {
@@ -139,20 +140,19 @@ export class LayerNode {
   updateCanvas(frame) {
     if (!this.destination) return
     let ctx = this.canvas.getContext('2d')
-    let oldDestinationMode = this.destination.mode
-    this.destination.mode = 'copy'
-    this.destination.draw(ctx, frame)
-    this.destination.mode = oldDestinationMode
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    this.destination.draw(ctx, frame, {mode: 'copy'})
 
     for (let source of this.sources)
     {
       if (!source) continue
-      source.draw(ctx, frame)
+      source.draw(ctx, frame, {mode: this.mode})
     }
   }
-  draw(ctx, frame) {
+  draw(ctx, frame, {mode} = {}) {
+    if (typeof mode === 'undefined') mode = 'source-over'
     this.updateCanvas(frame)
-    ctx.globalCompositeOperation = this.mode
+    ctx.globalCompositeOperation = mode
     ctx.drawImage(this.canvas, 0, 0)
   }
 }
