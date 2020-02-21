@@ -84,14 +84,20 @@ AFRAME.registerComponent("layer-shelves", {
       if (!e.target.hasAttribute('click-action')) return
 
       console.log("Clicked", e.target.getAttribute('click-action'))
-      this[e.target.getAttribute('click-action')](node, e)
+      this[e.target.getAttribute('click-action') + 'Node'](node, e)
     })
-    container.setAttribute('position', {x: 1.4, y: Math.random(), z: 0})
+
+    container.setAttribute('position', this.nextNodePosition || {x: 1.4, y: 0, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
 
-    for (let inputType of ['Source', 'Destination'])
-    {
-      container.querySelector(`.input-${inputType}`).addEventListener('snappedtoinput', e => {
+    container.addEventListener('stateremoved', e => {
+      if (e.detail === 'grabbed') {
+        node.shelfMatrix = container.object3D.matrix
+      }
+    })
+
+    container.querySelectorAll(`*[node-input]`).forEach(inputNode => {
+      inputNode.addEventListener('snappedtoinput', e => {
         let snappedEl = e.detail.snapped
         while (!(snappedEl.layer || snappedEl.node))
         {
@@ -99,19 +105,20 @@ AFRAME.registerComponent("layer-shelves", {
         }
         let connector = snappedEl.layer || snappedEl.node
         console.log("Should connect something to", node, connector, e.detail)
-        node[`connect${inputType}`](connector)
+        node.connectInput(connector, inputNode.getAttribute('node-input'))
       })
 
-      container.querySelector(`.input-${inputType}`).addEventListener('unsnapped', e => {
-        node[`disconnect${inputType}`]()
+      inputNode.addEventListener('unsnapped', e => {
+        node.disconnectInput(inputNode.getAttribute('node-input'))
       })
-    }
+    })
 
     this.shelves[node.id] = container
 
     this.el.append(container)
   },
   shuffle() {
+    if (this.compositor.data.useNodes) return
     for (let id in this.shelves)
     {
       let layerIdx = this.compositor.layers.findIndex(l => l.id == id)
@@ -196,8 +203,19 @@ AFRAME.registerComponent("layer-shelves", {
       this.el.sceneEl.emit('refreshobjects')
     }
   },
-  newNode(n) {
+  newNode(node, e) {
+    this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
+    this.nextNodePosition.copy(this.shelves[node.id].getAttribute('position'))
+    let r = 1.4
+    let theta = Math.random() * 2 * Math.PI
+    this.nextNodePosition.x += r * Math.cos(theta)
+    this.nextNodePosition.y += r * Math.sin(theta)
     this.addNodeShelf(new LayerNode(this.compositor))
+  },
+  toggleModeNode(node) {
+    this.modePopup.setAttribute('visible', true)
+    this.modePopup.setAttribute('position', `0 ${this.shelves[node.id].getAttribute('position').y} 0.3`)
+    this.modePopup.activeLayer = node
   },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail

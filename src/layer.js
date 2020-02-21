@@ -109,16 +109,26 @@ export class LayerNode {
     this.sources = []
   }
 
+  connectInput(layer, {type, index}) {
+    if (type === "source") {
+      this.sources[index] = layer
+    }
+    else if (type == "destination")
+    {
+      this.connectDestination(layer)
+    }
+  }
+  disconnectInput({type, index}) {
+    if (type === 'source') {
+      this.sources[index] = undefined
+    }
+    else if (type === 'destination')
+    {
+      this.disconnectDestination()
+    }
+  }
   connectDestination(layer) {
     this.destination = layer
-  }
-  connectSource(layer)
-  {
-    this.sources = [layer]
-  }
-  disconnectSource()
-  {
-    this.sources = []
   }
   disconnectDestination()
   {
@@ -136,6 +146,7 @@ export class LayerNode {
 
     for (let source of this.sources)
     {
+      if (!source) continue
       source.draw(ctx, frame)
     }
   }
