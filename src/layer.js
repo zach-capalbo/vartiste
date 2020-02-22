@@ -1,4 +1,6 @@
 import shortid from 'shortid'
+import {THREED_MODES} from "./layer-modes.js"
+
 export class Layer {
   constructor(width, height) {
     this.width = width
@@ -102,12 +104,37 @@ export class LayerNode {
     this.compositor = compositor
     this.compositor.allNodes.push(this)
 
+    this.transform = Layer.EmptyTransform()
+    this.grabbed = false
+    this.opacity = 1.0
+    this.id = shortid.generate()
+
     this.canvas = document.createElement('canvas')
     this.canvas.width = compositor.width
     this.canvas.height = compositor.height
 
     this.mode = 'source-over'
     this.sources = []
+    this.shelfMatrix = new THREE.Matrix4()
+  }
+
+  toJSON() {
+    let json = Object.assign({}, this)
+    json.compositor = undefined
+    json.canvas = undefined
+    json.sources = undefined
+    json.destination = undefined
+    json.type = this.constructor.name
+    json.connections = this.getConnections().map(c => {c.to=c.to ? c.to.id : undefined; return c})
+    return json
+  }
+
+  getConnections() {
+    return [
+      {type: 'destination', to: this.destination, index: 0}
+    ].concat(this.sources.map((s, i) => {
+      return {type: 'source', index: i, to: s}
+    }))
   }
 
   connectInput(layer, {type, index}) {
@@ -153,6 +180,42 @@ export class LayerNode {
     if (typeof mode === 'undefined') mode = 'source-over'
     this.updateCanvas(frame)
     ctx.globalCompositeOperation = mode
-    ctx.drawImage(this.canvas, 0, 0)
+    ctx.globalAlpha = this.opacity
+    let {translation, scale} = this.transform
+    let {width, height} = this.canvas
+    let canvas = this.canvas
+    ctx.drawImage(canvas, 0, 0, width, height,
+      translation.x - width / 2 * scale.x + width / 2,
+      translation.y- height / 2 * scale.y + height / 2,
+      width * scale.x, height * scale.y,
+    )
+  }
+}
+
+export class MaterialNode extends LayerNode{
+  constructor(compositor) {
+    super(compositor)
+    this.inputs = {}
+  }
+  toJSON() {
+    let json = super.toJSON()
+    json.inputs = undefined
+    return json
+  }
+  getConnections() {
+    let connections = []
+
+    for (let type in this.inputs)
+    {
+      connections.push({type, to: this.inputs[type], index: 0})
+    }
+
+    return connections
+  }
+  connectInput(layer, {type, index}) {
+    this.inputs[type] = layer
+  }
+  disconnectInput({type, index}) {
+    delete this.inputs[type]
   }
 }

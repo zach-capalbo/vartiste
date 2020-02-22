@@ -2,7 +2,8 @@ const layerShelfHTML = require('./partials/layer-view.html.slm')
 const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
 const {LAYER_MODES} = require('./layer-modes.js')
-const {LayerNode} = require('./layer.js')
+const {MaterialNode, LayerNode} = require('./layer.js')
+const {Util} = require('./util.js')
 
 AFRAME.registerComponent("layer-shelves", {
   schema: {compositor: {type: 'selector'}},
@@ -79,7 +80,14 @@ AFRAME.registerComponent("layer-shelves", {
     console.log("Adding shelf for ", node)
     let container = document.createElement('a-entity')
     container.node = node
-    container.innerHTML = require('./partials/node-view.html.slm')
+    if (node.constructor == MaterialNode)
+    {
+      container.innerHTML = require('./partials/material-node-view.html.slm')
+    }
+    else
+    {
+      container.innerHTML = require('./partials/node-view.html.slm')
+    }
     container.addEventListener('click', e => {
       if (!e.target.hasAttribute('click-action')) return
 
@@ -90,9 +98,20 @@ AFRAME.registerComponent("layer-shelves", {
     container.setAttribute('position', this.nextNodePosition || {x: 1.4, y: 0, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
 
-    container.addEventListener('stateremoved', e => {
+    let shelfRoot = container.querySelector('*[shelf]')
+
+    Util.whenLoaded(shelfRoot, () => {
+      shelfRoot.object3D.matrix.copy(node.shelfMatrix)
+      shelfRoot.object3D.matrix.decompose(
+        shelfRoot.object3D.position,
+        shelfRoot.object3D.quaternion,
+        shelfRoot.object3D.scale,
+      )
+    })
+
+    shelfRoot.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed') {
-        node.shelfMatrix = container.object3D.matrix
+        node.shelfMatrix = e.target.object3D.matrix
       }
     })
 
@@ -113,10 +132,25 @@ AFRAME.registerComponent("layer-shelves", {
     })
 
     let canvas = container.querySelector('*[canvas-updater]')
-    let setCanvasMaterial = () => {
-      canvas.setAttribute('material', {src: node.canvas})
+    if (canvas)
+    {
+      let setCanvasMaterial = () => {
+        canvas.setAttribute('material', {src: node.canvas})
+      }
+      if (canvas.hasLoaded) { setCanvasMaterial() } else {  canvas.addEventListener('loaded', setCanvasMaterial) }
     }
-    if (canvas.hasLoaded) { setCanvasMaterial() } else {  canvas.addEventListener('initialized', setCanvasMaterial) }
+
+    let opacityPicker = container.querySelector('*[opacity-picker]')
+
+    if (opacityPicker)
+    {
+      let setupOpacity = () => {
+        opacityPicker.components['opacity-picker'].layer = node
+        opacityPicker.components['opacity-picker'].adjustIndicator(node.opacity)
+      }
+
+      if (opacityPicker.hasLoaded) { setupOpacity() } else { opacityPicker.addEventListener('loaded', setupOpacity)}
+    }
 
     this.shelves[node.id] = container
 
@@ -128,6 +162,41 @@ AFRAME.registerComponent("layer-shelves", {
     {
       let layerIdx = this.compositor.layers.findIndex(l => l.id == id)
       this.shelves[id].setAttribute('position', {y: layerIdx})
+    }
+  },
+  rebuildNodeConnections(node) {
+    let shelf = this.shelves[node.id]
+
+    if (shelf.hasLoaded)
+    {
+      shelf.querySelectorAll('*[node-input]').forEach(input => {
+        input.components['node-input'].clearSnapped()
+      })
+    }
+
+    for (let connectionIt of node.getConnections())
+    {
+      let connection = connectionIt
+      if (!connection.to) continue
+      let outputNodeShelf = this.shelves[connection.to.id]
+      if (!outputNodeShelf) continue
+
+      console.log("Rebuilding connection", outputNodeShelf)
+
+      Util.whenLoaded([outputNodeShelf, shelf], () => {
+        let toNodeInput = Array.from(shelf.querySelectorAll('*[node-input]')).find(el => {
+          let input = el.getAttribute('node-input')
+          console.log("Checking input", input, connection)
+          return input.type === connection.type && input.index == connection.index
+        })
+        outputNodeShelf.querySelector('*[node-output]').components['node-output'].formConnectionTo(undefined, toNodeInput)
+      })
+    }
+  },
+  rebuildConnections() {
+    for (let nodeIt of this.compositor.allNodes)
+    {
+      this.rebuildNodeConnections(nodeIt)
     }
   },
   tick(t, dt) {
@@ -144,6 +213,8 @@ AFRAME.registerComponent("layer-shelves", {
       {
         this.addNodeShelf(node)
       }
+
+      this.rebuildConnections()
       this.tick = function() {}
     }
   },
@@ -217,10 +288,16 @@ AFRAME.registerComponent("layer-shelves", {
     this.nextNodePosition.y += r * Math.sin(theta)
     this.addNodeShelf(new LayerNode(this.compositor))
   },
+  deleteNode(node, e) {
+    this.compositor.deleteNode(node)
+  },
   toggleModeNode(node) {
     this.modePopup.setAttribute('visible', true)
     this.modePopup.setAttribute('position', `0 ${this.shelves[node.id].getAttribute('position').y} 0.3`)
     this.modePopup.activeLayer = node
+  },
+  grabNode(node) {
+    this.compositor.grabLayer(node)
   },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail
@@ -244,7 +321,7 @@ AFRAME.registerComponent("layer-shelves", {
     }
 
     this.shuffle()
-    console.log("Full deleted")
+    console.log("Full layer deleted")
   },
   compositor_layeradded(e) {
     let {layer} = e.detail
@@ -259,6 +336,10 @@ AFRAME.registerComponent("layer-shelves", {
 
     if (!(layer.id in this.shelves)) return;
     if (!this.shelves[layer.id].hasLoaded) return
+    if (layer.constructor == LayerNode) {
+      this.compositor_nodeupdated({detail: {node: layer}})
+      return
+    }
 
     try {
       if (this.shelves[layer.id].querySelector('.mode-text').hasLoaded)
@@ -288,5 +369,20 @@ AFRAME.registerComponent("layer-shelves", {
     {
       this.addNodeShelf(node)
     }
+  },
+  compositor_nodedeleted(e) {
+    let {node} = e.detail
+    if (!(node.id in this.shelves)) return
+
+    let shelf = this.shelves[node.id]
+    delete this.shelves[node.id]
+    this.el.removeChild(shelf)
+  },
+  compositor_nodeconnectionschanged(e) {
+    let {node} = e.detail
+    this.rebuildNodeConnections(node)
+  },
+  compositor_nodeupdated(e) {
+
   }
 })

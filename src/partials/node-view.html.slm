@@ -1,5 +1,6 @@
 a-entity.node-shelf shelf=""
   a-entity position="0 1.2 0"
+    a-entity.clickable click-action="grab" icon-button="#asset-arrow-all" tooltip="Grab Node Transform"
     a-entity click-action="delete" icon-button="#asset-delete" tooltip="Delete Node"
     a-entity click-action="new" icon-button="#asset-plus-box-outline" tooltip="New Node"
   a-entity position="0.2 -1.3 0"
@@ -10,7 +11,10 @@ a-entity.node-shelf shelf=""
 
   a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
 
-  a-entity node-input="label: Destination; type: destination" position="-2.1 1.2 0.01" material="color: #34d8eb"
+  a-entity position="1.7 0 0"
+    a-entity.clickable opacity-picker="" geometry="primitive: plane; width: 2; height: 0.3" rotation="0 0 90"
+
+  a-entity node-input="type: destination" position="-2.1 1.2 0.01" material="color: #34d8eb"
 
   - for (let i = 0; i < 5; ++i)
-    a-entity node-input="label: Source; type: source; index: ${i}" position="-2.1 ${0.7 - i * 0.3} 0.01"
+    a-entity node-input="type: source; index: ${i}" position="-2.1 ${0.7 - i * 0.3} 0.01"

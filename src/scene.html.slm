@@ -41,7 +41,7 @@ a-scene
             /a-entity pencil-broom="" position="-0.55 0 0"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
         a-entity lock-axes="z: 0" layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
-        a-entity position="1 -1 0.3" scale="0.3 0.3 0.3"
+        a-entity position="1 -2 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
     a-entity#canvas-root
       a-entity#canvas-view.canvas[

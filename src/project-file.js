@@ -12,6 +12,8 @@ class ProjectFile {
     if (!('shader' in obj)) obj.shader = 'flat'
     if (!('frameRate' in obj)) obj.frameRate = 10
     if (!('palette' in obj)) obj.palette = []
+    if (!('useNodes' in obj)) obj.useNodes = false
+    if (!('allNodes' in obj)) obj.allNodes = []
     for (let layer of obj.layers)
     {
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
@@ -90,10 +92,12 @@ class ProjectFile {
 
   saveCompositor() {
     let {compositor} = this
-    let {layers} = compositor
+    let {layers, allNodes, useNodes} = compositor
 
     return {
       layers,
+      allNodes,
+      useNodes,
       width: compositor.width,
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,

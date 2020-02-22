@@ -1,4 +1,5 @@
-import {Layer, LayerNode} from "./layer.js"
+import * as NodeTypes from "./layer.js"
+const {Layer, LayerNode, MaterialNode} = NodeTypes
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
@@ -73,15 +74,14 @@ AFRAME.registerComponent('compositor', {
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
-    this.materialNodes = {}
     this.allNodes = []
-    for (let mode of THREED_MODES)
-    {
-      // this.materialNodes[mode] = new LayerNode(this)
-    }
-    this.materialNodes['canvas'] = new LayerNode(this)
-    // this.materialNodes['canvas'].connectDestination(this.layers[0])
-    // this.materialNodes['canvas'].connectSource(this.activeLayer)
+    this.materialNode = new MaterialNode(this)
+    this.materialNode.shelfMatrix.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3.9211894503691473, 1.7114385325515813, -0.20684204251928567, 1])
+    let defaultNode = new LayerNode(this)
+    defaultNode.shelfMatrix.fromArray([0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0.10398909598272707, 1.7751184493294392, -0.17810752996759185, 1])
+    defaultNode.connectDestination(this.layers[0])
+    defaultNode.connectInput(this.layers[1], {type: "source", index: 0})
+    this.materialNode.connectInput(defaultNode, {type: "canvas"})
 
   },
 
@@ -238,6 +238,35 @@ AFRAME.registerComponent('compositor', {
     layer.grabbed = false
     this.grabbedLayer = undefined
     this.el.emit('layerupdated', {layer})
+  },
+  deleteNode(node) {
+    let nodeIdx = this.allNodes.indexOf(node)
+    if (nodeIdx < 0) return
+
+    for (let connection of node.getConnections())
+    {
+      node.disconnectInput(connection)
+      this.el.emit('nodeconnectionschanged', {node})
+    }
+
+    for (let otherNode of this.allNodes)
+    {
+      let connections = otherNode.getConnections()
+      for (let connection of connections)
+      {
+        if (connection.to === node)
+        {
+          console.log("clearing connection", connection)
+          otherNode.disconnectInput(connection)
+          this.el.emit('nodeconnectionschanged', {node: otherNode})
+        }
+      }
+    }
+
+    console.log("Deleting node")
+
+    this.allNodes.splice(nodeIdx, 1)
+    this.el.emit('nodedeleted', {node})
   },
   drawOverlay(ctx) {
     ctx.save()
@@ -396,24 +425,27 @@ AFRAME.registerComponent('compositor', {
     }
   },
   drawNodes() {
-    let ctx = this.compositeCanvas.getContext('2d')
-    // ctx.fillStyle = "#FFFFFF"
-    ctx.clearRect(0,0, this.width, this.height)
-
-    const width = this.width
-    const height = this.height
-
-    let material = this.el.getObject3D('mesh').material
-
-    let modesUsed = new Set()
-
-    let node = this.materialNodes.canvas
-    node.draw(ctx, this.currentFrame)
-
-    material.map.image = this.compositeCanvas
-    material.map.needsUpdate = true
+    let fakeLayers = []
+    for (let mode in this.materialNode.inputs)
+    {
+      let input = this.materialNode.inputs[mode]
+      if (input.updateCanvas) input.updateCanvas(this.currentFrame)
+      fakeLayers.push({
+        mode,
+        draw: input.draw.bind(input),
+        opacity: input.opacity,
+        transform: input.transform,
+        needsUpdate: true,
+        visible: true,
+        canvas: input.canvas,
+        frames: input.frames || [],
+        frame: input.frame || (() => input.canvas)
+      })
+    }
+    this.drawLayers(fakeLayers)
   },
-  drawLayers() {
+  drawLayers(layers) {
+      if (typeof layers === 'undefined') layers = this.layers
       let ctx = this.compositeCanvas.getContext('2d')
       // ctx.fillStyle = "#FFFFFF"
       ctx.clearRect(0,0, this.width, this.height)
@@ -425,7 +457,7 @@ AFRAME.registerComponent('compositor', {
 
       let modesUsed = new Set()
 
-      for (let layer of this.layers) {
+      for (let layer of layers) {
         let neededUpdate = layer.needsUpdate
         delete layer.needsUpdate
         if (!layer.visible) continue
@@ -490,7 +522,6 @@ AFRAME.registerComponent('compositor', {
             break
         }
 
-
         modesUsed.add(layer.mode)
       }
 
@@ -504,8 +535,6 @@ AFRAME.registerComponent('compositor', {
       this.drawOverlay(ctx)
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
-
-
 
       if (this.data.textureScale != 1)
       {
@@ -547,10 +576,18 @@ AFRAME.registerComponent('compositor', {
       await delay()
     }
 
+    for (let node of this.allNodes.slice()) {
+      console.log("Deleting", node)
+      this.deleteNode(node)
+      await delay()
+    }
+
     this.data.frameRate = obj.frameRate
     this.el.setAttribute('compositor', {frameRate: obj.frameRate})
 
     this.resize(obj.width, obj.height)
+
+    let layersById = {}
 
     for (let i = 0; i < obj.layers.length; ++i)
     {
@@ -562,6 +599,7 @@ AFRAME.registerComponent('compositor', {
       layer.canvas = canvas
       layer.active = false
       layer.frames = [canvas]
+      layersById[layer.id] = layer
 
       for (let j = 0; j < obj.canvases[i].length; ++j)
       {
@@ -589,6 +627,42 @@ AFRAME.registerComponent('compositor', {
     this.deleteLayer(this.layers[0])
 
     this.activateLayer(this.layers.find(l => l.active))
+
+    let nodesById = {}
+
+    for (let nodeObj of obj.allNodes)
+    {
+      let node = new NodeTypes[nodeObj.type](this)
+      Object.assign(node, nodeObj)
+
+      nodesById[node.id] = node
+
+      node.shelfMatrix = new THREE.Matrix4().fromArray(nodeObj.shelfMatrix.elements)
+
+      if (nodeObj.type == 'MaterialNode')
+      {
+        this.materialNode = node
+      }
+
+      this.el.emit('nodeadded', {node})
+      await delay()
+    }
+
+    for (let nodeObj of obj.allNodes)
+    {
+      let node = nodesById[nodeObj.id]
+
+      for (let connection of nodeObj.connections)
+      {
+        if (!connection.to) continue
+        let toNode = nodesById[connection.to] || layersById[connection.to]
+        node.connectInput(toNode, connection)
+      }
+
+      this.el.emit('nodeconnectionschanged', {node})
+      await delay()
+    }
+
     console.log("Fully loaded")
   },
   resize(newWidth, newHeight, {resample = false} = {})

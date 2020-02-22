@@ -40,6 +40,7 @@ AFRAME.registerComponent('node-output', {
 
     this.el.addEventListener('unsnapped', e => {
       let {grabber} = e.detail
+      console.log("Usnapping grabber", grabber, grabber.is('grabbed'))
       grabber.object3D.position.set(0, 0, 0)
       grabber.snappedTo = undefined
 
@@ -47,6 +48,12 @@ AFRAME.registerComponent('node-output', {
       {
         grabber.grabLine.vertices[1].set(0, 0, 0)
         grabber.grabLine.verticesNeedUpdate = true
+
+        if (grabber !== this.grabber)
+        {
+          grabber.grabLineObject.visible = false
+          this.el.removeChild(grabber)
+        }
       }
     })
   },
@@ -81,6 +88,7 @@ AFRAME.registerComponent('node-output', {
     this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
     this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0x34eb80, linewidth: 50 } ))
+    this.grabLineObject.frustrumCulled = false
     grabber.grabLineObject = this.grabLineObject
     grabber.grabLine = this.grabLine
     this.el.object3D.add(this.grabLineObject);
@@ -103,20 +111,29 @@ AFRAME.registerComponent('node-output', {
 
     if (grabber.snappedTo != snapped)
     {
-      let oldSnapped = grabber.snappedTo
-      grabber.snappedTo = snapped
-      if (oldSnapped) oldSnapped.emit('unsnapped', {snapped: this.el, grabber})
+      this.formConnectionTo(grabber, snapped)
+    }
+  },
+  formConnectionTo(grabber, snapped) {
+    if (typeof grabber === "undefined") grabber = this.grabber
+    console.log("Forming connection", grabber, snapped)
+    let oldSnapped = grabber.snappedTo
+    grabber.snappedTo = snapped
+    if (oldSnapped) oldSnapped.emit('unsnapped', {snapped: this.el, grabber})
 
-      if (snapped)
+    if (snapped)
+    {
+      this.el.emit('snappedtooutput', {snapped, grabber})
+      snapped.emit('snappedtoinput', {snapped: this.el, grabber})
+
+      if (grabber === this.grabber)
       {
-        this.el.emit('snappedtooutput', {snapped, grabber})
-        snapped.emit('snappedtoinput', {snapped: this.el, grabber})
         this.createGrabber()
       }
-      else
-      {
-        this.el.emit('unsnapped', {snapped: oldSnapped, grabber})
-      }
+    }
+    else
+    {
+      this.el.emit('unsnapped', {snapped: oldSnapped, grabber})
     }
   },
   snapToInput(grabber) {
@@ -178,6 +195,15 @@ AFRAME.registerComponent('node-input', {
       this.snappedGrabber = undefined
       this.el['redirect-grab'] = this.el.parentEl
     })
+  },
+  clearSnapped() {
+    if (this.snappedTo)
+    {
+      this.snappedTo.emit('unsnapped', {snapped: this.snappedTo, grabber: this.snappedGrabber})
+      this.snappedTo = undefined
+      this.snappedGrabber = undefined
+      this.el['redirect-grab'] = this.el.parentEl
+    }
   },
   tick() {
     if (this.snappedTo && !this.snappedGrabber.is("grabbed"))
