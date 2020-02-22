@@ -710,6 +710,11 @@ AFRAME.registerComponent('compositor', {
       }
     }
 
+    for (let node of this.allNodes)
+    {
+      node.resize(width, height)
+    }
+
     if (this.el.components['geometry'])
     {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth

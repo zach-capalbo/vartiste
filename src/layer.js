@@ -137,6 +137,12 @@ export class LayerNode {
     }))
   }
 
+  resize(width, height) {
+    if (!this.canvas) return
+    this.canvas.width = width
+    this.canvas.height = height
+  }
+
   connectInput(layer, {type, index}) {
     if (type === "source") {
       this.sources[index] = layer
@@ -192,7 +198,7 @@ export class LayerNode {
   }
 }
 
-export class MaterialNode extends LayerNode{
+export class MaterialNode extends LayerNode {
   constructor(compositor) {
     super(compositor)
     this.inputs = {}
@@ -217,5 +223,11 @@ export class MaterialNode extends LayerNode{
   }
   disconnectInput({type, index}) {
     delete this.inputs[type]
+  }
+}
+
+export class PassthroughNode extends LayerNode {
+  constructor(compositor) {
+    super(compositor)
   }
 }
