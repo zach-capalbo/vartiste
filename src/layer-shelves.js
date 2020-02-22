@@ -2,7 +2,7 @@ const layerShelfHTML = require('./partials/layer-view.html.slm')
 const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
 const {LAYER_MODES} = require('./layer-modes.js')
-const {MaterialNode, LayerNode} = require('./layer.js')
+const {MaterialNode, CanvasNode} = require('./layer.js')
 const {Util} = require('./util.js')
 
 AFRAME.registerComponent("layer-shelves", {
@@ -80,14 +80,9 @@ AFRAME.registerComponent("layer-shelves", {
     console.log("Adding shelf for ", node)
     let container = document.createElement('a-entity')
     container.node = node
-    if (node.constructor == MaterialNode)
-    {
-      container.innerHTML = require('./partials/material-node-view.html.slm')
-    }
-    else
-    {
-      container.innerHTML = require('./partials/node-view.html.slm')
-    }
+
+    container.innerHTML = require(`./partials/${node.constructor.name.toLowerCase()}-view.html.slm`)
+
     container.addEventListener('click', e => {
       if (!e.target.hasAttribute('click-action')) return
 
@@ -286,7 +281,7 @@ AFRAME.registerComponent("layer-shelves", {
     let theta = Math.random() * 2 * Math.PI
     this.nextNodePosition.x += r * Math.cos(theta)
     this.nextNodePosition.y += r * Math.sin(theta)
-    this.addNodeShelf(new LayerNode(this.compositor))
+    this.addNodeShelf(new CanvasNode(this.compositor))
   },
   deleteNode(node, e) {
     this.compositor.deleteNode(node)
@@ -336,7 +331,7 @@ AFRAME.registerComponent("layer-shelves", {
 
     if (!(layer.id in this.shelves)) return;
     if (!this.shelves[layer.id].hasLoaded) return
-    if (layer.constructor == LayerNode) {
+    if (layer.constructor == CanvasNode) {
       this.compositor_nodeupdated({detail: {node: layer}})
       return
     }

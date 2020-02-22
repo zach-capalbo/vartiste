@@ -1,5 +1,5 @@
 import * as NodeTypes from "./layer.js"
-const {Layer, LayerNode, MaterialNode} = NodeTypes
+const {Layer, CanvasNode, MaterialNode} = NodeTypes
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
@@ -77,7 +77,7 @@ AFRAME.registerComponent('compositor', {
     this.allNodes = []
     this.materialNode = new MaterialNode(this)
     this.materialNode.shelfMatrix.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3.9211894503691473, 1.7114385325515813, -0.20684204251928567, 1])
-    let defaultNode = new LayerNode(this)
+    let defaultNode = new CanvasNode(this)
     defaultNode.shelfMatrix.fromArray([0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0.10398909598272707, 1.7751184493294392, -0.17810752996759185, 1])
     defaultNode.connectDestination(this.layers[0])
     defaultNode.connectInput(this.layers[1], {type: "source", index: 0})

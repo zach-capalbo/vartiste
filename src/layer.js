@@ -98,7 +98,7 @@ export class Layer {
   }
 }
 
-export class LayerNode {
+export class CanvasNode {
   constructor(compositor) {
     this.id = shortid.generate()
     this.compositor = compositor
@@ -198,7 +198,7 @@ export class LayerNode {
   }
 }
 
-export class MaterialNode extends LayerNode {
+export class MaterialNode extends CanvasNode {
   constructor(compositor) {
     super(compositor)
     this.inputs = {}
@@ -226,7 +226,7 @@ export class MaterialNode extends LayerNode {
   }
 }
 
-export class PassthroughNode extends LayerNode {
+export class PassthroughNode extends CanvasNode {
   constructor(compositor) {
     super(compositor)
   }
