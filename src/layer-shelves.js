@@ -52,7 +52,7 @@ AFRAME.registerComponent("layer-shelves", {
       console.log("Clicked", e.target.getAttribute("click-action"))
       this[e.target.getAttribute("click-action") + 'Layer'](layer, e)
     })
-    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
+    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 0.3})
     container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layer.id}))
     container.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed')
@@ -83,6 +83,11 @@ AFRAME.registerComponent("layer-shelves", {
       container.querySelector('.active-indicator').setAttribute('visible', "true")
     }
 
+    if (!this.compositor.data.useNodes)
+    {
+      container.querySelectorAll('*[node-output]').forEach(el => el.setAttribute('visible', false))
+    }
+
     this.shelves[layer.id] = container
 
     container.addEventListener('loaded', e => this.compositor_layerupdated({detail: {layer}}))
@@ -95,6 +100,7 @@ AFRAME.registerComponent("layer-shelves", {
     container.node = node
 
     container.innerHTML = require(`./partials/${node.constructor.name.toLowerCase()}-view.html.slm`)
+    container.classList.add("node-shelf")
 
     container.addEventListener('click', e => {
       if (!e.target.hasAttribute('click-action')) return
@@ -104,9 +110,9 @@ AFRAME.registerComponent("layer-shelves", {
     })
 
     container.setAttribute('position', this.nextNodePosition || {x: 1.4, y: 0, z: 0})
-    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
+    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 0.3})
 
-    let shelfRoot = container.querySelector('*[shelf]')
+    let shelfRoot = container.querySelector('*[shelf]') || container.querySelector('.node-root')
 
     Util.whenLoaded(shelfRoot, () => {
       shelfRoot.object3D.matrix.copy(node.shelfMatrix)
@@ -160,6 +166,11 @@ AFRAME.registerComponent("layer-shelves", {
       if (opacityPicker.hasLoaded) { setupOpacity() } else { opacityPicker.addEventListener('loaded', setupOpacity)}
     }
 
+    if (!this.compositor.data.useNodes)
+    {
+      container.setAttribute('visible', false)
+    }
+
     this.shelves[node.id] = container
 
     this.el.append(container)
@@ -169,6 +180,7 @@ AFRAME.registerComponent("layer-shelves", {
     for (let id in this.shelves)
     {
       let layerIdx = this.compositor.layers.findIndex(l => l.id == id)
+      if (layerIdx < 0) continue
       this.shelves[id].setAttribute('position', {y: layerIdx})
     }
   },
@@ -223,6 +235,7 @@ AFRAME.registerComponent("layer-shelves", {
       }
 
       this.rebuildConnections()
+      this.compositor_componentchanged({detail: {name: "compositor"}})
       this.tick = function() {}
     }
   },
@@ -306,6 +319,45 @@ AFRAME.registerComponent("layer-shelves", {
   },
   grabNode(node) {
     this.compositor.grabLayer(node)
+  },
+  compositor_componentchanged(e) {
+    if (!this.compositor) return
+    if (e.detail.name === 'compositor')
+    {
+      if (this.compositor.data.useNodes)
+      {
+        this.el.querySelectorAll('.node-shelf').forEach(el => {
+          el.setAttribute('visible', true)
+        })
+        this.el.querySelectorAll('*[node-output]').forEach(el => {
+          el.setAttribute('visible', true)
+        })
+        for (let layer of this.compositor.layers)
+        {
+          this.shelves[layer.id].object3D.matrix.copy(layer.shelfMatrix)
+          layer.shelfMatrix.decompose(
+            this.shelves[layer.id].object3D.position,
+            this.shelves[layer.id].object3D.quaternion,
+            this.shelves[layer.id].object3D.scale
+          )
+        }
+      }
+      else
+      {
+        this.el.querySelectorAll('.node-shelf').forEach(el => {
+          el.setAttribute('visible', false)
+        })
+        this.el.querySelectorAll('*[node-output]').forEach(el => {
+          el.setAttribute('visible', false)
+        })
+        for (let layer of this.compositor.layers)
+        {
+          this.shelves[layer.id].object3D.scale.set(0.3,0.3,0.3)
+          this.shelves[layer.id].object3D.rotation.set(0,0,0)
+        }
+        this.shuffle()
+      }
+    }
   },
   compositor_activelayerchanged(e) {
     let {layer, oldLayer} = e.detail

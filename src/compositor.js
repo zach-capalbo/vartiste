@@ -26,7 +26,7 @@ AFRAME.registerComponent('compositor', {
     onionSkin: {default: false},
     drawOverlay: {default: true},
     usePreOverlayCanvas: {default: true},
-    useNodes: {default: true}
+    useNodes: {default: false}
   },
 
   init() {
@@ -666,6 +666,12 @@ AFRAME.registerComponent('compositor', {
       await delay()
     }
 
+    if (this.allNodes.indexOf(this.materialNode) < 0)
+    {
+      this.allNodes.push(this.materialNode)
+      this.el.emit('nodeadded', {node: this.materialNode})
+    }
+
     console.log("Fully loaded")
   },
   resize(newWidth, newHeight, {resample = false} = {})
@@ -733,3 +739,15 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('resized', {width, height})
   }
 })
+
+class CompositorFinder {
+  get el() {
+    return document.getElementById('canvas-view')
+  }
+
+  get component() {
+    return this.el.components.compositor
+  }
+}
+
+window.Compositor = new CompositorFinder()

@@ -1,4 +1,6 @@
 import {Pool} from './pool.js'
+import {Util} from './util.js'
+import * as NodeTypes from './layer.js'
 
 AFRAME.registerComponent('node-grabber', {
   init() {
@@ -88,7 +90,7 @@ AFRAME.registerComponent('node-output', {
     this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
     this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0x34eb80, linewidth: 50 } ))
-    this.grabLineObject.frustrumCulled = false
+    this.grabLineObject.frustumCulled = false
     grabber.grabLineObject = this.grabLineObject
     grabber.grabLine = this.grabLine
     this.el.object3D.add(this.grabLineObject);
@@ -220,5 +222,38 @@ AFRAME.registerComponent('node-input', {
 AFRAME.registerComponent('node-control-panel', {
   init() {
     this.el.querySelector('.globe-control')['redirect-grab'] = document.querySelector('*[layer-shelves]')
+    this.el.addEventListener('click', e => {
+      console.log("Clicked", e)
+      if (e.target.hasAttribute('click-action'))
+      {
+        let action = e.target.getAttribute('click-action')
+        if (action in this) this[action](e)
+      }
+    })
+
+    Compositor.el.addEventListener('componentchanged', e => {
+      if (e.detail.name === 'compositor' && e.target.hasLoaded) {
+        this.toggleNodeDisplay()
+      }
+    })
+
+    Util.whenLoaded(Compositor.el, () => this.toggleNodeDisplay())
+  },
+  toggleNodeDisplay() {
+    let useNodes = Compositor.component.data.useNodes
+    this.el.querySelector('.globe-control').setAttribute('visible', useNodes)
+    this.el.querySelectorAll('*[new-node-type]').forEach(el => el.setAttribute('visible', useNodes))
+  },
+  newLayer(e) {
+  },
+  newNode(e) {
+    let compositor = Compositor.component
+    let type = e.target.getAttribute('new-node-type')
+    let node = new NodeTypes[type](compositor)
+    compositor.el.emit('nodeadded', {node})
+  },
+  toggleNodes(e) {
+    let compositor = Compositor.el
+    compositor.setAttribute('compositor', {useNodes: !compositor.getAttribute('compositor').useNodes})
   }
 })
