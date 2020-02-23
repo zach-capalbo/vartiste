@@ -16,6 +16,7 @@ export class Layer {
     this.grabbed = false
     this.opacity = 1.0
     this.id = shortid.generate()
+    this.shelfMatrix = new THREE.Matrix4()
 
     let canvas = document.createElement("canvas")
     canvas.width = this.width

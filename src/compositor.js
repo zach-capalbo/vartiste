@@ -52,6 +52,8 @@ AFRAME.registerComponent('compositor', {
 
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
     this.activeLayer = this.layers[0]
+    this.layers[0].shelfMatrix.fromArray([0.23257503824788683, 0, 0, 0, 0, 0.23257503824788683, 0, 0, 0, 0, 0.7752501274929559, 0, -0.1669643613343883, 1.2792903085111105, -0.04627732196156751, 1])
+    this.layers[1].shelfMatrix.fromArray([0.1779292490718412, 0, 0, 0, 0, 0.1779292490718412, 0, 0, 0, 0, 0.5930974969061377, 0, -0.15815008613669024, 0.27784067165961246, -0.009772795407444274, 1])
 
     this.overlays = {}
 
@@ -599,6 +601,7 @@ AFRAME.registerComponent('compositor', {
       layer.canvas = canvas
       layer.active = false
       layer.frames = [canvas]
+      layer.shelfMatrix = new THREE.Matrix4().fromArray(layerObj.shelfMatrix.elements)
       layersById[layer.id] = layer
 
       for (let j = 0; j < obj.canvases[i].length; ++j)
@@ -654,7 +657,7 @@ AFRAME.registerComponent('compositor', {
 
       for (let connection of nodeObj.connections)
       {
-        if (!connection.to) continue
+        if (!connection || !connection.to) continue
         let toNode = nodesById[connection.to] || layersById[connection.to]
         node.connectInput(toNode, connection)
       }

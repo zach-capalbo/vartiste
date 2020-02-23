@@ -52,17 +52,30 @@ AFRAME.registerComponent("layer-shelves", {
       console.log("Clicked", e.target.getAttribute("click-action"))
       this[e.target.getAttribute("click-action") + 'Layer'](layer, e)
     })
-    container.setAttribute('position', {x: 0, y: layerIdx, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 1})
     container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layer.id}))
-
+    container.addEventListener('stateremoved', e => {
+      if (e.detail === 'grabbed')
+      {
+        layer.shelfMatrix.copy(container.object3D.matrix)
+      }
+    })
 
     if (this.compositor.data.useNodes)
     {
       container.querySelector('*[shelf]')['redirect-grab'] = container
+      Util.whenLoaded(container, () => {
+        container.object3D.matrix.copy(layer.shelfMatrix)
+        container.object3D.matrix.decompose(
+          container.object3D.position,
+          container.object3D.quaternion,
+          container.object3D.scale
+        )
+      })
     }
     else
     {
+      container.setAttribute('position', {x: 0, y: layerIdx, z: 0})
       container.querySelector('*[shelf]')['redirect-grab'] = this.el
     }
 
@@ -172,7 +185,7 @@ AFRAME.registerComponent("layer-shelves", {
     for (let connectionIt of node.getConnections())
     {
       let connection = connectionIt
-      if (!connection.to) continue
+      if (!connection || !connection.to) continue
       let outputNodeShelf = this.shelves[connection.to.id]
       if (!outputNodeShelf) continue
 
