@@ -109,10 +109,10 @@ AFRAME.registerComponent("layer-shelves", {
       this[e.target.getAttribute('click-action') + 'Node'](node, e)
     })
 
-    container.setAttribute('position', this.nextNodePosition || {x: 1.4, y: 0, z: 0})
+    container.setAttribute('position', {x: 1.4, y: 0, z: 0})
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 0.3})
 
-    let shelfRoot = container.querySelector('*[shelf]') || container.querySelector('.node-root')
+    let shelfRoot = container.querySelector('*[shelf],.node-root')
 
     Util.whenLoaded(shelfRoot, () => {
       shelfRoot.object3D.matrix.copy(node.shelfMatrix)
@@ -125,6 +125,7 @@ AFRAME.registerComponent("layer-shelves", {
 
     shelfRoot.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed') {
+        console.log("Setting node root matrix")
         node.shelfMatrix = e.target.object3D.matrix
       }
     })
