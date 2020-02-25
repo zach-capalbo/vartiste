@@ -100,7 +100,7 @@ export class Layer {
 }
 
 export class CanvasNode {
-  constructor(compositor) {
+  constructor(compositor, {useCanvas = true} = {}) {
     this.id = shortid.generate()
     this.compositor = compositor
     this.compositor.allNodes.push(this)
@@ -110,9 +110,12 @@ export class CanvasNode {
     this.opacity = 1.0
     this.id = shortid.generate()
 
-    this.canvas = document.createElement('canvas')
-    this.canvas.width = compositor.width
-    this.canvas.height = compositor.height
+    if (useCanvas)
+    {
+      this.canvas = document.createElement('canvas')
+      this.canvas.width = compositor.width
+      this.canvas.height = compositor.height
+    }
 
     this.mode = 'source-over'
     this.sources = []
@@ -168,8 +171,11 @@ export class CanvasNode {
   disconnectDestination()
   {
     this.destination = undefined
-    let ctx = this.canvas.getContext('2d')
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    if (this.canvas)
+    {
+      let ctx = this.canvas.getContext('2d')
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    }
   }
   updateCanvas(frame) {
     if (!this.destination) return
@@ -201,7 +207,7 @@ export class CanvasNode {
 
 export class MaterialNode extends CanvasNode {
   constructor(compositor) {
-    super(compositor)
+    super(compositor, {useCanvas: false})
     this.inputs = {}
   }
   toJSON() {
@@ -209,6 +215,7 @@ export class MaterialNode extends CanvasNode {
     json.inputs = undefined
     return json
   }
+  updateCanvas() {}
   getConnections() {
     let connections = []
 
@@ -229,6 +236,11 @@ export class MaterialNode extends CanvasNode {
 
 export class PassthroughNode extends CanvasNode {
   constructor(compositor) {
-    super(compositor)
+    super(compositor, {useCanvas: false})
+  }
+  updateCanvas() {}
+  draw(...args) {
+    if (!this.destination) return
+    this.destination.draw(...args)
   }
 }

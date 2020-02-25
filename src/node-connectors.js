@@ -8,6 +8,8 @@ AFRAME.registerComponent('node-grabber', {
   tick() {
     let grabber = this.el
 
+    this.el.setAttribute('grab-options', 'showHand: false')
+
     if (grabber.is('grabbed'))
     {
       grabber.object3D.visible = true
@@ -103,12 +105,6 @@ AFRAME.registerComponent('node-output', {
       grabber.object3D.position.set(0, 0, 0)
       grabber.grabLine.vertices[1].set(0,0,0)
       grabber.grabLine.verticesNeedUpdate = true
-
-      if (grabber !== this.grabber)
-      {
-        grabber.grabLine.visible = false
-        this.el.removeChild(grabber)
-      }
     }
 
     if (grabber.snappedTo != snapped)
@@ -147,6 +143,7 @@ AFRAME.registerComponent('node-output', {
     let snapped = undefined
     let snapDistance = snapThreshold
     document.querySelectorAll('*[node-input]').forEach(input => {
+      if (input.parentEl == this.el.parentEl) return
       let otherWorld = this.pool('otherWorld', THREE.Vector3)
       input.object3D.getWorldPosition(otherWorld)
 
@@ -179,7 +176,7 @@ AFRAME.registerComponent('node-input', {
 
     this.el.addEventListener('snappedtoinput', e => {
       let {snapped, grabber} = e.detail
-      if (this.snappedTo !== snapped) {
+      if (this.snappedGrabber !== grabber) {
         if (this.snappedTo)
         {
           this.snappedTo.emit('unsnapped', {snapped: this.snappedTo, grabber: this.snappedGrabber})
@@ -245,6 +242,8 @@ AFRAME.registerComponent('node-control-panel', {
     this.el.querySelectorAll('*[new-node-type]').forEach(el => el.setAttribute('visible', useNodes))
   },
   newLayer(e) {
+    let compositor = Compositor.component
+    compositor.addLayer(compositor.layers.length)
   },
   newNode(e) {
     let compositor = Compositor.component

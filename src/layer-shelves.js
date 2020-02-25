@@ -166,6 +166,12 @@ AFRAME.registerComponent("layer-shelves", {
       if (opacityPicker.hasLoaded) { setupOpacity() } else { opacityPicker.addEventListener('loaded', setupOpacity)}
     }
 
+    let modeText = container.querySelector('.mode-text')
+    if (modeText)
+    {
+      Util.whenLoaded(modeText, () => modeText.setAttribute('text', {value: `Mode: ${node.mode}`}))
+    }
+
     if (!this.compositor.data.useNodes)
     {
       container.setAttribute('visible', false)
@@ -340,6 +346,7 @@ AFRAME.registerComponent("layer-shelves", {
             this.shelves[layer.id].object3D.quaternion,
             this.shelves[layer.id].object3D.scale
           )
+          this.shelves[layer.id].querySelector('*[shelf]')['redirect-grab'] = this.shelves[layer.id]
         }
       }
       else
@@ -354,9 +361,12 @@ AFRAME.registerComponent("layer-shelves", {
         {
           this.shelves[layer.id].object3D.scale.set(0.3,0.3,0.3)
           this.shelves[layer.id].object3D.rotation.set(0,0,0)
+          this.shelves[layer.id].querySelector('*[shelf]')['redirect-grab'] = this.el
         }
         this.shuffle()
       }
+
+      this.el.sceneEl.emit('refreshobjects')
     }
   },
   compositor_activelayerchanged(e) {
@@ -443,6 +453,7 @@ AFRAME.registerComponent("layer-shelves", {
     this.rebuildNodeConnections(node)
   },
   compositor_nodeupdated(e) {
-
+    let node = e.detail.node || e.detail.layer
+    this.shelves[node.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${node.mode}`})
   }
 })

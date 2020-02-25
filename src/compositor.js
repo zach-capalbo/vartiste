@@ -585,7 +585,7 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.data.frameRate = obj.frameRate
-    this.el.setAttribute('compositor', {frameRate: obj.frameRate})
+    this.el.setAttribute('compositor', {frameRate: obj.frameRate, useNodes: obj.useNodes})
 
     this.resize(obj.width, obj.height)
 

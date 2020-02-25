@@ -99,12 +99,12 @@ class ProjectFile {
 
   saveCompositor() {
     let {compositor} = this
-    let {layers, allNodes, useNodes} = compositor
+    let {layers, allNodes} = compositor
 
     return {
       layers,
       allNodes,
-      useNodes,
+      useNodes: compositor.data.useNodes,
       width: compositor.width,
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,
