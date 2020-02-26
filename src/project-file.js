@@ -12,10 +12,19 @@ class ProjectFile {
     if (!('shader' in obj)) obj.shader = 'flat'
     if (!('frameRate' in obj)) obj.frameRate = 10
     if (!('palette' in obj)) obj.palette = []
-    for (let layer of obj.layers)
+    if (!('useNodes' in obj)) obj.useNodes = false
+    if (!('allNodes' in obj)) obj.allNodes = []
+    for (let i in obj.layers)
     {
+      let layer = obj.layers[i]
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
       if (!('rotation' in layer.transform)) layer.transform.rotation = 0
+      if (!('shelfMatrix' in layer)) {
+        let matrix = new THREE.Matrix4()
+        matrix.scale({x: 0.3, y: 0.3, z: 0.3})
+        matrix.setPosition(0, i, 0)
+        layer.shelfMatrix = {"elements":matrix.elements}
+      }
       if (obj._fileVersion < 1)
       {
         if (layer.mode === 'bumpMap')
@@ -90,10 +99,12 @@ class ProjectFile {
 
   saveCompositor() {
     let {compositor} = this
-    let {layers} = compositor
+    let {layers, allNodes} = compositor
 
     return {
       layers,
+      allNodes,
+      useNodes: compositor.data.useNodes,
       width: compositor.width,
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,

@@ -1,0 +1,6 @@
+- const {THREED_MODES} = require('./layer-modes.js')
+a-entity.node-shelf shelf="width: 1.5"
+  a-entity node-input="type: canvas" position="-0.8 1.0 0.01" material="color: #34d8eb"
+  - for (let i = 0; i < THREED_MODES.length; ++i)
+    a-entity node-input="type: ${THREED_MODES[i]}" position="-0.8 ${0.7 - i * 0.3} 0.01"
+    a-entity text="value: ${THREED_MODES[i]}; align: left; wrapCount: ${Math.max(...THREED_MODES.map(m => m.length))}" position="-0.13 ${0.7 - i * 0.3} 0.01"

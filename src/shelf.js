@@ -31,6 +31,7 @@ AFRAME.registerComponent('shelf', {
     if (this.container.hasLoaded)
     {
       this.container.querySelector('.bg').setAttribute('geometry', {width: this.data.width, height: this.data.height})
+      this.container.querySelector('.handle').setAttribute('position', `0 -${this.data.height / 2 + 0.1} 0`)
     }
     else
     {

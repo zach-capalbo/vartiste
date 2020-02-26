@@ -1,4 +1,6 @@
 import shortid from 'shortid'
+import {THREED_MODES} from "./layer-modes.js"
+
 export class Layer {
   constructor(width, height) {
     this.width = width
@@ -14,6 +16,7 @@ export class Layer {
     this.grabbed = false
     this.opacity = 1.0
     this.id = shortid.generate()
+    this.shelfMatrix = new THREE.Matrix4()
 
     let canvas = document.createElement("canvas")
     canvas.width = this.width
@@ -26,9 +29,10 @@ export class Layer {
     this.clear()
   }
 
-  draw(ctx, frame=0) {
+  draw(ctx, frame=0, {mode} = {}) {
+    if (typeof mode === 'undefined') mode = this.mode
     ctx.save()
-    ctx.globalCompositeOperation = this.mode
+    ctx.globalCompositeOperation = mode
     ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
     try {
@@ -92,5 +96,151 @@ export class Layer {
       scale: {x: 1,y: 1},
       rotation: 0.0
     }
+  }
+}
+
+export class CanvasNode {
+  constructor(compositor, {useCanvas = true} = {}) {
+    this.id = shortid.generate()
+    this.compositor = compositor
+    this.compositor.allNodes.push(this)
+
+    this.transform = Layer.EmptyTransform()
+    this.grabbed = false
+    this.opacity = 1.0
+    this.id = shortid.generate()
+
+    if (useCanvas)
+    {
+      this.canvas = document.createElement('canvas')
+      this.canvas.width = compositor.width
+      this.canvas.height = compositor.height
+    }
+
+    this.mode = 'source-over'
+    this.sources = []
+    this.shelfMatrix = new THREE.Matrix4()
+  }
+
+  toJSON() {
+    let json = Object.assign({}, this)
+    json.compositor = undefined
+    json.canvas = undefined
+    json.sources = undefined
+    json.destination = undefined
+    json.type = this.constructor.name
+    json.connections = this.getConnections().map(c => {c.to=c.to ? c.to.id : undefined; return c})
+    return json
+  }
+
+  getConnections() {
+    return [
+      {type: 'destination', to: this.destination, index: 0}
+    ].concat(this.sources.map((s, i) => {
+      return {type: 'source', index: i, to: s}
+    })).filter(s => s.to)
+  }
+
+  resize(width, height) {
+    if (!this.canvas) return
+    this.canvas.width = width
+    this.canvas.height = height
+  }
+
+  connectInput(layer, {type, index}) {
+    if (type === "source") {
+      this.sources[index] = layer
+    }
+    else if (type == "destination")
+    {
+      this.connectDestination(layer)
+    }
+  }
+  disconnectInput({type, index}) {
+    if (type === 'source') {
+      this.sources[index] = undefined
+    }
+    else if (type === 'destination')
+    {
+      this.disconnectDestination()
+    }
+  }
+  connectDestination(layer) {
+    this.destination = layer
+  }
+  disconnectDestination()
+  {
+    this.destination = undefined
+    if (this.canvas)
+    {
+      let ctx = this.canvas.getContext('2d')
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    }
+  }
+  updateCanvas(frame) {
+    if (!this.destination) return
+    let ctx = this.canvas.getContext('2d')
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    this.destination.draw(ctx, frame, {mode: 'copy'})
+
+    for (let source of this.sources)
+    {
+      if (!source) continue
+      source.draw(ctx, frame, {mode: this.mode})
+    }
+  }
+  draw(ctx, frame, {mode} = {}) {
+    if (typeof mode === 'undefined') mode = 'source-over'
+    this.updateCanvas(frame)
+    ctx.globalCompositeOperation = mode
+    ctx.globalAlpha = this.opacity
+    let {translation, scale} = this.transform
+    let {width, height} = this.canvas
+    let canvas = this.canvas
+    ctx.drawImage(canvas, 0, 0, width, height,
+      translation.x - width / 2 * scale.x + width / 2,
+      translation.y- height / 2 * scale.y + height / 2,
+      width * scale.x, height * scale.y,
+    )
+  }
+}
+
+export class MaterialNode extends CanvasNode {
+  constructor(compositor) {
+    super(compositor, {useCanvas: false})
+    this.inputs = {}
+  }
+  toJSON() {
+    let json = super.toJSON()
+    json.inputs = undefined
+    return json
+  }
+  updateCanvas() {}
+  getConnections() {
+    let connections = []
+
+    for (let type in this.inputs)
+    {
+      connections.push({type, to: this.inputs[type], index: 0})
+    }
+
+    return connections
+  }
+  connectInput(layer, {type, index}) {
+    this.inputs[type] = layer
+  }
+  disconnectInput({type, index}) {
+    delete this.inputs[type]
+  }
+}
+
+export class PassthroughNode extends CanvasNode {
+  constructor(compositor) {
+    super(compositor, {useCanvas: false})
+  }
+  updateCanvas() {}
+  draw(...args) {
+    if (!this.destination) return
+    this.destination.draw(...args)
   }
 }

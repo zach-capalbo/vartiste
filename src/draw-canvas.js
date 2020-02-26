@@ -188,6 +188,10 @@ AFRAME.registerComponent('draw-canvas', {
     let ctx = sampleCanvas.getContext('2d')
     let width = Math.round(this.brush.width)
     let height = Math.round(this.brush.height)
+
+    if (typeof width === 'undefined') return
+    if (typeof height === 'undefined') return
+
     this.sampleCanvas.width = width
     this.sampleCanvas.height = height
     ctx.clearRect(0, 0, sampleCanvas.width, sampleCanvas.height)

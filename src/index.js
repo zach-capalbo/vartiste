@@ -36,6 +36,7 @@ require('./pencil-tool')
 require('./timeline-shelf.js')
 require('./mobile-camera.js')
 require('./toolbox-shelf.js')
+require('./node-connectors.js')
 
 require('./app.styl')
 

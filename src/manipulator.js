@@ -67,6 +67,7 @@ AFRAME.registerComponent('manipulator', {
       _refreshObjects.call(this,...args)
       this.objects = this.objects.filter(o => {
         if (o.el.classList.contains("raycast-invisible")) return false
+        if (o.el.hasAttribute('visible') && !o.el.getAttribute('visible')) return false
         if (!o.visible) return false
 
         let parentVisible = true
