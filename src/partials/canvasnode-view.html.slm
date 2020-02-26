@@ -10,6 +10,9 @@ a-entity.node-shelf.grab-root shelf=""
   a-entity node-output="" position="2.1 1.2 0.01"
 
   a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
+  a-entity.grabbing-indicator visible="false"
+    - for e of [{pos: -2.1, rot: -90}, {pos: 2.1, rot: 90}]
+      a-entity gltf-model="#asset-hand" rotation="0 0 ${e.rot}" position="${e.pos} 0 0" scale="1 1 0.3" material="shader: standard; metalness: 0.4; color: #a88d32; emissive: #a88d32; emissiveIntensity: 0.8" shadow="cast: false; receive: false"
 
   a-entity position="1.7 0 0"
     a-entity.clickable opacity-picker="" geometry="primitive: plane; width: 2; height: 0.3" rotation="0 0 90" propogate-grab=""

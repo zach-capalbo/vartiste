@@ -114,9 +114,24 @@ AFRAME.registerComponent('pencil-tool', {
   calcFar() {
     return this.tipHeight * this.el.object3D.scale.x
   },
+  updateRaycaster: function(far)
+  {
+    // setAttribute constitutes a memory problem. So just do this part manually
+    let data = this.data
+    var raycaster = this.raycaster;
+
+    // Set raycaster properties.
+    raycaster.far = data.far;
+    raycaster.near = data.near;
+
+    // Calculate unit vector for line direction. Can be multiplied via scalar to performantly
+    // adjust line length.
+    this.unitLineEndVec3.copy(data.origin).add(data.direction).normalize();
+  },
   updateDrawTool() {
     let far = this.calcFar()
-    this.el.setAttribute('raycaster', {far})
+    this.el.components.raycaster.data.far = far
+    this.updateRaycaster.call(this.el.components.raycaster)
     let handDrawTool = this.el.components['hand-draw-tool']
     let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
 

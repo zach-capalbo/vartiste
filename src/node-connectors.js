@@ -4,11 +4,10 @@ import * as NodeTypes from './layer.js'
 
 AFRAME.registerComponent('node-grabber', {
   init() {
+    this.el.setAttribute('grab-options', 'showHand: false')
   },
   tick() {
     let grabber = this.el
-
-    this.el.setAttribute('grab-options', 'showHand: false')
 
     if (grabber.is('grabbed'))
     {

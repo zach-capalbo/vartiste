@@ -138,7 +138,7 @@ export class CanvasNode {
       {type: 'destination', to: this.destination, index: 0}
     ].concat(this.sources.map((s, i) => {
       return {type: 'source', index: i, to: s}
-    }))
+    })).filter(s => s.to)
   }
 
   resize(width, height) {

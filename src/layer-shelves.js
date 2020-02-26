@@ -456,5 +456,6 @@ AFRAME.registerComponent("layer-shelves", {
   compositor_nodeupdated(e) {
     let node = e.detail.node || e.detail.layer
     this.shelves[node.id].querySelector('.mode-text').setAttribute('text', {value: `Mode: ${node.mode}`})
+    this.shelves[node.id].querySelector('.grabbing-indicator').setAttribute('visible', node.grabbed)
   }
 })
