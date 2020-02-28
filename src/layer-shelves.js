@@ -1,7 +1,7 @@
 const layerShelfHTML = require('./partials/layer-view.html.slm')
 const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
-const {LAYER_MODES} = require('./layer-modes.js')
+const {LAYER_MODES, FX} = require('./layer-modes.js')
 const {MaterialNode, CanvasNode} = require('./layer.js')
 const {Util} = require('./util.js')
 
@@ -173,6 +173,19 @@ AFRAME.registerComponent("layer-shelves", {
       Util.whenLoaded(modeText, () => modeText.setAttribute('text', {value: `Mode: ${node.mode}`}))
     }
 
+    let fxText = container.querySelector('.fx-text')
+    if (fxText)
+    {
+      Util.whenLoaded(fxText, () => fxText.setAttribute('text', {value: `FX: ${node.shader}`}))
+      fxText.addEventListener('click', e => {
+        if (!e.target.hasAttribute('node-fx')) return
+
+        node.changeShader(e.target.getAttribute('node-fx'))
+        fxText.setAttribute('text', {value: `FX: ${node.shader}`})
+        fxText.components['popup-button'].closePopup()
+      })
+    }
+
     if (!this.compositor.data.useNodes)
     {
       container.setAttribute('visible', false)
@@ -323,6 +336,10 @@ AFRAME.registerComponent("layer-shelves", {
     this.modePopup.setAttribute('visible', true)
     this.modePopup.setAttribute('position', `0 ${this.shelves[node.id].getAttribute('position').y} 0.3`)
     this.modePopup.activeLayer = node
+  },
+  toggleFxNode(node) {
+    let currentIdx = FX.indexOf(node.shader)
+    node.changeShader(FX[(currentIdx + 1) % FX.length])
   },
   grabNode(node) {
     this.compositor.grabLayer(node)

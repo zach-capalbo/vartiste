@@ -1,5 +1,4 @@
 - const {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES} = require('./layer-modes.js')
-.debug == Object.getOwnPropertyNames(require)
 a-entity shelf="" scale="1.5 1.5 1.5"
   a-entity position="-1 1.3 0" scale="0.66 0.66 1"
     a-entity icon-button="#asset-close-circle-outline" click-action="close-mode" position="4.157 -3.840 0"

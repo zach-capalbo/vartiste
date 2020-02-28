@@ -1,0 +1,10 @@
+- const {FX} = require('./layer-modes.js')
+a-entity shelf="width: 1.5" scale="0.3 0.3 0.3"
+  a-entity icon-button="#asset-close-circle-outline" popup-action="close" position="0.5 -1.2 0"
+  - var modeListIndex = 0
+  a-entity position="0.3 1.2 0"
+    - var i = 0
+    - for (let mode of FX)
+      a-entity position="0 ${- i++ * 0.5} 0"
+        a-entity node-fx=mode icon-button="#asset-blur-linear" scale="0.7 0.7 1" position="-0.7 0 0"
+        a-entity text="value: ${mode}; width: 1; wrapCount: 15"

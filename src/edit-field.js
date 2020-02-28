@@ -1,54 +1,31 @@
 AFRAME.registerComponent('edit-field', {
-  dependencies: ["text"],
+  dependencies: ["text", 'popup-button'],
   schema: {
     tooltip: {type: 'string'},
     type: {type: 'string', default: 'number'}
   },
   init() {
-    this.el.setAttribute('text', {align: 'right'})
-    let numpad = document.createElement('a-entity')
-    this.numpad = numpad
-    numpad.innerHTML = require('./partials/numpad.html.slm')
-    numpad.setAttribute('position', '0 0 0.1')
-    numpad.setAttribute('visible', 'false')
+    this.numpad = this.el.components['popup-button'].popup
+    let {numpad} = this
+
     numpad.addEventListener('click', e => this.buttonClicked(e))
-    this.el.append(numpad)
 
-    let width = this.el.getAttribute('text').width
-    let editButton = document.createElement('a-entity')
-    this.editButton = editButton
-    editButton.setAttribute('icon-button', "#asset-lead-pencil")
-    editButton.setAttribute('position', `${width / 2 + 0.3} 0 0`)
-    this.el.append(editButton)
+    this.el.addEventListener('popuplaunched', e => {
+      numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
+      numpad.setAttribute('visible', true)
+      if (this.data.type === 'number')
+      {
+        this.setValue("")
+      }
+    })
 
-    editButton.addEventListener('click', e => this.launchNumpad())
   },
   update(oldData) {
-    if (this.data.tooltip)
-    {
-      this.editButton.setAttribute('tooltip', this.data.tooltip)
-    }
-
-    if (this.data.type === 'string') {
-      this.numpad.innerHTML = require('./partials/keyboard.html.slm')
-    }
-  },
-  launchNumpad() {
-    let numpad = this.numpad
-    numpad.setAttribute('position', '0 0 0.1')
-    numpad.object3D.updateMatrixWorld()
-    let invScale =  numpad.object3D.parent.getWorldScale(new THREE.Vector3())
-    invScale.x = 1 / invScale.x
-    invScale.y = 1 / invScale.y
-    invScale.z = 1 / invScale.z
-    numpad.object3D.scale.copy(invScale)
-    numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
-    numpad.setAttribute('visible', true)
-    if (this.data.type === 'number')
-    {
-      this.setValue("")
-    }
-    this.el.sceneEl.emit('refreshobjects')
+    this.el.setAttribute('popup-button', {
+      icon: "#asset-lead-pencil",
+      tooltip: this.data.tooltip,
+      popup: (this.data.type === 'string' ? "keyboard" : "numpad")
+    })
   },
   setValue(value) {
     this.numpad.querySelector('.value').setAttribute('text', {value})
@@ -77,11 +54,72 @@ AFRAME.registerComponent('edit-field', {
     this.setValue(this.el.getAttribute('text').value.slice(0, -1))
   },
   ok(e) {
-    this.numpad.setAttribute('visible', false)
-    this.numpad.setAttribute('position', '0 -999999 0.1')
+    this.el.components['popup-button'].closePopup()
     this.el.emit("editfinished", {value: this.el.getAttribute('text').value})
   },
   clear(e) {
     this.setValue("")
+  }
+})
+
+AFRAME.registerComponent('popup-button', {
+  dependencies: ["text"],
+  schema: {
+    tooltip: {type: 'string'},
+    icon: {type: 'string', default: '#asset-lead-pencil'},
+    popup: {type: 'string', default: "numpad"}
+  },
+  init() {
+    this.el.setAttribute('text', {align: 'right'})
+    let width = this.el.getAttribute('text').width
+
+    let editButton = document.createElement('a-entity')
+    this.editButton = editButton
+    editButton.setAttribute('icon-button', this.data.icon)
+    editButton.setAttribute('position', `${width / 2 + 0.3} 0 0`)
+    this.el.append(editButton)
+
+    editButton.addEventListener('click', e => this.launchPopup())
+
+    let popup = document.createElement('a-entity')
+    this.popup = popup
+    popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+    popup.setAttribute('position', '0 0 0.1')
+    popup.setAttribute('visible', 'false')
+    this.el.append(popup)
+
+    popup.addEventListener('click', e => {
+      if (!e.target.hasAttribute('popup-action')) return
+
+      this[e.target.getAttribute('popup-action') + "Popup"]()
+    })
+  },
+  update(oldData) {
+    if (this.data.tooltip)
+    {
+      this.editButton.setAttribute('tooltip', this.data.tooltip)
+    }
+    if (this.data.popup !== oldData.popup)
+    {
+      this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+    }
+  },
+  launchPopup() {
+    let popup = this.popup
+    popup.setAttribute('position', '0 0 0.1')
+    popup.object3D.updateMatrixWorld()
+    let invScale =  popup.object3D.parent.getWorldScale(new THREE.Vector3())
+    invScale.x = 1 / invScale.x
+    invScale.y = 1 / invScale.y
+    invScale.z = 1 / invScale.z
+    popup.object3D.scale.copy(invScale)
+
+    popup.setAttribute('visible', true)
+    this.el.sceneEl.emit('refreshobjects')
+    this.el.emit('popuplaunched')
+  },
+  closePopup() {
+    this.popup.setAttribute('visible', false)
+    this.popup.setAttribute('position', '0 -999999 0.1')
   }
 })

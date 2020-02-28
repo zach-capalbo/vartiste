@@ -1,0 +1,12 @@
+a-entity.node-shelf.grab-root shelf=""
+  a-entity position="0 1.2 0"
+    a-entity click-action="delete" icon-button="#asset-delete" tooltip="Delete Node"
+
+  a-entity.frame-offset edit-field="tooltip: Frame Offset" text="value: 0; width: 2; wrapCount: 5"
+
+  a-entity node-output="" position="2.1 1.2 0.01"
+
+  a-entity node-input="type: destination" position="-2.1 1.2 0.01" material="color: #34d8eb"
+
+  - for (let i = 0; i < 0; ++i)
+    a-entity node-input="type: source; index: ${i}" position="-2.1 ${0.7 - i * 0.3} 0.01"

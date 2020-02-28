@@ -42,6 +42,12 @@ const THREED_MODES = [
   "envMap"
 ]
 
+const FX = [
+  'blur',
+  'noise',
+  "dither"
+]
+
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)
 
-module.exports = {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES}
+module.exports = {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES, FX}

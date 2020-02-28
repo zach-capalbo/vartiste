@@ -246,8 +246,24 @@ export class PassthroughNode extends CanvasNode {
 }
 
 export class FxNode extends CanvasNode {
-  constructor(compositor) {
-    super(compositor)
+  constructor(compositor, {shader = "blur", ...opts} = {}) {
+    super(compositor, opts)
+    Object.defineProperty(this, "glData", {enumerable: false, value: {}})
+    this.shader = shader
+  }
+  disconnectDestination()
+  {
+    this.destination = undefined
+  }
+  changeShader(shader) {
+    this.shader = shader
+
+    if (this.glData.program)
+    {
+      let gl = this.canvas.getContext('webgl')
+      gl.deleteProgram(this.glData.program)
+      delete this.glData.program
+    }
   }
   createShader(gl, type, source) {
     let shader = gl.createShader(type)
@@ -261,12 +277,12 @@ export class FxNode extends CanvasNode {
     return shader
   }
   getProgram(gl) {
-    if (this.program)
+    if (this.glData.program)
     {
-      return this.program
+      return this.glData.program
     }
     let vertexShader = this.createShader(gl, gl.VERTEX_SHADER, require('./shaders/fx-uv-passthrough.vert'))
-    let fragmentShader = this.createShader(gl, gl.FRAGMENT_SHADER, require('./shaders/test.glsl'))
+    let fragmentShader = this.createShader(gl, gl.FRAGMENT_SHADER, require(`./shaders/fx/${this.shader}.glsl`))
 
     let program = gl.createProgram()
     gl.attachShader(program, vertexShader)
@@ -277,25 +293,26 @@ export class FxNode extends CanvasNode {
       throw new Error(gl.getProgramInfoLog(program))
     }
     gl.useProgram(program);
-    this.program = program
-    return this.program
+    this.glData.program = program
+    return this.glData.program
   }
-  setupTexture(gl) {
+  setupTexture(gl, frame) {
     let program = this.getProgram(gl)
 
-    if (!this.texture)
+    if (!this.glData.texture)
     {
-      this.texture = gl.createTexture()
+      this.glData.texture = gl.createTexture()
     }
 
-    let textureCanvas = this.destination.canvas
+    if (this.destination.updateCanvas) this.destination.updateCanvas(frame)
+    let textureCanvas = this.destination.frame ? this.destination.frame(frame) : this.destination.canvas
     if (!textureCanvas)
     {
       throw new Error("No canvas")
     }
 
     gl.activeTexture(gl.TEXTURE0 + 0);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.bindTexture(gl.TEXTURE_2D, this.glData.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
     // Set the parameters so we can render any size image.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -305,10 +322,26 @@ export class FxNode extends CanvasNode {
 
    var location = gl.getUniformLocation(program, "u_input");
    gl.uniform1i(location, 0);
+
+   this.setProgramUniform("u_width", "uniform1f", textureCanvas.width)
+   this.setProgramUniform("u_height", "uniform1f", textureCanvas.height)
   }
-  updateCanvas() {
+  setProgramUniform(name, type, value){
+    let program = this.glData.program
+    let location = this.glData.gl.getUniformLocation(program, name)
+    if (location)
+    {
+      if (typeof value === 'function') value = value()
+      this.glData.gl[type](location, value)
+    }
+  }
+  updateCanvas(frame) {
+    if (!this.destination) return
     let canvas = this.canvas
+
     let gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    this.glData.gl = gl
+
     gl.viewport(0, 0,
     gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -331,7 +364,7 @@ export class FxNode extends CanvasNode {
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    this.setupTexture(gl)
+    this.setupTexture(gl, frame)
 
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
