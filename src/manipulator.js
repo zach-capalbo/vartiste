@@ -2,7 +2,7 @@ import {Axes} from './joystick-directions.js'
 import {Undo} from './undo.js'
 
 AFRAME.registerComponent('manipulator', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   schema: {
     selector: {type: 'string'},
     useRay: {type:'boolean', default: true},

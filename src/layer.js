@@ -18,6 +18,8 @@ export class Layer {
     this.id = shortid.generate()
     this.shelfMatrix = new THREE.Matrix4()
 
+    this.needsUpdate = false
+
     let canvas = document.createElement("canvas")
     canvas.width = this.width
     canvas.height = this.height
@@ -104,6 +106,8 @@ export class CanvasNode {
     this.id = shortid.generate()
     this.compositor = compositor
     this.compositor.allNodes.push(this)
+
+    this.needsUpdate = false
 
     this.transform = Layer.EmptyTransform()
     this.grabbed = false
