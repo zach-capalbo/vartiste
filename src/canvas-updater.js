@@ -12,12 +12,18 @@ AFRAME.registerComponent('canvas-updater', {
     }
   },
 
-  tick() {
+  tick(t, dt) {
     var el = this.el;
     var material;
 
+    let parentVisible = true
+    this.el.getObject3D('mesh').traverseAncestors(a => parentVisible = parentVisible && a.visible)
+    if (!parentVisible) return false
+
     material = el.getObject3D('mesh').material;
     if (!material.map) { return; }
+    if (material.map.image.getUpdateTime && material.map.image.getUpdateTime() < this.drawnT) return
     material.map.needsUpdate = true;
+    this.drawnT = t
   }
 });

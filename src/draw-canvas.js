@@ -72,6 +72,8 @@ AFRAME.registerComponent('draw-canvas', {
   drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined}) {
     if (canvas === null) canvas = this.data.canvas
 
+    if (canvas.touch) canvas.touch()
+
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
 

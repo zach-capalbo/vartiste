@@ -10,6 +10,8 @@ class UndoStack {
     for (let i = 0; i < this.maxSize; ++i)
     {
       this.canvas[i] = document.createElement('canvas')
+      this.canvas[i].width = 2048
+      this.canvas[i].height = 2048
     }
   }
   set enabled(value) {
@@ -29,8 +31,12 @@ class UndoStack {
     let idx = this.canvasIndex
     this.canvasIndex = (this.canvasIndex + 1) % this.maxSize
     let undoCanvas = this.canvas[idx]
-    undoCanvas.width = canvas.width
-    undoCanvas.height = canvas.height
+    if (undoCanvas.width !== canvas.width || undoCanvas.height !== canvas.height)
+    {
+      console.log("Need to resize undo canvas")
+      undoCanvas.width = canvas.width
+      undoCanvas.height = canvas.height
+    }
     let ctx = undoCanvas.getContext('2d')
     ctx.globalCompositeOperation = 'copy'
     ctx.drawImage(canvas, 0, 0)

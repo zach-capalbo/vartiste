@@ -18,7 +18,7 @@ export class Layer {
     this.id = shortid.generate()
     this.shelfMatrix = new THREE.Matrix4()
 
-    this.needsUpdate = false
+    this.updateTime = 0
 
     let canvas = document.createElement("canvas")
     canvas.width = this.width
@@ -26,7 +26,8 @@ export class Layer {
     canvas.id = `layer-${this.id}`
     document.body.append(canvas)
     this.canvas = canvas;
-    document.body.append(canvas)
+    this.canvas.touch = () => this.updateTime = document.querySelector('a-scene').time
+    this.canvas.getUpdateTime = () => this.updateTime
 
     this.clear()
   }
@@ -75,6 +76,8 @@ export class Layer {
     if (typeof canvas === 'undefined') canvas = document.createElement('canvas')
     canvas.width = this.width
     canvas.height = this.height
+    canvas.touch = () => this.updateTime = document.querySelector('a-scene').time
+    canvas.getUpdateTime = () => this.updateTime
     this.frames.splice(position + 1, 0, canvas)
   }
 
@@ -107,7 +110,7 @@ export class CanvasNode {
     this.compositor = compositor
     this.compositor.allNodes.push(this)
 
-    this.needsUpdate = false
+    this.updateTime = 0
 
     this.transform = Layer.EmptyTransform()
     this.grabbed = false
@@ -119,6 +122,8 @@ export class CanvasNode {
       this.canvas = document.createElement('canvas')
       this.canvas.width = compositor.width
       this.canvas.height = compositor.height
+      this.canvas.touch = () => this.updateTime = document.getElementById('a-scene').time
+      this.canvas.getUpdateTime = () => this.updateTime
     }
 
     this.mode = 'source-over'
@@ -152,6 +157,7 @@ export class CanvasNode {
   }
 
   connectInput(layer, {type, index}) {
+    this.updateTime = document.querySelector('a-scene').time
     if (type === "source") {
       this.sources[index] = layer
     }
@@ -161,6 +167,7 @@ export class CanvasNode {
     }
   }
   disconnectInput({type, index}) {
+    this.updateTime = document.querySelector('a-scene').time
     if (type === 'source') {
       this.sources[index] = undefined
     }
@@ -183,6 +190,20 @@ export class CanvasNode {
   }
   updateCanvas(frame) {
     if (!this.destination) return
+
+    let needsUpdate = false
+
+    for (let node of this.sources.concat(this.destination))
+    {
+      if (!node) continue
+      if (node.updateCanvas) node.updateCanvas(frame)
+      if (node.updateTime >= this.updateTime) needsUpdate = true
+    }
+
+    if (!needsUpdate) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
     let ctx = this.canvas.getContext('2d')
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     this.destination.draw(ctx, frame, {mode: 'copy'})
@@ -219,7 +240,19 @@ export class MaterialNode extends CanvasNode {
     json.inputs = undefined
     return json
   }
-  updateCanvas() {}
+  updateCanvas(frame) {
+    needsUpdate = false
+
+    for (let node of Object.values(this.inputs))
+    {
+      if (node.updateCanvas) node.updateCanvas(frame)
+      if (node.updateTime >= this.updateTime) needsUpdate = true
+    }
+
+    if (!needsUpdate) return
+
+    this.updateTime = document.querySelector('a-scene').time
+  }
   getConnections() {
     let connections = []
 
@@ -231,9 +264,11 @@ export class MaterialNode extends CanvasNode {
     return connections
   }
   connectInput(layer, {type, index}) {
+    this.updateTime = document.querySelector('a-scene').time
     this.inputs[type] = layer
   }
   disconnectInput({type, index}) {
+    this.updateTime = document.querySelector('a-scene').time
     delete this.inputs[type]
   }
 }
@@ -242,7 +277,10 @@ export class PassthroughNode extends CanvasNode {
   constructor(compositor) {
     super(compositor, {useCanvas: false})
   }
-  updateCanvas() {}
+  updateCanvas(frame) {
+    if (this.destination.updateCanvas) this.destination.updateCanvas(frame)
+    this.updateTime = this.destination.updateTime
+  }
   draw(...args) {
     if (!this.destination) return
     this.destination.draw(...args)
@@ -260,6 +298,7 @@ export class FxNode extends CanvasNode {
     this.destination = undefined
   }
   changeShader(shader) {
+    this.updateTime = document.querySelector('a-scene').time
     this.shader = shader
 
     if (this.glData.program)

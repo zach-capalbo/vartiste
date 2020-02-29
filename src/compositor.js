@@ -94,6 +94,7 @@ AFRAME.registerComponent('compositor', {
       this.textureCanvas.width = this.width * this.data.textureScale
       this.textureCanvas.height = this.height * this.data.textureScale
     }
+    this.drawnT = 0
   },
 
   addLayer(position, {layer} = {}) {
@@ -207,6 +208,7 @@ AFRAME.registerComponent('compositor', {
     let oldMode = layer.mode
     Undo.push(() => this.setLayerBlendMode(layer, oldMode))
     layer.mode = mode
+    layer.canvas.touch()
     this.el.emit('layerupdated', {layer})
   },
   grabLayer(layer) {
@@ -437,7 +439,7 @@ AFRAME.registerComponent('compositor', {
         draw: input.draw.bind(input),
         opacity: input.opacity,
         transform: input.transform,
-        needsUpdate: true,
+        needsUpdate: input.updateTime > this.drawnT,
         visible: true,
         canvas: input.canvas,
         frames: input.frames || [],
@@ -463,6 +465,7 @@ AFRAME.registerComponent('compositor', {
         let neededUpdate = layer.needsUpdate
         delete layer.needsUpdate
         if (!layer.visible) continue
+        if (neededUpdate === false) continue
         if (THREED_MODES.indexOf(layer.mode) < 0)
         {
           layer.draw(ctx, this.currentFrame)
