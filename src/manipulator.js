@@ -2,7 +2,7 @@ import {Axes} from './joystick-directions.js'
 import {Undo} from './undo.js'
 
 AFRAME.registerComponent('manipulator', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   schema: {
     selector: {type: 'string'},
     useRay: {type:'boolean', default: true},
@@ -235,10 +235,7 @@ AFRAME.registerComponent('manipulator', {
     }
   },
   onGripOpen() {
-    if (this.data.selector)
-    {
-      this.stopGrab()
-    }
+    this.stopGrab()
   },
   tick(t, dt) {
     if (this.target) {
@@ -332,6 +329,26 @@ AFRAME.registerComponent('manipulator', {
       this.target.object3D.position.sub(localOffset)
     }
   }
+})
+
+AFRAME.registerComponent('mouse-manipulator', {
+  dependencies: ["manipulator"],
+  init() {
+    this.el.setAttribute('manipulator', {useRay: true})
+    document.addEventListener('mousedown', e => {
+      console.log("Click grabbing")
+      if (!e.shiftKey) return
+      let allowLeftClick = true
+      if (!allowLeftClick && (!e.buttons || e.buttons == 1)) return
+      this.el.components.manipulator.onGripClose()
+    })
+
+    document.addEventListener('mouseup', e=> {
+      console.log("Clcik releasing")
+      // if (e.button == 0) return
+      this.el.components.manipulator.onGripOpen()
+    })
+  },
 })
 
 AFRAME.registerComponent('propogate-grab', {

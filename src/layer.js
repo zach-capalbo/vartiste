@@ -18,17 +18,22 @@ export class Layer {
     this.id = shortid.generate()
     this.shelfMatrix = new THREE.Matrix4()
 
+    this.updateTime = 0
+
     let canvas = document.createElement("canvas")
     canvas.width = this.width
     canvas.height = this.height
     canvas.id = `layer-${this.id}`
     document.body.append(canvas)
     this.canvas = canvas;
-    document.body.append(canvas)
+    this.canvas.touch = () => this.touch()
+    this.canvas.getUpdateTime = () => this.updateTime
 
     this.clear()
   }
-
+  touch() {
+    this.updateTime = document.querySelector('a-scene').time
+  }
   draw(ctx, frame=0, {mode} = {}) {
     if (typeof mode === 'undefined') mode = this.mode
     ctx.save()
@@ -73,6 +78,8 @@ export class Layer {
     if (typeof canvas === 'undefined') canvas = document.createElement('canvas')
     canvas.width = this.width
     canvas.height = this.height
+    canvas.touch = () => this.updateTime = document.querySelector('a-scene').time
+    canvas.getUpdateTime = () => this.updateTime
     this.frames.splice(position + 1, 0, canvas)
   }
 
@@ -105,6 +112,8 @@ export class CanvasNode {
     this.compositor = compositor
     this.compositor.allNodes.push(this)
 
+    this.updateTime = 0
+
     this.transform = Layer.EmptyTransform()
     this.grabbed = false
     this.opacity = 1.0
@@ -115,13 +124,17 @@ export class CanvasNode {
       this.canvas = document.createElement('canvas')
       this.canvas.width = compositor.width
       this.canvas.height = compositor.height
+      this.canvas.touch = () => this.touch()
+      this.canvas.getUpdateTime = () => this.updateTime
     }
 
     this.mode = 'source-over'
     this.sources = []
     this.shelfMatrix = new THREE.Matrix4()
   }
-
+  touch() {
+    this.updateTime = 0
+  }
   toJSON() {
     let json = Object.assign({}, this)
     json.compositor = undefined
@@ -148,6 +161,7 @@ export class CanvasNode {
   }
 
   connectInput(layer, {type, index}) {
+    this.touch()
     if (type === "source") {
       this.sources[index] = layer
     }
@@ -157,6 +171,7 @@ export class CanvasNode {
     }
   }
   disconnectInput({type, index}) {
+    this.touch()
     if (type === 'source') {
       this.sources[index] = undefined
     }
@@ -166,10 +181,12 @@ export class CanvasNode {
     }
   }
   connectDestination(layer) {
+    this.touch()
     this.destination = layer
   }
   disconnectDestination()
   {
+    this.touch()
     this.destination = undefined
     if (this.canvas)
     {
@@ -177,8 +194,30 @@ export class CanvasNode {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     }
   }
+  checkIfUpdateNeeded(frame) {
+    // if (typeof frame === 'undefined') throw new Error(`Missing frame ${this.constructor.name}`)
+    let needsUpdate = false
+
+    for (let node of this.sources.concat(this.destination))
+    {
+      if (!node) continue
+      if (node.updateCanvas) node.updateCanvas(frame)
+      if (node.frameIdx && node.updateFrame !== node.frameIdx(frame)) {
+        // console.log(`Frame update ${node.constructor.name}`, frame, node.frameIdx(frame), node.updateFrame)
+        needsUpdate = true
+      }
+      if (node.updateTime >= this.updateTime) needsUpdate = true
+    }
+
+    return needsUpdate
+  }
   updateCanvas(frame) {
     if (!this.destination) return
+
+    if (!this.checkIfUpdateNeeded(frame)) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
     let ctx = this.canvas.getContext('2d')
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     this.destination.draw(ctx, frame, {mode: 'copy'})
@@ -210,12 +249,28 @@ export class MaterialNode extends CanvasNode {
     super(compositor, {useCanvas: false})
     this.inputs = {}
   }
+  touch() {
+    console.log("Touch MaterialNode", this.updateTime, Compositor.component.drawnT)
+    this.updateTime = Compositor.component.drawnT + 0.01
+  }
   toJSON() {
     let json = super.toJSON()
     json.inputs = undefined
     return json
   }
-  updateCanvas() {}
+  updateCanvas(frame) {
+    let needsUpdate = false
+
+    for (let node of Object.values(this.inputs))
+    {
+      if (node.updateCanvas) node.updateCanvas(frame)
+      if (node.updateTime >= this.updateTime) needsUpdate = true
+    }
+
+    if (!needsUpdate) return
+
+    // this.updateTime = document.querySelector('a-scene').time
+  }
   getConnections() {
     let connections = []
 
@@ -227,9 +282,11 @@ export class MaterialNode extends CanvasNode {
     return connections
   }
   connectInput(layer, {type, index}) {
+    this.touch()
     this.inputs[type] = layer
   }
   disconnectInput({type, index}) {
+    this.touch()
     delete this.inputs[type]
   }
 }
@@ -238,9 +295,159 @@ export class PassthroughNode extends CanvasNode {
   constructor(compositor) {
     super(compositor, {useCanvas: false})
   }
-  updateCanvas() {}
+  updateCanvas(frame) {
+    if (!this.destination) return
+    if (this.destination.updateCanvas) this.destination.updateCanvas(frame)
+    this.updateTime = this.destination.updateTime
+  }
   draw(...args) {
     if (!this.destination) return
     this.destination.draw(...args)
+  }
+}
+
+export class FxNode extends CanvasNode {
+  constructor(compositor, {shader = "blur", ...opts} = {}) {
+    super(compositor, opts)
+    Object.defineProperty(this, "glData", {enumerable: false, value: {}})
+    this.shader = shader
+  }
+  disconnectDestination()
+  {
+    this.destination = undefined
+  }
+  touch() {
+    this.updateTime = 0
+  }
+  changeShader(shader) {
+    this.touch()
+    this.shader = shader
+
+    if (this.glData.program)
+    {
+      let gl = this.canvas.getContext('webgl')
+      gl.deleteProgram(this.glData.program)
+      delete this.glData.program
+    }
+  }
+  createShader(gl, type, source) {
+    let shader = gl.createShader(type)
+    gl.shaderSource(shader, source)
+    gl.compileShader(shader)
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+    {
+      throw new Error(gl.getShaderInfoLog(shader));
+    }
+
+    return shader
+  }
+  getProgram(gl) {
+    if (this.glData.program)
+    {
+      return this.glData.program
+    }
+    let vertexShader = this.createShader(gl, gl.VERTEX_SHADER, require('./shaders/fx-uv-passthrough.vert'))
+    let fragmentShader = this.createShader(gl, gl.FRAGMENT_SHADER, require(`./shaders/fx/${this.shader}.glsl`))
+
+    let program = gl.createProgram()
+    gl.attachShader(program, vertexShader)
+    gl.attachShader(program, fragmentShader)
+    gl.linkProgram(program)
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+    {
+      throw new Error(gl.getProgramInfoLog(program))
+    }
+    gl.useProgram(program);
+    this.glData.program = program
+    return this.glData.program
+  }
+  setupTexture(gl, frame) {
+    let program = this.getProgram(gl)
+
+    if (!this.glData.texture)
+    {
+      this.glData.texture = gl.createTexture()
+    }
+
+    if (this.destination.updateCanvas) this.destination.updateCanvas(frame)
+    let textureCanvas = this.destination.frame ? this.destination.frame(frame) : this.destination.canvas
+    if (!textureCanvas)
+    {
+      throw new Error("No canvas")
+    }
+
+    gl.activeTexture(gl.TEXTURE0 + 0);
+    gl.bindTexture(gl.TEXTURE_2D, this.glData.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
+    // Set the parameters so we can render any size image.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+   var location = gl.getUniformLocation(program, "u_input");
+   gl.uniform1i(location, 0);
+
+   this.setProgramUniform("u_width", "uniform1f", textureCanvas.width)
+   this.setProgramUniform("u_height", "uniform1f", textureCanvas.height)
+  }
+  setProgramUniform(name, type, value){
+    let program = this.glData.program
+    let location = this.glData.gl.getUniformLocation(program, name)
+    if (location)
+    {
+      if (typeof value === 'function') value = value()
+      this.glData.gl[type](location, value)
+    }
+  }
+  updateCanvas(frame) {
+    if (!this.destination) return
+    let canvas = this.canvas
+
+    if (!this.checkIfUpdateNeeded()) return
+
+    let gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    this.glData.gl = gl
+
+    gl.viewport(0, 0,
+    gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    let program = this.getProgram(gl)
+
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    var positions = [
+      -1, -1,
+      1, -1,
+      1, 1,
+      1, 1,
+      -1, 1,
+      -1, -1
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    this.setupTexture(gl, frame)
+
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    var size = 2;          // 2 components per iteration
+    var type = gl.FLOAT;   // the data is 32bit floats
+    var normalize = false; // don't normalize the data
+    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    var offset = 0;        // start at the beginning of the buffer
+    gl.vertexAttribPointer(
+        positionAttributeLocation, size, type, normalize, stride, offset)
+
+        var primitiveType = gl.TRIANGLES;
+    var offset = 0;
+    var count = 6;
+    gl.drawArrays(primitiveType, offset, count);
   }
 }

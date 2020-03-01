@@ -47,6 +47,7 @@ class SfxMgr {
     sound.components.sound.playSound()
   }
   draw(el) {
+    return
     if (el.sfxAlreadyDrawing) return
 
     el.sfxAlreadyDrawing = true

@@ -10,6 +10,8 @@ class UndoStack {
     for (let i = 0; i < this.maxSize; ++i)
     {
       this.canvas[i] = document.createElement('canvas')
+      this.canvas[i].width = 2048
+      this.canvas[i].height = 2048
     }
   }
   set enabled(value) {
@@ -23,14 +25,26 @@ class UndoStack {
   get enabled() {
     return this._enabled
   }
+  clearAndResize(width, height) {
+    this.stack = []
+    for (let i = 0; i < this.maxSize; ++i)
+    {
+      this.canvas[i].width = width
+      this.canvas[i].height = height
+    }
+  }
   pushCanvas(canvas) {
     if (!this.enabled) return
     // let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)
     let idx = this.canvasIndex
     this.canvasIndex = (this.canvasIndex + 1) % this.maxSize
     let undoCanvas = this.canvas[idx]
-    undoCanvas.width = canvas.width
-    undoCanvas.height = canvas.height
+    if (undoCanvas.width !== canvas.width || undoCanvas.height !== canvas.height)
+    {
+      console.log("Need to resize undo canvas")
+      undoCanvas.width = canvas.width
+      undoCanvas.height = canvas.height
+    }
     let ctx = undoCanvas.getContext('2d')
     ctx.globalCompositeOperation = 'copy'
     ctx.drawImage(canvas, 0, 0)
@@ -40,6 +54,7 @@ class UndoStack {
       undoCtx.globalCompositeOperation = 'copy'
       undoCtx.drawImage(undoCanvas, 0, 0)
       undoCtx.globalCompositeOperation = operation
+      if (canvas.touch) canvas.touch()
     })
   }
   push(f) {
