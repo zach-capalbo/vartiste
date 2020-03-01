@@ -118,6 +118,7 @@ AFRAME.registerComponent("opacity-picker", {
         let oldOpacity = this.layer.oldOpacity
         Undo.push(() => {
           this.layer.opacity = oldOpacity
+          this.layer.touch()
         })
       }
       this.handleClick(e)
@@ -159,6 +160,7 @@ AFRAME.registerComponent("opacity-picker", {
     {
       console.log("Setting layer opacity", opacity)
       this.layer.opacity = opacity
+      this.layer.touch()
     }
     else
     {

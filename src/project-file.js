@@ -19,6 +19,7 @@ class ProjectFile {
       let layer = obj.layers[i]
       if (!('transform' in layer)) layer.transform = Layer.EmptyTransform()
       if (!('rotation' in layer.transform)) layer.transform.rotation = 0
+      if ('updateTime' in layer) delete layer.updateTime
       if (!('shelfMatrix' in layer)) {
         let matrix = new THREE.Matrix4()
         matrix.scale({x: 0.3, y: 0.3, z: 0.3})
@@ -40,6 +41,10 @@ class ProjectFile {
       {
         obj.canvases[i] = [obj.canvases[i]]
       }
+    }
+    for (let node of obj.allNodes)
+    {
+      if ('updateTime' in node) delete node.updateTime
     }
   }
 

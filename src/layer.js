@@ -26,12 +26,14 @@ export class Layer {
     canvas.id = `layer-${this.id}`
     document.body.append(canvas)
     this.canvas = canvas;
-    this.canvas.touch = () => this.updateTime = document.querySelector('a-scene').time
+    this.canvas.touch = () => this.touch()
     this.canvas.getUpdateTime = () => this.updateTime
 
     this.clear()
   }
-
+  touch() {
+    this.updateTime = document.querySelector('a-scene').time
+  }
   draw(ctx, frame=0, {mode} = {}) {
     if (typeof mode === 'undefined') mode = this.mode
     ctx.save()
@@ -122,7 +124,7 @@ export class CanvasNode {
       this.canvas = document.createElement('canvas')
       this.canvas.width = compositor.width
       this.canvas.height = compositor.height
-      this.canvas.touch = () => this.updateTime = document.getElementById('a-scene').time
+      this.canvas.touch = () => this.touch()
       this.canvas.getUpdateTime = () => this.updateTime
     }
 
@@ -130,7 +132,9 @@ export class CanvasNode {
     this.sources = []
     this.shelfMatrix = new THREE.Matrix4()
   }
-
+  touch() {
+    this.updateTime = 0
+  }
   toJSON() {
     let json = Object.assign({}, this)
     json.compositor = undefined
@@ -157,7 +161,7 @@ export class CanvasNode {
   }
 
   connectInput(layer, {type, index}) {
-    this.updateTime = document.querySelector('a-scene').time
+    this.touch()
     if (type === "source") {
       this.sources[index] = layer
     }
@@ -167,7 +171,7 @@ export class CanvasNode {
     }
   }
   disconnectInput({type, index}) {
-    this.updateTime = document.querySelector('a-scene').time
+    this.touch()
     if (type === 'source') {
       this.sources[index] = undefined
     }
@@ -177,10 +181,12 @@ export class CanvasNode {
     }
   }
   connectDestination(layer) {
+    this.touch()
     this.destination = layer
   }
   disconnectDestination()
   {
+    this.touch()
     this.destination = undefined
     if (this.canvas)
     {
@@ -235,13 +241,17 @@ export class MaterialNode extends CanvasNode {
     super(compositor, {useCanvas: false})
     this.inputs = {}
   }
+  touch() {
+    console.log("Touch MaterialNode", this.updateTime, Compositor.component.drawnT)
+    this.updateTime = Compositor.component.drawnT + 0.01
+  }
   toJSON() {
     let json = super.toJSON()
     json.inputs = undefined
     return json
   }
   updateCanvas(frame) {
-    needsUpdate = false
+    let needsUpdate = false
 
     for (let node of Object.values(this.inputs))
     {
@@ -251,7 +261,7 @@ export class MaterialNode extends CanvasNode {
 
     if (!needsUpdate) return
 
-    this.updateTime = document.querySelector('a-scene').time
+    // this.updateTime = document.querySelector('a-scene').time
   }
   getConnections() {
     let connections = []
@@ -264,11 +274,11 @@ export class MaterialNode extends CanvasNode {
     return connections
   }
   connectInput(layer, {type, index}) {
-    this.updateTime = document.querySelector('a-scene').time
+    this.touch()
     this.inputs[type] = layer
   }
   disconnectInput({type, index}) {
-    this.updateTime = document.querySelector('a-scene').time
+    this.touch()
     delete this.inputs[type]
   }
 }

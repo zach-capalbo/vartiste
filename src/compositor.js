@@ -87,14 +87,24 @@ AFRAME.registerComponent('compositor', {
 
   },
 
-  update() {
+  update(oldData) {
     if (this.data.textureScale != 1)
     {
       this.textureCanvas = this.textureCanvas || document.createElement("canvas")
       this.textureCanvas.width = this.width * this.data.textureScale
       this.textureCanvas.height = this.height * this.data.textureScale
     }
-    this.drawnT = 0
+    if (this.data.useNodes !== oldData.useNodes || this.data.shader !== oldData.shader)
+    {
+      for (let node of this.allNodes)
+      {
+        node.touch()
+      }
+      for (let layer of this.layers)
+      {
+        layer.touch()
+      }
+    }
   },
 
   addLayer(position, {layer} = {}) {
@@ -177,7 +187,7 @@ AFRAME.registerComponent('compositor', {
 
     fromLayer.draw(ctx, this.currentFrame)
     ctx.restore()
-    ontoLayer.needsUpdate = true
+    ontoLayer.touch()
   },
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
@@ -208,7 +218,7 @@ AFRAME.registerComponent('compositor', {
     let oldMode = layer.mode
     Undo.push(() => this.setLayerBlendMode(layer, oldMode))
     layer.mode = mode
-    layer.canvas.touch()
+    layer.touch()
     this.el.emit('layerupdated', {layer})
   },
   grabLayer(layer) {
@@ -427,19 +437,29 @@ AFRAME.registerComponent('compositor', {
     {
       this.drawLayers()
     }
+
+    this.drawnT = t
   },
   drawNodes() {
     let fakeLayers = []
+    this.materialNode.updateCanvas(this.currentFrame)
     for (let mode in this.materialNode.inputs)
     {
       let input = this.materialNode.inputs[mode]
-      if (input.updateCanvas) input.updateCanvas(this.currentFrame)
+
+      let needsUpdate = input.updateTime > this.drawnT || this.materialNode.updateTime > this.drawnT
+
+      if (needsUpdate)
+      {
+        console.log("Needs Update", mode, needsUpdate, input.updateTime, this.materialNode.updateTime, this.drawnT,)
+      }
+
       fakeLayers.push({
         mode,
         draw: input.draw.bind(input),
         opacity: input.opacity,
         transform: input.transform,
-        needsUpdate: input.updateTime > this.drawnT,
+        needsUpdate: needsUpdate,
         visible: true,
         canvas: input.canvas,
         frames: input.frames || [],
@@ -462,14 +482,15 @@ AFRAME.registerComponent('compositor', {
       let modesUsed = new Set()
 
       for (let layer of layers) {
-        let neededUpdate = layer.needsUpdate
-        delete layer.needsUpdate
         if (!layer.visible) continue
-        if (neededUpdate === false) continue
+
         if (THREED_MODES.indexOf(layer.mode) < 0)
         {
           layer.draw(ctx, this.currentFrame)
           continue
+        }
+        if (layer.needsUpdate === false) {
+          modesUsed.add(layer.mode)
         }
         if (material.type !== "MeshStandardMaterial") continue
 
@@ -492,7 +513,7 @@ AFRAME.registerComponent('compositor', {
           material[layer.mode].image = layerCanvas
           material[layer.mode].needsUpdate = true
         }
-        else if (layer.active || neededUpdate)
+        else if (layer.active || layer.needsUpdate)
         {
           material[layer.mode].needsUpdate = true
         }
@@ -725,6 +746,7 @@ AFRAME.registerComponent('compositor', {
     for (let node of this.allNodes)
     {
       node.resize(width, height)
+      node.touch()
     }
 
     if (this.el.components['geometry'])
@@ -736,6 +758,7 @@ AFRAME.registerComponent('compositor', {
 
     for (let layer of this.layers)
     {
+      layer.touch()
       this.el.emit('layerupdated', {layer})
     }
 
