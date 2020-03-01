@@ -94,7 +94,7 @@ AFRAME.registerComponent('compositor', {
       this.textureCanvas.width = this.width * this.data.textureScale
       this.textureCanvas.height = this.height * this.data.textureScale
     }
-    if (this.data.useNodes !== oldData.useNodes || this.data.shader !== oldData.shader)
+    if (this.data.useNodes !== oldData.useNodes)
     {
       for (let node of this.allNodes)
       {
@@ -104,6 +104,10 @@ AFRAME.registerComponent('compositor', {
       {
         layer.touch()
       }
+    }
+    if (this.data.shader !== oldData.shader)
+    {
+      this.materialNode.touch()
     }
   },
 
@@ -451,7 +455,7 @@ AFRAME.registerComponent('compositor', {
 
       if (needsUpdate)
       {
-        console.log("Needs Update", mode, needsUpdate, input.updateTime, this.materialNode.updateTime, this.drawnT,)
+        // console.log("Needs Update", mode, needsUpdate, input.updateTime, this.materialNode.updateTime, this.drawnT,)
       }
 
       fakeLayers.push({
@@ -467,6 +471,11 @@ AFRAME.registerComponent('compositor', {
       })
     }
     this.drawLayers(fakeLayers)
+
+    for (let layer of this.layers)
+    {
+      layer.updateFrame = layer.frameIdx(this.currentFrame)
+    }
   },
   drawLayers(layers) {
       if (typeof layers === 'undefined') layers = this.layers

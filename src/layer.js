@@ -194,19 +194,27 @@ export class CanvasNode {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     }
   }
-  updateCanvas(frame) {
-    if (!this.destination) return
-
+  checkIfUpdateNeeded(frame) {
+    // if (typeof frame === 'undefined') throw new Error(`Missing frame ${this.constructor.name}`)
     let needsUpdate = false
 
     for (let node of this.sources.concat(this.destination))
     {
       if (!node) continue
       if (node.updateCanvas) node.updateCanvas(frame)
+      if (node.frameIdx && node.updateFrame !== node.frameIdx(frame)) {
+        // console.log(`Frame update ${node.constructor.name}`, frame, node.frameIdx(frame), node.updateFrame)
+        needsUpdate = true
+      }
       if (node.updateTime >= this.updateTime) needsUpdate = true
     }
 
-    if (!needsUpdate) return
+    return needsUpdate
+  }
+  updateCanvas(frame) {
+    if (!this.destination) return
+
+    if (!this.checkIfUpdateNeeded(frame)) return
 
     this.updateTime = document.querySelector('a-scene').time
 
@@ -308,8 +316,11 @@ export class FxNode extends CanvasNode {
   {
     this.destination = undefined
   }
+  touch() {
+    this.updateTime = 0
+  }
   changeShader(shader) {
-    this.updateTime = document.querySelector('a-scene').time
+    this.touch()
     this.shader = shader
 
     if (this.glData.program)
@@ -392,6 +403,8 @@ export class FxNode extends CanvasNode {
   updateCanvas(frame) {
     if (!this.destination) return
     let canvas = this.canvas
+
+    if (!this.checkIfUpdateNeeded()) return
 
     let gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     this.glData.gl = gl
