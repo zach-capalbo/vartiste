@@ -700,6 +700,7 @@ AFRAME.registerComponent('compositor', {
   },
   resize(newWidth, newHeight, {resample = false} = {})
   {
+    Undo.clearAndResize(newWidth, newHeight)
     let oldWidth = this.width
     let oldHeight = this.height
 

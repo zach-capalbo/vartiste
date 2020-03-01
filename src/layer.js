@@ -288,6 +288,7 @@ export class PassthroughNode extends CanvasNode {
     super(compositor, {useCanvas: false})
   }
   updateCanvas(frame) {
+    if (!this.destination) return
     if (this.destination.updateCanvas) this.destination.updateCanvas(frame)
     this.updateTime = this.destination.updateTime
   }

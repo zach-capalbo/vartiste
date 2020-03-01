@@ -25,6 +25,14 @@ class UndoStack {
   get enabled() {
     return this._enabled
   }
+  clearAndResize(width, height) {
+    this.stack = []
+    for (let i = 0; i < this.maxSize; ++i)
+    {
+      this.canvas[i].width = width
+      this.canvas[i].height = height
+    }
+  }
   pushCanvas(canvas) {
     if (!this.enabled) return
     // let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)
@@ -46,6 +54,7 @@ class UndoStack {
       undoCtx.globalCompositeOperation = 'copy'
       undoCtx.drawImage(undoCanvas, 0, 0)
       undoCtx.globalCompositeOperation = operation
+      if (canvas.touch) canvas.touch()
     })
   }
   push(f) {

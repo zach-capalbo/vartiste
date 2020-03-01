@@ -237,6 +237,7 @@ AFRAME.registerComponent('draw-canvas', {
   eraseUV(uv, rawParams = {}) {
     let {pressure = 1.0, canvas = null, rotation=0.0, scale=1.0, sourceEl = undefined} = rawParams
     if (canvas == null) canvas = this.data.canvas
+    if (canvas.touch) canvas.touch()
     if (!this.wasErasing && sourceEl)
     {
       Undo.pushCanvas(canvas)
