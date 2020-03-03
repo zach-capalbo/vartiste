@@ -126,6 +126,7 @@ AFRAME.registerComponent("layer-shelves", {
     shelfRoot.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed') {
         console.log("Setting node root matrix")
+        e.target.object3D.updateMatrix()
         node.shelfMatrix = e.target.object3D.matrix
       }
     })
