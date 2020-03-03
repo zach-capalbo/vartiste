@@ -404,7 +404,9 @@ export class FxNode extends CanvasNode {
     if (!this.destination) return
     let canvas = this.canvas
 
-    if (!this.checkIfUpdateNeeded()) return
+    if (!this.checkIfUpdateNeeded(frame)) return
+
+    this.updateTime = document.querySelector('a-scene').time
 
     let gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     this.glData.gl = gl
