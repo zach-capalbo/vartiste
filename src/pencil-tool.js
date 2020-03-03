@@ -10,7 +10,8 @@ AFRAME.registerComponent('pencil-tool', {
     tipRatio: {default: 0.2},
     extraStates: {type: 'array'},
 
-    enabled: {default: true}
+    enabled: {default: true},
+    waitForGrab: {default: true}
   },
   init() {
     this.el.classList.add('grab-root')
@@ -81,6 +82,32 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
     this.el.object3D.up.set(0, 0, 1)
 
+    this.el.setAttribute('hand-draw-tool', "")
+    this.el.setAttribute('grab-options', "showHand: false")
+
+    if (this.data.waitForGrab)
+    {
+      this.raycasterTick = this.el.components.raycaster.tick
+      this.el.components.raycaster.tick = function() {}
+      let activate = (e) => {
+        if (e.detail === 'grabbed') {
+          this.activatePencil()
+          this.el.removeEventListener('stateadded', activate)
+        }
+      };
+      this.el.addEventListener('stateadded', activate)
+    }
+    else
+    {
+      this.activatePencil()
+    }
+  },
+  update(oldData) {
+    this.updateEnabled()
+  },
+  activatePencil() {
+    console.log("Activating pencil")
+    if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
       if (!this.data.enabled) return
       this.updateDrawTool()
@@ -94,9 +121,6 @@ AFRAME.registerComponent('pencil-tool', {
       this.el.components['hand-draw-tool'].isDrawing = false
     })
 
-    this.el.setAttribute('hand-draw-tool', "")
-    this.el.setAttribute('grab-options', "showHand: false")
-
     this.el.addEventListener('click', e => {
       if (this.el.is('grabbed'))
       {
@@ -105,11 +129,8 @@ AFRAME.registerComponent('pencil-tool', {
       }
     })
 
-    this._tick = this.tick
-    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
-  },
-  update(oldData) {
-    this.updateEnabled()
+    this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
+    this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
   },
   calcFar() {
     return this.tipHeight * this.el.object3D.scale.x
@@ -157,9 +178,10 @@ AFRAME.registerComponent('pencil-tool', {
       }
     }
   },
-  tick() {
+  _tick() {
     this.updateDrawTool()
   },
+  tick() {},
   updateEnabled() {
     this.tip.setAttribute('visible', this.data.enabled)
 
@@ -178,10 +200,31 @@ AFRAME.registerComponent('pencil-tool', {
   }
 })
 
-AFRAME.registerComponent('pencil-broom', {
+AFRAME.registerComponent('multi-pencil-base', {
   init() {
-    this.el.classList.add('grab-root')
     this.el.setAttribute('grab-options', "showHand: false")
+    this.el.classList.add('grab-root')
+
+    let activate = (e) => {
+      if (e.detail === 'grabbed')
+      {
+        this.el.querySelectorAll('*[pencil-tool]').forEach(e => e.components['pencil-tool'].activatePencil())
+        this.el.removeEventListener('stateadded', activate)
+      }
+    };
+    this.el.addEventListener('stateadded', activate)
+
+  },
+  calcFarFn(pencil) {
+    return (() => pencil.components['pencil-tool'].tipHeight * this.el.object3D.scale.x)
+  }
+})
+
+AFRAME.registerComponent('pencil-broom', {
+  dependencies: ['multi-pencil-base'],
+  init() {
+    this.base = this.el.components['multi-pencil-base']
+
     for (let j = 0; j < 4; j++)
     {
       for (let i = 0; i < 3; i++)
@@ -191,16 +234,16 @@ AFRAME.registerComponent('pencil-broom', {
         pencil.setAttribute('position', `${j * 0.05 + (j % 2) *0.02} 0 ${i * 0.05}`)
         pencil['redirect-grab'] = this.el
         this.el.append(pencil)
-        pencil.components['pencil-tool'].calcFar = () => pencil.components['pencil-tool'].tipHeight * this.el.object3D.scale.x
+        pencil.components['pencil-tool'].calcFar = this.base.calcFarFn(pencil)
       }
     }
   },
 })
 
 AFRAME.registerComponent('spike-ball', {
+  dependencies: ['multi-pencil-base'],
   init() {
-    this.el.classList.add('grab-root')
-    this.el.setAttribute('grab-options', "showHand: false")
+    this.base = this.el.components['multi-pencil-base']
     for (let i = 0; i < 10; i++)
     {
       let pencil = document.createElement('a-entity')
@@ -208,7 +251,7 @@ AFRAME.registerComponent('spike-ball', {
       pencil.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`)
       pencil['redirect-grab'] = this.el
       this.el.append(pencil)
-      pencil.components['pencil-tool'].calcFar = () => pencil.components['pencil-tool'].tipHeight * this.el.object3D.scale.x
+      pencil.components['pencil-tool'].calcFar = this.base.calcFarFn(pencil)
     }
 
     // TODO: Need to make each pencil's far value match the parent scale
@@ -216,14 +259,13 @@ AFRAME.registerComponent('spike-ball', {
 })
 
 AFRAME.registerComponent('hammer-tool', {
+  dependencies: ['multi-pencil-base'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
     pressureTip: {type: 'boolean', default: false},
   },
   init() {
-    this.el.classList.add('grab-root')
-
     let handleHeight = 0.3
     let handleRadius = 0.03
     let handle = document.createElement('a-cylinder')
