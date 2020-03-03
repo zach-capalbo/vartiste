@@ -335,9 +335,9 @@ AFRAME.registerComponent('compositor', {
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
   },
-  jumpToFrame(frame) {
+  jumpToFrame(frame, {force = false} = {}) {
     this.currentFrame = frame
-    if (this.activeLayer.frames.length > 1)
+    if (this.activeLayer.frames.length > 1 || force)
     {
       this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
     }
@@ -392,7 +392,7 @@ AFRAME.registerComponent('compositor', {
     {
       this.currentFrame = this.activeLayer.frameIdx(frame)
       this.activeLayer.deleteFrame(this.currentFrame)
-      this.jumpToFrame(this.activeLayer.frameIdx(this.currentFrame))
+      this.jumpToFrame(this.activeLayer.frameIdx(this.currentFrame), {force: true})
       this.el.emit('layerupdated', {layer: this.activeLayer})
     }
   },
@@ -419,13 +419,14 @@ AFRAME.registerComponent('compositor', {
       delete this.playingStartTime
     }
 
-    if (this.el['redirect-grab'])
+    if (this.el['redirect-grab'] && this.grabbedLayer)
     {
       let layer = this.grabbedLayer
       layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
       layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
       layer.transform.scale.x = this.redirector.object3D.scale.x
       layer.transform.scale.y = this.redirector.object3D.scale.y
+      layer.touch()
 
       if (this.redirector.grabbingManipulator)
       {

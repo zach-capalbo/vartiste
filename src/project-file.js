@@ -4,7 +4,7 @@ import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
 const FILE_VERSION = 2
 class ProjectFile {
   static update(obj) {
-    if (!('_fileVersion') in obj) obj._fileVersion = 0
+    if (!('_fileVersion' in obj)) obj._fileVersion = 0
     if (!('width' in obj)) obj.width = 1024
     if (!('height' in obj)) obj.height = 512
     if (!('layers' in obj)) obj.layers = []
@@ -39,6 +39,7 @@ class ProjectFile {
     {
       if (obj._fileVersion < 2)
       {
+        console.log("Reconstituting old canvases")
         obj.canvases[i] = [obj.canvases[i]]
       }
     }
@@ -49,6 +50,7 @@ class ProjectFile {
   }
 
   static async load(obj, {compositor}) {
+    console.log("Loading")
     ProjectFile.update(obj)
     let settings = document.getElementsByTagName('a-scene')[0].systems['settings-system']
     settings.setProjectName(obj.projectName)
