@@ -19,7 +19,8 @@ const BrushList = [
   new FillBrush(),
   new FillBrush({mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')}),
   new NoiseBrush(),
-  new NoiseBrush({round: true})
+  new NoiseBrush({round: true}),
+  new ImageBrush('cloth', {widht: 48, height: 48, drawEdges: true}),
 ]
 
 export { BrushList }
