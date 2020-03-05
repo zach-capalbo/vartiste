@@ -6,6 +6,7 @@ import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
+import {Pool} from './pool.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -33,6 +34,8 @@ AFRAME.registerComponent('compositor', {
     let {width, height} = this.data
     this.width = width
     this.height = height
+
+    Pool.init(this)
 
     let compositeCanvas = document.createElement("canvas")
     compositeCanvas.width = width
@@ -422,16 +425,46 @@ AFRAME.registerComponent('compositor', {
     if (this.el['redirect-grab'] && this.grabbedLayer)
     {
       let layer = this.grabbedLayer
-      layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
-      layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+      // layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
+      // layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+      // layer.transform.scale.x = this.redirector.object3D.scale.x
+      // layer.transform.scale.y = this.redirector.object3D.scale.y
+      //
+      // layer.transform.rotation = this.redirector.object3D.rotation.y
+      // this.redirector.object3D.position.z = 0
+
+      let projection = this.pool('projection', THREE.Vector3)
+      let diff = this.pool('diff', THREE.Vector3)
+      let normal = this.pool('normal', THREE.Vector3)
+      let quat = this.pool('quat', THREE.Quaternion)
+      let unZRotation = this.pool('unZ', THREE.Euler)
+      unZRotation.copy(this.redirector.object3D.rotation)
+      unZRotation.z = 0
+      quat.setFromEuler(unZRotation)
+      normal.set(0, 0, -1)
+
+      diff.subVectors(this.redirector.object3D.position, this.el.object3D.position)
+      let dot = diff.dot(normal)
+      normal.multiplyScalar(dot)
+      projection.copy(this.redirector.object3D.position)
+      projection.sub(normal)
+
+      layer.transform.translation.x = projection.x / this.el.components.geometry.data.width * this.width
+      layer.transform.translation.y = -projection.y / this.el.components.geometry.data.height * this.height
       layer.transform.scale.x = this.redirector.object3D.scale.x
       layer.transform.scale.y = this.redirector.object3D.scale.y
-      layer.touch()
+      //
+      layer.transform.rotation = quat.angleTo(this.redirector.object3D.quaternion)
+      // console.log("Rot", layer.transform.rotation)
 
-      if (this.redirector.grabbingManipulator)
-      {
-        //layer.transform.rotation = this.redirector.grabbingManipulator.el.object3D.rotation.z
-      }
+      let upRot = this.pool('upRot', THREE.Vector3)
+      upRot.set(0, 1, 0)
+      upRot.applyQuaternion(this.redirector.object3D.quaternion)
+      layer.transform.rotation *= upRot.x > 0 ? 1 : -1
+
+      // q_proj = q - dot(q - p, n) * n
+
+      layer.touch()
     }
 
     if (this.data.useNodes)

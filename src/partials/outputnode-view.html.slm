@@ -1,0 +1,8 @@
+a-entity.node-shelf.grab-root shelf=""
+  a-entity position="0 1.2 0"
+    a-entity click-action="solo" icon-button="#asset-eye" tooltip="Show This Node Only"
+    a-entity click-action="delete" icon-button="#asset-delete" tooltip="Delete Node"
+
+  /a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
+  a-entity.name edit-field="type: string" position="0 0 0" text="value: Output Name; wrapCount: 20; width: 3"
+  a-entity node-input="type: canvas" position="-2.1 1.2 0.01" material="color: #34d8eb"

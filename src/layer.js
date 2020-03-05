@@ -42,11 +42,15 @@ export class Layer {
     let {translation, scale} = this.transform
     try {
     let canvas = this.frame(frame)
-    ctx.drawImage(canvas, 0, 0, this.width, this.height,
-      translation.x - this.width / 2 * scale.x + this.width / 2,
-      translation.y- this.height / 2 * scale.y + this.height / 2,
-      this.width * scale.x, this.height * scale.y,
-    )
+    // ctx.drawImage(canvas, 0, 0, this.width, this.height,
+    //   translation.x - this.width / 2 * scale.x + this.width / 2,
+    //   translation.y- this.height / 2 * scale.y + this.height / 2,
+    //   this.width * scale.x, this.height * scale.y,
+    // )
+    ctx.translate(translation.x + this.width / 2, translation.y + this.height / 2)
+    ctx.scale(scale.x, scale.y)
+    ctx.rotate(this.transform.rotation)
+    ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
     }
     catch (e)
     {
@@ -54,10 +58,7 @@ export class Layer {
       console.error(e)
     }
 
-    // ctx.translate(translation.x + this.width / 2, translation.y + this.height / 2)
-    // ctx.scale(scale.x, scale.y)
-    // ctx.rotate(this.transform.rotation)
-    // ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
+
     ctx.restore()
   }
 
@@ -451,5 +452,12 @@ export class FxNode extends CanvasNode {
     var offset = 0;
     var count = 6;
     gl.drawArrays(primitiveType, offset, count);
+  }
+}
+
+export class OutputNode extends MaterialNode {
+  constructor(compositor) {
+    super(compositor)
+    this.name = this.id
   }
 }

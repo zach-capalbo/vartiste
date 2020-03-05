@@ -13,14 +13,13 @@ a-scene
 
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound=""
+          /a-entity.clickable id="${hand}-hand-model" gltf-model="https://cdn.aframe.io/controllers/valve/index/valve_index_${hand}.gltf"
 
   /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
-    /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
-      /== partial('./partials/node-view.html.slm')
+    /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
-      /== partial('./partials/node-view.html.slm')
     a-entity position="0 0 -0.5"
 
     a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.3"
@@ -58,7 +57,7 @@ a-scene
         rotation="0 0 0"
         compositor=""
       ]
-        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false"
+        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="true" material="wireframe: true; color: red"
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
       a-entity#reference-spawn position="0 1.6 -0.7"

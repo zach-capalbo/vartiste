@@ -94,6 +94,9 @@ class ProceduralBrush extends Brush {
     this.createBrush()
     let ctx = this.overlayCanvas.getContext("2d")
     let {width, height} = this
+
+    if (width <= 0 || height <= 0) return
+
     if (this.hqBlending)
     {
       this.brushData = ctx.getImageData(0, 0, width, height)
@@ -308,6 +311,8 @@ class ImageBrush extends ProceduralBrush{
     {
       image = new Image()
     }
+    image.decoding = 'sync'
+    image.loading = 'eager'
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
 
@@ -315,11 +320,12 @@ class ImageBrush extends ProceduralBrush{
 
     this.image = image
     this.previewSrc = image
-    this.updateBrush()
+    this.image.decode().then(() => this.updateBrush())
   }
 
   createBrush() {
     if (!this.image) return;
+    if (!this.image.complete) return
 
     let ctx = this.overlayCanvas.getContext("2d")
 
