@@ -1,5 +1,6 @@
 import Convolve from "convolve"
 import Color from "color"
+import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 
 class Brush {}
 
@@ -35,6 +36,11 @@ class ProceduralBrush extends Brush {
     overlayCanvas.width = width
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
+
+    if (this.hqBlending)
+    {
+      this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/hq-blending.glsl')})
+    }
 
     this.changeColor('#FFF')
   }
@@ -109,6 +115,11 @@ class ProceduralBrush extends Brush {
 
     this.createOutline(this.overlayCanvas)
     this.brushData = ctx.getImageData(0, 0, width, height)
+
+    if (this.hqBlending && Object.keys(this.hqBlender.textures).length > 0)
+    {
+      this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
+    }
   }
 
   createOutline(source) {
@@ -157,7 +168,8 @@ class ProceduralBrush extends Brush {
   }
 
   drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, imageData=undefined} = {}) {
-    if (!imageData)
+    // if (!imageData)
+    if (!this.hqBlending)
     {
       ctx.save()
 
@@ -188,6 +200,26 @@ class ProceduralBrush extends Brush {
     let {width, height} = this
     width = Math.floor(width)
     height = Math.floor(height)
+
+
+    if (!('u_brush' in this.hqBlender.textures)) this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
+
+    this.hqBlender.setUniform("u_color", "uniform3fv", this.color3.toArray())
+    this.hqBlender.setUniforms("uniform1f", {
+      u_x: x,
+      u_y: y,
+      u_opacity: this.opacity,
+      u_t: document.querySelector('a-scene').time
+    })
+    
+    ctx.globalAlpha = 1
+    let oldOp = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(this.hqBlender.canvas,
+      0, 0, this.hqBlender.canvas.width, this.hqBlender.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalCompositeOperation = 'source-over'
+    return
 
     let brushData = this.brushData
 

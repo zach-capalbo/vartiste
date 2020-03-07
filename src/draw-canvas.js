@@ -83,12 +83,14 @@ AFRAME.registerComponent('draw-canvas', {
 
     let highQuality = this.el.sceneEl.systems['settings-system'].quality > 0.75
 
-    let hqBlending = this.brush.hqBlending && highQuality && this.brush.opacity < 0.3
+    let hqBlending = this.brush.hqBlending && highQuality //&& this.brush.opacity < 0.3
 
     if (hqBlending)
     {
-      imageData = this.imageData || ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-      this.imageData = imageData
+      // imageData = this.imageData || ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+      // this.imageData = imageData
+      this.brush.hqBlender.setInputCanvas(ctx.canvas)
+      this.brush.hqBlender.update()
     }
 
     if (!this.wasDrawing && sourceEl)
@@ -134,10 +136,10 @@ AFRAME.registerComponent('draw-canvas', {
         this.wrap(x,y,width,height, this.wrappedDraw, ctx, drawOptions)
       }
 
-      if (hqBlending)
-      {
-        ctx.putImageData(imageData, 0, 0)
-      }
+      // if (hqBlending)
+      // {
+      //   ctx.putImageData(imageData, 0, 0)
+      // }
     }
     catch (e)
     {
