@@ -253,5 +253,8 @@ AFRAME.registerComponent('node-control-panel', {
   toggleNodes(e) {
     let compositor = Compositor.el
     compositor.setAttribute('compositor', {useNodes: !compositor.getAttribute('compositor').useNodes})
+  },
+  hideShelves() {
+    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', !el.getAttribute('visible')))
   }
 })

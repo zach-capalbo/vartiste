@@ -76,6 +76,11 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
+    this.redirector.addEventListener('stateremoved', e => {
+      if (e.detail === 'grabbed') {
+        this.updateRedirectorTransformation()
+      }
+    })
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
@@ -241,24 +246,31 @@ AFRAME.registerComponent('compositor', {
       this.el.emit('layerupdated', {layer: this.grabbedLayer})
     }
 
-    this.redirector.object3D.position.set(
-      layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
-      -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
-      0)
-    this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
-    this.redirector.object3D.rotation.z = layer.transform.rotation
+    this.redirector.setAttribute('visible', true)
+
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
     this.grabbedLayer = layer
+    this.updateRedirectorTransformation()
     this.el.emit('layerupdated', {layer})
   },
   ungrabLayer() {
     if (!this.grabbedLayer) return
+    this.redirector.setAttribute('visible', false)
     let layer = this.grabbedLayer
     this.el['redirect-grab'] = undefined
     layer.grabbed = false
     this.grabbedLayer = undefined
     this.el.emit('layerupdated', {layer})
+  },
+  updateRedirectorTransformation() {
+    let layer = this.grabbedLayer
+    this.redirector.object3D.position.set(
+      layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
+      -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
+      0)
+    this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
+    this.redirector.object3D.rotation.set(0, 0, -layer.transform.rotation)
   },
   deleteNode(node) {
     let nodeIdx = this.allNodes.indexOf(node)
@@ -431,7 +443,7 @@ AFRAME.registerComponent('compositor', {
       // layer.transform.scale.y = this.redirector.object3D.scale.y
       //
       // layer.transform.rotation = this.redirector.object3D.rotation.y
-      // this.redirector.object3D.position.z = 0
+      //this.redirector.object3D.position.z = 0
 
       let projection = this.pool('projection', THREE.Vector3)
       let diff = this.pool('diff', THREE.Vector3)
@@ -465,6 +477,8 @@ AFRAME.registerComponent('compositor', {
       // q_proj = q - dot(q - p, n) * n
 
       layer.touch()
+
+      this.updateRedirectorTransformation()
     }
 
     if (this.data.useNodes)

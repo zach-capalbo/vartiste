@@ -48,8 +48,9 @@ export class Layer {
     //   this.width * scale.x, this.height * scale.y,
     // )
     ctx.translate(translation.x + this.width / 2, translation.y + this.height / 2)
-    ctx.scale(scale.x, scale.y)
+
     ctx.rotate(this.transform.rotation)
+    ctx.scale(scale.x, scale.y)
     ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
     }
     catch (e)
@@ -459,5 +460,11 @@ export class OutputNode extends MaterialNode {
   constructor(compositor) {
     super(compositor)
     this.name = this.id
+  }
+}
+
+export class GroupNode extends PassthroughNode {
+  constructor(compositor) {
+
   }
 }

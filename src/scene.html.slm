@@ -57,7 +57,7 @@ a-scene
         rotation="0 0 0"
         compositor=""
       ]
-        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="true" material="wireframe: true; color: red"
+        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
       a-entity#reference-spawn position="0 1.6 -0.7"

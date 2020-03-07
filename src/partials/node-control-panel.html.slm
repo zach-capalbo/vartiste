@@ -1,6 +1,7 @@
 a-entity shelf="height: 1.5" node-control-panel=""
   a-entity scale="1 1 ${1 / 0.3}" position="-1.5"
     a-entity click-action="toggleNodes" icon-button="#asset-light-switch" tooltip="Switch Layer / Nodes Mode"
+    a-entity click-action="hideShelves" icon-button="#asset-eye" tooltip="Toggle Layer / Node Shelf Visibility"
     a-entity click-action="newLayer" icon-button="#asset-plus-box-outline" tooltip="New Layer"
     a-entity click-action="newNode" new-node-type="CanvasNode" icon-button="#asset-plus-box-outline" tooltip="New Composition Node"
     a-entity click-action="newNode" new-node-type="PassthroughNode" icon-button="#asset-plus-box-outline" tooltip="New Passthrough Node"
