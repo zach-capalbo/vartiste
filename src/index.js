@@ -1,4 +1,4 @@
-//require('./framework/aframe.js')
+// require('./framework/aframe.js')
 require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')

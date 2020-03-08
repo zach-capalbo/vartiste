@@ -1,5 +1,6 @@
 import Convolve from "convolve"
 import Color from "color"
+import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 
 class Brush {}
 
@@ -35,6 +36,11 @@ class ProceduralBrush extends Brush {
     overlayCanvas.width = width
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
+
+    if (this.hqBlending)
+    {
+      this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/hq-blending.glsl')})
+    }
 
     this.changeColor('#FFF')
   }
@@ -94,6 +100,9 @@ class ProceduralBrush extends Brush {
     this.createBrush()
     let ctx = this.overlayCanvas.getContext("2d")
     let {width, height} = this
+
+    if (width <= 0 || height <= 0) return
+
     if (this.hqBlending)
     {
       this.brushData = ctx.getImageData(0, 0, width, height)
@@ -106,6 +115,11 @@ class ProceduralBrush extends Brush {
 
     this.createOutline(this.overlayCanvas)
     this.brushData = ctx.getImageData(0, 0, width, height)
+
+    if (this.hqBlending && Object.keys(this.hqBlender.textures).length > 0)
+    {
+      this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
+    }
   }
 
   createOutline(source) {
@@ -153,8 +167,8 @@ class ProceduralBrush extends Brush {
     return f
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, imageData=undefined} = {}) {
-    if (!imageData)
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
+    if (!this.hqBlending || !hqBlending || eraser)
     {
       ctx.save()
 
@@ -186,79 +200,29 @@ class ProceduralBrush extends Brush {
     width = Math.floor(width)
     height = Math.floor(height)
 
-    let brushData = this.brushData
+    this.hqBlender.setInputCanvas(ctx.canvas)
 
-    let yi, xi
+    if (!('u_brush' in this.hqBlender.textures)) this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
 
-    let carryVal = {r:0,g:0,b:0,clerp:0}
+    this.hqBlender.setUniform("u_color", "uniform3fv", this.color3.toArray())
+    this.hqBlender.setUniforms("uniform1f", {
+      u_x: x,
+      u_y: y,
+      u_brush_width: this.width * scale,
+      u_brush_height: this.height * scale,
+      u_opacity: this.opacity * pressure,
+      u_t: document.querySelector('a-scene').time % 1
+    })
 
-    let bufIdx
-    let canvasIdx
-    x = Math.floor(x - width / 2)
-    y = Math.floor(y - height / 2)
-    let cwidth = Math.floor(ctx.canvas.width)
-    let setData = (data, c, v) => data.data[Math.floor(4 * ((yi + y) * cwidth + (xi + x))) + c] = v
-    let val, f
-    let imageOpacity
-    let brushOpacity
-
-    let lerp
-    let clerp
-    let targetAlpha
-
-    let imageDataData = imageData.data
-    let brushDataData = brushData.data
-
-    let scaleYi, scaleXi
+    this.hqBlender.update()
 
     ctx.globalAlpha = 1
-
-    let opacity = this.opacity
-
-    if (scale > 1.01 || scale < 0.99) {
-      opacity = opacity * scale
-    }
-
-    for (yi = 0; yi < height; ++yi)
-    {
-      for (xi = 0; xi < width; ++xi)
-      {
-        bufIdx = (4 * (yi * width + xi))
-        canvasIdx = Math.floor(4 * ((yi + y) * cwidth + (xi + x)))
-
-        if (scale > 1.01 || scale < 0.99) {
-          scaleYi = Math.floor(yi * scale + height / 2 - height / 2 * scale)
-          scaleXi = Math.floor(xi * scale + width / 2 - width / 2 * scale)
-          // bufIdx = (4 * (scaleYi * width + scaleXi))
-          canvasIdx = Math.floor(4 * (((scaleYi + y) * cwidth + (scaleXi + x))))
-        }
-
-        brushOpacity = brushDataData[bufIdx + 3]
-        imageOpacity = imageDataData[canvasIdx + 3]
-        lerp = brushOpacity *opacity * pressure / 255 + Math.random() *opacity * 0.01
-        clerp = lerp
-        carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
-        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * opacity * pressure, 0, 255)
-
-        if (imageOpacity < (1 + Math.random() * 1) * brushOpacity)
-        {
-          clerp = clerp + (1.0 - imageOpacity / 255.0)
-        }
-
-        if (clerp * 255.0 < 1)
-        {
-          carryVal.clerp += clerp
-          continue
-        }
-
-        clerp = THREE.Math.clamp(clerp, 0, 1)
-
-        imageDataData[canvasIdx + 0] = THREE.Math.lerp(imageDataData[canvasIdx + 0], this.carry(carryVal, 'r'), clerp)
-        imageDataData[canvasIdx + 1] = THREE.Math.lerp(imageDataData[canvasIdx + 1], this.carry(carryVal, 'g'), clerp)
-        imageDataData[canvasIdx + 2] = THREE.Math.lerp(imageDataData[canvasIdx + 2], this.carry(carryVal, 'b'), clerp)
-        imageDataData[canvasIdx + 3] = THREE.Math.lerp(imageDataData[canvasIdx + 3], 255, lerp)
-      }
-    }
+    let oldOp = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(this.hqBlender.canvas,
+      0, 0, this.hqBlender.canvas.width, this.hqBlender.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalCompositeOperation = oldOp
   }
 
   drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
@@ -308,6 +272,8 @@ class ImageBrush extends ProceduralBrush{
     {
       image = new Image()
     }
+    image.decoding = 'sync'
+    image.loading = 'eager'
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
 
@@ -315,11 +281,12 @@ class ImageBrush extends ProceduralBrush{
 
     this.image = image
     this.previewSrc = image
-    this.updateBrush()
+    this.image.decode().then(() => this.updateBrush())
   }
 
   createBrush() {
     if (!this.image) return;
+    if (!this.image.complete) return
 
     let ctx = this.overlayCanvas.getContext("2d")
 
@@ -487,6 +454,12 @@ class NoiseBrush extends ProceduralBrush {
   drawTo(...args) {
     this.createBrush()
     super.drawTo(...args)
+  }
+}
+
+class FxBrush extends Brush {
+  constructor(baseBrush) {
+
   }
 }
 

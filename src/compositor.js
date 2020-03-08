@@ -6,6 +6,7 @@ import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
+import {Pool} from './pool.js'
 
 function createTexture() {
   let t = new THREE.Texture()
@@ -33,6 +34,8 @@ AFRAME.registerComponent('compositor', {
     let {width, height} = this.data
     this.width = width
     this.height = height
+
+    Pool.init(this)
 
     let compositeCanvas = document.createElement("canvas")
     compositeCanvas.width = width
@@ -73,6 +76,11 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.activeLayer)
 
     this.redirector = this.el.querySelector('#move-layer-redirection')
+    this.redirector.addEventListener('stateremoved', e => {
+      if (e.detail === 'grabbed') {
+        this.updateRedirectorTransformation()
+      }
+    })
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
@@ -238,24 +246,31 @@ AFRAME.registerComponent('compositor', {
       this.el.emit('layerupdated', {layer: this.grabbedLayer})
     }
 
-    this.redirector.object3D.position.set(
-      layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
-      -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
-      0)
-    this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
-    this.redirector.object3D.rotation.z = layer.transform.rotation
+    this.redirector.setAttribute('visible', true)
+
     this.el['redirect-grab'] = this.redirector
     layer.grabbed = true
     this.grabbedLayer = layer
+    this.updateRedirectorTransformation()
     this.el.emit('layerupdated', {layer})
   },
   ungrabLayer() {
     if (!this.grabbedLayer) return
+    this.redirector.setAttribute('visible', false)
     let layer = this.grabbedLayer
     this.el['redirect-grab'] = undefined
     layer.grabbed = false
     this.grabbedLayer = undefined
     this.el.emit('layerupdated', {layer})
+  },
+  updateRedirectorTransformation() {
+    let layer = this.grabbedLayer
+    this.redirector.object3D.position.set(
+      layer.transform.translation.x / this.width * this.el.components.geometry.data.width,
+      -layer.transform.translation.y / this.height * this.el.components.geometry.data.height,
+      0)
+    this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
+    this.redirector.object3D.rotation.set(0, 0, -layer.transform.rotation)
   },
   deleteNode(node) {
     let nodeIdx = this.allNodes.indexOf(node)
@@ -422,16 +437,48 @@ AFRAME.registerComponent('compositor', {
     if (this.el['redirect-grab'] && this.grabbedLayer)
     {
       let layer = this.grabbedLayer
-      layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
-      layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+      // layer.transform.translation.x = this.redirector.object3D.position.x / this.el.components.geometry.data.width * this.width
+      // layer.transform.translation.y = -this.redirector.object3D.position.y / this.el.components.geometry.data.height * this.height
+      // layer.transform.scale.x = this.redirector.object3D.scale.x
+      // layer.transform.scale.y = this.redirector.object3D.scale.y
+      //
+      // layer.transform.rotation = this.redirector.object3D.rotation.y
+      //this.redirector.object3D.position.z = 0
+
+      let projection = this.pool('projection', THREE.Vector3)
+      let diff = this.pool('diff', THREE.Vector3)
+      let normal = this.pool('normal', THREE.Vector3)
+      let quat = this.pool('quat', THREE.Quaternion)
+      let unZRotation = this.pool('unZ', THREE.Euler)
+      unZRotation.copy(this.redirector.object3D.rotation)
+      unZRotation.z = 0
+      quat.setFromEuler(unZRotation)
+      normal.set(0, 0, -1)
+
+      diff.subVectors(this.redirector.object3D.position, this.el.object3D.position)
+      let dot = diff.dot(normal)
+      normal.multiplyScalar(dot)
+      projection.copy(this.redirector.object3D.position)
+      projection.sub(normal)
+
+      layer.transform.translation.x = projection.x / this.el.components.geometry.data.width * this.width
+      layer.transform.translation.y = -projection.y / this.el.components.geometry.data.height * this.height
       layer.transform.scale.x = this.redirector.object3D.scale.x
       layer.transform.scale.y = this.redirector.object3D.scale.y
+      //
+      layer.transform.rotation = quat.angleTo(this.redirector.object3D.quaternion)
+      // console.log("Rot", layer.transform.rotation)
+
+      let upRot = this.pool('upRot', THREE.Vector3)
+      upRot.set(0, 1, 0)
+      upRot.applyQuaternion(this.redirector.object3D.quaternion)
+      layer.transform.rotation *= upRot.x > 0 ? 1 : -1
+
+      // q_proj = q - dot(q - p, n) * n
+
       layer.touch()
 
-      if (this.redirector.grabbingManipulator)
-      {
-        //layer.transform.rotation = this.redirector.grabbingManipulator.el.object3D.rotation.z
-      }
+      this.updateRedirectorTransformation()
     }
 
     if (this.data.useNodes)
