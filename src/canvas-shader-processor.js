@@ -51,6 +51,9 @@ export class CanvasShaderProcessor {
     }
     gl.useProgram(program);
     this.program = program
+
+    this.initialUpdate();
+
     return this.program
   }
   setInputCanvas(canvas) {
@@ -110,13 +113,11 @@ export class CanvasShaderProcessor {
    var location = gl.getUniformLocation(program, name);
    gl.uniform1i(location, idx);
   }
-  update() {
-    let canvas = this.canvas
+  initialUpdate()
+  {
     let gl = this.getContext()
-    gl.viewport(0, 0,
-    gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
 
     let program = this.getProgram(gl)
 
@@ -146,8 +147,16 @@ export class CanvasShaderProcessor {
     var offset = 0;        // start at the beginning of the buffer
     gl.vertexAttribPointer(
         positionAttributeLocation, size, type, normalize, stride, offset)
+  }
+  update() {
+    let canvas = this.canvas
+    let gl = this.getContext()
 
-        var primitiveType = gl.TRIANGLES;
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    let program = this.getProgram(gl)
+
+    var primitiveType = gl.TRIANGLES;
     var offset = 0;
     var count = 6;
     gl.drawArrays(primitiveType, offset, count);

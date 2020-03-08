@@ -167,9 +167,8 @@ class ProceduralBrush extends Brush {
     return f
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, imageData=undefined} = {}) {
-    // if (!imageData)
-    if (!this.hqBlending)
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
+    if (!this.hqBlending || !hqBlending)
     {
       ctx.save()
 
@@ -201,6 +200,7 @@ class ProceduralBrush extends Brush {
     width = Math.floor(width)
     height = Math.floor(height)
 
+    this.hqBlender.setInputCanvas(ctx.canvas)
 
     if (!('u_brush' in this.hqBlender.textures)) this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
 
@@ -209,91 +209,18 @@ class ProceduralBrush extends Brush {
       u_x: x,
       u_y: y,
       u_opacity: this.opacity,
-      u_t: document.querySelector('a-scene').time
+      u_t: document.querySelector('a-scene').time % 1
     })
-    
+
+    this.hqBlender.update()
+
     ctx.globalAlpha = 1
     let oldOp = ctx.globalCompositeOperation
     ctx.globalCompositeOperation = 'copy'
     ctx.drawImage(this.hqBlender.canvas,
       0, 0, this.hqBlender.canvas.width, this.hqBlender.canvas.height,
       0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.globalCompositeOperation = 'source-over'
-    return
-
-    let brushData = this.brushData
-
-    let yi, xi
-
-    let carryVal = {r:0,g:0,b:0,clerp:0}
-
-    let bufIdx
-    let canvasIdx
-    x = Math.floor(x - width / 2)
-    y = Math.floor(y - height / 2)
-    let cwidth = Math.floor(ctx.canvas.width)
-    let setData = (data, c, v) => data.data[Math.floor(4 * ((yi + y) * cwidth + (xi + x))) + c] = v
-    let val, f
-    let imageOpacity
-    let brushOpacity
-
-    let lerp
-    let clerp
-    let targetAlpha
-
-    let imageDataData = imageData.data
-    let brushDataData = brushData.data
-
-    let scaleYi, scaleXi
-
-    ctx.globalAlpha = 1
-
-    let opacity = this.opacity
-
-    if (scale > 1.01 || scale < 0.99) {
-      opacity = opacity * scale
-    }
-
-    for (yi = 0; yi < height; ++yi)
-    {
-      for (xi = 0; xi < width; ++xi)
-      {
-        bufIdx = (4 * (yi * width + xi))
-        canvasIdx = Math.floor(4 * ((yi + y) * cwidth + (xi + x)))
-
-        if (scale > 1.01 || scale < 0.99) {
-          scaleYi = Math.floor(yi * scale + height / 2 - height / 2 * scale)
-          scaleXi = Math.floor(xi * scale + width / 2 - width / 2 * scale)
-          // bufIdx = (4 * (scaleYi * width + scaleXi))
-          canvasIdx = Math.floor(4 * (((scaleYi + y) * cwidth + (scaleXi + x))))
-        }
-
-        brushOpacity = brushDataData[bufIdx + 3]
-        imageOpacity = imageDataData[canvasIdx + 3]
-        lerp = brushOpacity *opacity * pressure / 255 + Math.random() *opacity * 0.01
-        clerp = lerp
-        carryVal.clerp = (Math.round(lerp * 255) - lerp * 255) / 255
-        targetAlpha = THREE.Math.clamp(imageOpacity + brushOpacity * opacity * pressure, 0, 255)
-
-        if (imageOpacity < (1 + Math.random() * 1) * brushOpacity)
-        {
-          clerp = clerp + (1.0 - imageOpacity / 255.0)
-        }
-
-        if (clerp * 255.0 < 1)
-        {
-          carryVal.clerp += clerp
-          continue
-        }
-
-        clerp = THREE.Math.clamp(clerp, 0, 1)
-
-        imageDataData[canvasIdx + 0] = THREE.Math.lerp(imageDataData[canvasIdx + 0], this.carry(carryVal, 'r'), clerp)
-        imageDataData[canvasIdx + 1] = THREE.Math.lerp(imageDataData[canvasIdx + 1], this.carry(carryVal, 'g'), clerp)
-        imageDataData[canvasIdx + 2] = THREE.Math.lerp(imageDataData[canvasIdx + 2], this.carry(carryVal, 'b'), clerp)
-        imageDataData[canvasIdx + 3] = THREE.Math.lerp(imageDataData[canvasIdx + 3], 255, lerp)
-      }
-    }
+    ctx.globalCompositeOperation = oldOp
   }
 
   drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
@@ -525,6 +452,12 @@ class NoiseBrush extends ProceduralBrush {
   drawTo(...args) {
     this.createBrush()
     super.drawTo(...args)
+  }
+}
+
+class FxBrush extends Brush {
+  constructor(baseBrush) {
+
   }
 }
 
