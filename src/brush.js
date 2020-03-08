@@ -168,7 +168,7 @@ class ProceduralBrush extends Brush {
   }
 
   drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
-    if (!this.hqBlending || !hqBlending)
+    if (!this.hqBlending || !hqBlending || eraser)
     {
       ctx.save()
 
@@ -208,7 +208,9 @@ class ProceduralBrush extends Brush {
     this.hqBlender.setUniforms("uniform1f", {
       u_x: x,
       u_y: y,
-      u_opacity: this.opacity,
+      u_brush_width: this.width * scale,
+      u_brush_height: this.height * scale,
+      u_opacity: this.opacity * pressure,
       u_t: document.querySelector('a-scene').time % 1
     })
 

@@ -57,6 +57,11 @@ export class CanvasShaderProcessor {
     return this.program
   }
   setInputCanvas(canvas) {
+    if (this.canvas.width !== canvas.width || this.canvas.height !== canvas.height)
+    {
+      this.canvas.width = canvas.width
+      this.canvas.height = canvas.height
+    }
     this.setupTexture(this.getContext(), "u_input", canvas)
     this.setUniform("u_width", "uniform1f", canvas.width)
     this.setUniform("u_height", "uniform1f", canvas.height)
