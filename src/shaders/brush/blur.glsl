@@ -34,7 +34,7 @@ void main() {
   vec4 color = blur(vec2(1.0, 0.0)) + blur(vec2(0.0, -1.0)) + blur(vec2(1.0, -1.0)) + blur(vec2(1.0, 1.0));
   color += 0.5 * (blur(vec2(2.0, 0.0)) + blur(vec2(0.0, -2.0)) + blur(vec2(2.0, -2.0)) + blur(vec2(2.0, 2.0)))
   color /= 6.0;
-  color.xyz = color.xyz * color[3];
+  //color.xyz = color.xyz * color[3];
 
   vec4 canvasBaseColor = texture2D(u_input, vUv);
   vec2 brushUv = calcBrushUv(u_x, u_y);

@@ -21,7 +21,7 @@ const BrushList = [
   new NoiseBrush(),
   new NoiseBrush({round: true}),
   new ImageBrush('cloth', {widht: 48, height: 48, drawEdges: true}),
-  new FxBrush({baseBrush: new ProceduralBrush({connected: true, hqBlending: false}), type: 'blur'})
+  new FxBrush({baseBrush: new ProceduralBrush({connected: true, hqBlending: false}), type: 'blur', previewSrc: require('./assets/blur-preview.png')})
 ]
 
 export { BrushList }

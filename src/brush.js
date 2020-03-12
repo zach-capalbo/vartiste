@@ -458,17 +458,21 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor({baseBrush, type}) {
+  constructor({baseBrush, type, previewSrc}) {
     super()
     this.baseBrush = baseBrush
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
-    this.previewSrc = this.baseBrush.previewSrc
+
     for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
     {
       this[fn] = this.baseBrush[fn].bind(this.baseBrush)
     }
     this.baseUpdate = this.baseBrush.updateBrush.bind(this.baseBrush)
     this.baseBrush.updateBrush = this.updateBrush.bind(this)
+
+
+    this.previewSrc = previewSrc ? previewSrc : this.baseBrush.previewSrc
+
   }
   get width() {
     return this.baseBrush.width
