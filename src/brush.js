@@ -39,7 +39,7 @@ class ProceduralBrush extends Brush {
 
     if (this.hqBlending)
     {
-      this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/hq-blending.glsl')})
+      this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
     }
 
     this.changeColor('#FFF')
@@ -458,9 +458,63 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor(baseBrush) {
+  constructor({baseBrush, type, previewSrc}) {
+    super()
+    this.baseBrush = baseBrush
+    this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
 
+    for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
+    {
+      this[fn] = this.baseBrush[fn].bind(this.baseBrush)
+    }
+    this.baseUpdate = this.baseBrush.updateBrush.bind(this.baseBrush)
+    this.baseBrush.updateBrush = this.updateBrush.bind(this)
+
+
+    this.previewSrc = previewSrc ? previewSrc : this.baseBrush.previewSrc
+
+  }
+  get width() {
+    return this.baseBrush.width
+  }
+  get height() {
+    return this.baseBrush.height
+  }
+  updateBrush() {
+    this.baseUpdate()
+
+    this.fx.setCanvasAttribute("u_brush", this.baseBrush.overlayCanvas)
+  }
+  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
+    let {width, height} = this
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    this.fx.setInputCanvas(ctx.canvas)
+
+    this.fx.initialUpdate()
+    if (!('u_brush' in this.fx.textures)) this.fx.setCanvasAttribute("u_brush", this.brush.overlayCanvas)
+
+    this.fx.setUniform("u_color", "uniform3fv", this.baseBrush.color3.toArray())
+    this.fx.setUniforms("uniform1f", {
+      u_x: x,
+      u_y: y,
+      u_brush_width: this.width * scale,
+      u_brush_height: this.height * scale,
+      u_opacity: this.baseBrush.opacity * pressure,
+      u_t: document.querySelector('a-scene').time % 1
+    })
+
+    this.fx.update()
+
+    ctx.globalAlpha = 1
+    let oldOp = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(this.fx.canvas,
+      0, 0, this.fx.canvas.width, this.fx.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalCompositeOperation = oldOp
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush};
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush};

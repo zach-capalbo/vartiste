@@ -50,7 +50,7 @@ export class Layer {
     ctx.translate(translation.x + this.width / 2, translation.y + this.height / 2)
     ctx.scale(scale.x, scale.y)
     ctx.rotate(this.transform.rotation)
-    ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
+    ctx.drawImage(canvas, -this.width / 2, -this.height / 2)
     }
     catch (e)
     {

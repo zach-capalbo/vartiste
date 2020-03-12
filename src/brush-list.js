@@ -1,4 +1,4 @@
-import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush} from './brush.js'
+import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush} from './brush.js'
 const BrushList = [
   new ProceduralBrush({connected: true, hqBlending: true}),
   new ImageBrush('silky_textured', {width: 20, height: 20, autoRotate: true}),
@@ -21,6 +21,7 @@ const BrushList = [
   new NoiseBrush(),
   new NoiseBrush({round: true}),
   new ImageBrush('cloth', {widht: 48, height: 48, drawEdges: true}),
+  new FxBrush({baseBrush: new ProceduralBrush({connected: true, hqBlending: false}), type: 'blur', previewSrc: require('./assets/blur-preview.png')})
 ]
 
 export { BrushList }

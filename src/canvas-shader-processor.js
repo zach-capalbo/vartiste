@@ -152,6 +152,8 @@ export class CanvasShaderProcessor {
     var offset = 0;        // start at the beginning of the buffer
     gl.vertexAttribPointer(
         positionAttributeLocation, size, type, normalize, stride, offset)
+
+    this.hasDoneInitialUpdate = true
   }
   update() {
     let canvas = this.canvas
