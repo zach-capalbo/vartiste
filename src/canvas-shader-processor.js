@@ -36,6 +36,7 @@ export class CanvasShaderProcessor {
   getProgram(gl) {
     if (this.program)
     {
+      gl.useProgram(this.program);
       return this.program
     }
     let vertexShader = this.createShader(gl, gl.VERTEX_SHADER, require('./shaders/fx-uv-passthrough.vert'))

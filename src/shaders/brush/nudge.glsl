@@ -8,6 +8,7 @@ uniform float u_height;
 uniform sampler2D u_brush;
 uniform float u_brush_width;
 uniform float u_brush_height;
+uniform float u_brush_rotation;
 uniform float u_x;
 uniform float u_y;
 uniform float u_opacity;
@@ -33,7 +34,7 @@ vec4 blur(vec2 direction) {
 void main() {
 
   vec4 canvasBaseColor = texture2D(u_input, vUv);
-  vec4 color = texture2D(u_input, vUv - vec2(1.0 / u_width, 0.0 / u_height));
+  vec4 color = texture2D(u_input, vUv - vec2(cos(u_brush_rotation) / u_width, sin(u_brush_rotation) / u_height));
   vec2 brushUv = calcBrushUv(u_x, u_y);
   vec4 brushColor = texture2D(u_brush, brushUv);
 

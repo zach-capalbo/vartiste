@@ -74,7 +74,7 @@ AFRAME.registerComponent('pencil-tool', {
     brushPreview.setAttribute("show-current-brush", "")
     brushPreview.setAttribute('width', radius)
     brushPreview.setAttribute('height', radius)
-    brushPreview.setAttribute('rotation', '-90 0 0')
+    brushPreview.setAttribute('rotation', '-90 180 0')
     brushPreview.setAttribute('position', `0 ${cylinderHeight / 2 + 0.0001} 0`)
     this.el.append(brushPreview)
 

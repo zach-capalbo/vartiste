@@ -210,6 +210,7 @@ class ProceduralBrush extends Brush {
       u_y: y,
       u_brush_width: this.width * scale,
       u_brush_height: this.height * scale,
+      u_brush_rotation: rotation,
       u_opacity: this.opacity * pressure,
       u_t: document.querySelector('a-scene').time % 1
     })
@@ -501,6 +502,7 @@ class FxBrush extends Brush {
       u_y: y,
       u_brush_width: this.width * scale,
       u_brush_height: this.height * scale,
+      u_brush_rotation: rotation,
       u_opacity: this.baseBrush.opacity * pressure,
       u_t: document.querySelector('a-scene').time % 1
     })

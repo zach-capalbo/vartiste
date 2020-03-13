@@ -8,6 +8,7 @@ uniform float u_height;
 uniform sampler2D u_brush;
 uniform float u_brush_width;
 uniform float u_brush_height;
+uniform float u_brush_rotation;
 uniform float u_x;
 uniform float u_y;
 uniform float u_opacity;
