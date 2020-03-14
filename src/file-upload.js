@@ -101,7 +101,7 @@ async function addGlbReference(file) {
   // Change image encoding to linear. Don't know if this is right, or if we
   // should change the export, but all models seem to look better this way
   entity.getObject3D('mesh').traverse(o => {
-    if (o.type == "Mesh") {
+    if (o.type == "Mesh" || o.type == "SkinnedMesh") {
       if (o.material && o.material.map) {
           o.material.map.encoding = THREE.LinearEncoding
           o.material.needsUpdate = true
