@@ -101,6 +101,15 @@ AFRAME.registerComponent('draw-canvas', {
       this.undoFrame = this.currentFrame
     }
 
+    if (this.brush.dragRotate)
+    {
+      if (!lastParams) return
+      let oldPoint = this.uvToPoint(lastParams.uv, canvas)
+      if (Math.abs(y - oldPoint.y) < 4 / height && Math.abs(x - oldPoint.x) < 4 / width) return
+      rotation = Math.atan2(y - oldPoint.y, x - oldPoint.x)
+      lastParams.rotation = rotation
+    }
+
     try {
       if (this.brush.connected && highQuality && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)

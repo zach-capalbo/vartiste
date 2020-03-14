@@ -435,9 +435,10 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor({baseBrush, type, previewSrc}) {
+  constructor({baseBrush, type, previewSrc, dragRotate = false}) {
     super()
     this.baseBrush = baseBrush
+    this.dragRotate = dragRotate
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
 
     for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
