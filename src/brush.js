@@ -12,6 +12,7 @@ class ProceduralBrush extends Brush {
     maxDistance=1.5,
     connected=false,
     autoRotate=false,
+    dragRotate=false,
     hqBlending=false,
     drawEdges=false,
     ...options} = {})
@@ -31,6 +32,7 @@ class ProceduralBrush extends Brush {
     this.autoRotate = autoRotate
     this.hqBlending = hqBlending
     this.drawEdges = drawEdges
+    this.dragRotate = dragRotate
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -167,63 +169,37 @@ class ProceduralBrush extends Brush {
     return f
   }
 
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
-    if (!this.hqBlending || !hqBlending || eraser)
+  drawTo(ctx, x, y, opts = {}) {
+    let {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = opts
+    if (this.hqBlending && hqBlending && !eraser)
     {
-      ctx.save()
-
-      if (this.distanceBased)
-      {
-        ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
-      }
-      else
-      {
-        ctx.globalAlpha = pressure
-      }
-      ctx.globalAlpha *= this.opacity
-      ctx.translate(x,y)
-
-      if (this.distanceBased){
-        let scale = ctx.globalAlpha * 2
-        ctx.scale(1/scale, 1/scale)
-      }
-
-      ctx.scale(scale, scale)
-      ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
-
-      ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
-      ctx.restore()
+      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts})
       return
     }
 
-    let {width, height} = this
-    width = Math.floor(width)
-    height = Math.floor(height)
+    ctx.save()
 
-    this.hqBlender.setInputCanvas(ctx.canvas)
+    if (this.distanceBased)
+    {
+      ctx.globalAlpha = Math.max(0, (this.maxDistance - distance) / this.maxDistance)
+    }
+    else
+    {
+      ctx.globalAlpha = pressure
+    }
+    ctx.globalAlpha *= this.opacity
+    ctx.translate(x,y)
 
-    if (!('u_brush' in this.hqBlender.textures)) this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
+    if (this.distanceBased){
+      let scale = ctx.globalAlpha * 2
+      ctx.scale(1/scale, 1/scale)
+    }
 
-    this.hqBlender.setUniform("u_color", "uniform3fv", this.color3.toArray())
-    this.hqBlender.setUniforms("uniform1f", {
-      u_x: x,
-      u_y: y,
-      u_brush_width: this.width * scale,
-      u_brush_height: this.height * scale,
-      u_brush_rotation: rotation,
-      u_opacity: this.opacity * pressure,
-      u_t: document.querySelector('a-scene').time % 1
-    })
+    ctx.scale(scale, scale)
+    ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
 
-    this.hqBlender.update()
-
-    ctx.globalAlpha = 1
-    let oldOp = ctx.globalCompositeOperation
-    ctx.globalCompositeOperation = 'copy'
-    ctx.drawImage(this.hqBlender.canvas,
-      0, 0, this.hqBlender.canvas.width, this.hqBlender.canvas.height,
-      0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.globalCompositeOperation = oldOp
+    ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
+    ctx.restore()
   }
 
   drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
@@ -486,36 +462,8 @@ class FxBrush extends Brush {
 
     this.fx.setCanvasAttribute("u_brush", this.baseBrush.overlayCanvas)
   }
-  drawTo(ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = {}) {
-    let {width, height} = this
-    width = Math.floor(width)
-    height = Math.floor(height)
-
-    this.fx.setInputCanvas(ctx.canvas)
-
-    this.fx.initialUpdate()
-    if (!('u_brush' in this.fx.textures)) this.fx.setCanvasAttribute("u_brush", this.brush.overlayCanvas)
-
-    this.fx.setUniform("u_color", "uniform3fv", this.baseBrush.color3.toArray())
-    this.fx.setUniforms("uniform1f", {
-      u_x: x,
-      u_y: y,
-      u_brush_width: this.width * scale,
-      u_brush_height: this.height * scale,
-      u_brush_rotation: rotation,
-      u_opacity: this.baseBrush.opacity * pressure,
-      u_t: document.querySelector('a-scene').time % 1
-    })
-
-    this.fx.update()
-
-    ctx.globalAlpha = 1
-    let oldOp = ctx.globalCompositeOperation
-    ctx.globalCompositeOperation = 'copy'
-    ctx.drawImage(this.fx.canvas,
-      0, 0, this.fx.canvas.width, this.fx.canvas.height,
-      0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.globalCompositeOperation = oldOp
+  drawTo(ctx, x, y, opts) {
+    this.fx.drawBrush(this.baseBrush, ctx, x, y, opts)
   }
 }
 

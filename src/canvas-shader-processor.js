@@ -169,4 +169,36 @@ export class CanvasShaderProcessor {
     var count = 6;
     gl.drawArrays(primitiveType, offset, count);
   }
+  drawBrush(brush, ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, reupdate=true} = {})
+  {
+    let {width, height} = brush
+    width = Math.floor(width)
+    height = Math.floor(height)
+
+    this.setInputCanvas(ctx.canvas)
+
+    this.initialUpdate()
+    if (!('u_brush' in this.textures)) this.setCanvasAttribute("u_brush", brush.overlayCanvas)
+
+    this.setUniform("u_color", "uniform3fv", brush.color3.toArray())
+    this.setUniforms("uniform1f", {
+      u_x: x,
+      u_y: y,
+      u_brush_width: brush.width * scale,
+      u_brush_height: brush.height * scale,
+      u_brush_rotation: rotation,
+      u_opacity: brush.opacity * pressure,
+      u_t: document.querySelector('a-scene').time % 1
+    })
+
+    this.update()
+
+    ctx.globalAlpha = 1
+    let oldOp = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(this.canvas,
+      0, 0, this.canvas.width, this.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalCompositeOperation = oldOp
+  }
 }
