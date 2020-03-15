@@ -11,11 +11,12 @@ class CanvasRecorder {
   }
   recordFrames(numFrames, goToFrame)
   {
+    // this.mediaRecorder.start()
     for (let frame = 0; frame < numFrames; frame++)
     {
       Compositor.component.jumpToFrame(frame)
       Compositor.component.quickDraw()
-      this.stream.requestFrame()
+      this.stream.getVideoTracks()[0].requestFrame()
     }
   }
   start() {
