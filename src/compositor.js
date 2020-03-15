@@ -492,6 +492,16 @@ AFRAME.registerComponent('compositor', {
 
     this.drawnT = t
   },
+  quickDraw() {
+    if (this.data.useNodes)
+    {
+      this.drawNodes()
+    }
+    else
+    {
+      this.drawLayers()
+    }
+  },
   drawNodes() {
     let fakeLayers = []
     this.materialNode.updateCanvas(this.currentFrame)

@@ -35,14 +35,16 @@ AFRAME.registerSystem('settings-system', {
 
     desktopLink.click()
   },
-  exportAction() {
+  exportAction({suffix} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     let saveImg = new Image()
-    saveImg.src = compositor.compositeCanvas.toDataURL()
+    saveImg.src = compositor.preOverlayCanvas.toDataURL()
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
-    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}.png`, "Canvas Images")
+    if (suffix) suffix = `-${suffix}`
+
+    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}${suffix}.png`, "Canvas Images")
 
     for (let mode of THREED_MODES)
     {
@@ -50,7 +52,7 @@ AFRAME.registerSystem('settings-system', {
       {
         if (layer.mode !== mode) continue
 
-        this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}-${mode}.png`, mode)
+        this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
       }
     }
   },
@@ -78,16 +80,20 @@ AFRAME.registerSystem('settings-system', {
     document.getElementById('composition-view').emit('updatemesh')
   },
   async recordAction() {
-    let delay = () => new Promise(r => setTimeout(r, 1000))
     let compositor = document.getElementById('canvas-view').components.compositor
-    let compositeRecorder = new CanvasRecorder({canvas: compositor.compositeCanvas, frameRate: compositor.data.frameRate})
-    compositor.data.drawOverlay = false
-    compositeRecorder.mediaRecorder.start()
-    await delay()
-    await compositeRecorder.stop()
-    this.download(compositeRecorder.createURL(), `${this.projectName}-${this.formatFileDate()}.webm`, "Video Recording")
-    compositor.data.drawOverlay = true
-
+    if (!this.compositeRecorder)
+    {
+      this.compositeRecorder = new CanvasRecorder({canvas: compositor.preOverlayCanvas, frameRate: compositor.data.frameRate})
+      compositor.data.drawOverlay = false
+      this.compositeRecorder.start()
+    }
+    else
+    {
+      await this.compositeRecorder.stop()
+      this.download(this.compositeRecorder.createURL(), `${this.projectName}-${this.formatFileDate()}.webm`, "Video Recording")
+      compositor.data.drawOverlay = true
+      delete this.compositeRecorder
+    }
   },
   addModelView(model) {
     let viewer = document.getElementById('composition-view')

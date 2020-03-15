@@ -1,3 +1,5 @@
+import {CanvasRecorder} from './canvas-recorder.js'
+
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
 }
@@ -116,5 +118,25 @@ AFRAME.registerComponent('toolbox-shelf', {
     {
       compositor.deleteLayer(layer)
     }
+  },
+  exportFramesAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      this.el.sceneEl.systems['settings-system'].exportAction({suffix: `frame-${frame}`})
+    }
+  },
+  async recordFramesAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+
+    let compositeRecorder = new CanvasRecorder({canvas: compositor.preOverlayCanvas, frameRate: 0})
+    compositor.data.drawOverlay = false
+    compositeRecorder.recordFrames(numberOfFrames)
+    await this.compositeRecorder.stop()
+    this.el.sceneEl.systems['settings-system'].download(compositeRecorder.createURL(), `${this.projectName}-${this.formatFileDate()}.webm`, "Video Recording")
   }
 })
