@@ -11,11 +11,16 @@ class CanvasRecorder {
   }
   recordFrames(numFrames, goToFrame)
   {
+    // this.mediaRecorder.start()
     for (let frame = 0; frame < numFrames; frame++)
     {
-      goToFrame(frame)
-      this.stream.requestFrame()
+      Compositor.component.jumpToFrame(frame)
+      Compositor.component.quickDraw()
+      this.stream.getVideoTracks()[0].requestFrame()
     }
+  }
+  start() {
+    this.mediaRecorder.start()
   }
   async stop() {
     let stopPromise = new Promise((r,e) => {

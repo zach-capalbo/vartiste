@@ -1,3 +1,5 @@
+import {CanvasRecorder} from './canvas-recorder.js'
+
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
 }
@@ -116,5 +118,52 @@ AFRAME.registerComponent('toolbox-shelf', {
     {
       compositor.deleteLayer(layer)
     }
+  },
+  exportFramesAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      this.el.sceneEl.systems['settings-system'].exportAction({suffix: `frame-${frame}`})
+    }
+  },
+  async recordFramesAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+
+    compositor.isPlayingAnimation = false
+    compositor.jumpToFrame(0)
+
+    let settings = this.el.sceneEl.systems['settings-system']
+
+    if (settings.compositeRecorder)
+    {
+      throw new Error("Already recording!!")
+    }
+
+    await new Promise((resolve, error) => {
+      let onFrameChanged = e => {
+        if (e.detail.frame >= numberOfFrames)
+        {
+          compositor.el.removeEventListener('framechanged', onFrameChanged)
+          resolve()
+        }
+      }
+      compositor.el.addEventListener('framechanged', onFrameChanged)
+
+      settings.recordAction()
+      compositor.playPauseAnimation()
+    })
+
+    settings.recordAction()
+
+
+    // let compositeRecorder = new CanvasRecorder({canvas: compositor.compositeCanvas, frameRate: 25})
+    // compositor.data.drawOverlay = false
+    // compositeRecorder.recordFrames(numberOfFrames)
+    // await compositeRecorder.stop()
+    // this.el.sceneEl.systems['settings-system'].download(compositeRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
   }
 })

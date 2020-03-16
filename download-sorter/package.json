@@ -1,0 +1,25 @@
+{
+  "name": "vartiste-download-sorter",
+  "version": "1.0.0",
+  "description": "Sorts files downloaded from VARTISTE",
+  "main": "download-sorter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/zach-geek/vartiste.git"
+  },
+  "author": "Zach Capalbo <zach.geek@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://gitlab.com/zach-geek/vartiste/issues"
+  },
+  "homepage": "https://gitlab.com/zach-geek/vartiste#README",
+  "dependencies": {
+    "conf": "^6.2.1",
+    "ls": "^0.2.1",
+    "mkdirp": "^1.0.3",
+    "move-file": "^1.2.0"
+  }
+}

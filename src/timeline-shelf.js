@@ -48,5 +48,9 @@ AFRAME.registerComponent('timeline-shelf', {
   firstFrameAction()
   {
     document.getElementById('canvas-view').components.compositor.jumpToFrame(0)
+  },
+  recordAction()
+  {
+    this.el.sceneEl.systems['settings-system'].recordAction()
   }
 })
