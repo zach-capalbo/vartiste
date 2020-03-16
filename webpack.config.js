@@ -4,7 +4,7 @@ const process = require('process')
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 let config = {
-  mode: ("CI" in process.env) ? "production" : "development",
+  mode: "development",
   devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist',
