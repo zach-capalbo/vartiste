@@ -1,7 +1,7 @@
 Feature('load');
 
 Scenario('test something', (I) => {
-  I.amOnPage("/");
+  I.amOnPage("/index.html");
   I.see("VARTISTE is intended to be used with a virtual reality headset.")
-  I.waitForFunction(() => window.passedLoadTest, 5 * 60)
+  I.waitForFunction(() => window.passedLoadTest, 20)
 });

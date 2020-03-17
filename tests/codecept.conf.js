@@ -12,7 +12,7 @@ let destUrl = 'http://localhost:8080'
 if (process.env.CI)
 {
   let jobId = fs.readFileSync("../dist/CI_JOB_ID").toString().trim()
-  destUrl = `https://zach-geek.gitlab.io/-/vartiste/-/jobs/${jobId}/artifacts/dist/index.html`;
+  destUrl = `https://zach-geek.gitlab.io/-/vartiste/-/jobs/${jobId}/artifacts/dist/`;
   console.log("Setting destUrl", destUrl)
 }
 
@@ -22,7 +22,21 @@ exports.config = {
   helpers: {
     Puppeteer: {
       url: destUrl,
-      show: process.env.HEADLESS != "true"
+      show: process.env.HEADLESS != "true",
+      // browser: 'firefox',
+      chrome: {
+        "args": [
+          '--use-gl=swiftshader',
+          // '--enable-precise-memory-info',
+      		// '--enable-begin-frame-control',
+      		// '--enable-surface-synchronization',
+      		// '--run-all-compositor-stages-before-draw',
+      		// '--disable-threaded-animation',
+      		// '--disable-threaded-scrolling',
+      		// '--disable-checker-imaging',
+          "--no-sandbox"
+        ]
+      }
     }
   },
   include: {
