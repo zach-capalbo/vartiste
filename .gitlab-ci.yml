@@ -24,7 +24,7 @@ test:
   script:
     - cd tests
     - npm install
-    - ./node_modules/codeceptjs/bin/codecept.js run --steps
+    - ./node_modules/codeceptjs/bin/codecept.js run --debug --steps
   artifacts:
     expire_in: 1 week
     when: always
