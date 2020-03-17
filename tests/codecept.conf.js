@@ -11,6 +11,7 @@ let destUrl = 'http://localhost:8080'
 if (process.env.CI_JOB_ID)
 {
   destUrl = `https://zach-geek.gitlab.io/-/vartiste/-/jobs/${process.env.CI_JOB_ID}/artifacts/dist/index.html`;
+  console.log("Setting destUrl", destUrl)
 }
 
 exports.config = {

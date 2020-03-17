@@ -17,6 +17,7 @@ build:
 
 test:
   stage: test
+  image: alekzonder/puppeteer
   variables:
     HEADLESS: 'true'
   script:
