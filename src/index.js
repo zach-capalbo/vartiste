@@ -38,6 +38,7 @@ require('./mobile-camera.js')
 require('./toolbox-shelf.js')
 require('./node-connectors.js')
 require('./demo-overlay.js')
+require('./test-utilities.js')
 
 require('./app.styl')
 

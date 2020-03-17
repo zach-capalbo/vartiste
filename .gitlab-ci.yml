@@ -2,6 +2,7 @@ image: node:10.18
 
 stages:
   - build
+  - test
   - deploy
 
 build:
@@ -14,6 +15,19 @@ build:
     paths:
       - dist
 
+test:
+  stage: test
+  variables:
+    HEADLESS: 'true'
+  script:
+    - cd tests
+    - npm install
+    - ./node_modules/codeceptjs/bin/codecept.js run --steps
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - tests/output
 pages:
   stage: deploy
   script:
