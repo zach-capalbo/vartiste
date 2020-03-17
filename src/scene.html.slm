@@ -61,3 +61,4 @@ a-scene
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
       a-entity#reference-spawn position="0 1.6 -0.7"
+  a-entity test-load-confirmation=""
