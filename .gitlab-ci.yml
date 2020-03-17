@@ -10,6 +10,7 @@ build:
   script:
     - npm install
     - npm run-script build
+    - echo $CI_JOB_ID > dist/CI_JOB_ID
   artifacts:
     expire_in: 1 week
     paths:

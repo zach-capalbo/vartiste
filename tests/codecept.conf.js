@@ -1,4 +1,5 @@
 const { setHeadlessWhen } = require('@codeceptjs/configure');
+const fs = require('fs')
 
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
@@ -8,9 +9,10 @@ setHeadlessWhen(process.env.HEADLESS);
 
 let destUrl = 'http://localhost:8080'
 
-if (process.env.CI_JOB_ID)
+if (process.env.CI)
 {
-  destUrl = `https://zach-geek.gitlab.io/-/vartiste/-/jobs/${process.env.CI_JOB_ID}/artifacts/dist/index.html`;
+  let jobId = fs.readFileSync("../dist/CI_JOB_ID").toString().trim()
+  destUrl = `https://zach-geek.gitlab.io/-/vartiste/-/jobs/${jobId}/artifacts/dist/index.html`;
   console.log("Setting destUrl", destUrl)
 }
 
