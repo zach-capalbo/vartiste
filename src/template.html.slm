@@ -8,3 +8,5 @@ html
       a href="landing.html" Need Help? Read the instructions here.
       p VARTISTE is intended to be used with a virtual reality headset. Click the VR button on the bottom right hand corner to begin.
       a#got-it href="#" Dismiss...
+    p#loading-error-message Is this message still here?! Contgratulations! You've found a bug!
+    a href="https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=Loading%20Error" Please file a bug report if you're feeling charitable

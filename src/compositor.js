@@ -681,6 +681,7 @@ AFRAME.registerComponent('compositor', {
     this.resize(obj.width, obj.height)
 
     let layersById = {}
+    let activeLayer
 
     for (let i = 0; i < obj.layers.length; ++i)
     {
@@ -694,6 +695,11 @@ AFRAME.registerComponent('compositor', {
       layer.frames = [canvas]
       layer.shelfMatrix = new THREE.Matrix4().fromArray(layerObj.shelfMatrix.elements)
       layersById[layer.id] = layer
+
+      if (layerObj.active)
+      {
+        activeLayer = layer
+      }
 
       for (let j = 0; j < obj.canvases[i].length; ++j)
       {
@@ -720,7 +726,7 @@ AFRAME.registerComponent('compositor', {
 
     this.deleteLayer(this.layers[0])
 
-    this.activateLayer(this.layers.find(l => l.active))
+    this.activateLayer(activeLayer || this.layers[this.layers.length - 1])
 
     let nodesById = {}
 

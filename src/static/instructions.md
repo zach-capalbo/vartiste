@@ -140,6 +140,11 @@ appear in front, and the 2D canvas view will flip to behind you.
   - Use a brush that doesn't connect lines (most of the textured brushes)
   - Use a different method for unwrapping your model UV map
 
+## Gallery
+
+Click on any of the entries below to load them into VARTISTE.
+<div id="gallery-content"></div>
+
 ## Issues
 
 This is a very early version of the software. It still needs a lot of love. If
