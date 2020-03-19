@@ -51,7 +51,6 @@ a-scene
       a-entity#canvas-view.canvas[
         material="shader: flat; transparent: true; npot: true"
         geometry="primitive: plane; width: 80; height: 35"
-        _geometry="primitive: sphere; height: 35; radius: 10"
         position="0 0.6 -3.14"
         scale="0.1 0.1 0.1"
         rotation="0 0 0"

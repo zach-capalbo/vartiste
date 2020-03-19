@@ -14,6 +14,7 @@ class ProjectFile {
     if (!('palette' in obj)) obj.palette = []
     if (!('useNodes' in obj)) obj.useNodes = false
     if (!('allNodes' in obj)) obj.allNodes = []
+    if (!('flipY' in obj)) obj.flipY = true
     for (let i in obj.layers)
     {
       let layer = obj.layers[i]
@@ -116,6 +117,7 @@ class ProjectFile {
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,
       frameRate: compositor.data.frameRate,
+      flipY: compositor.data.flipY,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
   }

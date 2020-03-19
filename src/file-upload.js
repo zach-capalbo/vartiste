@@ -66,7 +66,7 @@ async function addGlbViewer(file) {
         let layerCtx = layer.canvas.getContext('2d')
         layerCtx.save()
         layerCtx.translate(width / 2, height / 2)
-        layerCtx.scale(1, -1)
+        //layerCtx.scale(1, -1)
         layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
         layerCtx.restore()
         if (mode !== "map")
