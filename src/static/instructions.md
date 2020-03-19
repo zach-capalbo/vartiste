@@ -143,7 +143,10 @@ appear in front, and the 2D canvas view will flip to behind you.
 ## Gallery
 
 Click on any of the entries below to load them into VARTISTE.
+
 <div id="gallery-content"></div>
+
+Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link)
 
 ## Issues
 
