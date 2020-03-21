@@ -217,6 +217,7 @@ AFRAME.registerComponent('node-input', {
 
 AFRAME.registerComponent('node-control-panel', {
   init() {
+    Pool.init(this)
     this.el.querySelector('.globe-control')['redirect-grab'] = document.querySelector('*[layer-shelves]')
     this.el.addEventListener('click', e => {
       console.log("Clicked", e)
@@ -242,13 +243,30 @@ AFRAME.registerComponent('node-control-panel', {
   },
   newLayer(e) {
     let compositor = Compositor.component
+
     compositor.addLayer(compositor.layers.length)
+    this.position(compositor.layers[compositor.layers.length - 1].shelfMatrix)
   },
   newNode(e) {
     let compositor = Compositor.component
     let type = e.target.getAttribute('new-node-type')
     let node = new NodeTypes[type](compositor)
+
+    this.position(node.shelfMatrix)
+
     compositor.el.emit('nodeadded', {node})
+  },
+  position(shelfMatrix) {
+    let positionObj = this.el.querySelector('.spawn-point').object3D
+    let targetObj = document.querySelector('*[layer-shelves]').object3D
+    targetObj.updateMatrixWorld()
+    positionObj.updateMatrixWorld()
+
+    shelfMatrix.copy(positionObj.matrixWorld)
+
+    let invMat = this.pool('invMat', THREE.Matrix4)
+    invMat.getInverse(targetObj.matrixWorld)
+    shelfMatrix.premultiply(invMat)
   },
   toggleNodes(e) {
     let compositor = Compositor.el

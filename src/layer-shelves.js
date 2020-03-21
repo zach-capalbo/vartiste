@@ -109,8 +109,6 @@ AFRAME.registerComponent("layer-shelves", {
       this[e.target.getAttribute('click-action') + 'Node'](node, e)
     })
 
-    container.setAttribute('position', {x: 1.4, y: 0, z: 0})
-    container.setAttribute('scale', {x: 0.3, y: 0.3, z: 0.3})
 
     let shelfRoot = container.querySelector('*[shelf],.node-root')
 
