@@ -15,15 +15,6 @@ AFRAME.registerComponent("layer-shelves", {
     {
       this['compositor_' + e] = this['compositor_' + e].bind(this)
     }
-
-    this.modePopup = document.createElement('a-entity')
-    this.modePopup.innerHTML = modeSelectionHTML
-    this.modePopup.setAttribute('position', "0 -999999 0")
-    this.modePopup.setAttribute('scale', "0.3 0.3 0.3")
-    this.modePopup.setAttribute('visible', false)
-    this.el.append(this.modePopup)
-
-    this.modePopup.addEventListener('click', e => this.handleModeSelection(e))
   },
   update(oldData) {
     if (oldData.compositor)
@@ -60,6 +51,8 @@ AFRAME.registerComponent("layer-shelves", {
         layer.shelfMatrix.copy(container.object3D.matrix)
       }
     })
+    let modePopup = container.querySelector('.mode-popup')
+    modePopup.addEventListener('click', e => { this.handleModeSelection(layer, modePopup, e) })
 
     if (this.compositor.data.useNodes)
     {
@@ -171,6 +164,11 @@ AFRAME.registerComponent("layer-shelves", {
     {
       Util.whenLoaded(modeText, () => modeText.setAttribute('text', {value: `Mode: ${node.mode}`}))
     }
+    let modePopup = container.querySelector('.mode-popup')
+    if (modePopup)
+    {
+      modePopup.addEventListener('click', e => { this.handleModeSelection(node, modePopup, e) })
+    }
 
     let fxText = container.querySelector('.fx-text')
     if (fxText)
@@ -277,11 +275,6 @@ AFRAME.registerComponent("layer-shelves", {
     this.compositor.duplicateLayer(layer)
     this.shuffle()
   },
-  toggleModeLayer(layer) {
-    this.modePopup.setAttribute('visible', true)
-    this.modePopup.setAttribute('position', `0 ${this.shelves[layer.id].getAttribute('position').y} 0.3`)
-    this.modePopup.activeLayer = layer
-  },
   moveUpLayer(layer) {
     let layerIdx = this.compositor.layers.indexOf(layer)
     let nextLayer = this.compositor.layers[(layerIdx + 1) % this.compositor.layers.length]
@@ -302,21 +295,12 @@ AFRAME.registerComponent("layer-shelves", {
   grabLayer(layer) {
     this.compositor.grabLayer(layer)
   },
-  handleModeSelection(e) {
-
-    if (!this.modePopup.activeLayer) return
-
+  handleModeSelection(layer, modePopup, e) {
     if (e.target.hasAttribute('layer-mode'))
     {
       let selection = e.target.getAttribute('layer-mode')
-      this.compositor.setLayerBlendMode(this.modePopup.activeLayer, selection)
-    }
-
-    if (e.target.hasAttribute('layer-mode') || e.target.getAttribute('click-action') === 'close-mode')
-    {
-      this.modePopup.setAttribute('visible', false)
-      this.modePopup.setAttribute('position', "0 -999999 0")
-      this.el.sceneEl.emit('refreshobjects')
+      this.compositor.setLayerBlendMode(layer, selection)
+      modePopup.components['popup-button'].closePopup()
     }
   },
   newNode(node, e) {

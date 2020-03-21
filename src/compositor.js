@@ -90,9 +90,10 @@ AFRAME.registerComponent('compositor', {
 
     this.allNodes = []
     this.materialNode = new MaterialNode(this)
-    this.materialNode.shelfMatrix.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3.9211894503691473, 1.7114385325515813, -0.20684204251928567, 1])
+    this.materialNode.shelfMatrix.fromArray([0.4163862789381145, 0, 0, 0, 0, 0.4163862789381145, 0, 0, 0, 0, 0.4163862789381145, 0, 2.741181743466289, 0.9692342189892807, 0.2527472733592222, 1])
+    this.materialNode.shelfMatrix
     let defaultNode = new CanvasNode(this)
-    defaultNode.shelfMatrix.fromArray([0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0.10398909598272707, 1.7751184493294392, -0.17810752996759185, 1])
+    defaultNode.shelfMatrix.fromArray([0.22465332680396122, 0, 0, 0, 0, 0.22465332680396122, 0, 0, 0, 0, 0.22465332680396122, 0, 1.340575716244399, 0.6194291453403057, 0.20383553138687294, 1])
     defaultNode.connectDestination(this.layers[0])
     defaultNode.connectInput(this.layers[1], {type: "source", index: 0})
     this.materialNode.connectInput(defaultNode, {type: "canvas"})

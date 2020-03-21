@@ -67,7 +67,9 @@ AFRAME.registerComponent('popup-button', {
   schema: {
     tooltip: {type: 'string'},
     icon: {type: 'string', default: '#asset-lead-pencil'},
-    popup: {type: 'string', default: "numpad"}
+    popup: {type: 'string', default: "numpad"},
+    scale: {type: 'vec3', default: '1 1 1'},
+    deferred: {type: 'boolean', default: false}
   },
   init() {
     this.el.setAttribute('text', {align: 'right'})
@@ -83,7 +85,12 @@ AFRAME.registerComponent('popup-button', {
 
     let popup = document.createElement('a-entity')
     this.popup = popup
-    popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+    if (!this.data.deferred)
+    {
+      console.log("Initing popup", this.data.deferred, this.data);
+      popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      this.popupLoaded = true
+    }
     popup.setAttribute('position', '0 0 0.1')
     popup.setAttribute('visible', 'false')
     this.el.append(popup)
@@ -106,12 +113,17 @@ AFRAME.registerComponent('popup-button', {
   },
   launchPopup() {
     let popup = this.popup
+    if (!this.popupLoaded)
+    {
+      popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      this.popupLoaded = true
+    }
     popup.setAttribute('position', '0 0 0.1')
     popup.object3D.updateMatrixWorld()
     let invScale =  popup.object3D.parent.getWorldScale(new THREE.Vector3())
-    invScale.x = 1 / invScale.x
-    invScale.y = 1 / invScale.y
-    invScale.z = 1 / invScale.z
+    invScale.x = this.data.scale.x / invScale.x
+    invScale.y = this.data.scale.y / invScale.y
+    invScale.z = this.data.scale.z / invScale.z
     popup.object3D.scale.copy(invScale)
 
     popup.setAttribute('visible', true)
