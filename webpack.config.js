@@ -22,11 +22,19 @@ let config = {
           {loader: path.resolve('./slm-loader.js'), options: {useCache: false, cache: false} }
         ]
       },
-      {test: /oss-licenses-used/,loader: 'raw-loader'},
+      { test: /oss-licenses-used/,loader: 'raw-loader'},
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
+      { test: /gallery.*\.vartiste$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: 'gallery/[name].[ext]'
+          }
+        }]
+      },
       {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav)$/i,
         use: [
           {

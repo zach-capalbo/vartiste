@@ -16,6 +16,7 @@ function createTexture() {
 }
 
 AFRAME.registerComponent('compositor', {
+  dependencies: ['material', 'geometry'],
   schema: {
     width: {default: 1024},
     height: {default: 512},
@@ -27,7 +28,8 @@ AFRAME.registerComponent('compositor', {
     onionSkin: {default: false},
     drawOverlay: {default: true},
     usePreOverlayCanvas: {default: true},
-    useNodes: {default: false}
+    useNodes: {default: false},
+    flipY: {default: false}
   },
 
   init() {
@@ -52,6 +54,8 @@ AFRAME.registerComponent('compositor', {
     this.lastFrameChangeTime = 0
 
     this.el.setAttribute('material', {src: compositeCanvas})
+    this.el.getObject3D('mesh').material.map.flipY = this.data.flipY
+    this.flipUVY()
 
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]
     this.activeLayer = this.layers[0]
@@ -86,9 +90,10 @@ AFRAME.registerComponent('compositor', {
 
     this.allNodes = []
     this.materialNode = new MaterialNode(this)
-    this.materialNode.shelfMatrix.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3.9211894503691473, 1.7114385325515813, -0.20684204251928567, 1])
+    this.materialNode.shelfMatrix.fromArray([0.4163862789381145, 0, 0, 0, 0, 0.4163862789381145, 0, 0, 0, 0, 0.4163862789381145, 0, 2.741181743466289, 0.9692342189892807, 0.2527472733592222, 1])
+    this.materialNode.shelfMatrix
     let defaultNode = new CanvasNode(this)
-    defaultNode.shelfMatrix.fromArray([0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0, 0, 0, 0.6970027251633882, 0, 0.10398909598272707, 1.7751184493294392, -0.17810752996759185, 1])
+    defaultNode.shelfMatrix.fromArray([0.22465332680396122, 0, 0, 0, 0, 0.22465332680396122, 0, 0, 0, 0, 0.22465332680396122, 0, 1.340575716244399, 0.6194291453403057, 0.20383553138687294, 1])
     defaultNode.connectDestination(this.layers[0])
     defaultNode.connectInput(this.layers[1], {type: "source", index: 0})
     this.materialNode.connectInput(defaultNode, {type: "canvas"})
@@ -300,6 +305,18 @@ AFRAME.registerComponent('compositor', {
 
     this.allNodes.splice(nodeIdx, 1)
     this.el.emit('nodedeleted', {node})
+  },
+  flipUVY() {
+    let o = this.el.getObject3D('mesh')
+    if (o.geometry && o.geometry.attributes.uv)
+    {
+      let array = o.geometry.attributes.uv.array
+      for (let i = 0; i < o.geometry.attributes.uv.count * 2; i+= 2)
+      {
+        array[i + 1] = 1 - array[i + 1]
+      }
+      o.geometry.attributes.uv.needsUpdate = true
+    }
   },
   drawOverlay(ctx) {
     ctx.save()
@@ -575,6 +592,10 @@ AFRAME.registerComponent('compositor', {
           material.needsUpdate = true
         }
 
+        if (material[layer.mode].flipY) {
+          material[layer.mode].flipY = this.data.flipY
+        }
+
         if (material[layer.mode].image !== layerCanvas)
         {
           material[layer.mode].image = layerCanvas
@@ -639,6 +660,7 @@ AFRAME.registerComponent('compositor', {
       {
         material.map.image = this.compositeCanvas
       }
+      if (material.map.flipY) material.map.flipY = this.data.flipY
       material.map.needsUpdate = true
 
       if (material.type !== "MeshStandardMaterial") return
@@ -676,11 +698,13 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.data.frameRate = obj.frameRate
+    this.data.flipY = obj.flipY
     this.el.setAttribute('compositor', {frameRate: obj.frameRate, useNodes: obj.useNodes})
 
     this.resize(obj.width, obj.height)
 
     let layersById = {}
+    let activeLayer
 
     for (let i = 0; i < obj.layers.length; ++i)
     {
@@ -694,6 +718,11 @@ AFRAME.registerComponent('compositor', {
       layer.frames = [canvas]
       layer.shelfMatrix = new THREE.Matrix4().fromArray(layerObj.shelfMatrix.elements)
       layersById[layer.id] = layer
+
+      if (layerObj.active)
+      {
+        activeLayer = layer
+      }
 
       for (let j = 0; j < obj.canvases[i].length; ++j)
       {
@@ -720,7 +749,7 @@ AFRAME.registerComponent('compositor', {
 
     this.deleteLayer(this.layers[0])
 
-    this.activateLayer(this.layers.find(l => l.active))
+    this.activateLayer(activeLayer || this.layers[this.layers.length - 1])
 
     let nodesById = {}
 
@@ -822,6 +851,7 @@ AFRAME.registerComponent('compositor', {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
       let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
       this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+      this.flipUVY()
     }
 
     for (let layer of this.layers)

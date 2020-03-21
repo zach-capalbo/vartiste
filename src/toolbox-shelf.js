@@ -165,5 +165,18 @@ AFRAME.registerComponent('toolbox-shelf', {
     // compositeRecorder.recordFrames(numberOfFrames)
     // await compositeRecorder.stop()
     // this.el.sceneEl.systems['settings-system'].download(compositeRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
+  },
+  async recordHeadsetAction() {
+    if (!this.compositeRecorder)
+    {
+      this.compositeRecorder = new CanvasRecorder({canvas: document.querySelector('.a-canvas'), frameRate: 60})
+      this.compositeRecorder.start()
+    }
+    else
+    {
+      await this.compositeRecorder.stop()
+      this.el.sceneEl.systems['settings-system'].download(this.compositeRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
+      delete this.compositeRecorder
+    }
   }
 })

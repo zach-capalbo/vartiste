@@ -35,7 +35,7 @@ AFRAME.registerSystem('settings-system', {
 
     desktopLink.click()
   },
-  exportAction({suffix} = {}) {
+  exportAction({suffix = ""} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     let saveImg = new Image()

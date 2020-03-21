@@ -1,0 +1,7 @@
+- const {GALLERY_ENTRIES} = require('./static/gallery.js')
+- for entry of GALLERY_ENTRIES
+  a.gallery-entry entry=entry.name
+    figure
+      img.preview
+      figcaption=entry.displayName
+      p=entry.description

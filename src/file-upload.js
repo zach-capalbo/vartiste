@@ -17,6 +17,17 @@ async function addImageLayer(file) {
   compositor.addLayer(compositor.layers.length - 1, {layer})
 }
 
+export function addImageReferenceViewer(image) {
+  let viewer = document.createElement('a-entity')
+  viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
+  viewer.setAttribute('material', {src: image, shader: 'flat'})
+  viewer.setAttribute('position')
+  viewer.classList.add("clickable")
+  viewer.classList.add("reference-image")
+  document.querySelector('#reference-spawn').append(viewer)
+  return viewer
+}
+
 async function addImageReference(file) {
   let image = new Image()
   image.src = URL.createObjectURL(file)
@@ -25,12 +36,7 @@ async function addImageReference(file) {
   await new Promise((r,e) => image.onload = r)
   image.onload = undefined
 
-  let viewer = document.createElement('a-entity')
-  viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
-  viewer.setAttribute('material', {src: image, shader: 'flat'})
-  viewer.setAttribute('position')
-  viewer.classList.add("clickable")
-  document.querySelector('#reference-spawn').append(viewer)
+  addImageReferenceViewer(image)
 }
 
 async function addGlbViewer(file) {
@@ -66,7 +72,7 @@ async function addGlbViewer(file) {
         let layerCtx = layer.canvas.getContext('2d')
         layerCtx.save()
         layerCtx.translate(width / 2, height / 2)
-        layerCtx.scale(1, -1)
+        //layerCtx.scale(1, -1)
         layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
         layerCtx.restore()
         if (mode !== "map")
@@ -95,7 +101,7 @@ async function addGlbReference(file) {
   let entity = document.createElement('a-entity')
   document.querySelector('#reference-spawn').append(entity)
   entity.classList.add("clickable")
-  entity.classList.add("reference")
+  entity.classList.add("reference-glb")
   entity.setObject3D("mesh", model.scene || model.scenes[0])
 
   // Change image encoding to linear. Don't know if this is right, or if we

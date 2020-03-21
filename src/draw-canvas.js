@@ -36,8 +36,10 @@ AFRAME.registerComponent('draw-canvas', {
     let {translation, scale} = this.transform
     let {width: uvWidth, height: uvHeight} = this.data.compositor
 
+    let yy = uv.y
+    if (Compositor.component.data.flipY) yy = 1.0 - yy
     let x = uvWidth * uv.x - (translation.x - width / 2 * scale.x + width / 2)
-    let y = uvHeight * (1 - uv.y) - (translation.y - height / 2 * scale.y + height / 2)
+    let y = uvHeight * yy - (translation.y - height / 2 * scale.y + height / 2)
 
     x = x / scale.x
     y = y / scale.y

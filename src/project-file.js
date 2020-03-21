@@ -1,6 +1,7 @@
 import {Layer} from './layer.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
+import {addImageReferenceViewer} from './file-upload.js'
 const FILE_VERSION = 2
 class ProjectFile {
   static update(obj) {
@@ -14,6 +15,8 @@ class ProjectFile {
     if (!('palette' in obj)) obj.palette = []
     if (!('useNodes' in obj)) obj.useNodes = false
     if (!('allNodes' in obj)) obj.allNodes = []
+    if (!('flipY' in obj)) obj.flipY = true
+    if (!('referenceImages' in obj)) obj.referenceImages = []
     for (let i in obj.layers)
     {
       let layer = obj.layers[i]
@@ -68,6 +71,24 @@ class ProjectFile {
 
       settings.addModelView(model)
     }
+
+    for (let ref of obj.referenceImages)
+    {
+      console.log("Loading reference image...")
+      let image = new Image()
+      await new Promise((r,e) => {
+        image.onload = r
+        image.src = ref.src
+      })
+      image.onload = undefined
+      let viewer = addImageReferenceViewer(image)
+      viewer.object3D.matrix.fromArray(ref.matrix)
+      viewer.object3D.matrix.decompose(
+        viewer.object3D.position,
+        viewer.object3D.quaternion,
+        viewer.object3D.scale,
+      )
+    }
   }
 
   async _save() {
@@ -93,6 +114,19 @@ class ProjectFile {
 
     obj.palette = document.querySelector('*[palette]').getAttribute('palette').colors
 
+    obj.referenceImages = []
+    let referenceCanvas = document.createElement('canvas')
+    document.querySelectorAll('.reference-image').forEach(image => {
+      let img = image.getObject3D('mesh').material.map.image
+      referenceCanvas.width = img.width
+      referenceCanvas.height = img.height
+      referenceCanvas.getContext('2d').drawImage(img, 0, 0)
+      obj.referenceImages.push({
+        src: referenceCanvas.toDataURL(),
+        matrix: image.object3D.matrix.elements
+      })
+    })
+
     return obj
   }
 
@@ -116,6 +150,7 @@ class ProjectFile {
       height: compositor.height,
       shader: compositor.el.getAttribute('material').shader,
       frameRate: compositor.data.frameRate,
+      flipY: compositor.data.flipY,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
   }

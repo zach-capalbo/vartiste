@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "advanced-image-loader": "^1.0.0",
     "aframe": "^1.0.2",
     "aframe-environment-component": "^2.0.0",
     "aframe-svg-extruder": "^1.0.2",
