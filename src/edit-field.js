@@ -85,12 +85,7 @@ AFRAME.registerComponent('popup-button', {
 
     let popup = document.createElement('a-entity')
     this.popup = popup
-    if (!this.data.deferred)
-    {
-      console.log("Initing popup", this.data.deferred, this.data);
-      popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
-      this.popupLoaded = true
-    }
+
     popup.setAttribute('position', '0 0 0.1')
     popup.setAttribute('visible', 'false')
     this.el.append(popup)
@@ -109,6 +104,12 @@ AFRAME.registerComponent('popup-button', {
     if (this.data.popup !== oldData.popup)
     {
       this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+    }
+    if (!this.popupLoaded && !this.data.deferred)
+    {
+      console.log("Initing popup", this.data.deferred, this.data);
+      this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      this.popupLoaded = true
     }
   },
   launchPopup() {
