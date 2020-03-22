@@ -592,7 +592,7 @@ AFRAME.registerComponent('compositor', {
           material.needsUpdate = true
         }
 
-        if (material[layer.mode].flipY) {
+        if (material[layer.mode].flipY != this.data.flipY) {
           material[layer.mode].flipY = this.data.flipY
         }
 
@@ -660,7 +660,7 @@ AFRAME.registerComponent('compositor', {
       {
         material.map.image = this.compositeCanvas
       }
-      if (material.map.flipY) material.map.flipY = this.data.flipY
+      if (material.map.flipY != this.data.flipY) material.map.flipY = this.data.flipY
       material.map.needsUpdate = true
 
       if (material.type !== "MeshStandardMaterial") return

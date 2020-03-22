@@ -91,7 +91,7 @@ class DownloadSorter {
       "glb"
     ]
 
-    let filesToCheck = ls(`${ds.source}/*.{${CANDIDATE_FORMATS.join(",")}}`)
+    let filesToCheck = ls(`${this.source}/*.{${CANDIDATE_FORMATS.join(",")}}`)
 
     for (let file of filesToCheck)
     {
