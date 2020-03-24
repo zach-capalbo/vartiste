@@ -872,6 +872,10 @@ class CompositorFinder {
   get component() {
     return this.el.components.compositor
   }
+
+  get material() {
+    return this.el.getObject3D('mesh').material
+  }
 }
 
 window.Compositor = new CompositorFinder()
