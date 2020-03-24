@@ -45,7 +45,11 @@ const THREED_MODES = [
 const FX = [
   'blur',
   'noise',
-  "dither"
+  "dither",
+  'flip-x',
+  'flip-y',
+  'grayscale-to-alpha',
+  'alpha-to-grayscale'
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)
