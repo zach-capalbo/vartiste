@@ -46,13 +46,26 @@ AFRAME.registerSystem('settings-system', {
 
     this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}${suffix}.png`, "Canvas Images")
 
-    for (let mode of THREED_MODES)
+    if (compositor.data.useNodes)
     {
-      for (let layer of compositor.layers)
+      for (let mode of THREED_MODES)
       {
-        if (layer.mode !== mode) continue
+        if (Compositor.material[mode] && Compositor.material[mode].image)
+        {
+          this.download(Compositor.material[mode].image.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
+        }
+      }
+    }
+    else
+    {
+      for (let mode of THREED_MODES)
+      {
+        for (let layer of compositor.layers)
+        {
+          if (layer.mode !== mode) continue
 
-        this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
+          this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
+        }
       }
     }
   },
