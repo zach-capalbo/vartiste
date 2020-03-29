@@ -6,7 +6,7 @@ import {Pool} from "./pool.js"
 AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},
-    frameCount: {default: 100},
+    frameCount: {default: 50},
   },
   init() {
     window.Skeletonator = this
@@ -67,9 +67,11 @@ AFRAME.registerComponent('skeletonator', {
     this.boneToHandle = {}
     this.boneTracks = {}
 
-    if (this.mesh.skeleton.bones.length > 0)
+    for (let bone of this.mesh.skeleton.bones)
     {
-      this.el.append(this.addBoneHierarchy(this.mesh.skeleton.bones[0]))
+      if (bone.name in this.boneToHandle) continue;
+
+      this.el.append(this.addBoneHierarchy(bone))
     }
   },
   addBoneHierarchy(bone)
@@ -122,6 +124,11 @@ AFRAME.registerComponent('skeletonator', {
   currentFrameIdx() {
     return Compositor.component.currentFrame % this.data.frameCount
   },
+  frameIdx(idx) {
+    idx = idx % this.data.frameCount
+    if (idx < 0) idx = this.data.frameCount + idx
+    return idx
+  },
   onFrameChange() {
     let frameIdx = this.currentFrameIdx()
     for (let bone of this.mesh.skeleton.bones)
@@ -167,20 +174,36 @@ AFRAME.registerComponent('skeletonator', {
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
-      let positionTrack = new THREE.VectorKeyframeTrack(`.bones[${bone.name}].position`, times, positionValues)
-      let rotationTrack = new THREE.QuaternionKeyframeTrack(`.bones[${bone.name}].quaternion`, times, rotationValues)
+      let positionTrack = new THREE.VectorKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].position`, times, positionValues)
+      let rotationTrack = new THREE.QuaternionKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].quaternion`, times, rotationValues)
       tracks.push(positionTrack)
       tracks.push(rotationTrack)
     }
-    if (!('animations' in this.mesh))
+    if (!('animations' in this.mesh.parent))
     {
-      this.mesh.animations = []
+      this.mesh.parent.animations = []
     }
-    this.mesh.animations.push(new THREE.AnimationClip(shortid.generate(), this.data.frameCount / fps, tracks))
+    this.mesh.parent.animations.push(new THREE.AnimationClip(shortid.generate(), this.data.frameCount / fps, tracks))
   }
 })
 
 AFRAME.registerComponent("bone-handle", {
+  events: {
+    stateadded: function(e) {
+      if (!e.target === this.el) return
+
+      if (e.detail === 'grabbed')
+      {
+        this.stopGrabFrame = this.el.skeletonator.frameIdx(this.el.skeletonator.currentFrameIdx() - 1)
+        this.stopWrapsAround = (this.stopGrabFrame < this.el.skeletonator.currentFrameIdx())
+
+        if (Compositor.component.isPlayingAnimation)
+        {
+          this.el.skeletonator.boneTracks[this.el.bone.name] = []
+        }
+      }
+    }
+  },
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.02')
     this.el.setAttribute('grab-options', 'showHand: false')
@@ -197,6 +220,20 @@ AFRAME.registerComponent("bone-handle", {
 
       if (this.el.skeletonator.data.recording)
       {
+        if (Compositor.component.isPlayingAnimation)
+        {
+          if (this.stopWrapsAround && this.el.skeletonator.currentFrameIdx() < this.stopGrabFrame)
+          {
+            this.stopWrapsAround = false
+          }
+
+          if (!this.stopWrapsAround && this.el.skeletonator.currentFrameIdx() >= this.stopGrabFrame)
+          {
+            this.el.grabbingManipulator.stopGrab()
+            return
+          }
+        }
+
         this.el.skeletonator.keyframe(this.el.bone)
       }
     }
@@ -232,6 +269,18 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     let numberOfFrames = 10
     let duration = numberOfFrames / Compositor.component.data.frameRate
     this.el.skeletonator.data.recording = true
+  },
+  bakeAnimations() {
+    this.el.skeletonator.bakeAnimations()
+  },
+  exportSkinnedMesh() {
+    this.el.sceneEl.systems["settings-system"].export3dAction(this.el.skeletonator.mesh.parent)
+  },
+  clearTracks() {
+    for (let bone in this.el.skeletonator.boneTracks)
+    {
+      this.el.skeletonator.boneTracks = []
+    }
   }
 })
 
