@@ -1,0 +1,8 @@
+a-entity shelf="height: 1.5" scale="0.3 0.3 0.3"
+  a-entity scale="1 1 ${1 / 0.3}" position="-1.5"
+    a-entity icon-button="#asset-skeletonator" tooltip="Export Skeleton"
+    a-entity click-action="restPose" icon-button="" tooltip="Reset to Rest Pose"
+  a-entity position="0 1.7 0"
+    a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab Object"
+    a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"
+a-entity new-bone-wand="" position="-0.7 0 0"

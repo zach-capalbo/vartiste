@@ -15,6 +15,14 @@ AFRAME.registerComponent("layer-shelves", {
     {
       this['compositor_' + e] = this['compositor_' + e].bind(this)
     }
+
+    let _updateMatrixWorld = this.el.object3D.updateMatrixWorld
+    this.el.object3D.updateMatrixWorld = function () {
+      if (!this.visible) {
+        return
+      }
+      _updateMatrixWorld.apply(this)
+    }
   },
   update(oldData) {
     if (oldData.compositor)

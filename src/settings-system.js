@@ -78,14 +78,14 @@ AFRAME.registerSystem('settings-system', {
 
     document.getElementById('composition-view').emit('updatemesh')
   },
-  async export3dAction() {
-    let mesh = document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
+  async export3dAction(exportMesh) {
+    let mesh = exportMesh || document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
     let material = document.getElementById('canvas-view').getObject3D('mesh').material
     prepareModelForExport(mesh, material)
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true})
+      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || []})
     })
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.glb`, "GLB File")

@@ -5,6 +5,7 @@ require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
 require('./framework/hide-in-ar.js')
 require('./framework/billboard.js')
+// require('./framework/three-skip-invisible-update.js')
 
 require('./paint-system')
 require('./settings-system')
@@ -39,10 +40,11 @@ require('./toolbox-shelf.js')
 require('./node-connectors.js')
 require('./demo-overlay.js')
 require('./test-utilities.js')
+require('./skeletonator.js')
 
 require('./app.styl')
 
-document.write(require('./scene.html.slm'))
+document.write(require('./scene.html.slm'));
 
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {
   let asset = fileName.slice("./".length)

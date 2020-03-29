@@ -319,6 +319,7 @@ AFRAME.registerComponent('compositor', {
     }
   },
   drawOverlay(ctx) {
+    if (!this.data.drawOverlay) return
     ctx.save()
     const {width, height} = this
 
