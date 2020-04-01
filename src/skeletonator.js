@@ -199,6 +199,7 @@ AFRAME.registerComponent("bone-handle", {
 
         if (Compositor.component.isPlayingAnimation)
         {
+          // Compositor.component.jumpToFrame(0)
           this.el.skeletonator.boneTracks[this.el.bone.name] = []
         }
       }
@@ -274,6 +275,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.bakeAnimations()
   },
   exportSkinnedMesh() {
+    this.el.skeletonator.mesh.material = Compositor.material
     this.el.sceneEl.systems["settings-system"].export3dAction(this.el.skeletonator.mesh.parent)
   },
   clearTracks() {

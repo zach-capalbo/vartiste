@@ -368,12 +368,18 @@ AFRAME.registerComponent('compositor', {
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
   },
-  jumpToFrame(frame, {force = false} = {}) {
+  jumpToFrame(frame, {force = false, animate = false} = {}) {
     this.currentFrame = frame
     if (this.activeLayer.frames.length > 1 || force)
     {
       this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
     }
+
+    if (!animate)
+    {
+      delete this.playingStartTime
+    }
+
     this.el.emit('framechanged', {frame: this.currentFrame})
   },
   nextFrame() {
@@ -445,7 +451,7 @@ AFRAME.registerComponent('compositor', {
         this.startingFrame = this.currentFrame
       }
 
-      this.jumpToFrame(Math.round((t - this.playingStartTime) * this.data.frameRate / 1000.0) + this.startingFrame)
+      this.jumpToFrame(Math.round((t - this.playingStartTime) * this.data.frameRate / 1000.0) + this.startingFrame, {animate: true})
     }
     else
     {
