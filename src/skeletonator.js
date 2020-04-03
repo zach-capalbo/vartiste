@@ -16,13 +16,37 @@ AFRAME.registerComponent('skeletonator', {
     {
       console.log("Converting first mesh to skinned mesh")
       let firstMesh = this.el.getObject3D('mesh').getObjectByProperty("type", "Mesh")
+
+      var position = firstMesh.geometry.attributes.position;
+
+      var vertex = new THREE.Vector3();
+
+      var skinIndices = [];
+      var skinWeights = [];
+
+      for ( var i = 0; i < position.count; i ++ ) {
+
+      	vertex.fromBufferAttribute( position, i );
+
+      	var skinIndex = 0;
+      	var skinWeight = 1.0;
+
+      	skinIndices.push( skinIndex, 0, 0, 0 );
+      	skinWeights.push( skinWeight, 0, 0, 0 );
+
+      }
+
+      firstMesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+      firstMesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+
       let skinnedMesh = new THREE.SkinnedMesh(firstMesh.geometry, firstMesh.material)
+      // Util.applyMatrix(firstMesh.matrix, skinnedMesh)
 
       let rootBone = new THREE.Bone()
       skinnedMesh.add(rootBone)
 
       skinnedMesh.bind(new THREE.Skeleton([rootBone]), new THREE.Matrix4())
-      Util.applyMatrix(firstMesh.matrix, skinnedMesh)
+
       firstMesh.parent.add(skinnedMesh)
       firstMesh.parent.remove(firstMesh)
       this.mesh = skinnedMesh
@@ -43,6 +67,11 @@ AFRAME.registerComponent('skeletonator', {
     this.setupBones()
 
     Compositor.el.addEventListener('framechanged', this.onFrameChange.bind(this))
+
+    if (Compositor.el.skeletonatorSavedSettings)
+    {
+      this.load(Compositor.el.skeletonatorSavedSettings)
+    }
   },
   tick(t, dt) {
     if (!this.mesh.material.skinning)
@@ -60,6 +89,15 @@ AFRAME.registerComponent('skeletonator', {
         {
           this.mesh.material[mode] = oldMaterial[mode]
         }
+      }
+    }
+  },
+  load(obj) {
+    console.log("Loading saved skeletonator")
+    if ('boneTracks' in obj) {
+      for (let bone in this.boneTracks)
+      {
+        this.boneTracks[bone] = obj.boneTracks[bone].filter(m => m).map(m => new THREE.Matrix4().fromArray(m.elements))
       }
     }
   },
@@ -149,7 +187,7 @@ AFRAME.registerComponent('skeletonator', {
       }
     }
   },
-  bakeAnimations() {
+  bakeAnimations({name, wrap = true} = {}) {
     let tracks = []
     let fps = Compositor.component.data.frameRate
     for (let bone of this.mesh.skeleton.bones)
@@ -174,6 +212,20 @@ AFRAME.registerComponent('skeletonator', {
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
+      if (wrap)
+      {
+        times.push(this.data.frameCount / fps)
+        let matrix = this.boneTracks[bone.name][0]
+
+        let position = new THREE.Vector3
+        position.setFromMatrixPosition(matrix)
+        positionValues = positionValues.concat(position.toArray())
+
+        let rotation = new THREE.Quaternion
+        rotation.setFromRotationMatrix(matrix)
+        rotationValues = rotationValues.concat(rotation.toArray())
+      }
+
       let positionTrack = new THREE.VectorKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].position`, times, positionValues)
       let rotationTrack = new THREE.QuaternionKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].quaternion`, times, rotationValues)
       tracks.push(positionTrack)
@@ -183,7 +235,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.mesh.parent.animations = []
     }
-    this.mesh.parent.animations.push(new THREE.AnimationClip(shortid.generate(), this.data.frameCount / fps, tracks))
+    this.mesh.parent.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
   }
 })
 
@@ -191,15 +243,16 @@ AFRAME.registerComponent("bone-handle", {
   events: {
     stateadded: function(e) {
       if (!e.target === this.el) return
+      if (e.target.bone.name !== this.el.bone.name) return
 
       if (e.detail === 'grabbed')
       {
-        this.stopGrabFrame = this.el.skeletonator.frameIdx(this.el.skeletonator.currentFrameIdx() - 1)
-        this.stopWrapsAround = (this.stopGrabFrame < this.el.skeletonator.currentFrameIdx())
+        this.stopGrabFrame = this.el.skeletonator.data.frameCount - 1 //this.el.skeletonator.frameIdx(this.el.skeletonator.currentFrameIdx() - 1)
+        this.stopWrapsAround = false //(this.stopGrabFrame < this.el.skeletonator.currentFrameIdx())
 
         if (Compositor.component.isPlayingAnimation)
         {
-          // Compositor.component.jumpToFrame(0)
+          Compositor.component.jumpToFrame(0)
           this.el.skeletonator.boneTracks[this.el.bone.name] = []
         }
       }
@@ -208,7 +261,14 @@ AFRAME.registerComponent("bone-handle", {
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.02')
     this.el.setAttribute('grab-options', 'showHand: false')
-    this.el.setAttribute('material', 'color: #c9f0f2; shader: standard')
+    if (this.el.skeletonator.activeBone == this.el.bone)
+    {
+      this.el.setAttribute('material', 'color: #f5363f; shader: standard')
+    }
+    else
+    {
+      this.el.setAttribute('material', 'color: #c9f0f2; shader: standard')
+    }
     // this.el.setAttribute('tooltip', this.el.bone.name)
     this.el.bone.matrix.decompose(this.el.object3D.position,
                                   this.el.object3D.rotation,
@@ -228,7 +288,7 @@ AFRAME.registerComponent("bone-handle", {
             this.stopWrapsAround = false
           }
 
-          if (!this.stopWrapsAround && this.el.skeletonator.currentFrameIdx() >= this.stopGrabFrame)
+          if (!this.stopWrapsAround && Compositor.component.currentFrame >= this.stopGrabFrame)
           {
             this.el.grabbingManipulator.stopGrab()
             return
@@ -272,7 +332,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.data.recording = true
   },
   bakeAnimations() {
-    this.el.skeletonator.bakeAnimations()
+    this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
   },
   exportSkinnedMesh() {
     this.el.skeletonator.mesh.material = Compositor.material
@@ -297,6 +357,7 @@ AFRAME.registerComponent("new-bone-wand", {
   init() {
     Pool.init(this)
     this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', "showHand: false")
 
     let radius = this.data.radius
     let height = 0.3

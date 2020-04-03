@@ -1,10 +1,12 @@
 import {Sfx} from './sfx.js'
+import {Util} from './util.js'
 
 AFRAME.registerComponent('button-style', {
   schema: {
     color: {type: 'color', default: "#abe"},
     clickColor: {type: 'color', default: '#aea'},
     intersectedColor: {type: 'color', default: '#cef'},
+    toggleOnColor: {type: 'color', default: '#abe'},
     keepAspect: {type: 'bool', default: true}
   }
 })
@@ -110,5 +112,70 @@ AFRAME.registerComponent('icon-button', {
         this.clickTime = undefined
       }
     }
+  }
+})
+
+AFRAME.registerComponent('toggle-button', {
+  schema: {
+    target: {type: 'selector'},
+    component: {type: 'string'},
+    property: {type: 'string'},
+    toggled: {type: 'boolean', default: false}
+  },
+  events: {
+    click: function() {
+      if (this.data.target)
+      {
+        this.data.target.setAttribute(this.data.component, {[this.data.property]: !this.data.target.getAttribute(this.data.component)[this.data.property]})
+      }
+      else if (this.data.system)
+      {
+        this.el.sceneEl.systems[this.data.system].data[this.data.property] = !this.el.sceneEl.systems[this.data.system].data[this.data.property]
+        this.setToggle(this.el.sceneEl.systems[this.data.system].data[this.data.property])
+      }
+      else
+      {
+        this.data.toggled = !this.data.toggled
+        this.setValue(this.data.toggled)
+      }
+    }
+  },
+  update(oldData) {
+    if (this.data.target !== oldData.target)
+    {
+      if (oldData.target)
+      {
+        oldData.target.removeEventListener('componentchanged', this.componentchangedlistener)
+      }
+
+      if (this.data.target)
+      {
+        this.componentchangedlistener = (e) => {
+          if (e.detail.name === this.data.component)
+          {
+            this.setToggle(!!this.data.target.getAttribute(this.data.component)[this.data.property], {update: false})
+          }
+        }
+        this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
+
+        Util.whenLoaded([this.el, this.data.target], () => {
+          this.setToggle(!!this.data.target.getAttribute(this.data.component)[this.data.property], {update: false})
+        })
+      }
+    }
+  },
+  setToggle(value) {
+    if (value && !this.alreadyOn)
+    {
+      this.originalColor = this.el.components['button-style'].data.color
+      this.el.setAttribute('button-style', {color: this.el.components['button-style'].data.toggleOnColor})
+      this.alreadyOn = true
+    }
+    else if (!value)
+    {
+      this.el.setAttribute('button-style', {color: this.originalColor})
+      this.alreadyOn = false
+    }
+    this.data.toggled = value
   }
 })

@@ -1,8 +1,12 @@
+import {Util} from './util.js'
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text", 'popup-button'],
   schema: {
     tooltip: {type: 'string'},
-    type: {type: 'string', default: 'number'}
+    type: {type: 'string', default: 'number'},
+    target: {type: 'selector'},
+    component: {type: 'string'},
+    property: {type: 'string'}
   },
   init() {
     this.numpad = this.el.components['popup-button'].popup
@@ -18,7 +22,6 @@ AFRAME.registerComponent('edit-field', {
         this.setValue("")
       }
     })
-
   },
   update(oldData) {
     this.el.setAttribute('popup-button', {
@@ -26,10 +29,37 @@ AFRAME.registerComponent('edit-field', {
       tooltip: this.data.tooltip,
       popup: (this.data.type === 'string' ? "keyboard" : "numpad")
     })
+
+    if (this.data.target !== oldData.target)
+    {
+      if (oldData.target)
+      {
+        oldData.target.removeEventListener('componentchanged', this.componentchangedlistener)
+      }
+
+      if (this.data.target)
+      {
+        this.componentchangedlistener = (e) => {
+          if (e.detail.name === this.data.component)
+          {
+            this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toString(), {update: false})
+          }
+        }
+        this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
+
+        Util.whenLoaded([this.numpad, this.el, this.data.target], () => {
+          this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toString(), {update: false})
+        })
+      }
+    }
   },
-  setValue(value) {
+  setValue(value, {update=true} = {}) {
     this.numpad.querySelector('.value').setAttribute('text', {value})
     this.el.setAttribute('text', {value})
+    if (update && this.data.target)
+    {
+      this.data.target.setAttribute(this.data.component, {[this.data.property]: value})
+    }
   },
   buttonClicked(e) {
     console.log(e)

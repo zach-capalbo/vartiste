@@ -89,6 +89,11 @@ class ProjectFile {
         viewer.object3D.scale,
       )
     }
+
+    if ('skeletonator' in obj)
+    {
+      compositor.el.skeletonatorSavedSettings = obj.skeletonator
+    }
   }
 
   async _save() {
@@ -127,6 +132,16 @@ class ProjectFile {
       })
     })
 
+    let skeletonatorEl = document.querySelector('*[skeletonator]')
+    if (skeletonatorEl)
+    {
+      this.saveSkeletonator(obj, skeletonatorEl.components.skeletonator)
+    }
+    else if (Compositor.el.skeletonatorSavedSettings)
+    {
+      obj.skeletonator = Compositor.el.skeletonatorSavedSettings
+    }
+
     return obj
   }
 
@@ -153,6 +168,12 @@ class ProjectFile {
       flipY: compositor.data.flipY,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
+  }
+
+  saveSkeletonator(inputObj, skeletonator) {
+    let obj  = {}
+    obj.boneTracks = skeletonator.boneTracks
+    inputObj.skeletonator = obj
   }
 }
 
