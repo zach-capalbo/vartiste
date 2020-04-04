@@ -17,6 +17,12 @@ class ProjectFile {
     if (!('allNodes' in obj)) obj.allNodes = []
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
+
+    if ('skeletonator' in obj)
+    {
+      if (!('frameCount' in obj.skeletonator)) obj.skeletonator.frameCount = 50
+    }
+
     for (let i in obj.layers)
     {
       let layer = obj.layers[i]

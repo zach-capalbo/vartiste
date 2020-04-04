@@ -98,6 +98,7 @@ AFRAME.registerComponent('skeletonator', {
   },
   load(obj) {
     console.log("Loading saved skeletonator")
+    this.el.setAttribute('skeletonator', {frameCount: obj.frameCount})
     if ('boneTracks' in obj) {
       for (let bone in this.boneTracks)
       {
