@@ -138,6 +138,27 @@ AFRAME.registerComponent('skeletonator', {
   updateHandles() {
     this.el.querySelectorAll('*[bone-handle]').forEach(handle => handle.components['bone-handle'].resetToBone())
   },
+  renameBone(bone, newName) {
+    console.log("Renaming bone", bone, newName)
+    if (newName in this.boneToHandle)
+    {
+      throw new Error(`Name ${newName} already taken`)
+    }
+
+    this.boneToHandle[newName] = this.boneToHandle[bone.name]
+    this.boneTracks[newName] = this.boneTracks[bone.name]
+    delete this.boneToHandle[bone.name]
+    delete this.boneTracks[bone.name]
+    bone.name = newName
+  },
+  deleteBone(bone) {
+    delete this.boneToHandle[bone.name]
+    delete this.boneTracks[bone.name]
+    bone.parent.remove(bone)
+    this.boneToHandle[bone.name].parentEl.removeChild(this.boneToHandle[bone.name])
+    delete this.boneToHandle[bone.name]
+    delete this.boneTracks[bone.name]
+  },
   setActiveBone(bone) {
     console.log("Setting active bone to", bone)
     if (this.activeBone) {
@@ -149,6 +170,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.boneToHandle[this.activeBone.name].setAttribute('material', {color: '#f5363f'})
     }
+    this.el.emit('activebonechanged', {activeBone: this.activeBone})
   },
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
@@ -321,6 +343,13 @@ AFRAME.registerComponent("skeletonator-control-panel", {
         if (action in this) this[action](e)
       }
     })
+    this.el.skeletonator.el.addEventListener('activebonechanged', e => {
+      this.el.querySelector('.bone-name').setAttribute('text', {value: e.detail.activeBone.name})
+    })
+    this.el.querySelector('.bone-name').addEventListener('editfinished', e => {
+
+      this.el.skeletonator.renameBone(this.el.skeletonator.activeBone, e.target.getAttribute('text').value)
+    })
   },
   restPose() {
     this.el.skeletonator.mesh.skeleton.pose()
@@ -343,6 +372,17 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     {
       this.el.skeletonator.boneTracks = []
     }
+  },
+  bakeSkeleton() {
+    let bones = []
+    this.el.mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+    this.el.mesh.bind(new THREE.Skeleton(bones), new THREE.Matrix4)
+  },
+  deleteActiveBone() {
+    this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
+  },
+  clearActiveBoneTracks() {
+    this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = []
   }
 })
 
@@ -432,5 +472,8 @@ AFRAME.registerComponent("new-bone-wand", {
 
     skeletonator.setActiveBone(bone)
 
+    // let bones = []
+    // skeletonator.mesh.skeleton.bones[0].traverse(b => bones.push(b))
+    // skeletonator.mesh.bind(new Three.Skeleton(bones), new THREE.Matrix4)
   }
 })

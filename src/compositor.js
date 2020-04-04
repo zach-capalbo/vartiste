@@ -307,6 +307,7 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('nodedeleted', {node})
   },
   flipUVY() {
+    console.log("Flipping UV Y Coords")
     let o = this.el.getObject3D('mesh')
     if (o.geometry && o.geometry.attributes.uv)
     {
@@ -705,10 +706,17 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.data.frameRate = obj.frameRate
-    this.data.flipY = obj.flipY
+
     this.el.setAttribute('compositor', {frameRate: obj.frameRate, useNodes: obj.useNodes})
 
     this.resize(obj.width, obj.height)
+
+    if (this.data.flipY != obj.flipY)
+    {
+      console.log("Need to flipUVs")
+      this.data.flipY = obj.flipY
+      this.flipUVY()
+    }
 
     let layersById = {}
     let activeLayer
