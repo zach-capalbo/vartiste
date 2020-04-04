@@ -52,8 +52,11 @@ const Util = {
     if (Array.isArray(entity)) return awaitLoadingAll(entity)
     if (fn) return whenLoadedSingle(entity, fn)
     return awaitLoadingSingle(entity)
+  },
+  applyMatrix(matrix, obj) {
+    obj.matrix.copy(matrix)
+    matrix.decompose(obj.position, obj.rotation, obj.scale)
   }
-
 }
 
 export {Util}

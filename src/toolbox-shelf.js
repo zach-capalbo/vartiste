@@ -178,5 +178,8 @@ AFRAME.registerComponent('toolbox-shelf', {
       this.el.sceneEl.systems['settings-system'].download(this.compositeRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
       delete this.compositeRecorder
     }
+  },
+  startSkeletonatorAction() {
+    document.querySelector('#composition-view').setAttribute('skeletonator', "")
   }
 })

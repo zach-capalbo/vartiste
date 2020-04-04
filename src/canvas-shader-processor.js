@@ -188,7 +188,7 @@ export class CanvasShaderProcessor {
       u_brush_height: brush.height * scale,
       u_brush_rotation: rotation,
       u_opacity: brush.opacity * pressure,
-      u_t: document.querySelector('a-scene').time % 1
+      u_t: document.querySelector('a-scene').time % 1.0
     })
 
     this.update()

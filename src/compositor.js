@@ -29,7 +29,8 @@ AFRAME.registerComponent('compositor', {
     drawOverlay: {default: true},
     usePreOverlayCanvas: {default: true},
     useNodes: {default: false},
-    flipY: {default: false}
+    flipY: {default: false},
+    skipDrawing: {default: false},
   },
 
   init() {
@@ -148,8 +149,8 @@ AFRAME.registerComponent('compositor', {
     let position = this.layers.indexOf(layer)
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
-    this.activateLayer(layer)
-    Undo.push(e=> this.deleteLayer(layer))
+    this.activateLayer(newLayer)
+    Undo.push(e=> this.deleteLayer(newLayer))
   },
 
   activateLayer(layer) {
@@ -307,6 +308,7 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('nodedeleted', {node})
   },
   flipUVY() {
+    console.log("Flipping UV Y Coords")
     let o = this.el.getObject3D('mesh')
     if (o.geometry && o.geometry.attributes.uv)
     {
@@ -319,6 +321,7 @@ AFRAME.registerComponent('compositor', {
     }
   },
   drawOverlay(ctx) {
+    if (!this.data.drawOverlay) return
     ctx.save()
     const {width, height} = this
 
@@ -367,12 +370,18 @@ AFRAME.registerComponent('compositor', {
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
   },
-  jumpToFrame(frame, {force = false} = {}) {
+  jumpToFrame(frame, {force = false, animate = false} = {}) {
     this.currentFrame = frame
     if (this.activeLayer.frames.length > 1 || force)
     {
       this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
     }
+
+    if (!animate)
+    {
+      delete this.playingStartTime
+    }
+
     this.el.emit('framechanged', {frame: this.currentFrame})
   },
   nextFrame() {
@@ -444,7 +453,7 @@ AFRAME.registerComponent('compositor', {
         this.startingFrame = this.currentFrame
       }
 
-      this.jumpToFrame(Math.round((t - this.playingStartTime) * this.data.frameRate / 1000.0) + this.startingFrame)
+      this.jumpToFrame(Math.round((t - this.playingStartTime) * this.data.frameRate / 1000.0) + this.startingFrame, {animate: true})
     }
     else
     {
@@ -498,6 +507,8 @@ AFRAME.registerComponent('compositor', {
       this.updateRedirectorTransformation()
     }
 
+    if (this.data.skipDrawing) return
+    
     if (this.data.useNodes)
     {
       this.drawNodes()
@@ -698,10 +709,17 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.data.frameRate = obj.frameRate
-    this.data.flipY = obj.flipY
+
     this.el.setAttribute('compositor', {frameRate: obj.frameRate, useNodes: obj.useNodes})
 
     this.resize(obj.width, obj.height)
+
+    if (this.data.flipY != obj.flipY)
+    {
+      console.log("Need to flipUVs")
+      this.data.flipY = obj.flipY
+      this.flipUVY()
+    }
 
     let layersById = {}
     let activeLayer

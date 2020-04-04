@@ -44,6 +44,11 @@ async function addGlbViewer(file) {
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
+  if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
+  {
+    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
+  }
+
   let loader = new THREE.GLTFLoader()
 
   let buffer = await file.arrayBuffer()

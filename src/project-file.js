@@ -17,6 +17,12 @@ class ProjectFile {
     if (!('allNodes' in obj)) obj.allNodes = []
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
+
+    if ('skeletonator' in obj)
+    {
+      if (!('frameCount' in obj.skeletonator)) obj.skeletonator.frameCount = 50
+    }
+
     for (let i in obj.layers)
     {
       let layer = obj.layers[i]
@@ -89,6 +95,11 @@ class ProjectFile {
         viewer.object3D.scale,
       )
     }
+
+    if ('skeletonator' in obj)
+    {
+      compositor.el.skeletonatorSavedSettings = obj.skeletonator
+    }
   }
 
   async _save() {
@@ -127,6 +138,16 @@ class ProjectFile {
       })
     })
 
+    let skeletonatorEl = document.querySelector('*[skeletonator]')
+    if (skeletonatorEl)
+    {
+      this.saveSkeletonator(obj, skeletonatorEl.components.skeletonator)
+    }
+    else if (Compositor.el.skeletonatorSavedSettings)
+    {
+      obj.skeletonator = Compositor.el.skeletonatorSavedSettings
+    }
+
     return obj
   }
 
@@ -153,6 +174,13 @@ class ProjectFile {
       flipY: compositor.data.flipY,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
     }
+  }
+
+  saveSkeletonator(inputObj, skeletonator) {
+    let obj  = {}
+    obj.boneTracks = skeletonator.boneTracks
+    obj.frameCount = skeletonator.data.frameCount
+    inputObj.skeletonator = obj
   }
 }
 
