@@ -7,6 +7,7 @@ AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},
     frameCount: {default: 50},
+    recordFrameCount: {default: false},
   },
   init() {
     window.Skeletonator = this
@@ -72,6 +73,9 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.load(Compositor.el.skeletonatorSavedSettings)
     }
+
+    Compositor.el.setAttribute('compositor', {skipDrawing: true})
+    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
   },
   tick(t, dt) {
     if (!this.mesh.material.skinning)
@@ -237,7 +241,7 @@ AFRAME.registerComponent('skeletonator', {
       if (wrap)
       {
         times.push(this.data.frameCount / fps)
-        let matrix = this.boneTracks[bone.name][0]
+        let matrix = this.boneTracks[bone.name].find(b => b)
 
         let position = new THREE.Vector3
         position.setFromMatrixPosition(matrix)
@@ -272,10 +276,24 @@ AFRAME.registerComponent("bone-handle", {
         this.stopGrabFrame = this.el.skeletonator.data.frameCount - 1 //this.el.skeletonator.frameIdx(this.el.skeletonator.currentFrameIdx() - 1)
         this.stopWrapsAround = false //(this.stopGrabFrame < this.el.skeletonator.currentFrameIdx())
 
+        if (this.el.skeletonator.data.recordFrameCount) this.stopGrabFrame = Number.POSITIVE_INFINITY
+
         if (Compositor.component.isPlayingAnimation)
         {
           Compositor.component.jumpToFrame(0)
           this.el.skeletonator.boneTracks[this.el.bone.name] = []
+        }
+      }
+    },
+    stateremoved: function(e) {
+      if (!e.target === this.el) return
+      if (e.target.bone.name !== this.el.bone.name) return
+
+      if (e.detail === 'grabbed')
+      {
+        if (this.el.skeletonator.data.recordFrameCount)
+        {
+          this.el.skeletonator.el.setAttribute('skeletonator', {frameCount: Compositor.component.currentFrame})
         }
       }
     }

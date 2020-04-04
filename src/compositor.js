@@ -29,7 +29,8 @@ AFRAME.registerComponent('compositor', {
     drawOverlay: {default: true},
     usePreOverlayCanvas: {default: true},
     useNodes: {default: false},
-    flipY: {default: false}
+    flipY: {default: false},
+    skipDrawing: {default: false},
   },
 
   init() {
@@ -148,8 +149,8 @@ AFRAME.registerComponent('compositor', {
     let position = this.layers.indexOf(layer)
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
-    this.activateLayer(layer)
-    Undo.push(e=> this.deleteLayer(layer))
+    this.activateLayer(newLayer)
+    Undo.push(e=> this.deleteLayer(newLayer))
   },
 
   activateLayer(layer) {
@@ -506,6 +507,8 @@ AFRAME.registerComponent('compositor', {
       this.updateRedirectorTransformation()
     }
 
+    if (this.data.skipDrawing) return
+    
     if (this.data.useNodes)
     {
       this.drawNodes()

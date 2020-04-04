@@ -173,6 +173,7 @@ class ProjectFile {
   saveSkeletonator(inputObj, skeletonator) {
     let obj  = {}
     obj.boneTracks = skeletonator.boneTracks
+    obj.frameCount = skeletonator.data.frameCount
     inputObj.skeletonator = obj
   }
 }
