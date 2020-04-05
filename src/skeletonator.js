@@ -112,6 +112,8 @@ AFRAME.registerComponent('skeletonator', {
 
       this.el.append(this.addBoneHierarchy(bone))
     }
+
+    this.setActiveBone(this.mesh.skeleton.bones[0])
   },
   addBoneHierarchy(bone)
   {
@@ -476,14 +478,27 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   bakeSkeleton() {
     let bones = []
-    this.el.skeletonator.mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
-    this.el.skeletonator.mesh.bind(new THREE.Skeleton(bones), new THREE.Matrix4)
+    let mesh = this.el.skeletonator.mesh
+    mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+    mesh.bindMode = "detached"
+    // let inv = new THREE.Matrix4
+    // mesh.updateMatrixWorld()
+    // inv.getInverse(mesh.matrixWorld)
+    // inv.multiply(bones[0].matrix)
+    // bones[0].matrix.multiply(mesh.matrixWorld)
+    // Util.applyMatrix(bones[0].matrix, bones[0])
+    // // Util.applyMatrix(new THREE.Matrix4, mesh)
+    bones[0].updateMatrixWorld()
+    mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
   },
   deleteActiveBone() {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
   },
   clearActiveBoneTracks() {
     this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = []
+  },
+  skinFromeNodes() {
+    this.el.skeletonator.skinFromeNodes()
   }
 })
 
