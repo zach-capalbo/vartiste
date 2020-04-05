@@ -191,6 +191,15 @@ AFRAME.registerComponent("layer-shelves", {
       })
     }
 
+    let nodeName = container.querySelector('.name')
+    if (nodeName)
+    {
+      Util.whenLoaded(nodeName, () => nodeName.setAttribute('text', {value: node.name}))
+      nodeName.addEventListener('editfinished', e => {
+        node.name = nodeName.getAttribute('text').value
+      })
+    }
+
     if (!this.compositor.data.useNodes)
     {
       container.setAttribute('visible', false)
@@ -334,6 +343,9 @@ AFRAME.registerComponent("layer-shelves", {
   },
   grabNode(node) {
     this.compositor.grabLayer(node)
+  },
+  soloNode(node) {
+    node.solo = !node.solo
   },
   compositor_componentchanged(e) {
     if (!this.compositor) return

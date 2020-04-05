@@ -41,6 +41,7 @@ require('./node-connectors.js')
 require('./demo-overlay.js')
 require('./test-utilities.js')
 require('./skeletonator.js')
+require('./sketchfab.js')
 
 require('./app.styl')
 
