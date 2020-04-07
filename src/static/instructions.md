@@ -86,6 +86,16 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
  - Trackpad Up: Add blank frame
  - Trackpad Down: Duplicate current frame
 
+For PC-only use (Not recommended, but you it will work):
+
+- Left Mouse Button: Click buttons
+- Left Mouse Button (Drag): Rotate Camera
+- Shift + Left Mouse Button (Drag): Grab and move objects
+- Middle Mouse Button: Draw
+- W: Move Up
+- S: Move Down
+- A: Move Left
+- D: Move Right
 
 <img src="globe.JPG" class="screenshot">
 
@@ -114,6 +124,30 @@ appear in front, and the 2D canvas view will flip to behind you.
 
  **NOTE:** Animations are not currently imported or exported. They are, however,
  saved into the project file
+
+## Node Compositing System
+
+By default, VARTISTE operates in Layer mode, where layers can be ordered one on
+top of the other, similar in operation to the GIMP or Photoshop. VARTISTE also
+has another mode of operation, called Node mode. VARTISTE can be toggled between
+Layer and Node mode by pressing the "Toggle" ![Light
+Switch](../assets/light-switch.png) button on the Layer / Node control panel.
+
+Node mode works in a roughly similar way to the Blender compositing nodes, for
+instance. Outputs from Layers and nodes are connected to Node inputs, allowing
+dynamically updating effects.
+
+## Animation System
+
+The animation system is controlled by the Animation shelf. Layers can each have
+multiple frames. The animation shelf will show the number of frames for the
+active layer, and allow adding, deleting, and duplicating active layer frames.
+
+There is a single timeline and framerate for all frames, and layers will repeat
+however many frames they have over and over again. Any drawing will be applied
+to the current frame, which can change over the course of the drawing. This
+means if the animation is currently playing back, then parts of strokes can be
+applied to different frames, giving a kind of animated brush effect.
 
 ## Tips And Tricks
 

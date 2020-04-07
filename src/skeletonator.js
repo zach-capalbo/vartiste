@@ -40,6 +40,7 @@ AFRAME.registerComponent('skeletonator', {
       // Util.applyMatrix(firstMesh.matrix, skinnedMesh)
 
       let rootBone = new THREE.Bone()
+      rootBone.name = "root"
       skinnedMesh.add(rootBone)
 
       skinnedMesh.bind(new THREE.Skeleton([rootBone]), new THREE.Matrix4())
@@ -155,12 +156,14 @@ AFRAME.registerComponent('skeletonator', {
     bone.name = newName
   },
   deleteBone(bone) {
-    delete this.boneToHandle[bone.name]
-    delete this.boneTracks[bone.name]
     bone.parent.remove(bone)
     this.boneToHandle[bone.name].parentEl.removeChild(this.boneToHandle[bone.name])
     delete this.boneToHandle[bone.name]
     delete this.boneTracks[bone.name]
+    if (this.activeBone == bone)
+    {
+      this.activeBone = undefined
+    }
   },
   setActiveBone(bone) {
     console.log("Setting active bone to", bone)
@@ -480,15 +483,24 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     let bones = []
     let mesh = this.el.skeletonator.mesh
     mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
-    mesh.bindMode = "detached"
-    // let inv = new THREE.Matrix4
-    // mesh.updateMatrixWorld()
-    // inv.getInverse(mesh.matrixWorld)
-    // inv.multiply(bones[0].matrix)
-    // bones[0].matrix.multiply(mesh.matrixWorld)
-    // Util.applyMatrix(bones[0].matrix, bones[0])
-    // // Util.applyMatrix(new THREE.Matrix4, mesh)
-    bones[0].updateMatrixWorld()
+    // mesh.bindMode = "detached"
+    // bones[0].updateMatrixWorld()
+    // mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
+
+    bones[0].scale.set(1,1,1)
+    bones[0].position.set(0,0,0)
+    bones[0].rotation.set(0,0,0)
+
+    let stopTraversal = false
+
+    bones[0].traverseAncestors(a => {
+      if (stopTraversal) return
+      a.scale.set(1,1,1)
+      a.position.set(0,0,0)
+      a.rotation.set(0,0,0)
+      if (a == this.el.skeletonator.el.object3D) stopTraversal = true
+    })
+
     mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
   },
   deleteActiveBone() {

@@ -36,7 +36,6 @@ AFRAME.registerComponent('icon-button', {
       buttonStyle = DEFAULT_BUTTON_STYLE
     }
 
-
     this.style = buttonStyle
 
     this.el.setAttribute('material', {
