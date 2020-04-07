@@ -20,14 +20,10 @@ AFRAME.registerComponent('skeletonator', {
 
       var position = firstMesh.geometry.attributes.position;
 
-      var vertex = new THREE.Vector3();
-
       var skinIndices = [];
       var skinWeights = [];
 
       for ( var i = 0; i < position.count; i ++ ) {
-
-      	vertex.fromBufferAttribute( position, i );
 
       	var skinIndex = 0;
       	var skinWeight = 1.0;
@@ -44,6 +40,7 @@ AFRAME.registerComponent('skeletonator', {
       // Util.applyMatrix(firstMesh.matrix, skinnedMesh)
 
       let rootBone = new THREE.Bone()
+      rootBone.name = "root"
       skinnedMesh.add(rootBone)
 
       skinnedMesh.bind(new THREE.Skeleton([rootBone]), new THREE.Matrix4())
@@ -116,6 +113,8 @@ AFRAME.registerComponent('skeletonator', {
 
       this.el.append(this.addBoneHierarchy(bone))
     }
+
+    this.setActiveBone(this.mesh.skeleton.bones[0])
   },
   addBoneHierarchy(bone)
   {
@@ -157,12 +156,14 @@ AFRAME.registerComponent('skeletonator', {
     bone.name = newName
   },
   deleteBone(bone) {
-    delete this.boneToHandle[bone.name]
-    delete this.boneTracks[bone.name]
     bone.parent.remove(bone)
     this.boneToHandle[bone.name].parentEl.removeChild(this.boneToHandle[bone.name])
     delete this.boneToHandle[bone.name]
     delete this.boneTracks[bone.name]
+    if (this.activeBone == bone)
+    {
+      this.activeBone = undefined
+    }
   },
   setActiveBone(bone) {
     console.log("Setting active bone to", bone)
@@ -176,6 +177,92 @@ AFRAME.registerComponent('skeletonator', {
       this.boneToHandle[this.activeBone.name].setAttribute('material', {color: '#f5363f'})
     }
     this.el.emit('activebonechanged', {activeBone: this.activeBone})
+  },
+  skinFromeNodes() {
+    let vertexUvs = this.mesh.geometry.attributes.uv
+    let uv = new THREE.Vector2()
+
+    var skinIndices = [];
+    var skinWeights = [];
+
+    let canvasByName = {}
+
+    for (let node of Compositor.component.allNodes)
+    {
+      if (node.name) {
+        if (!node.inputs.canvas) continue
+        if (!node.inputs.canvas.canvas) {
+          console.warn("No canvas for", node)
+          continue
+        }
+
+        canvasByName[node.name] = node.inputs.canvas.canvas
+      }
+    }
+
+    console.log("Canvas by name", canvasByName)
+
+    for (let vi = 0; vi < vertexUvs.count; vi ++ )
+    {
+      uv.fromBufferAttribute(vertexUvs, vi)
+
+      let topFour = [
+        {idx: 0, weight: 0},
+        {idx: 0, weight: 0},
+        {idx: 0, weight: 0},
+        {idx: 0, weight: 0},
+      ]
+
+      let anySet = false;
+
+      let bones = this.mesh.skeleton.bones
+
+      for (let i in bones)
+      {
+        let bone = bones[i]
+        if (!(bone.name in canvasByName)) {
+        //   console.log("No canvas for", bone.name)
+          continue
+        }
+        let canvas = canvasByName[bone.name]
+        let color = canvas.getContext('2d').getImageData(Math.round(uv.x * canvas.width), Math.round(uv.y * canvas.height), 1, 1)
+        let alpha = color.data[3] / 255.0
+        // console.log("Sampled", JSON.stringify(color.s), bone.name)
+        if (alpha > topFour[3].weight)
+        {
+          topFour[3].idx = i
+          topFour[3].weight = alpha
+          topFour.sort((a,b) => - (a.weight - b.weight))
+          anySet = true
+          console.log("Alpha > 0", alpha, JSON.stringify(topFour))
+        }
+      }
+
+      if (topFour.weight > 0)
+      {
+        console.log("Pushing", vi, topFour)
+      }
+
+      if (!anySet)
+      {
+        topFour[0].weight = 1
+      }
+
+      let norm = topFour[0].weight + topFour[1].weight + topFour[2].weight + topFour[3].weight
+
+      if (norm < 1.0)
+      {
+        topFour[3].idx = 0
+        topFour[3].weight = 1.0 - norm
+        norm = 1.0
+      }
+
+      skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
+      skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
+    }
+
+    this.mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+    this.mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
   },
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
@@ -394,14 +481,36 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   bakeSkeleton() {
     let bones = []
-    this.el.mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
-    this.el.mesh.bind(new THREE.Skeleton(bones), new THREE.Matrix4)
+    let mesh = this.el.skeletonator.mesh
+    mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+    // mesh.bindMode = "detached"
+    // bones[0].updateMatrixWorld()
+    // mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
+
+    bones[0].scale.set(1,1,1)
+    bones[0].position.set(0,0,0)
+    bones[0].rotation.set(0,0,0)
+
+    let stopTraversal = false
+
+    bones[0].traverseAncestors(a => {
+      if (stopTraversal) return
+      a.scale.set(1,1,1)
+      a.position.set(0,0,0)
+      a.rotation.set(0,0,0)
+      if (a == this.el.skeletonator.el.object3D) stopTraversal = true
+    })
+
+    mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
   },
   deleteActiveBone() {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
   },
   clearActiveBoneTracks() {
     this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = []
+  },
+  skinFromeNodes() {
+    this.el.skeletonator.skinFromeNodes()
   }
 })
 

@@ -459,6 +459,7 @@ export class OutputNode extends MaterialNode {
   constructor(compositor) {
     super(compositor)
     this.name = this.id
+    this.solo = false
   }
 }
 

@@ -508,7 +508,7 @@ AFRAME.registerComponent('compositor', {
     }
 
     if (this.data.skipDrawing) return
-    
+
     if (this.data.useNodes)
     {
       this.drawNodes()
@@ -532,16 +532,20 @@ AFRAME.registerComponent('compositor', {
   },
   drawNodes() {
     let fakeLayers = []
-    this.materialNode.updateCanvas(this.currentFrame)
-    for (let mode in this.materialNode.inputs)
-    {
-      let input = this.materialNode.inputs[mode]
+    let outputNode = this.allNodes.find(n => n.solo)
 
-      let needsUpdate = input.updateTime > this.drawnT || this.materialNode.updateTime > this.drawnT
+    if (!outputNode) outputNode = this.materialNode
+
+    outputNode.updateCanvas(this.currentFrame)
+    for (let mode in outputNode.inputs)
+    {
+      let input = outputNode.inputs[mode]
+
+      let needsUpdate = input.updateTime > this.drawnT || outputNode.updateTime > this.drawnT
 
       if (needsUpdate)
       {
-        // console.log("Needs Update", mode, needsUpdate, input.updateTime, this.materialNode.updateTime, this.drawnT,)
+        // console.log("Needs Update", mode, needsUpdate, input.updateTime, outputNode.updateTime, this.drawnT,)
       }
 
       fakeLayers.push({

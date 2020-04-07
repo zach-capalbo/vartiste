@@ -1,14 +1,21 @@
 import {Sfx} from './sfx.js'
 import {Util} from './util.js'
 
+const DEFAULT_BUTTON_STYLE_SCHEMA = {
+  color: {type: 'color', default: "#abe"},
+  clickColor: {type: 'color', default: '#aea'},
+  intersectedColor: {type: 'color', default: '#cef'},
+  toggleOnColor: {type: 'color', default: '#abe'},
+  keepAspect: {type: 'bool', default: true}
+}
+
+const DEFAULT_BUTTON_STYLE = {}
+for (let k in DEFAULT_BUTTON_STYLE_SCHEMA) {
+  DEFAULT_BUTTON_STYLE[k] = DEFAULT_BUTTON_STYLE_SCHEMA[k].default
+}
+
 AFRAME.registerComponent('button-style', {
-  schema: {
-    color: {type: 'color', default: "#abe"},
-    clickColor: {type: 'color', default: '#aea'},
-    intersectedColor: {type: 'color', default: '#cef'},
-    toggleOnColor: {type: 'color', default: '#abe'},
-    keepAspect: {type: 'bool', default: true}
-  }
+  schema: DEFAULT_BUTTON_STYLE_SCHEMA
 })
 
 AFRAME.registerComponent('icon-button', {
@@ -19,12 +26,16 @@ AFRAME.registerComponent('icon-button', {
     let height = width
     let depth = 0.05
 
-    if (!this.el.hasAttribute('button-style'))
+    let buttonStyle
+    if (this.el.hasAttribute('button-style'))
     {
-      this.el.setAttribute('button-style', "")
+       buttonStyle = this.el.getAttribute('button-style')
+    }
+    else
+    {
+      buttonStyle = DEFAULT_BUTTON_STYLE
     }
 
-    let buttonStyle = this.el.getAttribute('button-style')
     this.style = buttonStyle
 
     this.el.setAttribute('material', {
