@@ -1,9 +1,6 @@
-a-scene
+a-scene renderer="colorManagement: true; physicallyCorrectLights: false"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
-
-  /a-entity demo-overlay="hand: #right-hand" gltf-model="https://cdn.aframe.io/controllers/oculus/oculus-touch-controller-right.gltf"
-  /a-entity demo-overlay="hand: #left-hand" gltf-model="https://cdn.aframe.io/controllers/oculus/oculus-touch-controller-left.gltf"
 
   a-entity#artist-root
     a-entity#camera-root

@@ -11,7 +11,7 @@ import {Pool} from './pool.js'
 function createTexture() {
   let t = new THREE.Texture()
   t.generateMipmaps = false
-  t.minFilter = THREE.LinearFilter
+  // t.minFilter = THREE.LinearFilter
   return t
 }
 

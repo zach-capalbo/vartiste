@@ -1,5 +1,23 @@
 import {Axes} from './joystick-directions.js'
 
+AFRAME.registerSystem('demo-overlay', {
+  init() {
+    let params = new URLSearchParams(document.location.search)
+    let demo = params.get("demoMode")
+    if (!demo) return
+
+    console.info("Demo mode enabled")
+
+    for (let hand of ['left', 'right'])
+    {
+      let overlay = document.createElement('a-entity')
+      overlay.setAttribute('gltf-model', `https://cdn.aframe.io/controllers/oculus/oculus-touch-controller-${hand}.gltf`)
+      overlay.setAttribute('demo-overlay', `hand: #${hand}-hand`)
+      this.el.sceneEl.append(overlay)
+    }
+  }
+})
+
 AFRAME.registerComponent('demo-overlay', {
   schema: {
     hand: {type: 'selector'},

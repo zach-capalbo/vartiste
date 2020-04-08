@@ -114,7 +114,7 @@ async function addGlbReference(file) {
   entity.getObject3D('mesh').traverse(o => {
     if (o.type == "Mesh" || o.type == "SkinnedMesh") {
       if (o.material && o.material.map) {
-          o.material.map.encoding = THREE.LinearEncoding
+          // o.material.map.encoding = THREE.LinearEncoding
           o.material.needsUpdate = true
       }
     }
