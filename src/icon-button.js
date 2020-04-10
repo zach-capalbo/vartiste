@@ -24,6 +24,7 @@ AFRAME.registerSystem('icon-button', {
     this.depth = 0.05
     this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.001)
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width, this.width)
+    this.colorManagement = this.el.getAttribute('renderer').colorManagement
   }
 })
 
@@ -47,20 +48,6 @@ AFRAME.registerComponent('icon-button', {
 
     this.style = buttonStyle
 
-    // this.el.setAttribute('material', {
-    //   alphaTest: 0.01,
-    //   color: '#FFF',
-    //   fog: false,
-    //   src: this.data,
-    //   transparent: true
-    // })
-
-    // this.el.setAttribute('geometry', {
-    //   primitive: 'plane',
-    //   width: height,
-    //   height: width
-    // })
-
     this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({transparent: true, fog: false, map: this.data})))
 
     // Inline propogate-grab
@@ -78,19 +65,6 @@ AFRAME.registerComponent('icon-button', {
     let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
-
-    // var bg = document.createElement('a-entity')
-    // bg.setAttribute('material', `shader: standard; color: ${buttonStyle.color}; metalness: 0.3; roughness:1.0`)
-    // bg.setAttribute('geometry', `primitive: box; width: ${width}; height: ${height}; depth: ${depth - 0.001}`)
-    // bg.setAttribute('position', `0 0 -${depth / 2}`)
-    // bg.classList.add("clickable")
-    // bg.addEventListener('click', (e) => {
-    //   e.stopPropagation()
-    //   this.el.emit('click', e.detail)
-    // })
-    // bg['redirect-grab'] = this.el
-    // this.bg = bg
-    // this.el.append(bg)
 
     let bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({color: buttonStyle.color, metalness: 0.3, roughness: 1.0}))
     bg.position.set(0,0,- depth / 2)
@@ -132,7 +106,7 @@ AFRAME.registerComponent('icon-button', {
   },
   setColor(color) {
     this.bg.material.color.setStyle(color)
-    this.bg.material.color.convertSRGBToLinear()
+    if (this.system.colorManagement) this.bg.material.color.convertSRGBToLinear()
     this.bg.material.needsUpdate = true
   },
   updateAspect() {

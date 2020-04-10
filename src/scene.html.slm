@@ -1,11 +1,11 @@
-a-scene renderer="colorManagement: true; physicallyCorrectLights: false"
+a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="enabled: false"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
 
   a-entity#artist-root
     a-entity#camera-root
       a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls="" mobile-camera=""
-        a-entity position="0 0 0" light="type: point; castShadow: false"
+        a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 
       - for hand of ["left", "right"]
@@ -19,10 +19,13 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: false"
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
     a-entity position="0 0 -0.5"
 
-    a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.3"
+    a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.6"
+    a-entity light="type: ambient; color: #fff; intensity: 1.6"
+    a-entity light="type: directional; intensity: 3.26" position="0 0.68 0.45"
+    a-entity light="type: directional; color: #fff; intensity: 1.26" position="0 -0.68 -0.45"
     /a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
-    a-entity#ui shadow="cast: true; receive: true"
+    a-entity#ui
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
           a-entity#color-selection.grab-root shelf="" position="0 1.6 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="" position="0 0 0" scale="0.3 0.3 1"
