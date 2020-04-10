@@ -56,6 +56,13 @@ const Util = {
   applyMatrix(matrix, obj) {
     obj.matrix.copy(matrix)
     matrix.decompose(obj.position, obj.rotation, obj.scale)
+  },
+  cloneCanvas(canvas, destination) {
+    if (typeof destination === 'undefined') destination = document.createElement('canvas')
+    destination.width = canvas.width
+    destination.height = canvas.height
+    destination.getContext('2d').drawImage(canvas, 0, 0)
+    return destination
   }
 }
 

@@ -1,4 +1,6 @@
 import {CanvasRecorder} from './canvas-recorder.js'
+import {Util} from './util.js'
+import Gif from 'gif.js'
 
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
@@ -128,6 +130,32 @@ AFRAME.registerComponent('toolbox-shelf', {
       compositor.quickDraw()
       this.el.sceneEl.systems['settings-system'].exportAction({suffix: `frame-${frame}`})
     }
+  },
+  async exportGifAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+    let gif = new Gif({
+      workers: 2,
+      quality: 10,
+      workerScript: require('file-loader!gif.js/dist/gif.worker.js')
+    })
+
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      gif.addFrame(Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
+    }
+
+    let url = await new Promise((r, e) => {
+      gif.on('finished', function(blob) {
+        r(URL.createObjectURL(blob))
+      });
+
+      try { gif.render(); } catch (ex)  { e(ex) }
+    })
+
+    this.el.sceneEl.systems['settings-system'].download(url, {extension: 'gif'}, "Gif animation")
   },
   async recordFramesAction() {
     let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
