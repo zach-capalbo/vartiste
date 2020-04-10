@@ -18,13 +18,22 @@ AFRAME.registerComponent('button-style', {
   schema: DEFAULT_BUTTON_STYLE_SCHEMA
 })
 
+AFRAME.registerSystem('icon-button', {
+  init() {
+    this.width = 0.4
+    this.depth = 0.05
+    this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.001)
+    this.frontGeometry = new THREE.PlaneBufferGeometry(this.width, this.width)
+  }
+})
+
 AFRAME.registerComponent('icon-button', {
   dependencies: ['material', 'button-style'],
   schema: {type:"string"},
   init() {
-    let width = 0.4
+    let width = this.system.width
     let height = width
-    let depth = 0.05
+    let depth = this.system.depth
 
     let buttonStyle
     if (this.el.hasAttribute('button-style'))
@@ -38,38 +47,55 @@ AFRAME.registerComponent('icon-button', {
 
     this.style = buttonStyle
 
-    this.el.setAttribute('material', {
-      alphaTest: 0.01,
-      color: '#FFF',
-      fog: false,
-      src: this.data,
-      transparent: true
-    })
+    // this.el.setAttribute('material', {
+    //   alphaTest: 0.01,
+    //   color: '#FFF',
+    //   fog: false,
+    //   src: this.data,
+    //   transparent: true
+    // })
 
-    this.el.setAttribute('geometry', {
-      primitive: 'plane',
-      width: height,
-      height: width
-    })
+    // this.el.setAttribute('geometry', {
+    //   primitive: 'plane',
+    //   width: height,
+    //   height: width
+    // })
 
-    this.el.setAttribute('propogate-grab', "")
+    this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({transparent: true, fog: false, map: this.data})))
+
+    // Inline propogate-grab
+    for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
+    {
+      if (parent['redirect-grab'] || parent.classList.contains('clickable') || parent.classList.contains('grab-root'))
+      {
+        this.el['redirect-grab'] = parent
+        break;
+      }
+    }
+
+    this.el.classList.add('clickable')
 
     let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 
-    var bg = document.createElement('a-entity')
-    bg.setAttribute('material', `shader: standard; color: ${buttonStyle.color}; metalness: 0.3; roughness:1.0`)
-    bg.setAttribute('geometry', `primitive: box; width: ${width}; height: ${height}; depth: ${depth - 0.001}`)
-    bg.setAttribute('position', `0 0 -${depth / 2}`)
-    bg.classList.add("clickable")
-    bg.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.el.emit('click', e.detail)
-    })
-    bg['redirect-grab'] = this.el
+    // var bg = document.createElement('a-entity')
+    // bg.setAttribute('material', `shader: standard; color: ${buttonStyle.color}; metalness: 0.3; roughness:1.0`)
+    // bg.setAttribute('geometry', `primitive: box; width: ${width}; height: ${height}; depth: ${depth - 0.001}`)
+    // bg.setAttribute('position', `0 0 -${depth / 2}`)
+    // bg.classList.add("clickable")
+    // bg.addEventListener('click', (e) => {
+    //   e.stopPropagation()
+    //   this.el.emit('click', e.detail)
+    // })
+    // bg['redirect-grab'] = this.el
+    // this.bg = bg
+    // this.el.append(bg)
+
+    let bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({color: buttonStyle.color, metalness: 0.3, roughness: 1.0}))
+    bg.position.set(0,0,- depth / 2)
+    this.el.getObject3D('mesh').add(bg)
     this.bg = bg
-    this.el.append(bg)
 
     this.el.addEventListener('click', (e) => {
       this.clickTime = this.el.sceneEl.time
@@ -77,17 +103,17 @@ AFRAME.registerComponent('icon-button', {
       {
         Sfx.click(e.detail.cursorEl)
       }
-      this.bg.setAttribute('material', {color: buttonStyle.clickColor})
+      this.setColor(buttonStyle.clickColor)
     })
 
     this.el.addEventListener('raycaster-intersected', (e) => {
       if (!this.clickTime) {
-        this.bg.setAttribute('material', {color: buttonStyle.intersectedColor})
+        this.setColor(buttonStyle.intersectedColor)
       }
     })
     this.el.addEventListener('raycaster-intersected-cleared', (e) => {
       if (!this.clickTime) {
-        this.bg.setAttribute('material', {color: buttonStyle.color})
+        this.setColor(buttonStyle.color)
       }
     })
 
@@ -104,6 +130,11 @@ AFRAME.registerComponent('icon-button', {
     })
     this.updateAspect()
   },
+  setColor(color) {
+    this.bg.material.color.setStyle(color)
+    this.bg.material.color.convertSRGBToLinear()
+    this.bg.material.needsUpdate = true
+  },
   updateAspect() {
     if (this.style && this.style.keepAspect)
     {
@@ -118,9 +149,8 @@ AFRAME.registerComponent('icon-button', {
     if (this.clickTime)
     {
       if (t - this.clickTime > 300) {
-        let buttonStyle = this.el.getAttribute('button-style')
-        this.bg.setAttribute('material', {color: buttonStyle.color})
-        this.clickTime = undefined
+        let buttonStyle = this.el.components['button-style'].data
+        this.setColor(buttonStyle.color)
       }
     }
   }
