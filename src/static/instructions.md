@@ -88,8 +88,8 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
 
 For PC-only use (Not recommended, but you it will work):
 
-- Left Mouse Button: Click buttons
-- Left Mouse Button (Drag): Rotate Camera
+- Left Mouse Button: Draw
+- Middle / Right Mouse Button (Drag): Rotate Camera
 - Shift + Left Mouse Button (Drag): Grab and move objects
 - Middle Mouse Button: Draw
 - W: Move Up

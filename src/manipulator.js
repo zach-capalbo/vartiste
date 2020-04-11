@@ -35,6 +35,12 @@ AFRAME.registerComponent('manipulator', {
       this.scaleAmmount = - e.detail.axis[Axes.left_right(this.el)]
     })
 
+    document.addEventListener('wheel', e => {
+      if (!e.shiftKey) return
+      this.zoomAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
+      this.resetZoom = true
+    })
+
     this.startPoint = new THREE.Object3D()
     this.endPoint = new THREE.Object3D()
 
@@ -284,7 +290,9 @@ AFRAME.registerComponent('manipulator', {
         {
           if (this.grabOptions.scalable)
           {
-            this.target.object3D.scale.multiplyScalar(1.0 - (0.2 * this.scaleAmmount * dt / 100))
+            let scaleFactor = 1.0 - (0.2 * this.scaleAmmount * dt / 100)
+            this.target.object3D.scale.multiplyScalar(scaleFactor)
+            this.offset.multiplyScalar(scaleFactor)
           }
         }
       }
@@ -327,6 +335,11 @@ AFRAME.registerComponent('manipulator', {
       localOffset.applyQuaternion(this.target.object3D.quaternion)
 
       this.target.object3D.position.sub(localOffset)
+
+      if (this.resetZoom) {
+        this.zoomAmmount = 0
+        this.resetZoom = false
+      }
     }
   }
 })

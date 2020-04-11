@@ -1,4 +1,6 @@
 import {CanvasRecorder} from './canvas-recorder.js'
+import {Util} from './util.js'
+import Gif from 'gif.js'
 
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
@@ -129,6 +131,32 @@ AFRAME.registerComponent('toolbox-shelf', {
       this.el.sceneEl.systems['settings-system'].exportAction({suffix: `frame-${frame}`})
     }
   },
+  async exportGifAction() {
+    let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
+    let compositor = Compositor.component
+    let gif = new Gif({
+      workers: 2,
+      quality: 10,
+      workerScript: require('file-loader!gif.js/dist/gif.worker.js')
+    })
+
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      gif.addFrame(Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
+    }
+
+    let url = await new Promise((r, e) => {
+      gif.on('finished', function(blob) {
+        r(URL.createObjectURL(blob))
+      });
+
+      try { gif.render(); } catch (ex)  { e(ex) }
+    })
+
+    this.el.sceneEl.systems['settings-system'].download(url, {extension: 'gif'}, "Gif animation")
+  },
   async recordFramesAction() {
     let numberOfFrames = parseInt(this.el.querySelector('.number-of-frames').getAttribute('text').value)
     let compositor = Compositor.component
@@ -181,5 +209,41 @@ AFRAME.registerComponent('toolbox-shelf', {
   },
   startSkeletonatorAction() {
     document.querySelector('#composition-view').setAttribute('skeletonator', "")
+  },
+  bakeToVertexColorsAction() {
+    let mesh = Compositor.mesh
+    let vertexUvs = mesh.geometry.attributes.uv
+    let uv = new THREE.Vector2()
+    let colors = []
+    let {width, height} = Compositor.component
+    let flipY = Compositor.component.data.flipY
+    let threeColor = new THREE.Color()
+    let srgb = this.el.sceneEl.getAttribute('renderer').colorManagement
+    for (let vi = 0; vi < vertexUvs.count; vi ++ )
+    // let imageData = Compositor.component.preOverlayCanvas.getContext('2d').getImageData(0, 0, Compositor.component.width, Compositor.component.height)
+    {
+      let x = Math.round(uv.x * width)
+      let y = Math.round(uv.y * height)
+      if (flipY) y = Math.round((1.0 - uv.y) * height)
+      uv.fromBufferAttribute(vertexUvs, vi)
+      let color = Compositor.component.preOverlayCanvas.getContext('2d').getImageData(x, y, 1,1)
+
+      if (srgb)
+      {
+        threeColor.setRGB(color.data[0] / 256.0, color.data[1] / 256.0, color.data[2] / 256.0)
+        // threeColor.convertLinearToSRGB()
+        colors.push(threeColor.r)
+        colors.push(threeColor.g)
+        colors.push(threeColor.b)
+      }
+      else
+      {
+        colors.push(color.data[0] / 255.0)
+        colors.push(color.data[1] / 255.0)
+        colors.push(color.data[2] / 255.0)
+      }
+    }
+    mesh.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3, true) );
+    mesh.geometry.needsUpdate = true
   }
 })

@@ -26,6 +26,8 @@ AFRAME.registerSystem('settings-system', {
   download(url, filename, description) {
     this.el.emit('open-popup', `Attempted to download the ${description}. You may need to take off your headset to download it.`)
 
+    if (typeof filename !== 'string') filename = this.makeFileName(filename)
+
     let desktopLink = document.createElement('a')
     desktopLink.href = url
     desktopLink.style = "z-index: 10000; position: absolute; top: 50%; left: 50%; padding: 5px; background-color: #eee; transform: translate(-50%,-50%)"
@@ -34,6 +36,10 @@ AFRAME.registerSystem('settings-system', {
     // document.body.append(desktopLink)
 
     desktopLink.click()
+  },
+  makeFileName({extension = "", suffix}) {
+    if (suffix) suffix = `-${suffix}`
+    return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
   exportAction({suffix = ""} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
@@ -78,15 +84,26 @@ AFRAME.registerSystem('settings-system', {
 
     document.getElementById('composition-view').emit('updatemesh')
   },
-  async export3dAction(exportMesh) {
+  async getExportableGLB(exportMesh) {
     let mesh = exportMesh || document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
     let material = document.getElementById('canvas-view').getObject3D('mesh').material
+    let originalImage = material.map.image
+    material.map.image = Compositor.component.preOverlayCanvas
+    material.map.needsUpdate = true
     prepareModelForExport(mesh, material)
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
       exporter.parse(mesh, r, {binary: true, animations: mesh.animations || []})
     })
+
+    material.map.image = originalImage
+    material.map.needsUpdate = true
+
+    return glb
+  },
+  async export3dAction(exportMesh) {
+    let glb = await this.getExportableGLB(exportMesh)
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.glb`, "GLB File")
 

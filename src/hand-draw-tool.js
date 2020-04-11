@@ -31,15 +31,30 @@ AFRAME.registerComponent('hand-draw-tool', {
     if (this.el.hasAttribute('cursor'))
     {
       document.addEventListener('mousedown', e => {
-        let allowLeftClick = this.el.sceneEl.is('ar-mode') || this.el.sceneEl.isMobile
-        if (!allowLeftClick && (!e.buttons || e.buttons == 1)) return
+        if (e.button !== 0) return
+        if (e.shiftKey) return
         this.pressure = 1.0
         this.isDrawing = true
         this.startDraw()
       })
 
       document.addEventListener('mouseup', e=> {
-        if (e.button == 0) return
+        if (e.button !== 0) return
+        if (this.isDrawing) {
+          this.isDrawing = false
+          this.endDraw()
+        }
+      })
+
+      document.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) return
+        if (e.shiftKey) return
+        this.pressure = 1.0
+        this.isDrawing = true
+        this.startDraw()
+      })
+
+      document.addEventListener('touchend', e => {
         if (this.isDrawing) {
           this.isDrawing = false
           this.endDraw()
@@ -47,6 +62,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       })
 
       document.addEventListener('wheel', e => {
+        if (e.shiftKey) return
         this.el.sceneEl.systems['paint-system'].scaleBrush(-e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 1 : 100))
       })
     }

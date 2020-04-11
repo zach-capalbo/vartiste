@@ -2,12 +2,12 @@ a-entity shelf="" scale="0.15 0.3 0.3"
   a-entity position="-3.1 1.8 0" scale="1.8 1 1.3"
     - for (var i = 1; i <= 9; ++i)
       a-entity
-        a-entity icon-button="" text="value: ${i}; color: #000; wrapCount: 3; align: center" position="${0.7 * ((i - 1) % 3) + 1} -${0.7 * Math.floor((i - 1) / 3) + 1} 0"
+        a-entity icon-button="" text="value: ${i}; color: #FFF; wrapCount: 3; align: center; width: 0.4" position="${0.7 * ((i - 1) % 3) + 1} -${0.7 * Math.floor((i - 1) / 3) + 1} 0"
   a-entity position="-3.1 -1.2 0" scale="1.8 1 1.3"
     a-entity
       a-entity icon-button="#asset-backspace-outline" position="1. 0 0" action="backspace"
     a-entity
-      a-entity icon-button="" position="1.7 0 0" text="value: 0; color: #000; wrapCount: 3; align: center"
+      a-entity icon-button="" position="1.7 0 0" text="value: 0; color: #000; wrapCount: 3; align: center; width: 0.4; color: #FFF;"
     a-entity
       a-entity icon-button="#asset-check-outline" position="2.4 0 0" action="ok"
-  a-entity.value text="width: 3.8; wrapCount: 8; value:1024; align: right" scale="1 0.5 1" position="0.1 1.3 0"
+  a-entity.value text="width: 3.8; wrapCount: 8; value:1024; align: right; color: #FFF;" scale="1 0.5 1" position="0.1 1.3 0"

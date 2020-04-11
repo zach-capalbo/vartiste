@@ -109,16 +109,19 @@ async function addGlbReference(file) {
   entity.classList.add("reference-glb")
   entity.setObject3D("mesh", model.scene || model.scenes[0])
 
-  // Change image encoding to linear. Don't know if this is right, or if we
-  // should change the export, but all models seem to look better this way
-  entity.getObject3D('mesh').traverse(o => {
-    if (o.type == "Mesh" || o.type == "SkinnedMesh") {
-      if (o.material && o.material.map) {
-          o.material.map.encoding = THREE.LinearEncoding
-          o.material.needsUpdate = true
+  if (!document.querySelector('a-scene').getAttribute('renderer').colorManagement)
+  {
+    // Change image encoding to linear. Don't know if this is right, or if we
+    // should change the export, but all models seem to look better this way
+    entity.getObject3D('mesh').traverse(o => {
+      if (o.type == "Mesh" || o.type == "SkinnedMesh") {
+        if (o.material && o.material.map) {
+            o.material.map.encoding = THREE.LinearEncoding
+            o.material.needsUpdate = true
+        }
       }
-    }
-  })
+    })
+  }
   entity.emit('model-loaded', {format: 'gltf', model: model});
 
 }

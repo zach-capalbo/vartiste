@@ -289,7 +289,7 @@ AFRAME.registerComponent('hammer-tool', {
     head.setAttribute('height', headLength)
     // head.classList.add('clickable')
     head.setAttribute('propogate-grab', "")
-    head.setAttribute('material', 'side: double; color: #eee; metalness: 0.9; roughness: 0.4')
+    head.setAttribute('material', 'side: double; color: #aaa; metalness: 0.9; roughness: 0.4')
     head.setAttribute('raycaster', `objects: .canvas; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${headLength / 2}`)
     head.setAttribute('hand-draw-tool', "")
     headHolder.append(head)

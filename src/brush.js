@@ -322,6 +322,8 @@ class FillBrush extends Brush {
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
     this.mode = mode
     this.hqBlending = false
+    this.width = 48
+    this.height = 48
   }
   changeColor(color) {
     this.color = color

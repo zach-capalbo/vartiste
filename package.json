@@ -51,6 +51,7 @@
     "xml-loader": "^1.2.1"
   },
   "dependencies": {
-    "convolve": "^0.1.0"
+    "convolve": "^0.1.0",
+    "gif.js": "^0.2.0"
   }
 }
