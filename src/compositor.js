@@ -898,6 +898,12 @@ class CompositorFinder {
   get material() {
     return this.el.getObject3D('mesh').material
   }
+
+  get mesh() {
+    let compositionView = document.querySelector('#composition-view')
+    if (compositionView.getObject3D('mesh')) return compositionView.getObject3D('mesh').getObjectByProperty("type", "Mesh") || compositionView.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh") || this.el.getObject3D('mesh')
+    return this.el.getObject3D('mesh')
+  }
 }
 
 window.Compositor = new CompositorFinder()
