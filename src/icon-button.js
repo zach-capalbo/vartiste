@@ -66,7 +66,7 @@ AFRAME.registerComponent('icon-button', {
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 
-    let bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({color: buttonStyle.color, metalness: 0.3, roughness: 1.0}))
+    let bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
     bg.position.set(0,0,- depth / 2)
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg
@@ -92,6 +92,8 @@ AFRAME.registerComponent('icon-button', {
     })
 
     this.el.addEventListener('object3dset', (e) => this.updateAspect())
+
+    this.setColor(buttonStyle.color)
   },
   update(oldData) {
     this.el.setAttribute('material', {

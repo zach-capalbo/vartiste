@@ -87,12 +87,18 @@ AFRAME.registerSystem('settings-system', {
   async getExportableGLB(exportMesh) {
     let mesh = exportMesh || document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
     let material = document.getElementById('canvas-view').getObject3D('mesh').material
+    let originalImage = material.map.image
+    material.map.image = Compositor.component.preOverlayCanvas
+    material.map.needsUpdate = true
     prepareModelForExport(mesh, material)
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
       exporter.parse(mesh, r, {binary: true, animations: mesh.animations || []})
     })
+
+    material.map.image = originalImage
+    material.map.needsUpdate = true
 
     return glb
   },

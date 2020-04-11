@@ -119,6 +119,8 @@ AFRAME.registerComponent('draw-canvas', {
         let numPoints = Math.max(Math.floor(distance ), 1)
         let lerpedOpts = {hqBlending}
 
+        if (numPoints > 100) numPoints = -1
+
         for (let i = 0; i < numPoints; i++)
         {
           let lerp = i / numPoints
