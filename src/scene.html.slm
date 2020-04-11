@@ -4,7 +4,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
 
   a-entity#artist-root
     a-entity#camera-root
-      a-entity#camera camera="active: true" wasd-controls="wsAxis: y; wsInverted: true" look-controls="" mobile-camera=""
+      a-entity#camera camera="active: true" desktop-controls="" mobile-camera=""
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
         a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 

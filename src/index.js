@@ -42,6 +42,7 @@ require('./demo-overlay.js')
 require('./test-utilities.js')
 require('./skeletonator.js')
 require('./sketchfab.js')
+require('./desktop-controls.js')
 
 require('./app.styl')
 
