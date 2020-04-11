@@ -62,6 +62,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       })
 
       document.addEventListener('wheel', e => {
+        if (e.shiftKey) return
         this.el.sceneEl.systems['paint-system'].scaleBrush(-e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 1 : 100))
       })
     }
