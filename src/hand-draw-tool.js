@@ -46,6 +46,21 @@ AFRAME.registerComponent('hand-draw-tool', {
         }
       })
 
+      document.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) return
+        if (e.shiftKey) return
+        this.pressure = 1.0
+        this.isDrawing = true
+        this.startDraw()
+      })
+
+      document.addEventListener('touchend', e => {
+        if (this.isDrawing) {
+          this.isDrawing = false
+          this.endDraw()
+        }
+      })
+
       document.addEventListener('wheel', e => {
         this.el.sceneEl.systems['paint-system'].scaleBrush(-e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 1 : 100))
       })

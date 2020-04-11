@@ -245,7 +245,5 @@ AFRAME.registerComponent('toolbox-shelf', {
     }
     mesh.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3, true) );
     mesh.geometry.needsUpdate = true
-    // mesh.material.vertexColors = THREE.VertexColors
-    // mesh.material.needsUpdate = true
   }
 })

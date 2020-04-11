@@ -2,7 +2,7 @@ AFRAME.registerComponent('desktop-controls', {
   dependencies: ['wasd-controls', 'look-controls'],
   init() {
     this.el.setAttribute('wasd-controls', 'wsAxis: y; wsInverted: true')
-    this.el.setAttribute('look-controls', '')
+    this.el.setAttribute('look-controls', 'touchEnabled: false')
     this.el.setAttribute('position', '0 1.6 0')
 
     this.setupLookControls()
