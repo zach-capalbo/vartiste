@@ -914,6 +914,16 @@ class CompositorFinder {
     if (compositionView.getObject3D('mesh')) return compositionView.getObject3D('mesh').getObjectByProperty("type", "Mesh") || compositionView.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh") || this.el.getObject3D('mesh')
     return this.el.getObject3D('mesh')
   }
+
+  get meshRoot() {
+    return document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
+  }
+
+  get object3D() {
+    let compositionView = document.querySelector('#composition-view')
+    if (compositionView.getObject3D('mesh')) return compositionView.object3D
+    return this.el.object3D
+  }
 }
 
 window.Compositor = new CompositorFinder()
