@@ -328,7 +328,33 @@ AFRAME.registerComponent('compositor', {
     this.el.components['draw-canvas'].transform = Layer.EmptyTransform()
 
     let overlayCtx = this.overlayCanvas.getContext('2d')
+
+    if (this.data.onionSkin && this.activeLayer.frames.length > 1)
+    {
+      const onionSkins = [
+        [2, "#4a75e0"],
+        [1, "#4a75e0"],
+        [-1, "#e04a6d"],
+        [-2, "#e04a6d"]
+      ]
+      for (let [frameOffset, color] of onionSkins)
+      {
+        if (this.activeLayer.frames.length <= Math.abs(frameOffset)) continue;
+        overlayCtx.clearRect(0, 0, width, height)
+        overlayCtx.globalCompositeOperation = 'copy'
+        this.activeLayer.draw(overlayCtx, this.activeLayer.frameIdx(this.currentFrame + frameOffset))
+        overlayCtx.globalCompositeOperation = 'source-in'
+        overlayCtx.fillStyle = color
+        overlayCtx.fillRect(0, 0, width, height)
+
+        ctx.globalCompositeOperation = 'source-over'
+        ctx.globalAlpha = Math.pow(0.5, Math.abs(frameOffset))
+        ctx.drawImage(this.overlayCanvas, 0, 0)
+      }
+    }
+
     overlayCtx.clearRect(0, 0, width, height)
+    overlayCtx.globalCompositeOperation = 'source-over'
 
     for (let overlay of Object.values(this.overlays))
     {
@@ -346,25 +372,9 @@ AFRAME.registerComponent('compositor', {
     }
 
     ctx.globalCompositeOperation = 'difference'
+    ctx.globalAlpha = 1.0
     ctx.drawImage(this.overlayCanvas, 0, 0)
 
-    if (this.data.onionSkin && this.activeLayer.frames.length > 1)
-    {
-      const onionSkins = [[1, "#4a75e0"], [-1, "#e04a6d"]]
-      for (let [frameOffset, color] of onionSkins)
-      {
-        overlayCtx.clearRect(0, 0, width, height)
-        overlayCtx.globalCompositeOperation = 'copy'
-        this.activeLayer.draw(overlayCtx, this.activeLayer.frameIdx(this.currentFrame + frameOffset))
-        overlayCtx.globalCompositeOperation = 'source-in'
-        overlayCtx.fillStyle = color
-        overlayCtx.fillRect(0, 0, width, height)
-
-        ctx.globalCompositeOperation = 'source-over'
-        ctx.globalAlpha = 0.5
-        ctx.drawImage(this.overlayCanvas, 0, 0)
-      }
-    }
     ctx.restore()
   },
   playPauseAnimation() {
@@ -903,6 +913,16 @@ class CompositorFinder {
     let compositionView = document.querySelector('#composition-view')
     if (compositionView.getObject3D('mesh')) return compositionView.getObject3D('mesh').getObjectByProperty("type", "Mesh") || compositionView.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh") || this.el.getObject3D('mesh')
     return this.el.getObject3D('mesh')
+  }
+
+  get meshRoot() {
+    return document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
+  }
+
+  get object3D() {
+    let compositionView = document.querySelector('#composition-view')
+    if (compositionView.getObject3D('mesh')) return compositionView.object3D
+    return this.el.object3D
   }
 }
 

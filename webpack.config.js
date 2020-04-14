@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const process = require('process')
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 let config = {
@@ -52,11 +53,14 @@ let config = {
   }
 };
 
+const faviconPath = './src/static/favicon.png'
+
 let app = Object.assign({
   entry: {
     app: './src/index.js'
   },
   plugins: [
+    new FaviconsWebpackPlugin(faviconPath),
     new HtmlWebpackPlugin({
       template: './src/template.html.slm',
       filename: 'index.html'
@@ -71,6 +75,7 @@ let static = ['landing', 'license'].map(name => { return Object.assign({
     plugins: [
       // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
       // new CleanWebpackPlugin(),
+      new FaviconsWebpackPlugin(faviconPath),
       new HtmlWebpackPlugin({
         template: `./src/static/${name}.html.slm`,
         filename: `${name}.html`

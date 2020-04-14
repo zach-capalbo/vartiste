@@ -85,7 +85,7 @@ AFRAME.registerSystem('settings-system', {
     document.getElementById('composition-view').emit('updatemesh')
   },
   async getExportableGLB(exportMesh) {
-    let mesh = exportMesh || document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
+    let mesh = exportMesh || Compositor.meshRoot
     let material = document.getElementById('canvas-view').getObject3D('mesh').material
     let originalImage = material.map.image
     material.map.image = Compositor.component.preOverlayCanvas
