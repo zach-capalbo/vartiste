@@ -118,6 +118,7 @@ function prepareModelForExport(model, material) {
     console.log("Bumping into normal")
     if (material.normalMap) console.warn("Ignoring existing normal map")
     material.normalMap = new THREE.Texture()
+    material.normalMap.flipY = material.bumpMap.flipY
     material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
   }
 
