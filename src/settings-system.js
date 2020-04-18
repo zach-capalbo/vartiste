@@ -110,7 +110,14 @@ AFRAME.registerSystem('settings-system', {
     document.getElementById('composition-view').emit('updatemesh')
   },
   async exportSketchfabAction() {
-    this.el.systems.sketchfab.upload()
+    if (this.el.systems.sketchfab.loggedIn())
+    {
+      this.el.systems.sketchfab.upload()
+    }
+    else
+    {
+      this.el.systems.sketchfab.login()
+    }
   },
   async recordAction() {
     let compositor = document.getElementById('canvas-view').components.compositor

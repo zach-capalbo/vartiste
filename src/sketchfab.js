@@ -22,6 +22,14 @@ AFRAME.registerSystem('sketchfab', {
      let url = `https://sketchfab.com/oauth2/authorize/?state=123456789&response_type=token&client_id=${CLIENT_ID}`
      this.el.systems['settings-system'].popup(url, "Sketchfab Login")
   },
+  logout() {
+    delete localStorage.sketchfab_token
+    delete this.token
+  },
+  loggedIn() {
+    console.log("Token", this.token)
+    return typeof this.token !== 'undefined'
+  },
   async upload() {
     let modelFile = await this.el.systems['settings-system'].getExportableGLB()
     console.log("Uploading Model", modelFile)
@@ -48,6 +56,7 @@ AFRAME.registerSystem('sketchfab', {
       this.el.systems['settings-system'].popup(info.viewerUrl, "Sketchfab Upload")
     } catch (e) {
       console.error(e)
+      this.el.sceneEl.emit('open-popup', "There was an error uploading. You may need to refresh this page and log in again.")
       throw e
     }
   },
@@ -87,7 +96,18 @@ AFRAME.registerSystem('sketchfab', {
       redirect: 'follow', // manual, *follow, error
       // referrerPolicy: 'no-referrer', // no-referrer, *client
       body: body
-    }).then(function(response) {
+    }).then((response) => {
+      if (response.status === 401)
+      {
+        // Delete sketchfab token so we can reauthorize
+        this.logout()
+      }
+
+      if (!response.ok)
+      {
+        throw Error("Could not post to sketchfab", response)
+      }
+
       return response.json()
     })
     return response
