@@ -1,5 +1,6 @@
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
+import {Pool} from './pool.js'
 
 AFRAME.registerComponent('draw-canvas', {
   schema: {
@@ -8,6 +9,7 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   init() {
+    Pool.init(this)
     // this.brush = new ProceduralBrush();
     let paintSystem = this.el.sceneEl.systems['paint-system']
     this.brush = paintSystem.brush
@@ -31,13 +33,19 @@ AFRAME.registerComponent('draw-canvas', {
     this.wrappedDraw = this.wrappedDraw.bind(this)
   },
 
-  uvToPoint(uv, canvas = null) {
+  uvToPoint(uv, canvas = null, {useTransform = true} = {}) {
     let {width, height} = canvas || this.data.canvas
     let {translation, scale} = this.transform
     let {width: uvWidth, height: uvHeight} = this.data.compositor
 
     let yy = uv.y
     if (Compositor.component.data.flipY) yy = 1.0 - yy
+
+    if (!useTransform)
+    {
+      return {x: uvWidth * uv.x, y: uvHeight * yy}
+    }
+
     let x = uvWidth * uv.x - (translation.x - width / 2 * scale.x + width / 2)
     let y = uvHeight * yy - (translation.y - height / 2 * scale.y + height / 2)
 
@@ -173,6 +181,7 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   pickColorUV(uv, {canvas = null} = {}) {
+    let useTransform = true
     if (canvas === null) {
       let compositor = document.getElementById('canvas-view').components.compositor
       if (compositor.activeLayer.mode.endsWith("Map"))
@@ -182,10 +191,12 @@ AFRAME.registerComponent('draw-canvas', {
       else if (compositor.data.usePreOverlayCanvas)
       {
         canvas = compositor.preOverlayCanvas
+        useTransform = false
       }
       else
       {
         canvas = compositor.compositeCanvas
+        useTransform = false
       }
     }
     let sampleCanvas = this.sampleCanvas
@@ -200,7 +211,7 @@ AFRAME.registerComponent('draw-canvas', {
     this.sampleCanvas.height = height
     ctx.clearRect(0, 0, sampleCanvas.width, sampleCanvas.height)
 
-    let {x,y} = this.uvToPoint(uv)
+    let {x,y} = this.uvToPoint(uv, undefined, {useTransform})
     ctx.drawImage(canvas,
       x - width / 2,
       y - height / 2,
@@ -233,7 +244,17 @@ AFRAME.registerComponent('draw-canvas', {
     avg.g /= avg.alpha
     avg.b /= avg.alpha
 
-    return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
+    // if (!this.el.sceneEl.getAttribute('renderer').colorManagement)
+    {
+
+      return `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
+    }
+
+    this.threeColor = this.pool("threeColor", THREE.Color)
+    this.threeColor.setRGB(avg.r, avg.g, avg.b)
+    // this.threeColor.convertSRGBToLinear()
+
+    return this.threeColor.getStyle()
   },
 
   eraseUV(uv, rawParams = {}) {
