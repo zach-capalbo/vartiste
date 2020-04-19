@@ -33,8 +33,15 @@ async function version() {
 module.exports = async function (opions, loaderContext) {
   branchName = process.env.CI_COMMIT_REF_NAME
   if (!branchName) {
-    branchName = await sh(`git symbolic-ref HEAD`)
-    branchName = branchName.replace('refs/heads/', "")
+    try {
+      branchName = await sh(`git symbolic-ref HEAD`)
+      branchName = branchName.replace('refs/heads/', "")
+    }
+    catch (e)
+    {
+      console.warn(e)
+      branchName = "GIT_ERROR"
+    }
   }
   isMaster = branchName === 'master'
 
