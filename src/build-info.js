@@ -26,7 +26,7 @@ async function version() {
 
   let mergeCount = await sh(`git rev-list --min-parents=2 HEAD | wc -l`)
 
-  return `${versionParts[0]}.${versionParts[1]}`
+  return `${versionParts[0]}.${mergeCount}`
 
 }
 
