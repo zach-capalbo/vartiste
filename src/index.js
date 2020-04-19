@@ -42,6 +42,7 @@ require('./test-utilities.js')
 require('./skeletonator.js')
 require('./sketchfab.js')
 require('./desktop-controls.js')
+require('./about-shelf.js')
 
 require('./app.styl')
 
