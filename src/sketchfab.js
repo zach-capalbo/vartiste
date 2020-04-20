@@ -85,7 +85,7 @@ AFRAME.registerSystem('sketchfab', {
 
     const response = await fetch(SKETCHFAB_API_URL + route, {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
-      // mode: 'cors', // no-cors, *cors, same-origin
+      mode: 'cors', // no-cors, *cors, same-origin
       // cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       // credentials: 'same-origin', // include, *same-origin, omit
       headers: {
@@ -105,7 +105,8 @@ AFRAME.registerSystem('sketchfab', {
 
       if (!response.ok)
       {
-        throw Error("Could not post to sketchfab", response)
+        console.error(response)
+        throw Error("Could not post to sketchfab")
       }
 
       return response.json()
