@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "convolve": "^0.1.0",
+    "dexie": "^2.0.4",
     "gif.js": "^0.2.0",
     "val-loader": "^2.1.1"
   }

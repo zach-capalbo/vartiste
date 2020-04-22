@@ -45,9 +45,6 @@ AFRAME.registerComponent('brush-shelf', {
   toggleRotationAction() {
     this.system.setRotateBrush(!this.system.data.rotateBrush)
   },
-  toggleLatheAction() {
-    document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
-  },
   toggleOrientationAction() {
     document.querySelectorAll('*[hand-draw-tool]').forEach(e=>e.setAttribute('tracked-controls', {orientationOffset: {x: 43 + 90, y: 180, z: 90}}))
   },

@@ -5,6 +5,7 @@ import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
+import Dexie from 'dexie'
 AFRAME.registerSystem('settings-system', {
   schema: {
     addReferences: {default: false}
@@ -83,6 +84,28 @@ AFRAME.registerSystem('settings-system', {
     this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
 
     document.getElementById('composition-view').emit('updatemesh')
+  },
+  openProjectsDB() {
+    let db = new Dexie("project_database")
+    db.version(1).stores({
+      projects: 'name, modified'
+    });
+
+    return db
+  },
+  async storeToBrowserAction() {
+    let db = this.openProjectsDB()
+    await db.projects.put({
+      name: this.projectName,
+      projectData: JSON.stringify(await ProjectFile.save({compositor: Compositor.component})),
+      modified: new Date(),
+    })
+    this.el.emit('open-popup', `Saved at ${new Date()}`)
+  },
+  async loadFromBrowser(projectName) {
+    let db = this.openProjectsDB()
+    let project = await db.projects.get(projectName)
+    this.load(project.projectData)
   },
   async getExportableGLB(exportMesh) {
     let mesh = exportMesh || Compositor.meshRoot

@@ -35,12 +35,6 @@ AFRAME.registerComponent('manipulator', {
       this.scaleAmmount = - e.detail.axis[Axes.left_right(this.el)]
     })
 
-    document.addEventListener('wheel', e => {
-      if (!e.shiftKey) return
-      this.zoomAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
-      this.resetZoom = true
-    })
-
     this.startPoint = new THREE.Object3D()
     this.endPoint = new THREE.Object3D()
 
@@ -361,6 +355,13 @@ AFRAME.registerComponent('mouse-manipulator', {
       // if (e.button == 0) return
       this.el.components.manipulator.onGripOpen()
     })
+
+    document.addEventListener('wheel', e => {
+      if (!e.shiftKey) return
+      this.el.components.manipulator.zoomAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
+      this.el.components.manipulator.resetZoom = true
+    })
+
   },
 })
 

@@ -1,4 +1,5 @@
 import {Sfx} from './sfx.js'
+import {Util} from './util.js'
 
 AFRAME.registerComponent('pencil-tool', {
   schema: {
@@ -353,5 +354,55 @@ AFRAME.registerComponent('hammer-tool', {
     this.speed = velocity.length() / dt
     lastPosition.copy(position)
     // console.log(this.speed)
+  }
+})
+
+AFRAME.registerComponent('drip-tool', {
+  schema: {
+    radius: {default: 0.06},
+    tipRatio: {default: 0.2},
+
+    throttle: {type: 'int', default: 30},
+    enabled: {default: true},
+    waitForGrab: {default: true}
+  },
+  events: {
+    click: function(e) { this.addDrop() }
+  },
+  init() {
+    let radius = this.data.radius
+    let height = 0.3
+    let tipHeight = height * this.data.tipRatio
+    let cylinderHeight = height - tipHeight
+    let cylinder = document.createElement('a-cylinder')
+    this.height = height
+    this.tipHeight = tipHeight
+    cylinder.setAttribute('radius', radius)
+    cylinder.setAttribute('height', cylinderHeight)
+    cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    cylinder.classList.add('clickable')
+    cylinder.setAttribute('propogate-grab', "")
+    this.el.append(cylinder)
+
+    this.drops = []
+  },
+  addDrop() {
+    let drop = document.createElement('a-sphere')
+    drop.setAttribute('radius', this.data.radius * 2.0 / 3.0)
+    Util.whenLoaded(drop, () => {
+      drop.object3D.position.copy(this.el.object3D.position)
+    })
+    drop.object3D.velocity = new THREE.Vector3(0, 0, 0)
+    this.el.parentEl.append(drop)
+    this.drops.push(drop)
+  },
+  tick(t,dt) {
+    for (let drop of this.drops)
+    {
+      let d3D = drop.object3D
+      d3D.velocity.y -= - 9.8 / 1000.0 * dt
+      d3D.position.y += d3D.velocity.y * dt
+    }
+    if (!this.el.is("grabbed")) return
   }
 })
