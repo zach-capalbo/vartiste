@@ -138,11 +138,18 @@ AFRAME.registerComponent('load-shelf', {
         this[action](project)
       })
 
+      let previewEl = rowEl.querySelector('.preview')
+      Util.whenLoaded(previewEl, async () => {
+        let previewSrc = (await db.previews.get(project)).src
+        previewEl.setAttribute('material', {src: previewSrc})
+      })
+
       projectsEl.append(rowEl)
     }
   },
   open(project) {
     this.el.sceneEl.systems['settings-system'].loadFromBrowser(project)
+    this.el.emit('popupaction', 'close')
   },
   async delete(project) {
     await this.el.sceneEl.systems['settings-system'].deleteFromBrowser(project)

@@ -67,7 +67,6 @@ AFRAME.registerComponent('edit-field', {
     let parentVisible = true
     o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
 
-    console.log("parentVisible", o.visible, parentVisible, e.detail.cursorEl.components.raycaster.objects.indexOf(e.target.object3D))
     let numpad = this.numpad
     if (e.target.hasAttribute('action'))
     {
@@ -141,6 +140,10 @@ AFRAME.registerComponent('popup-button', {
       if (!e.target.hasAttribute('popup-action')) return
 
       this[e.target.getAttribute('popup-action') + "Popup"]()
+    })
+
+    popup.addEventListener('popupaction', e => {
+      this[e.detail + "Popup"]()
     })
   },
   update(oldData) {

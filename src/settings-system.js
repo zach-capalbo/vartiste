@@ -85,20 +85,35 @@ AFRAME.registerSystem('settings-system', {
 
     document.getElementById('composition-view').emit('updatemesh')
   },
+  getPreview({width=64, height=64} = {}) {
+    let compositor = Compositor.component
+    let canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d').drawImage(compositor.preOverlayCanvas, 0, 0, width, height)
+    return canvas.toDataURL()
+  },
   openProjectsDB() {
     let db = new Dexie("project_database")
     db.version(1).stores({
-      projects: 'name, modified'
+      projects: 'name, modified',
+      previews: 'name'
     });
 
     return db
   },
   async storeToBrowserAction() {
     let db = this.openProjectsDB()
-    await db.projects.put({
-      name: this.projectName,
-      projectData: JSON.stringify(await ProjectFile.save({compositor: Compositor.component})),
-      modified: new Date(),
+    await db.transaction("rw", db.projects, db.previews, async () => {
+      await db.projects.put({
+        name: this.projectName,
+        projectData: JSON.stringify(await ProjectFile.save({compositor: Compositor.component})),
+        modified: new Date(),
+      })
+      await db.previews.put({
+        name: this.projectName,
+        src: this.getPreview(),
+      })
     })
     this.el.emit('open-popup', `Saved at ${new Date()}`)
   },
