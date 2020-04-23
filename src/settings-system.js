@@ -107,6 +107,10 @@ AFRAME.registerSystem('settings-system', {
     let project = await db.projects.get(projectName)
     this.load(project.projectData)
   },
+  async deleteFromBrowser(projectName) {
+    let db = this.openProjectsDB()
+    await db.projects.delete(projectName)
+  },
   async getExportableGLB(exportMesh) {
     let mesh = exportMesh || Compositor.meshRoot
     let material = document.getElementById('canvas-view').getObject3D('mesh').material

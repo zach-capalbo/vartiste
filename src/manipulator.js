@@ -343,7 +343,6 @@ AFRAME.registerComponent('mouse-manipulator', {
   init() {
     this.el.setAttribute('manipulator', {useRay: true})
     document.addEventListener('mousedown', e => {
-      console.log("Click grabbing")
       if (!e.shiftKey) return
       let allowLeftClick = true
       if (!allowLeftClick && (!e.buttons || e.buttons == 1)) return
@@ -351,7 +350,6 @@ AFRAME.registerComponent('mouse-manipulator', {
     })
 
     document.addEventListener('mouseup', e=> {
-      console.log("Clcik releasing")
       // if (e.button == 0) return
       this.el.components.manipulator.onGripOpen()
     })

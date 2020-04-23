@@ -1,4 +1,5 @@
 const settingsShelfHTML = require('./partials/settings-shelf.html.slm')
+const {Util} = require('./util.js')
 
 AFRAME.registerComponent('settings-shelf', {
   init() {
@@ -106,5 +107,45 @@ AFRAME.registerComponent('settings-shelf', {
   },
   toggleReferenceImportAction() {
     this.system.data.addReferences = !this.system.data.addReferences
+  }
+})
+
+
+AFRAME.registerComponent('load-shelf', {
+  init() {
+    this.el.parentEl.addEventListener('popupshown', e => this.repopulate())
+  },
+  async repopulate() {
+    console.log("Repopulating projects")
+    let projectsEl = this.el.querySelector('.projects')
+    projectsEl.innerHTML = ""
+    let settings = this.el.sceneEl.systems['settings-system']
+    let db = settings.openProjectsDB()
+    let projects = await db.projects.orderBy('modified').primaryKeys()
+    projects = projects.reverse()
+    for (let i in projects)
+    {
+      let project = projects[i]
+      let rowEl = document.createElement('a-entity')
+      rowEl.innerHTML = require('./partials/load-project-row.html.slm')
+      let nameEl = rowEl.querySelector('.name')
+      Util.whenLoaded(nameEl, () => nameEl.setAttribute('text', {value: project}))
+      rowEl.setAttribute('position', `-2 ${-i * 0.6 - 0.5} 0`)
+
+      rowEl.addEventListener('click', e => {
+        let action = e.target.getAttribute('click-action')
+        if (!action) return
+        this[action](project)
+      })
+
+      projectsEl.append(rowEl)
+    }
+  },
+  open(project) {
+    this.el.sceneEl.systems['settings-system'].loadFromBrowser(project)
+  },
+  async delete(project) {
+    await this.el.sceneEl.systems['settings-system'].deleteFromBrowser(project)
+    await this.repopulate()
   }
 })

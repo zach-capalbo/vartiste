@@ -1,0 +1,3 @@
+a-entity click-action="open" icon-button="#asset-folder-open-outline" tooltip="Load Project"
+a-entity click-action="delete" icon-button="#asset-delete" tooltip="Delete Project"
+a-entity.name position="2.5 0 0" text="width: 3; wrapCount: 20"
