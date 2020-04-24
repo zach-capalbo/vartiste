@@ -112,8 +112,22 @@ AFRAME.registerComponent('settings-shelf', {
 
 
 AFRAME.registerComponent('load-shelf', {
+  events: {
+    click: function(e) {
+      if (!e.target.hasAttribute('click-action')) return
+      let action = e.target.getAttribute('click-action')
+      if (!(action in this)) return
+      this[action](e)
+    }
+  },
   init() {
     this.el.parentEl.addEventListener('popupshown', e => this.repopulate())
+    this.inputEl = document.createElement('input')
+    this.inputEl.setAttribute('type', "file")
+    this.inputEl.setAttribute('accept', ".vartiste")
+    this.inputEl.style="display: none"
+    this.inputEl.addEventListener('change', (e) => {this.upload(e)})
+    document.body.append(this.inputEl)
   },
   async repopulate() {
     console.log("Repopulating projects")
@@ -133,7 +147,7 @@ AFRAME.registerComponent('load-shelf', {
       rowEl.setAttribute('position', `-2 ${-i * 0.6 - 0.5} 0`)
 
       rowEl.addEventListener('click', e => {
-        let action = e.target.getAttribute('click-action')
+        let action = e.target.getAttribute('project-action')
         if (!action) return
         this[action](project)
       })
@@ -154,5 +168,17 @@ AFRAME.registerComponent('load-shelf', {
   async delete(project) {
     await this.el.sceneEl.systems['settings-system'].deleteFromBrowser(project)
     await this.repopulate()
+  },
+  browse() {
+    this.inputEl.click()
+  },
+  upload(e) {
+    let file = this.inputEl.files[0]
+    if (!file) return
+    file.text().then(t => {
+      console.log("Loading file")
+      this.el.sceneEl.systems['settings-system'].load(t)
+      this.el.emit('popupaction', 'close')
+    })
   }
 })
