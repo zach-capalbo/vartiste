@@ -103,11 +103,12 @@ AFRAME.registerSystem('settings-system', {
     return db
   },
   async storeToBrowserAction() {
+    let projectData = JSON.stringify(await ProjectFile.save({compositor: Compositor.component}))
     let db = this.openProjectsDB()
     await db.transaction("rw", db.projects, db.previews, async () => {
       await db.projects.put({
         name: this.projectName,
-        projectData: JSON.stringify(await ProjectFile.save({compositor: Compositor.component})),
+        projectData: projectData,
         modified: new Date(),
       })
       await db.previews.put({
