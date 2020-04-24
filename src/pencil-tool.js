@@ -1,5 +1,6 @@
 import {Sfx} from './sfx.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 AFRAME.registerComponent('pencil-tool', {
   schema: {
@@ -362,14 +363,16 @@ AFRAME.registerComponent('drip-tool', {
     radius: {default: 0.06},
     tipRatio: {default: 0.2},
 
-    throttle: {type: 'int', default: 30},
-    enabled: {default: true},
-    waitForGrab: {default: true}
+    maxRate: {default: 120},
   },
   events: {
     click: function(e) { this.addDrop() }
   },
   init() {
+    Pool.init(this)
+    this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', "showHand: false")
+
     let radius = this.data.radius
     let height = 0.3
     let tipHeight = height * this.data.tipRatio
@@ -380,15 +383,18 @@ AFRAME.registerComponent('drip-tool', {
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', cylinderHeight)
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    cylinder.setAttribute('position', `0 ${-cylinderHeight / 2.0} 0`)
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
     this.el.append(cylinder)
 
     this.drops = []
+    this.raycaster = new THREE.Raycaster()
   },
   addDrop() {
     let drop = document.createElement('a-sphere')
     drop.setAttribute('radius', this.data.radius * 2.0 / 3.0)
+    drop.setAttribute('color', this.el.sceneEl.systems['paint-system'].brush.color)
     Util.whenLoaded(drop, () => {
       drop.object3D.position.copy(this.el.object3D.position)
     })
@@ -397,12 +403,97 @@ AFRAME.registerComponent('drip-tool', {
     this.drops.push(drop)
   },
   tick(t,dt) {
+    this.updateDrops(t, dt)
+
+    if (!this.el.is("grabbed")) return
+
+    let up = this.pool('up', THREE.Vector3)
+    up.set(0, 1.0, 0)
+    up.transformDirection(this.el.object3D.matrixWorld)
+    let amount = (1 - up.dot(this.el.sceneEl.object3D.up)) / 2.0
+
+    amount = THREE.Math.smootherstep(amount, 0.005, 1.0)
+
+    if (!this.lastDropTime) {
+      this.lastDropTime = t
+      return
+    }
+
+    let expectedInterval = this.data.maxRate / amount
+
+    if (t - this.lastDropTime > expectedInterval)
+    {
+      this.addDrop()
+      this.lastDropTime = t
+    }
+  },
+  updateDrops(t,dt) {
+    if (this.drops.length === 0) return
+    let nextPos = this.pool('nextPos', THREE.Vector3)
+    let objects = Array.from(document.querySelectorAll('.canvas, .clickable')).filter(el => !(el == this.el || this.el.contains(el))).map(o => o.object3D)
+
+    let direction = this.pool('dir', THREE.Vector3)
+    let posWorld = this.pool('posWorld', THREE.Vector3)
+
+    let intersections = []
+
     for (let drop of this.drops)
     {
       let d3D = drop.object3D
-      d3D.velocity.y -= - 9.8 / 1000.0 * dt
-      d3D.position.y += d3D.velocity.y * dt
+      d3D.velocity.y += - 9.8 * dt / 1000.0 / 1000.0
+
+      d3D.velocity.clampLength(0, 0.005)
+      nextPos.copy(d3D.position)
+      nextPos.addScaledVector(d3D.velocity, dt)
+
+      direction.copy(d3D.velocity).transformDirection(d3D.matrixWorld).normalize()
+
+      posWorld.copy(d3D.position)
+      d3D.parent.localToWorld(posWorld)
+
+      this.raycaster.set(posWorld, direction)
+      this.raycaster.far = d3D.velocity.length() * dt + 0.01
+
+      intersections.length = 0
+      this.raycaster.intersectObjects(objects, true, intersections)
+
+      let intersection = intersections.filter(i => i.object.el).sort(i => navigator.xr ? i.distance : - i.distance)[0]
+
+      if (intersection)
+      {
+        this.removeDrop(drop)
+
+        let el = intersection.object.el
+        if (el)
+        {
+          let isDrawable = false
+          let drawCanvas
+          if ('draw-canvas' in el.components)
+          {
+            isDrawable = true
+            drawCanvas = el.components['draw-canvas']
+          }
+          else if ('forward-draw' in el.components)
+          {
+            isDrawable = true
+            drawCanvas = el.components['forward-draw']
+          }
+          if (isDrawable)
+          {
+            drawCanvas.drawUV(intersection.uv, {})
+          }
+        }
+      }
+
+      d3D.position.copy(nextPos)
+
+      if (d3D.position.length() > 10) this.removeDrop()
     }
-    if (!this.el.is("grabbed")) return
-  }
+  },
+  removeDrop(drop) {
+    if (this.drops.indexOf(drop) < 0) return
+    Sfx.play('sfx-05', drop)
+    this.el.parentEl.removeChild(drop)
+    this.drops.splice(this.drops.indexOf(drop), 1)
+  },
 })
