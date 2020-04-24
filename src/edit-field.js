@@ -67,7 +67,6 @@ AFRAME.registerComponent('edit-field', {
     let parentVisible = true
     o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
 
-    console.log("parentVisible", o.visible, parentVisible, e.detail.cursorEl.components.raycaster.objects.indexOf(e.target.object3D))
     let numpad = this.numpad
     if (e.target.hasAttribute('action'))
     {
@@ -102,28 +101,49 @@ AFRAME.registerComponent('popup-button', {
     deferred: {type: 'boolean', default: false}
   },
   init() {
-    this.el.setAttribute('text', {align: 'right'})
-    let width = this.el.getAttribute('text').width
+    let editButton
+    if (!this.el.hasAttribute('icon-button'))
+    {
+      this.el.setAttribute('text', {align: 'right'})
+      let width = this.el.getAttribute('text').width
 
-    let editButton = document.createElement('a-entity')
+      editButton = document.createElement('a-entity')
+      editButton.setAttribute('position', `${width / 2 + 0.3} 0 0`)
+      editButton.setAttribute('icon-button', this.data.icon)
+      this.el.append(editButton)
+      editButton.addEventListener('click', e => this.launchPopup())
+    }
+    else
+    {
+      editButton = this.el
+      this.el.addEventListener('click', e => {
+        if (e.target === editButton) this.launchPopup()
+      })
+    }
     this.editButton = editButton
-    editButton.setAttribute('icon-button', this.data.icon)
-    editButton.setAttribute('position', `${width / 2 + 0.3} 0 0`)
-    this.el.append(editButton)
-
-    editButton.addEventListener('click', e => this.launchPopup())
 
     let popup = document.createElement('a-entity')
     this.popup = popup
 
     popup.setAttribute('position', '0 0 0.1')
     popup.setAttribute('visible', 'false')
-    this.el.append(popup)
+
+    if (!this.el.hasAttribute('icon-button'))
+    {
+      this.el.append(popup)
+    }
+    else {
+      this.el.parentEl.append(popup)
+    }
 
     popup.addEventListener('click', e => {
       if (!e.target.hasAttribute('popup-action')) return
 
       this[e.target.getAttribute('popup-action') + "Popup"]()
+    })
+
+    popup.addEventListener('popupaction', e => {
+      this[e.detail + "Popup"]()
     })
   },
   update(oldData) {
@@ -160,6 +180,7 @@ AFRAME.registerComponent('popup-button', {
     popup.setAttribute('visible', true)
     this.el.sceneEl.emit('refreshobjects')
     this.el.emit('popuplaunched')
+    popup.emit('popupshown')
   },
   closePopup() {
     this.popup.setAttribute('visible', false)

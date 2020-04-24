@@ -245,5 +245,8 @@ AFRAME.registerComponent('toolbox-shelf', {
     }
     mesh.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3, true) );
     mesh.geometry.needsUpdate = true
+  },
+  toggleLatheAction() {
+    document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
   }
 })

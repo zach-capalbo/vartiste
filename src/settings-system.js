@@ -5,6 +5,7 @@ import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
+import Dexie from 'dexie'
 AFRAME.registerSystem('settings-system', {
   schema: {
     addReferences: {default: false}
@@ -83,6 +84,48 @@ AFRAME.registerSystem('settings-system', {
     this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
 
     document.getElementById('composition-view').emit('updatemesh')
+  },
+  getPreview({width=64, height=64} = {}) {
+    let compositor = Compositor.component
+    let canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d').drawImage(compositor.preOverlayCanvas, 0, 0, width, height)
+    return canvas.toDataURL()
+  },
+  openProjectsDB() {
+    let db = new Dexie("project_database")
+    db.version(1).stores({
+      projects: 'name, modified',
+      previews: 'name'
+    });
+
+    return db
+  },
+  async storeToBrowserAction() {
+    let projectData = JSON.stringify(await ProjectFile.save({compositor: Compositor.component}))
+    let db = this.openProjectsDB()
+    await db.transaction("rw", db.projects, db.previews, async () => {
+      await db.projects.put({
+        name: this.projectName,
+        projectData: projectData,
+        modified: new Date(),
+      })
+      await db.previews.put({
+        name: this.projectName,
+        src: this.getPreview(),
+      })
+    })
+    this.el.emit('open-popup', `Saved at ${new Date()}`)
+  },
+  async loadFromBrowser(projectName) {
+    let db = this.openProjectsDB()
+    let project = await db.projects.get(projectName)
+    this.load(project.projectData)
+  },
+  async deleteFromBrowser(projectName) {
+    let db = this.openProjectsDB()
+    await db.projects.delete(projectName)
   },
   async getExportableGLB(exportMesh) {
     let mesh = exportMesh || Compositor.meshRoot

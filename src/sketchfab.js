@@ -39,6 +39,7 @@ AFRAME.registerSystem('sketchfab', {
       tags: ["vartiste"],
       isPublished: false,
       description: "Created in vartiste!",
+      source: 'vartiste',
       // options: {
       //   shading: 'lit'
       // }

@@ -1,0 +1,4 @@
+a-entity project-action="open" icon-button="#asset-folder-open-outline" tooltip="Load Project"
+a-entity project-action="delete" icon-button="#asset-delete" tooltip="Delete Project"
+a-entity.name position="2.5 0 0" text="width: 3; wrapCount: 20"
+a-entity.preview geometry="primitive: plane; width: 0.5; height: 0.5" position="4 0 0" material="shader:flat"

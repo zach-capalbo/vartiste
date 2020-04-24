@@ -1,0 +1,6 @@
+a-entity shelf="width: 4.5; height: 7" scale="0.3 0.3 0.3" load-shelf=""
+  a-entity icon-button="#asset-close-circle-outline" popup-action="close" position="2 3.2 0"
+  a-entity position="0 3.2 0"
+    a-entity text="width: 3; wrapCount: 24; value: You can also load a project by drag and dropping it here."
+  a-entity click-action="browse" icon-button="#asset-folder-open-outline" tooltip="Browse for project file" position="-2.3 3.2 0"
+  a-entity.projects position="0 3 0"

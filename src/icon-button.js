@@ -22,7 +22,7 @@ AFRAME.registerSystem('icon-button', {
   init() {
     this.width = 0.4
     this.depth = 0.05
-    this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.001)
+    this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.005)
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width, this.width)
     this.colorManagement = this.el.getAttribute('renderer').colorManagement
   }

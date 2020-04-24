@@ -307,7 +307,14 @@ AFRAME.registerComponent('compositor', {
     this.allNodes.splice(nodeIdx, 1)
     this.el.emit('nodedeleted', {node})
   },
-  flipUVY() {
+  flipUVY(force) {
+    if (!force)
+    {
+      let atZero = (this.el.getObject3D('mesh').geometry.attributes.uv.array[1] == 0)
+      let atOne = (this.el.getObject3D('mesh').geometry.attributes.uv.array[1] == 1)
+      if (!this.data.flipY && atZero) return
+      if (this.data.flipY && atZero) return
+    }
     console.log("Flipping UV Y Coords")
     let o = this.el.getObject3D('mesh')
     if (o.geometry && o.geometry.attributes.uv)
@@ -709,6 +716,9 @@ AFRAME.registerComponent('compositor', {
   // },
   async load(obj) {
     let delay = () => new Promise(r => setTimeout(r, 10))
+
+    this.data.flipY = false
+    this.flipUVY()
 
     for (let layer of this.layers.slice()) {
       console.log("Deleting", layer)
