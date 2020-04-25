@@ -29,6 +29,7 @@ AFRAME.registerComponent('left-hand-controls', {
       if (!this.el.is("grabbing"))
       {
         this.el.sceneEl.systems['settings-system'].undoAction()
+        // document.querySelectorAll('*[laser-controls]').forEach(el => el.pause())
       }
     })
   },

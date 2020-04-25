@@ -313,7 +313,7 @@ AFRAME.registerComponent('compositor', {
       let atZero = (this.el.getObject3D('mesh').geometry.attributes.uv.array[1] == 0)
       let atOne = (this.el.getObject3D('mesh').geometry.attributes.uv.array[1] == 1)
       if (!this.data.flipY && atZero) return
-      if (this.data.flipY && atZero) return
+      if (this.data.flipY && !atZero) return
     }
     console.log("Flipping UV Y Coords")
     let o = this.el.getObject3D('mesh')
