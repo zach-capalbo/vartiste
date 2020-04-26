@@ -50,6 +50,8 @@ export class StyleTransferNode extends CanvasNode {
 
     if (!this.checkIfUpdateNeeded(frame)) return
 
+    if (!this.sources[0]) return
+
     if (this.data.isRunningInference) {
       this.data.resetUpdateTime
       return
