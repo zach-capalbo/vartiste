@@ -36,6 +36,28 @@ let config = {
           }
         }]
       },
+      {
+        test: /ai-models.*json/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: 'ai/[path][name].[ext]'
+          }
+        }]
+      },
+      {
+        test: /ai-models.*group/,
+        // type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: 'ai/[path][name]'
+          }
+        }]
+      },
       {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav)$/i,
         use: [
           {

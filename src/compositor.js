@@ -1,5 +1,7 @@
 import * as NodeTypes from "./layer.js"
+import * as AINodes from './ai-nodes.js'
 const {Layer, CanvasNode, MaterialNode} = NodeTypes
+Object.assign(NodeTypes, AINodes)
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
