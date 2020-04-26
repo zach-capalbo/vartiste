@@ -497,3 +497,10 @@ AFRAME.registerComponent('drip-tool', {
     this.drops.splice(this.drops.indexOf(drop), 1)
   },
 })
+
+AFRAME.registerComponent('vertex-tool', {
+  dependencies: ['pencil-tool'],
+  init() {
+
+  },
+})

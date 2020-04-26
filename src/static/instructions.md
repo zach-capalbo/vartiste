@@ -86,16 +86,18 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
  - Trackpad Up: Add blank frame
  - Trackpad Down: Duplicate current frame
 
-For PC-only use (Not recommended, but you it will work):
+For Desktop Use: (Not the primary intended use, but it should still work)
 
 - Left Mouse Button: Draw
 - Middle / Right Mouse Button (Drag): Rotate Camera
 - Shift + Left Mouse Button (Drag): Grab and move objects
 - Middle Mouse Button: Draw
-- W: Move Up
-- S: Move Down
+- W: Move Forward
+- S: Move Backward
 - A: Move Left
 - D: Move Right
+- Q: Move Up
+- E: Move Down
 
 <img src="globe.JPG" class="screenshot">
 
