@@ -48,7 +48,7 @@ let config = {
         }]
       },
       {
-        test: /ai-models.*group/,
+        test: /ai-models.*(group|LICENSE)/,
         // type: 'javascript/auto',
         use: [{
           loader: 'file-loader',

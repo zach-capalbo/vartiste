@@ -7,20 +7,19 @@ const TRANSFORM_MODEL_PATH = require('./ai-models/saved_model_transformer_separa
 var requireAI = require.context('./ai-models', true, /./);
 requireAI.keys().forEach(requireAI);
 
-// require('./ai-models/saved_model_style_js/group1-shard1of3')
-// require('./ai-models/saved_model_style_js/group1-shard2of3')
-// require('./ai-models/saved_model_style_js/group1-shard3of3')
-// require('./ai-models/saved_model_transformer_separable_js/group1-shard1of1')
-
 AFRAME.registerSystem('ai', {
   init() {
-    this.loadModels()
   },
   async loadModels() {
-    console.log("initializing ai")
+    if (this.loadingModels) return await this.loadingModels
 
-    this.styleNet = await tf.loadGraphModel(STYLE_MODEL_PATH);
-    this.transformNet = await tf.loadGraphModel(TRANSFORM_MODEL_PATH)
+    this.loadingModels = (async () => {
+      console.log("initializing ai")
+      this.styleNet = await tf.loadGraphModel(STYLE_MODEL_PATH);
+      this.transformNet = await tf.loadGraphModel(TRANSFORM_MODEL_PATH)
+    })()
+
+    return await this.loadingModels
   }
 })
 
@@ -53,6 +52,7 @@ export class StyleTransferNode extends CanvasNode {
   }
   async runInference() {
     this.data.isRunningInference = true
+    await this.system.loadModels()
     let {styleNet, transformNet} = this.system
     await tf.nextFrame()
 
