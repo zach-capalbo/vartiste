@@ -44,14 +44,23 @@ export class StyleTransferNode extends CanvasNode {
 
     if (!this.checkIfUpdateNeeded(frame)) return
 
-    if (this.data.isRunningInference) return
+    if (this.data.isRunningInference) {
+      this.data.resetUpdateTime
+      return
+    }
+    this.data.isRunningInference = true
+    await this.runInference()
+    this.data.isRunningInference = false
+
     this.updateTime = document.querySelector('a-scene').time
 
-    await this.runInference()
+    if (this.resetUpdateTime)
+    {
+      this.updateTime = 0
+    }
 
   }
   async runInference() {
-    this.data.isRunningInference = true
     await this.system.loadModels()
     let {styleNet, transformNet} = this.system
     await tf.nextFrame()
@@ -75,9 +84,7 @@ export class StyleTransferNode extends CanvasNode {
 
     console.log("Stylized predicted")
 
-
     await tf.browser.toPixels(stylized, this.canvas);
     stylized.dispose();
-    this.data.isRunningInference = false
   }
 }
