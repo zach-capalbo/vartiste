@@ -52,6 +52,7 @@
     "xml-loader": "^1.2.1"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^1.7.3",
     "convolve": "^0.1.0",
     "dexie": "^2.0.4",
     "gif.js": "^0.2.0",
