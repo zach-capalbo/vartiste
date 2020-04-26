@@ -1,6 +1,4 @@
 import {Node, CanvasNode} from './layer.js'
-import * as tf from '@tensorflow/tfjs';
-tf.ENV.set('WEBGL_PACK', false);  // This needs to be done otherwise things run very slow v1.0.4
 const STYLE_MODEL_PATH = require('./ai-models/saved_model_style_js/model.json')
 const TRANSFORM_MODEL_PATH = require('./ai-models/saved_model_transformer_separable_js/model.json')
 
@@ -10,11 +8,19 @@ requireAI.keys().forEach(requireAI);
 AFRAME.registerSystem('ai', {
   init() {
   },
+  async tf() {
+    if (this._tf) return this._tf
+
+    this._tf = await import('@tensorflow/tfjs')
+    this._tf.ENV.set('WEBGL_PACK', false);  // This needs to be done otherwise things run very slow v1.0.4
+    return this._tf
+  },
   async loadModels() {
     if (this.loadingModels) return await this.loadingModels
 
     this.loadingModels = (async () => {
       console.log("initializing ai")
+      let tf = await this.tf()
       this.styleNet = await tf.loadGraphModel(STYLE_MODEL_PATH);
       this.transformNet = await tf.loadGraphModel(TRANSFORM_MODEL_PATH)
     })()
@@ -62,6 +68,7 @@ export class StyleTransferNode extends CanvasNode {
   }
   async runInference() {
     await this.system.loadModels()
+    let tf = await this.system.tf()
     let {styleNet, transformNet} = this.system
     await tf.nextFrame()
 

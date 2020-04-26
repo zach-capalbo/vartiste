@@ -88,6 +88,9 @@ let app = Object.assign({
       filename: 'index.html'
     }),
   ],
+  optimization: {
+    splitChunks: {}
+  },
 }, config);
 
 let static = ['landing', 'license'].map(name => { return Object.assign({
