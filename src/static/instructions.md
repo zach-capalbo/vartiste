@@ -38,6 +38,10 @@ There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/p
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+There's also a list of VARTISTE feature demos:
+
+<a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
+
 ## Controls
 For Oculus Touch controllers:
 
@@ -204,6 +208,9 @@ your browser.
 VARTISTE is hosted by [Gitlab Pages](https://about.gitlab.com/product/pages/).
 The Gitlab Pages server may collect  standard information under the [Gitlab
 Privacy Policy](https://about.gitlab.com/privacy/)
+
+This landing page employs Twitter and Youtube embedded videos. These services
+have their own privacy policies.
 
 ## About
 
