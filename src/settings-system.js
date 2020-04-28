@@ -117,6 +117,7 @@ AFRAME.registerSystem('settings-system', {
       })
     })
     this.el.emit('open-popup', `Saved at ${new Date()}`)
+    document.getElementById('composition-view').emit('updatemesh')
   },
   async loadFromBrowser(projectName) {
     let db = this.openProjectsDB()

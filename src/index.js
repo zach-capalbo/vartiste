@@ -46,6 +46,12 @@ require('./about-shelf.js')
 
 require('./app.styl')
 
+if (location.host === "vartiste.xyz")
+{
+  // Redirect to gitlab.io for now
+  location.href = "https://zach-geek.gitlab.io/vartiste" + location.pathname + location.hash
+}
+
 document.write(require('./scene.html.slm'));
 
 for (let fileName of require.context('./assets/', true, /.*/).keys()) {
