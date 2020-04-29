@@ -2,6 +2,8 @@
 
 <img src="../assets/vartiste.png" class="logo">
 
+<a class="vartiste-url" href="https://vartiste.xyz">https://vartiste.xyz</a>
+
 Pronounced Vee-Ar-tEEst. VARTISTE is a virtual reality app for 2D drawing and
 image editing. A virtual reality headset with tracked motion controllers, such
 as the [Valve Index](https://store.steampowered.com/valveindex) or
@@ -13,7 +15,8 @@ VARTISTE works similar to desktop image editing software you may be used to; it
 has layers, brushes, color wheels and palettes. However, it's specially designed
 for VR headset use, so it will respond to controller pressure and position, and
 you can move your canvas around to get the perfect vantage point for editing.
-No more being tethered to a monitor or drawing tablet!
+No more being tethered to a monitor or drawing tablet! It's even got a really
+cool node & FX compositing system available. Become a VR-Artíste today!
 
 <img src="eg.JPG" class="screenshot">
 
@@ -29,7 +32,7 @@ Click on any of the entries below to load them into VARTISTE.
 
 <div id="gallery-content"></div>
 
-Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link)
+Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link) I'd love to see what people are making with VARTISTE!
 
 
 ## Tutorial
@@ -37,6 +40,10 @@ Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vart
 There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/playlist?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+There's also a list of VARTISTE feature demos:
+
+<a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
 
 ## Controls
 For Oculus Touch controllers:
@@ -103,15 +110,21 @@ For Desktop Use: (Not the primary intended use, but it should still work)
 
 ## Saving and loading
 
-Use the "File" ![File](../assets/floppy.png) icon to save to a VARTISTE project file. You'll need to take off
-your VR headset and click the download button from your browser. This will save
-all of the layers in the image.
+To download your project as a VARTISTE project file, click the "File"
+![File](../assets/floppy.png) icon on the settings shelf. You might need to take
+your headset off to click the "download" button on your browser. You can also
+save the file to your browser's memory by clicking the "Save to Browser" ![File
+With Glob](../assets/save-to-browser.png) icon. **Please Note:** clearing
+certain browser history data may remove VARTISTE projects from browser memory.
 
 To load a VARTISTE file, drag and drop it onto the browser window where VARTISTE
-is running. **NOTE: This will replace your currently active scene.**
+is running. **NOTE: This will replace your currently active scene.** You can
+also use the "Load" ![Folder](../assets/folder-open-outline.png) icon to load
+projects from browser memory or browse using a file selector.
 
-To save a PNG, click the "Camera" ![Camera](../assets/camera.png) icon. You'll need to take off your VR headset
-and click the download button from your browser.
+To save a PNG, click the "Camera" ![Camera](../assets/camera.png) icon. You'll
+need to take off your VR headset and click the download button from your
+browser.
 
 To import an image as a new layer, drag and drop it onto the browser window.
 
@@ -124,8 +137,15 @@ appear in front, and the 2D canvas view will flip to behind you.
  - Existing textures will be resized to the main canvas size
  - Vertex colors are not currently imported
 
- **NOTE:** Animations are not currently imported or exported. They are, however,
- saved into the project file
+To export a 3D model, use the "Export" ![Cube Arrow](../assets/cube-send.png)
+icon. This will download a GLB file with the currently displayed model or
+canvas. You can also export directly to [Sketchfab](https://sketchfab.com) using
+the "Sketchfab" ![Sketchfab Logo](../assets/sketchfab.png) icon. The first time
+you click this icon, you'll be prompted to log into Sketchfab and authorize
+VARTISTE, so make sure you save before you do this.
+
+**NOTE:** Canvas Animations are not currently imported or exported to GLB files.
+They are, however, saved into the project file.
 
 ## Node Compositing System
 
@@ -204,6 +224,9 @@ your browser.
 VARTISTE is hosted by [Gitlab Pages](https://about.gitlab.com/product/pages/).
 The Gitlab Pages server may collect  standard information under the [Gitlab
 Privacy Policy](https://about.gitlab.com/privacy/)
+
+This landing page employs Twitter and Youtube embedded videos. These services
+have their own privacy policies.
 
 ## About
 
