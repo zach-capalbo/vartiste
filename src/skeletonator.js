@@ -2,6 +2,7 @@ import shortid from 'shortid'
 import {THREED_MODES} from "./layer-modes.js"
 import {Util} from "./util.js"
 import {Pool} from "./pool.js"
+import {OutputNode} from './layer.js'
 
 AFRAME.registerComponent('skeletonator', {
   schema: {
@@ -48,6 +49,7 @@ AFRAME.registerComponent('skeletonator', {
       firstMesh.parent.add(skinnedMesh)
       firstMesh.parent.remove(firstMesh)
       this.mesh = skinnedMesh
+      this.el.setObject3D('mesh', this.mesh)
     }
 
     this.el.classList.remove('canvas')
@@ -64,7 +66,8 @@ AFRAME.registerComponent('skeletonator', {
 
     this.setupBones()
 
-    Compositor.el.addEventListener('framechanged', this.onFrameChange.bind(this))
+    this.onFrameChange = this.onFrameChange.bind(this)
+    Compositor.el.addEventListener('framechanged', this.onFrameChange)
 
     if (Compositor.el.skeletonatorSavedSettings)
     {
@@ -75,7 +78,7 @@ AFRAME.registerComponent('skeletonator', {
     document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
   },
   tick(t, dt) {
-    if (!this.mesh.material.skinning)
+    if (!this.el.classList.contains("canvas") && this.mesh.material !== this.skinningMaterial)
     {
       let oldMaterial = this.mesh.material
       this.mesh.material = new THREE.MeshStandardMaterial({
@@ -83,6 +86,7 @@ AFRAME.registerComponent('skeletonator', {
         transparent: true,
         opacity: 0.5
       })
+      this.skinningMaterial = this.mesh.material
 
       for (let mode of ["map"].concat(THREED_MODES))
       {
@@ -93,12 +97,41 @@ AFRAME.registerComponent('skeletonator', {
       }
     }
   },
+  pause() {
+    this.el.classList.add('canvas')
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
+    Compositor.el.setAttribute('compositor', {skipDrawing: false})
+    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', true))
+    this.mesh.material = Compositor.material
+
+    for (let el of document.querySelectorAll('*[raycaster]'))
+    {
+      el.components.raycaster.refreshObjects()
+    }
+  },
+  play() {
+    this.el.classList.remove('canvas')
+    Compositor.el.addEventListener('framechanged', this.onFrameChange)
+    Compositor.el.setAttribute('compositor', {skipDrawing: true})
+    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
+    this.mesh.material = this.skinningMaterial
+
+    for (let el of document.querySelectorAll('*[raycaster]'))
+    {
+      el.components.raycaster.refreshObjects()
+    }
+  },
   load(obj) {
     console.log("Loading saved skeletonator")
     this.el.setAttribute('skeletonator', {frameCount: obj.frameCount})
     if ('boneTracks' in obj) {
       for (let bone in this.boneTracks)
       {
+        if (!(bone in obj.boneTracks))
+        {
+          console.warn("No such saved bone", bone)
+          continue
+        }
         this.boneTracks[bone] = obj.boneTracks[bone].filter(m => m).map(m => new THREE.Matrix4().fromArray(m.elements))
       }
     }
@@ -178,6 +211,19 @@ AFRAME.registerComponent('skeletonator', {
     }
     this.el.emit('activebonechanged', {activeBone: this.activeBone})
   },
+  nodesFromBones() {
+    let i = 0
+    for (let boneName in this.boneToHandle)
+    {
+      if (Compositor.component.allNodes.some(n => n.name == boneName)) continue
+
+      let node = new OutputNode(Compositor.component)
+      node.name = boneName
+      node.shelfMatrix.makeScale(0.3, 0.3, 0.3)
+      node.shelfMatrix.setPosition(0.0, i * 0.4, 0.0)
+      Compositor.component.el.emit('nodeadded', {node})
+    }
+  },
   skinFromeNodes() {
     let vertexUvs = this.mesh.geometry.attributes.uv
     let uv = new THREE.Vector2()
@@ -234,13 +280,7 @@ AFRAME.registerComponent('skeletonator', {
           topFour[3].weight = alpha
           topFour.sort((a,b) => - (a.weight - b.weight))
           anySet = true
-          console.log("Alpha > 0", alpha, JSON.stringify(topFour))
         }
-      }
-
-      if (topFour.weight > 0)
-      {
-        console.log("Pushing", vi, topFour)
       }
 
       if (!anySet)
@@ -288,6 +328,11 @@ AFRAME.registerComponent('skeletonator', {
       if (this.boneToHandle[bone.name].is("grabbed")) continue
 
       let boneFrameIdx = frameIdx
+
+      if (!(bone.name in this.boneTracks))
+      {
+        this.boneTracks[bone.name] = []
+      }
 
       while (!(boneFrameIdx in this.boneTracks[bone.name]) && boneFrameIdx > 0)
       {
@@ -381,12 +426,13 @@ AFRAME.registerComponent("bone-handle", {
       {
         if (this.el.skeletonator.data.recordFrameCount)
         {
-          this.el.skeletonator.el.setAttribute('skeletonator', {frameCount: Compositor.component.currentFrame})
+          this.el.skeletonator.el.setAttribute('skeletonator', {frameCount: Compositor.component.currentFrame, recordFrameCount: false})
         }
       }
     }
   },
   init() {
+    Pool.init(this)
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.02')
     this.el.setAttribute('grab-options', 'showHand: false')
     if (this.el.skeletonator.activeBone == this.el.bone)
@@ -403,6 +449,10 @@ AFRAME.registerComponent("bone-handle", {
                                   this.el.object3D.scale)
   },
   tick(t,dt) {
+    let indicator = this.el.getObject3D('mesh')
+    let scale = this.pool("scale", THREE.Vector3)
+    indicator.getWorldScale(scale)
+    indicator.scale.set(indicator.scale.x / scale.x, indicator.scale.y / scale.y, indicator.scale.z / scale.z)
     if (this.el.is("grabbed"))
     {
       this.el.object3D.matrix.decompose(this.el.bone.position, this.el.bone.rotation, this.el.bone.scale)
@@ -479,7 +529,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
       this.el.skeletonator.boneTracks = []
     }
   },
-  bakeSkeleton() {
+  bakeSkeleton(newSkeleton = false) {
     let bones = []
     let mesh = this.el.skeletonator.mesh
     mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
@@ -487,21 +537,24 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     // bones[0].updateMatrixWorld()
     // mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
 
-    bones[0].scale.set(1,1,1)
-    bones[0].position.set(0,0,0)
-    bones[0].rotation.set(0,0,0)
+    // bones[0].scale.set(1,1,1)
+    // bones[0].position.set(0,0,0)
+    // bones[0].rotation.set(0,0,0)
 
-    let stopTraversal = false
+    // let stopTraversal = false
+    //
+    // bones[0].traverseAncestors(a => {
+    //   if (stopTraversal) return
+    //   a.scale.set(1,1,1)
+    //   a.position.set(0,0,0)
+    //   a.rotation.set(0,0,0)
+    //   if (a == this.el.skeletonator.el.object3D) stopTraversal = true
+    // })
 
-    bones[0].traverseAncestors(a => {
-      if (stopTraversal) return
-      a.scale.set(1,1,1)
-      a.position.set(0,0,0)
-      a.rotation.set(0,0,0)
-      if (a == this.el.skeletonator.el.object3D) stopTraversal = true
-    })
-
-    mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
+    let inv = this.pool('inv', THREE.Matrix4)
+    inv.getInverse(bones[0].matrix)
+    mesh.bind(new THREE.Skeleton(bones), newSkeleton ? bones[0].matrixWorld : inv)
+    mesh.pose()
   },
   deleteActiveBone() {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
@@ -511,6 +564,13 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   skinFromeNodes() {
     this.el.skeletonator.skinFromeNodes()
+  },
+  nodesFromBones() {
+    this.el.skeletonator.nodesFromBones()
+  },
+  closeSkeletonator() {
+    this.el.skeletonator.pause()
+    this.el.object3D.visible = false
   }
 })
 

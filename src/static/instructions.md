@@ -16,7 +16,7 @@ has layers, brushes, color wheels and palettes. However, it's specially designed
 for VR headset use, so it will respond to controller pressure and position, and
 you can move your canvas around to get the perfect vantage point for editing.
 No more being tethered to a monitor or drawing tablet! It's even got a really
-cool node & FX compositing system available. Become a VR-Artíste today!
+cool node & FX compositing system available. Become a VR-Artíste today!
 
 <img src="eg.JPG" class="screenshot">
 

@@ -60,3 +60,9 @@ AFRAME.registerComponent('desktop-controls', {
     }
   }
 })
+
+AFRAME.registerSystem('desktop-controls', {
+  init() {
+
+  }
+})

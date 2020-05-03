@@ -5,7 +5,7 @@ const DEFAULT_BUTTON_STYLE_SCHEMA = {
   color: {type: 'color', default: "#abe"},
   clickColor: {type: 'color', default: '#aea'},
   intersectedColor: {type: 'color', default: '#cef'},
-  toggleOnColor: {type: 'color', default: '#abe'},
+  toggleOnColor: {type: 'color', default: '#bea'},
   keepAspect: {type: 'bool', default: true}
 }
 
