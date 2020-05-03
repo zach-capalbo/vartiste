@@ -1,0 +1,2 @@
+.desktop-controls
+  .control icon-button="#asset-arrow-all" click-action="rotateCamera"

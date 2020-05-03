@@ -208,7 +208,16 @@ AFRAME.registerComponent('toolbox-shelf', {
     }
   },
   startSkeletonatorAction() {
-    document.querySelector('#composition-view').setAttribute('skeletonator', "")
+    let skeletonatorEl = document.querySelector('*[skeletonator]')
+
+    if (!skeletonatorEl)
+    {
+      document.querySelector('#composition-view').setAttribute('skeletonator', "")
+      return
+    }
+
+    document.querySelector('*[skeletonator-control-panel]').object3D.visible = true
+    skeletonatorEl.components.skeletonator.play()
   },
   bakeToVertexColorsAction() {
     let mesh = Compositor.mesh
