@@ -183,6 +183,9 @@ AFRAME.registerComponent('draw-canvas', {
 
   pickColorUV(uv, {canvas = null} = {}) {
     let useTransform = true
+    if (canvas === null && !this.data.canvas) {
+      canvas = this.data.canvas
+    }
     if (canvas === null) {
       let compositor = document.getElementById('canvas-view').components.compositor
       if (compositor.activeLayer.mode.endsWith("Map"))
@@ -244,6 +247,11 @@ AFRAME.registerComponent('draw-canvas', {
     avg.r /= avg.alpha
     avg.g /= avg.alpha
     avg.b /= avg.alpha
+
+    if (isNaN(avg.r) || isNaN(avg.g) || isNaN(avg.b))
+    {
+      throw new Error("Color sampling error. NAN", uv, x,y, avg, canvas, sampleCanvas, width, height)
+    }
 
     // if (!this.el.sceneEl.getAttribute('renderer').colorManagement)
     {

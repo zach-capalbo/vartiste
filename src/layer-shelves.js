@@ -327,11 +327,16 @@ AFRAME.registerComponent("layer-shelves", {
 
     let el = document.createElement('a-entity')
     el.setAttribute('geometry', `primitive: plane; width: ${gWidth}; height: ${gHeight}`)
+    el.setAttribute('material', {shader: 'flat'})
     el.setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${Compositor.el.id}`, layer: layer.id}))
     el.setAttribute('draw-canvas', {canvas: layer.canvas})
     el.setAttribute('canvas-updater', "throttle: 10")
+    el.setAttribute('frame', "")
     el.classList.add("canvas")
-    document.querySelector('a-scene').append(el)
+    document.querySelector('#canvas-root').append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, this.shelves[layer.id].object3D, {transformOffset: {x: -0.5, y: -0.5, z: 0.5}})
+    })
   },
   newNode(node, e) {
     this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
