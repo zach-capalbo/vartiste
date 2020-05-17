@@ -320,6 +320,19 @@ AFRAME.registerComponent("layer-shelves", {
       modePopup.components['popup-button'].closePopup()
     }
   },
+  popoutLayer(layer) {
+    const geometrySize = 3
+    let gWidth = layer.width / Compositor.data.baseWidth * geometrySize
+    let gHeight = layer.height / Compositor.data.baseWidth * geometrySize
+
+    let el = document.createElement('a-entity')
+    el.setAttribute('geometry', `primitive: plane; width: ${gWidth}; height: ${gHeight}`)
+    el.setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${Compositor.el.id}`, layer: layer.id}))
+    el.setAttribute('draw-canvas', {canvas: layer.canvas})
+    el.setAttribute('canvas-updater', "throttle: 10")
+    el.classList.add("canvas")
+    document.querySelector('a-scene').append(el)
+  },
   newNode(node, e) {
     this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
     this.nextNodePosition.copy(this.shelves[node.id].getAttribute('position'))

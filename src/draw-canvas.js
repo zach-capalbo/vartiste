@@ -36,10 +36,11 @@ AFRAME.registerComponent('draw-canvas', {
   uvToPoint(uv, canvas = null, {useTransform = true} = {}) {
     let {width, height} = canvas || this.data.canvas
     let {translation, scale} = this.transform
-    let {width: uvWidth, height: uvHeight} = this.data.compositor
+
+    let {width: uvWidth, height: uvHeight} = this.data.compositor || canvas || this.data.canvas
 
     let yy = uv.y
-    if (Compositor.component.data.flipY) yy = 1.0 - yy
+    if (!this.data.compositor || Compositor.component.data.flipY) yy = 1.0 - yy
 
     if (!useTransform)
     {
