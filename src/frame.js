@@ -125,7 +125,8 @@ AFRAME.registerComponent("frame", {
     let target
     let offset = this.pool('offset', THREE.Vector3)
     let pinSize = this.pool('pinSize', THREE.Vector3)
-    pinSize.set(0.1, 0.1, 0.1)
+    let ratio = ((width / height > 4.0 / 3.0 )? 4.0 / width : 3.0 / height)
+    pinSize.set(ratio * 0.05, ratio * 0.05, ratio * 0.05)
     if (cursorEl.id === 'right-hand')
     {
       target = document.querySelector('#left-hand')
@@ -143,7 +144,7 @@ AFRAME.registerComponent("frame", {
       target = document.querySelector('#camera')
       let pinIdx = this.system.pinFrameTo(this, target)
       offset.set(-0.07 + pinIdx * 0.04, -0.07, -0.1)
-      pinSize.set(0.01, 0.01, 0.001)
+      pinSize.set(ratio * 0.01, ratio * 0.01, 0.001)
     }
 
     this.el.object3D.parent.remove(this.el.object3D)
