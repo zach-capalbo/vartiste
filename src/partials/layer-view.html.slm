@@ -1,4 +1,4 @@
-a-entity.layer-shelf shelf=""
+a-entity.layer-shelf shelf="frame: false"
   a-entity position="-1.5 1.2 0"
     a-entity.clickable click-action="hide" icon-button="#asset-eye" tooltip="Hide Layer"
     a-entity.clickable click-action="edit" icon-button="#asset-brush" tooltip="Activate Layer "
