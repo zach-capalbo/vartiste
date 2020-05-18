@@ -338,6 +338,26 @@ AFRAME.registerComponent("layer-shelves", {
       Util.positionObject3DAtTarget(el.object3D, this.shelves[layer.id].object3D, {transformOffset: {x: -0.5, y: -0.5, z: 0.5}})
     })
   },
+  resampleLayer(layer) {
+    var width = parseInt(document.querySelector('*[settings-shelf] .width').getAttribute('text').value)
+    var height = parseInt(document.querySelector('*[settings-shelf] .height').getAttribute('text').value)
+
+    var {width, height} = Util.validateSize({width, height})
+
+    var resampleCanvas = document.createElement('canvas')
+    resampleCanvas.width = width
+    resampleCanvas.height = height
+    var resampleCtx = resampleCanvas.getContext('2d')
+    resampleCtx.globalCompositeOperation = 'copy'
+    resampleCtx.drawImage(layer.canvas, 0, 0, width, height)
+
+    layer.resize(width, height)
+
+    layer.canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+
+    layer.touch()
+    Compositor.el.emit('layerupdated', {layer})
+  },
   newNode(node, e) {
     this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
     this.nextNodePosition.copy(this.shelves[node.id].getAttribute('position'))

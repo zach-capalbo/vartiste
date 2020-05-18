@@ -68,6 +68,11 @@ AFRAME.registerComponent("frame", {
       this.el.append(closeButton)
     }
   },
+  remove() {
+    if (this.lineObject) {
+      this.lineObject.parent.remove(this.lineObject)
+    }
+  },
   update(oldData) {
     let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
 
