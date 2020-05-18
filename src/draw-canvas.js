@@ -36,10 +36,11 @@ AFRAME.registerComponent('draw-canvas', {
   uvToPoint(uv, canvas = null, {useTransform = true} = {}) {
     let {width, height} = canvas || this.data.canvas
     let {translation, scale} = this.transform
-    let {width: uvWidth, height: uvHeight} = this.data.compositor
+
+    let {width: uvWidth, height: uvHeight} = this.data.compositor || canvas || this.data.canvas
 
     let yy = uv.y
-    if (Compositor.component.data.flipY) yy = 1.0 - yy
+    if (!this.data.compositor || Compositor.component.data.flipY) yy = 1.0 - yy
 
     if (!useTransform)
     {
@@ -182,7 +183,13 @@ AFRAME.registerComponent('draw-canvas', {
 
   pickColorUV(uv, {canvas = null} = {}) {
     let useTransform = true
+
+    if (canvas === null && !this.data.compositor) {
+      canvas = this.data.canvas
+    }
+
     if (canvas === null) {
+      console.log("Using compositor canvas", canvas, this.data.canvas)
       let compositor = document.getElementById('canvas-view').components.compositor
       if (compositor.activeLayer.mode.endsWith("Map"))
       {
@@ -199,6 +206,7 @@ AFRAME.registerComponent('draw-canvas', {
         useTransform = false
       }
     }
+
     let sampleCanvas = this.sampleCanvas
     let ctx = sampleCanvas.getContext('2d')
     let width = Math.round(this.brush.width)
@@ -240,9 +248,23 @@ AFRAME.registerComponent('draw-canvas', {
       }
     }
 
-    avg.r /= avg.alpha
-    avg.g /= avg.alpha
-    avg.b /= avg.alpha
+    if (avg.alpha > 0.00001)
+    {
+      avg.r /= avg.alpha
+      avg.g /= avg.alpha
+      avg.b /= avg.alpha
+    }
+    else
+    {
+      avg.r = 0
+      avg.g = 0
+      avg.b = 0
+    }
+
+    if (isNaN(avg.r) || isNaN(avg.g) || isNaN(avg.b))
+    {
+      throw new Error("Color sampling error. NAN", uv, x,y, avg, canvas, sampleCanvas, width, height)
+    }
 
     // if (!this.el.sceneEl.getAttribute('renderer').colorManagement)
     {

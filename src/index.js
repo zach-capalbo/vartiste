@@ -43,6 +43,7 @@ require('./skeletonator.js')
 require('./sketchfab.js')
 require('./desktop-controls.js')
 require('./about-shelf.js')
+require('./frame.js')
 
 require('./app.styl')
 

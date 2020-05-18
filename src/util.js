@@ -1,3 +1,5 @@
+import {Pool} from './pool.js'
+
 function whenLoadedSingle(entity, fn) {
   if (entity.hasLoaded)
   {
@@ -63,7 +65,37 @@ const Util = {
     destination.height = canvas.height
     destination.getContext('2d').drawImage(canvas, 0, 0)
     return destination
+  },
+  positionObject3DAtTarget(obj, target, {scale, transformOffset, transformRoot} = {}) {
+    if (typeof transformRoot === 'undefined') transformRoot = obj.parent
+
+    target.updateMatrixWorld()
+    let destMat = this.pool('dest', THREE.Matrix4)
+    destMat.copy(target.matrixWorld)
+
+    if (transformOffset) {
+      let transformMat = this.pool('transformMat', THREE.Matrix4)
+      transformMat.makeTranslation(transformOffset.x, transformOffset.y, transformOffset.z)
+      destMat.multiply(transformMat)
+    }
+
+    if (scale) {
+      let scaleVect = this.pool('scale', THREE.Vector3)
+      scaleVect.setFromMatrixScale(destMat)
+      scaleVect.set(scale.x / scaleVect.x, scale.y / scaleVect.y, scale.z / scaleVect.z)
+      destMat.scale(scaleVect)
+    }
+
+    let invMat = this.pool('inv', THREE.Matrix4)
+
+    transformRoot.updateMatrixWorld()
+    invMat.getInverse(transformRoot.matrixWorld)
+    destMat.premultiply(invMat)
+
+    Util.applyMatrix(destMat, obj)
   }
 }
+
+Pool.init(Util)
 
 export {Util}

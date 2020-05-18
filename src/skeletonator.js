@@ -38,6 +38,10 @@ AFRAME.registerComponent('skeletonator', {
       firstMesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
 
       let skinnedMesh = new THREE.SkinnedMesh(firstMesh.geometry, firstMesh.material)
+      if (skinnedMesh.name == "")
+      {
+        skinnedMesh.name = "mesh"
+      }
       // Util.applyMatrix(firstMesh.matrix, skinnedMesh)
 
       let rootBone = new THREE.Bone()

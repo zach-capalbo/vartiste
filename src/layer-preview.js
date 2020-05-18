@@ -12,7 +12,7 @@ AFRAME.registerComponent('layer-preview', {
       var cEl = this.data.compositor;
 
       let layer = cEl.components.compositor.layers.find(l => l.id == this.data.layer)
-      this.el.setAttribute('material', {src: layer.canvas})
+      this.el.setAttribute('material', {src: layer.canvas, transparent: true})
       this.canvased = true
 
       cEl.addEventListener('layerdeleted', e => {

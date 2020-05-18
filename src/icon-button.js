@@ -6,7 +6,8 @@ const DEFAULT_BUTTON_STYLE_SCHEMA = {
   clickColor: {type: 'color', default: '#aea'},
   intersectedColor: {type: 'color', default: '#cef'},
   toggleOnColor: {type: 'color', default: '#bea'},
-  keepAspect: {type: 'bool', default: true}
+  keepAspect: {type: 'bool', default: true},
+  buttonType: {default: 'button'}
 }
 
 const DEFAULT_BUTTON_STYLE = {}
@@ -48,6 +49,11 @@ AFRAME.registerComponent('icon-button', {
 
     this.style = buttonStyle
 
+    if (buttonStyle.buttonType === 'plane')
+    {
+      depth = 0.001
+    }
+
     this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({transparent: true, fog: false, map: this.data})))
 
     // Inline propogate-grab
@@ -66,7 +72,15 @@ AFRAME.registerComponent('icon-button', {
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 
-    let bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+    let bg;
+    if (buttonStyle.buttonType === 'plane')
+    {
+      bg = new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+    }
+    else
+    {
+      bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+    }
     bg.position.set(0,0,- depth / 2)
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg

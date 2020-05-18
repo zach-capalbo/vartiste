@@ -917,6 +917,10 @@ class CompositorFinder {
     return this.el.components.compositor
   }
 
+  get data() {
+    return this.component.data
+  }
+
   get material() {
     return this.el.getObject3D('mesh').material
   }

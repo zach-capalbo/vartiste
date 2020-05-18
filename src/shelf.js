@@ -1,9 +1,11 @@
 const shelfHtml = require('./partials/shelf.html.slm')
+const {Util} = require('./util.js')
 
 AFRAME.registerComponent('shelf', {
   schema: {
     width: {default: 4},
-    height: {default: 3}
+    height: {default: 3},
+    frame: {default: true}
   },
   init() {
     var container = document.createElement("a-entity")
@@ -11,6 +13,17 @@ AFRAME.registerComponent('shelf', {
     container.querySelectorAll('.clickable').forEach((e) => e['redirect-grab'] = this.el)
     this.container = container
     this.el.prepend(container)
+
+    if (!this.el.hasAttribute('frame') && this.data.frame)
+    {
+      Util.whenLoaded(this.container.querySelector('.bg'), () => {
+        this.el.setAttribute('frame', {
+          outline: false,
+          closable: false,
+          geometryTarget: this.container.querySelector('.bg')
+        })
+      })
+    }
 
     let inBillboard = false
     for (let parent = this.el.parentEl; parent; parent = parent.parentEl)

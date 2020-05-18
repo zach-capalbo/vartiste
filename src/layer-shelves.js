@@ -320,6 +320,44 @@ AFRAME.registerComponent("layer-shelves", {
       modePopup.components['popup-button'].closePopup()
     }
   },
+  popoutLayer(layer) {
+    const geometrySize = 3
+    let gWidth = layer.width / Compositor.data.baseWidth * geometrySize
+    let gHeight = layer.height / Compositor.data.baseWidth * geometrySize
+
+    let el = document.createElement('a-entity')
+    el.setAttribute('geometry', `primitive: plane; width: ${gWidth}; height: ${gHeight}`)
+    el.setAttribute('material', {shader: 'flat'})
+    el.setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${Compositor.el.id}`, layer: layer.id}))
+    el.setAttribute('draw-canvas', {canvas: layer.canvas})
+    el.setAttribute('canvas-updater', "throttle: 10")
+    el.setAttribute('frame', "")
+    el.classList.add("canvas")
+    document.querySelector('#canvas-root').append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, this.shelves[layer.id].object3D, {transformOffset: {x: -0.5, y: -0.5, z: 0.5}})
+    })
+  },
+  resampleLayer(layer) {
+    var width = parseInt(document.querySelector('*[settings-shelf] .width').getAttribute('text').value)
+    var height = parseInt(document.querySelector('*[settings-shelf] .height').getAttribute('text').value)
+
+    var {width, height} = Util.validateSize({width, height})
+
+    var resampleCanvas = document.createElement('canvas')
+    resampleCanvas.width = width
+    resampleCanvas.height = height
+    var resampleCtx = resampleCanvas.getContext('2d')
+    resampleCtx.globalCompositeOperation = 'copy'
+    resampleCtx.drawImage(layer.canvas, 0, 0, width, height)
+
+    layer.resize(width, height)
+
+    layer.canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+
+    layer.touch()
+    Compositor.el.emit('layerupdated', {layer})
+  },
   newNode(node, e) {
     this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
     this.nextNodePosition.copy(this.shelves[node.id].getAttribute('position'))
