@@ -1,6 +1,7 @@
 import {Layer} from './layer.js'
 import shortid from 'shortid'
 import {THREED_MODES} from './layer-modes.js'
+import {RGBELoader} from './framework/RGBELoader.js'
 
 async function addImageLayer(file) {
   let image = new Image()
@@ -37,6 +38,20 @@ async function addImageReference(file) {
   image.onload = undefined
 
   addImageReferenceViewer(image)
+}
+
+async function addHDRImage(file) {
+
+  await new Promise( (r,e) => {
+		new RGBELoader()
+			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
+			.load( URL.createObjectURL(file) , function ( texture, textureData ) {
+        document.querySelector('a-scene').systems['environment-manager'].installHDREnvironment(texture)
+
+				r()
+
+			} );
+  })
 }
 
 async function addGlbViewer(file) {
@@ -142,9 +157,9 @@ document.body.ondrop = (e) => {
     {
       if (item.kind !== 'file') continue
 
-      console.log("dropping", item)
-
       let file = item.getAsFile()
+
+      console.log("dropping", item.type, item.kind, file.name)
 
       if (/image\//.test(item.type))
       {
@@ -156,6 +171,12 @@ document.body.ondrop = (e) => {
         {
           addImageLayer(file)
         }
+        return
+      }
+
+      if (/\.(hdri?|exr)$/i.test(file.name))
+      {
+        addHDRImage(file)
         return
       }
 

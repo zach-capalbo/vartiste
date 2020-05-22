@@ -6,7 +6,6 @@ import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
 import {THREED_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
-import {Environments} from './environments.js'
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Pool} from './pool.js'
 
@@ -665,7 +664,7 @@ AFRAME.registerComponent('compositor', {
             material.roughness = layer.opacity
             break
           case "envMap":
-            Environments.installSkybox(layerCanvas, layer.opacity)
+            this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
             material.envMap.mapping = THREE.SphericalReflectionMapping
             break
         }
@@ -700,6 +699,7 @@ AFRAME.registerComponent('compositor', {
       if (material.type !== "MeshStandardMaterial") return
       for (let mode of THREED_MODES)
       {
+        if (mode == "envMap") continue
         if  (material[mode] && !modesUsed.has(mode))
         {
           switch (mode)

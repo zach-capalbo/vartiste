@@ -3,7 +3,7 @@ import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
-import {Environments} from './environments.js'
+
 import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
 AFRAME.registerSystem('settings-system', {
@@ -231,8 +231,5 @@ AFRAME.registerSystem('settings-system', {
   setProjectName(name) {
     this.projectName = name
     this.el.emit('projectnamechanged', {name})
-  },
-  changeEnvironmentAction() {
-    Environments.toggle()
   }
 })
