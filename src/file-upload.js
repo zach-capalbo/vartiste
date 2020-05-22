@@ -41,15 +41,12 @@ async function addImageReference(file) {
 }
 
 async function addHDRImage(file) {
-
   await new Promise( (r,e) => {
 		new RGBELoader()
 			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
 			.load( URL.createObjectURL(file) , function ( texture, textureData ) {
         document.querySelector('a-scene').systems['environment-manager'].installHDREnvironment(texture)
-
 				r()
-
 			} );
   })
 }

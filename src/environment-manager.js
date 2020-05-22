@@ -1,5 +1,6 @@
 import Color from 'color'
 import { PMREMGenerator} from './framework/PMREMGenerator.js'
+import {RGBELoader} from './framework/RGBELoader.js'
 
 AFRAME.registerSystem('environment-manager', {
   installSkybox(skybox, level) {
@@ -71,7 +72,10 @@ AFRAME.registerSystem('environment-manager', {
     this.removePresetEnvironment()
   },
   installHDREnvironment(texture) {
-    var pmremGenerator = new PMREMGenerator( AFRAME.scenes[0].renderer );
+    let renderer = AFRAME.scenes[0].renderer
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+    var pmremGenerator = new PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
 
     let scene = this.el.object3D
@@ -96,12 +100,10 @@ AFRAME.registerSystem('environment-manager', {
     // scene.background = texture;
     // scene.environment = envMap;
 
-    // Compositor.material.envMap = envMap
-    // Compositor.material.needsUpdate = true
-
     document.querySelectorAll('*[light]').forEach(l => l.setAttribute('light', {intensity: 0}))
 
     this.envMap = envMap
+    renderer.xr.enabled = wasXREnabled
   },
   setToneMapping(toneMapping) {
     this.el.renderer.toneMapping = toneMapping
@@ -111,6 +113,29 @@ AFRAME.registerSystem('environment-manager', {
         o.material.needsUpdate = true
       }
     })})
+  },
+  async usePresetHDRI() {
+    console.log("Using" , require('./assets/colorful_studio_1k.hdr'))
+    await new Promise( (r,e) => {
+  		new RGBELoader()
+  			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
+  			.load( "/" + require('./assets/colorful_studio_1k.hdr').toString() , ( texture, textureData ) => {
+          this.installHDREnvironment(texture)
+  				r()
+  			} );
+    })
+
+    document.querySelector('a-sky').setAttribute('material', {src: "#asset-colorful_studio"})
+    this.setToneMapping(5)
+
+    let skyEl = document.getElementsByTagName('a-sky')[0]
+    let exposure = 0.98
+    skyEl.getObject3D('mesh').material.color.r = exposure
+    skyEl.getObject3D('mesh').material.color.g = exposure
+    skyEl.getObject3D('mesh').material.color.b = exposure
+
+    this.el.renderer.toneMappingExposure = 0.724
+
   },
 
   tick(t,dt) {
@@ -146,7 +171,15 @@ AFRAME.registerComponent('environment-manager', {
       if (e.target.hasAttribute("click-action"))
       {
         let action = e.target.getAttribute('click-action')
-        this[action](e)
+
+        if (action in this)
+        {
+          this[action](e)
+        }
+        else if (action in this.system)
+        {
+          this.system[action]()
+        }
       }
     }
   },

@@ -2,6 +2,7 @@ a-entity#environment-manager shelf="" scale="0.3 0.3 1" environment-manager=""
   a-entity position="-1.6 -1.1 0"
     a-entity icon-button="#asset-backspace-outline" click-action="clear" tooltip="Remove Environment"
     a-entity icon-button="#asset-blur-linear" click-action="toneMapping" tooltip="Change Tone Mapping"
+    a-entity icon-button="#asset-brightness-4" click-action="usePresetHDRI" tooltip="Use Preset HDRI Environment"
 
   a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
   a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"
