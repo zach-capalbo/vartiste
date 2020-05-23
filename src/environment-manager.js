@@ -2,11 +2,44 @@ import Color from 'color'
 import { PMREMGenerator} from './framework/PMREMGenerator.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 
+const [
+  STATE_COLOR,
+  STATE_HDRI,
+  STATE_SKYBOX,
+  STATE_PRESET
+] = [
+  "Color",
+  "HDRI",
+  "Skybox",
+  "Preset"
+]
+
 AFRAME.registerSystem('environment-manager', {
-  installSkybox(skybox, level) {
-    // if (typeof skybox === 'undefined') skybox = require('./assets/skybox.jpg')
+  init() {
+    this.state = STATE_COLOR
+    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+  },
+  switchState(newState) {
+    if (newState == this.state) return
+    console.log(`Switching environment from ${this.state} to ${newState}`)
 
     let skyEl = document.getElementsByTagName('a-sky')[0]
+
+    if (this.uninstallState) {
+      this.uninstallState()
+      this.uninstallState = undefined
+    }
+    else {
+      console.warn(`Current state ${this.state} has no uninstall`)
+    }
+    this.state = newState;
+  },
+  canInstallSkybox() {
+    return this.state !== STATE_HDRI
+  },
+  installSkybox(skybox, level) {
+    let skyEl = document.getElementsByTagName('a-sky')[0]
+    this.switchState(STATE_SKYBOX)
 
     if (typeof skybox === 'string')
     {
@@ -33,6 +66,7 @@ AFRAME.registerSystem('environment-manager', {
     }
   },
   installPresetEnvironment(preset = "starry") {
+    this.switchState(STATE_PRESET)
     let envEl = document.querySelector('*[environment]')
 
     if (!envEl) {
@@ -71,7 +105,14 @@ AFRAME.registerSystem('environment-manager', {
 
     this.removePresetEnvironment()
   },
+  setSkyBrightness(exposure) {
+    let skyEl = document.getElementsByTagName('a-sky')[0]
+    skyEl.getObject3D('mesh').material.color.r = exposure
+    skyEl.getObject3D('mesh').material.color.g = exposure
+    skyEl.getObject3D('mesh').material.color.b = exposure
+  },
   installHDREnvironment(texture) {
+    this.switchState(STATE_HDRI)
     let renderer = AFRAME.scenes[0].renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
@@ -88,11 +129,7 @@ AFRAME.registerSystem('environment-manager', {
     skyEl.getObject3D('mesh').scale.x = -1
     skyEl.getObject3D('mesh').scale.z = -1
 
-    let exposure = 0.7
-    skyEl.getObject3D('mesh').material.color.r = exposure
-    skyEl.getObject3D('mesh').material.color.g = exposure
-    skyEl.getObject3D('mesh').material.color.b = exposure
-
+    this.setSkyBrightness(0.7)
 
     var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 
@@ -100,10 +137,39 @@ AFRAME.registerSystem('environment-manager', {
     // scene.background = texture;
     // scene.environment = envMap;
 
-    document.querySelectorAll('*[light]').forEach(l => l.setAttribute('light', {intensity: 0}))
+    var originalLights = []
+    document.querySelectorAll('*[light]').forEach(l => {
+      originalLights.push([l, l.components.light.data.intensity])
+      l.setAttribute('light', {intensity: 0})
+    })
 
     this.envMap = envMap
     renderer.xr.enabled = wasXREnabled
+
+    pmremGenerator.dispose()
+
+    if (this.uninstallState) return
+
+    this.uninstallState = () => {
+      this.setToneMapping(THREE.LinearToneMapping)
+      this.setSkyBrightness(1.0)
+      this.el.renderer.toneMappingExposure = 1.0
+      skyEl.getObject3D('mesh').material.map = null
+      skyEl.getObject3D('mesh').scale.x = 1
+      skyEl.getObject3D('mesh').scale.z = 1
+      skyEl.getObject3D('mesh').material.needsUpdate = true
+      for (let [l, i] of originalLights) {
+        l.setAttribute('light', {intensity: i})
+      }
+
+      this.el.object3D.traverse(o => {
+        if (o.material && (o.material.type === 'MeshStandardMaterial') && o.material.envMap == this.envMap)
+        {
+          o.material.envMap = null
+          o.material.needsUpdate = true
+        }
+      })
+    }
   },
   setToneMapping(toneMapping) {
     this.el.renderer.toneMapping = toneMapping
@@ -115,6 +181,7 @@ AFRAME.registerSystem('environment-manager', {
     })})
   },
   async usePresetHDRI() {
+    this.switchState(STATE_HDRI)
     console.log("Using" , require('./assets/colorful_studio_1k.hdr'))
     await new Promise( (r,e) => {
   		new RGBELoader()
@@ -127,25 +194,28 @@ AFRAME.registerSystem('environment-manager', {
 
     document.querySelector('a-sky').setAttribute('material', {src: "#asset-colorful_studio"})
     this.setToneMapping(5)
-
-    let skyEl = document.getElementsByTagName('a-sky')[0]
-    let exposure = 0.98
-    skyEl.getObject3D('mesh').material.color.r = exposure
-    skyEl.getObject3D('mesh').material.color.g = exposure
-    skyEl.getObject3D('mesh').material.color.b = exposure
-
+    this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
-
+  },
+  reset() {
+    this.switchState(STATE_COLOR)
+    let skyEl = document.getElementsByTagName('a-sky')[0]
+    skyEl.getObject3D('mesh').material.color.r = 0.033
+    skyEl.getObject3D('mesh').material.color.g = 0.033
+    skyEl.getObject3D('mesh').material.color.b = 0.033
   },
 
   tick(t,dt) {
-    document.querySelectorAll('#world-root,#artist-root').forEach(r => { r.object3D.traverse(o => {
-      if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial') && o.material.envMap !== this.envMap)
-      {
-        o.material.envMap = this.envMap
-        o.material.needsUpdate = true
-      }
-    })})
+    if (this.state === STATE_HDRI)
+    {
+      document.querySelectorAll('#world-root,#artist-root').forEach(r => { r.object3D.traverse(o => {
+        if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial') && o.material.envMap !== this.envMap)
+        {
+          o.material.envMap = this.envMap
+          o.material.needsUpdate = true
+        }
+      })})
+    }
   }
 })
 

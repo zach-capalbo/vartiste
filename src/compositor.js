@@ -598,6 +598,8 @@ AFRAME.registerComponent('compositor', {
 
       let modesUsed = new Set()
 
+      let canSetSkybox = this.el.sceneEl.systems['environment-manager'].canInstallSkybox()
+
       for (let layer of layers) {
         if (!layer.visible) continue
 
@@ -612,6 +614,8 @@ AFRAME.registerComponent('compositor', {
         if (material.type !== "MeshStandardMaterial") continue
 
         if (modesUsed.has(layer.mode)) continue;
+
+        if (layer.mode === 'envMap' && !canSetSkybox) continue
 
         let layerCanvas = layer.canvas
 
@@ -699,7 +703,7 @@ AFRAME.registerComponent('compositor', {
       if (material.type !== "MeshStandardMaterial") return
       for (let mode of THREED_MODES)
       {
-        if (mode == "envMap") continue
+        if (mode == "envMap" && !canSetSkybox) continue
         if  (material[mode] && !modesUsed.has(mode))
         {
           switch (mode)
