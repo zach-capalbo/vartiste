@@ -33,51 +33,11 @@ AFRAME.registerSystem('icon-button', {
       alphaTest: 0.01
     })
     this.faceMaterials = {}
-  },
-  createNewFaceMaterial(icon) {
-    if (this.faceMaterials[icon]) return this.faceMaterials[icon]
-    
-    let t = new THREE.Texture()
-    t.generateMipmaps = false
-    t.minFilter = THREE.LinearFilter
 
-    try {
-      if (icon instanceof HTMLImageElement)
-      {
-        t.image = icon
-      }
-      else if (icon && icon.startsWith("data:"))
-      {
-        t.image = document.createElement('img')
-        t.image.src = icon
-      }
-      else if (icon)
-      {
-        t.image = document.querySelector(icon)
-      }
-    } catch (e) {
-      console.error("Couldn't create icon for", icon, e)
-      icon = undefined
-    }
+    this.bgMaterials = {}
+    this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
 
-    let material = new THREE.MeshStandardMaterial({
-      // alphaTest: 0.01,
-      // transparent: true,
-      // opacity: icon === "" ? 0.0 : 1.0,
-      fog: false,
-
-      color: 0x333,
-      side:  THREE.DoubleSide,
-    })
-
-    if (icon)
-    {
-      material.map = t
-      material.needsUpdate = true
-    }
-
-    this.faceMaterials[icon] = material
-    return this.faceMaterials[icon]
+    this.tmpColor = new THREE.Color()
   }
 })
 
@@ -128,12 +88,13 @@ AFRAME.registerComponent('icon-button', {
     let bg;
     if (buttonStyle.buttonType === 'plane')
     {
-      bg = new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+      bg = new THREE.Mesh(this.system.frontGeometry, this.system.bgMaterial)
     }
     else
     {
-      bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+      bg = new THREE.Mesh(this.system.geometry, this.system.bgMaterial)
     }
+
     bg.position.set(0,0,- depth / 2)
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg
@@ -177,17 +138,31 @@ AFRAME.registerComponent('icon-button', {
         transparent: true,
         opacity: this.data === "" ? 0.0 : 1.0
       })
-      console.log("Setting new material for", this.data)
       this.system.faceMaterials[this.data] = this.el.getObject3D('mesh').material
     }
     this.updateAspect()
   },
   setColor(color) {
-    this.bg.material.color.setStyle(color)
-    if (this.system.colorManagement) this.bg.material.color.convertSRGBToLinear()
-    this.bg.material.needsUpdate = true
+    let threeColor = this.system.tmpColor
+    threeColor.setStyle(color)
+    if (this.system.colorManagement) threeColor.convertSRGBToLinear()
+
+    if (this.system.bgMaterials[threeColor.getHex()])
+    {
+      this.bg.material = this.system.bgMaterials[threeColor.getHex()]
+    }
+    else
+    {
+      this.bg.material = this.system.bgMaterial.clone()
+      this.bg.material.color.copy(threeColor)
+      this.bg.material.needsUpdate = true
+      this.system.bgMaterials[threeColor.getHex()] = this.bg.material
+    }
+
+    // this.bg.material.needsUpdate = true
   },
   updateAspect() {
+    return
     if (this.style && this.style.keepAspect)
     {
       let material = this.el.getObject3D('mesh').material

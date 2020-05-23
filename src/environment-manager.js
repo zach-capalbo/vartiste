@@ -165,7 +165,7 @@ AFRAME.registerSystem('environment-manager', {
       }
 
       this.el.object3D.traverse(o => {
-        if (o.material && (o.material.type === 'MeshStandardMaterial') && o.material.envMap == this.envMap)
+        if (o.material && this.shouldTouchMaterial(o.material) && o.material.envMap == this.envMap)
         {
           o.material.envMap = null
           o.material.needsUpdate = true
@@ -178,7 +178,7 @@ AFRAME.registerSystem('environment-manager', {
   setToneMapping(toneMapping) {
     this.el.renderer.toneMapping = toneMapping
     document.querySelectorAll('#world-root,#artist-root,a-sky').forEach(r => { r.object3D.traverse(o => {
-      if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial'))
+      if (o.visible && o.material && (this.shouldTouchMaterial(o.material)))
       {
         o.material.needsUpdate = true
       }
@@ -209,11 +209,15 @@ AFRAME.registerSystem('environment-manager', {
     skyEl.getObject3D('mesh').material.color.b = 0.033
   },
 
+  shouldTouchMaterial(material) {
+    return material.type === 'MeshStandardMaterial'
+  },
+
   tick(t,dt) {
     if (this.state === STATE_HDRI)
     {
       document.querySelectorAll('#world-root,#artist-root').forEach(r => { r.object3D.traverse(o => {
-        if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial') && o.material.envMap !== this.envMap)
+        if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
         {
           o.material.envMap = this.envMap
           o.material.needsUpdate = true
