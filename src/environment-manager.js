@@ -195,7 +195,7 @@ AFRAME.registerSystem('environment-manager', {
     await new Promise( (r,e) => {
   		new RGBELoader()
   			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
-  			.load( "/" + require('./assets/colorful_studio_1k.hdr').toString() , ( texture, textureData ) => {
+  			.load( new URL(require('./assets/colorful_studio_1k.hdr').toString(), window.location).toString() , ( texture, textureData ) => {
           this.installHDREnvironment(texture)
   				r()
   			} );
