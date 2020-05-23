@@ -25,13 +25,25 @@ AFRAME.registerSystem('icon-button', {
     this.depth = 0.05
     this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.005)
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width, this.width)
-    this.colorManagement = this.el.getAttribute('renderer').colorManagement
+    this.colorManagement = this.el.getAttribute('renderer').colorManagement;
+
+    this.blankFaceMaterial = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0,
+      alphaTest: 0.01
+    })
+    this.faceMaterials = {}
+
+    this.bgMaterials = {}
+    this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
+
+    this.tmpColor = new THREE.Color()
   }
 })
 
 AFRAME.registerComponent('icon-button', {
-  dependencies: ['material', 'button-style'],
-  schema: {type:"string"},
+  dependencies: ['button-style'],
+  schema: {type:'string', default: ""},
   init() {
     let width = this.system.width
     let height = width
@@ -54,7 +66,8 @@ AFRAME.registerComponent('icon-button', {
       depth = 0.001
     }
 
-    this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({transparent: true, fog: false, map: this.data})))
+    this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, this.system.blankFaceMaterial))
+    // this.el.setObject3D('mesh', new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({transparent: true, fog: false)))
 
     // Inline propogate-grab
     for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
@@ -75,12 +88,13 @@ AFRAME.registerComponent('icon-button', {
     let bg;
     if (buttonStyle.buttonType === 'plane')
     {
-      bg = new THREE.Mesh(this.system.frontGeometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+      bg = new THREE.Mesh(this.system.frontGeometry, this.system.bgMaterial)
     }
     else
     {
-      bg = new THREE.Mesh(this.system.geometry, new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0}))
+      bg = new THREE.Mesh(this.system.geometry, this.system.bgMaterial)
     }
+
     bg.position.set(0,0,- depth / 2)
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg
@@ -110,29 +124,52 @@ AFRAME.registerComponent('icon-button', {
     this.setColor(buttonStyle.color)
   },
   update(oldData) {
-    this.el.setAttribute('material', {
-      alphaTest: 0.01,
-      color: '#FFF',
-      fog: false,
-      src: this.data,
-      transparent: true,
-      opacity: this.data === "" ? 0.0 : 1.0
-    })
+    if (this.system.faceMaterials[this.data])
+    {
+      this.el.getObject3D('mesh').material = this.system.faceMaterials[this.data]
+    }
+    else
+    {
+      this.el.setAttribute('material', {
+        alphaTest: 0.01,
+        color: '#FFF',
+        fog: false,
+        src: this.data,
+        transparent: true,
+        opacity: this.data === "" ? 0.0 : 1.0
+      })
+      this.system.faceMaterials[this.data] = this.el.getObject3D('mesh').material
+    }
     this.updateAspect()
   },
   setColor(color) {
-    this.bg.material.color.setStyle(color)
-    if (this.system.colorManagement) this.bg.material.color.convertSRGBToLinear()
-    this.bg.material.needsUpdate = true
+    let threeColor = this.system.tmpColor
+    threeColor.setStyle(color)
+    if (this.system.colorManagement) threeColor.convertSRGBToLinear()
+
+    if (this.system.bgMaterials[threeColor.getHex()])
+    {
+      this.bg.material = this.system.bgMaterials[threeColor.getHex()]
+    }
+    else
+    {
+      this.bg.material = this.system.bgMaterial.clone()
+      this.bg.material.color.copy(threeColor)
+      this.bg.material.needsUpdate = true
+      this.system.bgMaterials[threeColor.getHex()] = this.bg.material
+    }
+
+    // this.bg.material.needsUpdate = true
   },
   updateAspect() {
+    return
     if (this.style && this.style.keepAspect)
     {
       let material = this.el.getObject3D('mesh').material
       if (!material || !material.map) return
       let img = material.map.image
       let aspect = img.width / img.height
-      this.el.setAttribute('geometry', {height: 0.4 / aspect})
+      // this.el.setAttribute('geometry', {height: 0.4 / aspect})
     }
   },
   tick(t,ts) {

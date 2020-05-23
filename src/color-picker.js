@@ -73,10 +73,19 @@ AFRAME.registerComponent("brightness-picker", {
 
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
-      this.data.target.setAttribute("color-picker", {brightness: point.y})
 
-      let color = this.system.data.color
-      this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+      if (this.data.target)
+      {
+        this.data.target.setAttribute("color-picker", {brightness: point.y})
+
+        let color = this.system.data.color
+        this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+      }
+      else
+      {
+        this.brightness = point.y
+        this.el.emit('brightnesschanged', {brightness: this.brightness})
+      }
     })
   }
 })

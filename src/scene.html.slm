@@ -33,6 +33,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
           == partial('./partials/about-shelf.html.slm')
           == partial('./partials/timeline-shelf.html.slm')
           == partial('./partials/toolbox-shelf.html.slm')
+          a-entity position="0 -1.5 0"
+            == partial('./partials/environment-manager-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity pencil-tool=""
             a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.1 0 0"

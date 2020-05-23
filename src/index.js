@@ -32,7 +32,6 @@ require('./composition-view')
 require('./smooth-controller')
 require('./lathe')
 require('./url-loader')
-require('./environments.js')
 require('./pencil-tool')
 require('./timeline-shelf.js')
 require('./toolbox-shelf.js')
@@ -44,6 +43,7 @@ require('./sketchfab.js')
 require('./desktop-controls.js')
 require('./about-shelf.js')
 require('./frame.js')
+require('./environment-manager.js')
 
 require('./app.styl')
 
@@ -63,7 +63,9 @@ for (let fileName of require.context('./assets/', true, /.*/).keys()) {
 
   let assetSrc = require(`./assets/${asset}`)
 
-  if (assetSrc.startsWith("asset/") && assetSrc.endsWith(".png"))
+// if (assetSrc.startsWith("asset/") && /\.(png|jpg)/i.test(assetSrc))
+  if ((assetSrc.startsWith("asset/") && /\.(png|jpg)$/i.test(assetSrc) )
+    || /^data:image/.test(assetSrc))
   {
     assetSrc = `${assetSrc}`
     elementType = 'img'

@@ -32,6 +32,8 @@ AFRAME.registerComponent('pencil-tool', {
     this.tipHeight = tipHeight
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', cylinderHeight)
+    cylinder.setAttribute('segments-radial', 10)
+    cylinder.setAttribute('segments-height', 1)
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
@@ -43,17 +45,23 @@ AFRAME.registerComponent('pencil-tool', {
     {
       tip = document.createElement('a-sphere')
       tip.setAttribute('radius', tipHeight / 2)
+      tip.setAttribute('segments-height', 12)
+      tip.setAttribute('segments-width', 16)
     }
     else if (this.data.scaleTip)
     {
       tip = document.createElement('a-cone')
       tip.setAttribute('radius-top', radius)
       tip.setAttribute('radius-bottom', 0)
+      tip.setAttribute('segments-height', 2)
+      tip.setAttribute('segments-radial', 16)
     }
     else
     {
       tip = document.createElement('a-cylinder')
       tip.setAttribute('radius', radius / 2)
+      tip.setAttribute('segments-height', 1)
+      tip.setAttribute('segments-width', 16)
     }
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 -${cylinderHeight / 2 + tipHeight / 2} 0`)
@@ -273,6 +281,8 @@ AFRAME.registerComponent('hammer-tool', {
     let handle = document.createElement('a-cylinder')
     handle.setAttribute('radius', handleRadius)
     handle.setAttribute('height', handleHeight)
+    handle.setAttribute('segments-radial', 10)
+    handle.setAttribute('segments-height', 1)
     handle.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     handle.classList.add('clickable')
     handle.setAttribute('propogate-grab', "")
@@ -289,6 +299,8 @@ AFRAME.registerComponent('hammer-tool', {
     this.head = head
     head.setAttribute('radius', headRadius)
     head.setAttribute('height', headLength)
+    head.setAttribute('segments-radial', 10)
+    head.setAttribute('segments-height', 1)
     // head.classList.add('clickable')
     head.setAttribute('propogate-grab', "")
     head.setAttribute('material', 'side: double; color: #aaa; metalness: 0.9; roughness: 0.4')
@@ -301,6 +313,8 @@ AFRAME.registerComponent('hammer-tool', {
     tip.setAttribute('show-current-color', "")
     tip.setAttribute('position', `0 ${headLength / 2} 0`)
     tip.setAttribute('propogate-grab', "")
+    tip.setAttribute('segments-height', 8)
+    tip.setAttribute('segments-width', 12)
     head.append(tip)
     this.tip = tip
 
@@ -382,6 +396,8 @@ AFRAME.registerComponent('drip-tool', {
     this.tipHeight = tipHeight
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', cylinderHeight)
+    cylinder.setAttribute('segments-radial', 10)
+    cylinder.setAttribute('segments-height', 1)
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.setAttribute('position', `0 ${-cylinderHeight / 2.0} 0`)
     cylinder.classList.add('clickable')

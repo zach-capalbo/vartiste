@@ -190,7 +190,8 @@ applied to different frames, giving a kind of animated brush effect.
      button to stamp the layer onto the layer below
   1. Grab and stamp again as many times as desired
 - **Tip:** If you're working with a really smooth or metallic model, try adding
-  an Environment Map (`envMap`) layer
+  an Environment Map (`envMap`) layer or an HDR environment
+  - You can find HDR environments at [HDRI Haven](https://hdrihaven.com/)
   - You can find images to use for environment maps at [WikiMedia Commons 360° Panoramas](https://commons.wikimedia.org/w/index.php?title=Category:360°_panoramas#mw-category-media)
   - Environment map layers don't need to be the same size as the rest of the
     layers, so you can use higher or lower quality images if helpful.
