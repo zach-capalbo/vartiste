@@ -131,6 +131,8 @@ AFRAME.registerSystem('environment-manager', {
 
     this.setSkyBrightness(0.7)
 
+    this.hdriTexture = texture
+
     var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
 
     // When new three.js is integrated into AFRAME, we can do something like:
@@ -169,6 +171,8 @@ AFRAME.registerSystem('environment-manager', {
           o.material.needsUpdate = true
         }
       })
+
+      this.hdriTexture = undefined
     }
   },
   setToneMapping(toneMapping) {
