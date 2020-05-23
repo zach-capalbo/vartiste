@@ -1,4 +1,4 @@
-a-entity#environment-manager shelf="" scale="0.3 0.3 1" environment-manager=""
+a-entity.grab-root#environment-manager shelf="" scale="0.3 0.3 1" environment-manager=""
   a-entity position="-1.6 -1.1 0"
     a-entity icon-button="#asset-backspace-outline" click-action="reset" tooltip="Remove Environment"
     a-entity icon-button="#asset-blur-linear" click-action="toneMapping" tooltip="Change Tone Mapping"
