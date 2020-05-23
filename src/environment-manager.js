@@ -8,10 +8,10 @@ const [
   STATE_SKYBOX,
   STATE_PRESET
 ] = [
-  "Color",
-  "HDRI",
-  "Skybox",
-  "Preset"
+  "STATE_COLOR",
+  "STATE_HDRI",
+  "STATE_SKYBOX",
+  "STATE_PRESET"
 ]
 
 AFRAME.registerSystem('environment-manager', {
@@ -22,6 +22,8 @@ AFRAME.registerSystem('environment-manager', {
   switchState(newState) {
     if (newState == this.state) return
     console.log(`Switching environment from ${this.state} to ${newState}`)
+
+    this.substate = ""
 
     let skyEl = document.getElementsByTagName('a-sky')[0]
 
@@ -64,6 +66,8 @@ AFRAME.registerSystem('environment-manager', {
       skyEl.setAttribute('color', Color.hsl(0,0, level * 100).rgb().string())
       this.skyboxLevel = level
     }
+
+    this.substate = ""
   },
   installPresetEnvironment(preset = "starry") {
     this.switchState(STATE_PRESET)
@@ -150,6 +154,8 @@ AFRAME.registerSystem('environment-manager', {
 
     pmremGenerator.dispose()
 
+    this.substate = ''
+
     if (this.uninstallState) return
 
     this.uninstallState = () => {
@@ -186,7 +192,6 @@ AFRAME.registerSystem('environment-manager', {
   },
   async usePresetHDRI() {
     this.switchState(STATE_HDRI)
-    console.log("Using" , require('./assets/colorful_studio_1k.hdr'))
     await new Promise( (r,e) => {
   		new RGBELoader()
   			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
@@ -200,6 +205,7 @@ AFRAME.registerSystem('environment-manager', {
     this.setToneMapping(5)
     this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
+    this.substate = 'preset-hdri'
   },
   reset() {
     this.switchState(STATE_COLOR)

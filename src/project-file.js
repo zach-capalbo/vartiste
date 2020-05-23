@@ -17,6 +17,7 @@ class ProjectFile {
     if (!('allNodes' in obj)) obj.allNodes = []
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
+    if (!('environment' in obj)) obj.environment = {state: 'reset'}
 
     if ('skeletonator' in obj)
     {
@@ -65,6 +66,36 @@ class ProjectFile {
     settings.setProjectName(obj.projectName)
 
     document.querySelector('*[palette]').setAttribute('palette', {colors: obj.palette})
+
+    let environmentManager = compositor.el.sceneEl.systems['environment-manager']
+    if (obj.environment.state === 'reset') {
+      environmentManager.reset()
+    }
+    else if (obj.environment.state === 'preset-hdri')
+    {
+      environmentManager.usePresetHDRI()
+    }
+    else if (obj.environment.state == 'STATE_HDRI')
+    {
+      console.log("Reloading HDRI")
+      let hdriTexture = new THREE.DataTexture(
+        await new Uint8Array(await base64ToBufferAsync(obj.environment.image.data)),
+        obj.environment.image.width,
+        obj.environment.image.height,
+        obj.environment.image.format,
+        obj.environment.image.type,
+        obj.environment.image.mapping,
+        false,
+        false,
+        undefined,
+        undefined,
+        false,
+        obj.environment.image.encoding,
+      )
+      hdriTexture.flipY = obj.environment.image.flipY
+      hdriTexture.needsUpdate = true
+      environmentManager.installHDREnvironment(hdriTexture)
+    }
 
     await compositor.load(obj)
     compositor.el.setAttribute('material', {shader: obj.shader})
@@ -146,6 +177,28 @@ class ProjectFile {
     else if (Compositor.el.skeletonatorSavedSettings)
     {
       obj.skeletonator = Compositor.el.skeletonatorSavedSettings
+    }
+
+    let environmentManager = Compositor.el.sceneEl.systems['environment-manager']
+    if (environmentManager.substate == 'preset-hdri')
+    {
+      obj.environment = {state: 'preset-hdri'}
+    }
+    else if (environmentManager.state == 'STATE_HDRI')
+    {
+      obj.environment = {
+        state: 'STATE_HDRI',
+        image: {
+          format: environmentManager.hdriTexture.format,
+          type: environmentManager.hdriTexture.type,
+          mapping: environmentManager.hdriTexture.mapping,
+          encoding: environmentManager.hdriTexture.encoding,
+          flipY: environmentManager.hdriTexture.flipY,
+          data: base64ArrayBuffer(environmentManager.hdriTexture.image.data.buffer),
+          width: environmentManager.hdriTexture.image.width,
+          height: environmentManager.hdriTexture.image.height
+        }
+      }
     }
 
     return obj

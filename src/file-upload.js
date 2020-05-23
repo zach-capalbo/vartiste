@@ -139,7 +139,7 @@ async function addGlbReference(file) {
 }
 
 document.body.ondragover = (e) => {
-  console.log("Drag over", e.detail)
+  // console.log("Drag over", e.detail)
   e.preventDefault()
 }
 
