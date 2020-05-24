@@ -138,7 +138,11 @@ AFRAME.registerComponent('icon-button', {
         transparent: true,
         opacity: this.data === "" ? 0.0 : 1.0
       })
-      this.system.faceMaterials[this.data] = this.el.getObject3D('mesh').material
+
+      if (!((this.data instanceof HTMLImageElement) || this.data.startsWith("data")))
+      {
+        this.system.faceMaterials[this.data] = this.el.getObject3D('mesh').material
+      }
     }
     this.updateAspect()
   },
