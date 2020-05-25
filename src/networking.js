@@ -57,6 +57,19 @@ AFRAME.registerSystem('networking', {
     }).then((script) => {
       return io(this.data.host)
     })
+
+    let s = await this._socket
+    s.on('scene', (scene) => {
+      let loader = new THREE.GLTFLoader()
+      loader.load(scene, (gltf) => {
+        let entity = document.createElement('a-entity')
+        entity.setObject3D("mesh", gltf.scene || gltf.scenes[0])
+        document.querySelector('#world-root').append(entity)
+      }, () => {}, (e) => {
+        console.error(e)
+      })
+    })
+
     return await this._socket
   },
   presentationMode() {

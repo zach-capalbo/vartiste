@@ -53,6 +53,10 @@ io.on('connection', (socket) => {
     bot.setAvatarLocations(data)
     bot.setCanvasLocation(data)
   })
+
+  bot
+    .evaluate(() => document.querySelector('#environment-scene *[gltf-model-plus]').getAttribute('gltf-model-plus').src)
+    .then((scene) => socket.emit('scene', scene))
 });
 
 http.listen(3000, () => {
