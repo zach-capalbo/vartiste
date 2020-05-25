@@ -1,0 +1,13 @@
+{
+  "name": "vartiste-hubs-connector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "hubs-connector.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zach Capalbo",
+  "dependencies": {
+    "socket.io": "^2.3.0"
+  }
+}

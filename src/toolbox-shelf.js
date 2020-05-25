@@ -257,5 +257,8 @@ AFRAME.registerComponent('toolbox-shelf', {
   },
   toggleLatheAction() {
     document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
+  },
+  presentationAction() {
+    this.el.sceneEl.systems.networking.presentationMode()
   }
 })

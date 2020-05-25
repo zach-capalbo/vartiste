@@ -14,4 +14,5 @@ a-entity.grab-root toolbox-shelf="" shelf="" position="-1.5 -1.5 0" scale="0.3 0
   a-entity position="-1.5 0 0"
     a-entity icon-button="#asset-video-vintage" click-action="recordHeadset" tooltip="Record Headset View"
     a-entity icon-button="#asset-skeletonator" click-action="startSkeletonator" tooltip="Skeletonator Animation Tool"
+    a-entity icon-button="#asset-transition" click-action="presentation" tooltip="Set Presentation Mode (fullscreen canvas)"
   a-entity position="0 -1.1 0" text="value: *Experimental Tools*; width: 3; wrapCount: 40"
