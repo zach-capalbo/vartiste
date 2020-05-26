@@ -1,3 +1,5 @@
+import {Util} from "./util.js"
+
 AFRAME.registerSystem('sfx-system', {
   init() {
     let soundContainer = document.createElement('a-entity')
@@ -10,6 +12,11 @@ AFRAME.registerSystem('sfx-system', {
       entity.id = `sfx-${asset.id.slice("asset-".length)}`
       soundContainer.append(entity)
     }
+
+    // Try to work around bug that slows chrome down
+    Util.whenLoaded(soundContainer, () => {
+      Object.defineProperty(this.el.audioListener.context.listener, 'positionX', {value: undefined})
+    })
   }
 })
 
