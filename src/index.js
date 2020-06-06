@@ -44,6 +44,7 @@ require('./desktop-controls.js')
 require('./about-shelf.js')
 require('./frame.js')
 require('./environment-manager.js')
+require('./networking')
 
 require('./app.styl')
 
