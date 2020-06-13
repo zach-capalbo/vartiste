@@ -36,6 +36,10 @@ AFRAME.registerSystem('ai', {
 
       let tf = await this.tf()
       this.renderNet = await tf.loadGraphModel(RENDER_MODEL_PATH)
+      this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[1].size = "-1"
+      this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[2].size = "-1"
+      this.renderNet.executor.inputs[0].shape[1] = -1
+      this.renderNet.executor.inputs[0].shape[2] = -1
     })()
 
     return await this.loadingRenderModels
@@ -159,7 +163,7 @@ export class AIRenderNode extends CanvasNode {
 
     let rendered = await tf.tidy(() => {
       let input = tf.browser.fromPixels(inputCanvas).toFloat().div(tf.scalar(127.5)).sub(1.0)
-      input = tf.image.resizeBilinear(input, [256,256])
+      // input = tf.image.resizeBilinear(input, [256,256])
       let res = renderNet.predict(input.expandDims(), {training: true}).add(tf.scalar(1)).mul(0.5).squeeze()
       res = tf.image.resizeBilinear(res, [inputCanvas.height, inputCanvas.width])
       return res

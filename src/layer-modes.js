@@ -50,7 +50,8 @@ const FX = [
   'flip-y',
   'grayscale-to-alpha',
   'alpha-to-grayscale',
-  'invert'
+  'invert',
+  'uv-offset'
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)

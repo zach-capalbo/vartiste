@@ -15,5 +15,5 @@ a-entity.node-shelf.grab-root shelf=""
 
   a-entity node-input="type: destination" position="-2.1 1.2 0.01" material="color: #34d8eb"
 
-  - for (let i = 0; i < 0; ++i)
+  - for (let i = 0; i < 1; ++i)
     a-entity node-input="type: source; index: ${i}" position="-2.1 ${0.7 - i * 0.3} 0.01"
