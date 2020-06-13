@@ -139,6 +139,13 @@ AFRAME.registerComponent('pencil-tool', {
       }
     })
 
+    let wm = new THREE.Matrix4
+    this.el.object3D.updateMatrixWorld()
+    wm.copy(this.el.object3D.matrixWorld)
+    this.el.object3D.parent.remove(this.el.object3D)
+    document.querySelector('#world-root').object3D.add(this.el.object3D)
+    Util.applyMatrix(wm, this.el.object3D)
+
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
   },

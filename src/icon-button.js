@@ -251,3 +251,16 @@ AFRAME.registerComponent('toggle-button', {
     this.data.toggled = value
   }
 })
+
+AFRAME.registerComponent('system-click-action', {
+  schema: {
+    system: {type: 'string'},
+    action: {type: 'string'}
+  },
+  events: {
+    click: function() {
+      console.log("Clicking", this)
+      this.el.sceneEl.systems[this.data.system][this.data.action]()
+    }
+  }
+})
