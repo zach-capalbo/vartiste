@@ -67,6 +67,7 @@ For Oculus Touch controllers:
  - Left Hand:
   - Trigger: Draw
   - X Button: Undo
+  - Y Button: Toggle UI
   - Press Joystick: Reset camera
   - Joystick Right/Left: Next/Previous frame
   - Joystick Up: Add blank frame
@@ -174,9 +175,10 @@ applied to different frames, giving a kind of animated brush effect.
 ## Tips And Tricks
 
 - **Tip:** If VARTISTE is slow, unresponsive, or laggy
+  - Toggle the UI ![Eye](../assets/eye.png) off from the Settings shelf or the controller.
   - Use the Medium Quality ![Dice 4](../assets/dice-4.png) or Low Quality ![Dice 2](../assets/dice-2.png)
   - Use a smaller canvas size
-  - Break up large models into smaller chunks, or use lower-resolution verions.
+  - Break up large models into smaller chunks, or use lower-resolution versions.
     As long as everything shares the same UV map, you can import the large model
     at the end to combine it all.
   - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
