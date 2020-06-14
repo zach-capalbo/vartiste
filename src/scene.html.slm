@@ -25,7 +25,10 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
     a-entity light="type: directional; color: #fff; intensity: 1.26" position="0 -0.68 -0.45"
     /a-entity#environment position="0 -7 0" environment="preset:starry"
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
-    a-entity#ui
+    a-entity#unhide-ui bypass-hidden-updates="" position="-2 0 -1" rotation="0 90 0" visible="false"
+      a-entity scale="0.3 0.3 1" shelf="width: 1; height: 1"
+        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI"
+    a-entity#ui bypass-hidden-updates=""
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
           a-entity#color-selection.grab-root shelf="" position="0 1.6 0" scale="0.3 0.3 1"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="" position="0 0 0" scale="0.3 0.3 1"
@@ -47,7 +50,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
             a-entity spike-ball="" position="-0.1 -0.45 -0.1"
             a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" layer-shelves="compositor: #canvas-view" position="0 -1.5 0"
+        a-entity lock-axes="z: 0" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
     a-entity#canvas-root

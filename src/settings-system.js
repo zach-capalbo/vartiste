@@ -231,5 +231,14 @@ AFRAME.registerSystem('settings-system', {
   setProjectName(name) {
     this.projectName = name
     this.el.emit('projectnamechanged', {name})
+  },
+  toggleUIAction() {
+    let uiRoot = document.querySelector('#ui')
+    uiRoot.setAttribute('visible', !uiRoot.getAttribute('visible'))
+    document.querySelector('#unhide-ui').setAttribute('visible', !uiRoot.getAttribute('visible'))
+    for (let el of document.querySelectorAll('*[raycaster]'))
+    {
+      el.components.raycaster.refreshObjects()
+    }
   }
 })

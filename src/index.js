@@ -45,6 +45,7 @@ require('./about-shelf.js')
 require('./frame.js')
 require('./environment-manager.js')
 require('./networking')
+require('./optimization-components')
 
 require('./app.styl')
 

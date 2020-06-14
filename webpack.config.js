@@ -54,7 +54,8 @@ let config = {
           loader: 'file-loader',
           options: {
             esModule: false,
-            name: 'ai/[path][name]'
+            regExp: /(\.bin)/i,
+            name: 'ai/[path][name][1]'
           }
         }]
       },

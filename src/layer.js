@@ -391,6 +391,13 @@ export class FxNode extends CanvasNode {
 
    this.setProgramUniform("u_width", "uniform1f", textureCanvas.width)
    this.setProgramUniform("u_height", "uniform1f", textureCanvas.height)
+
+   for (let i in this.sources)
+   {
+     let source = this.sources[i]
+     if (!source) continue
+     if (source.updateCanvas) source.updateCanvas(frame)
+   }
   }
   setProgramUniform(name, type, value){
     let program = this.glData.program

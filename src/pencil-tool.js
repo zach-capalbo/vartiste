@@ -115,7 +115,7 @@ AFRAME.registerComponent('pencil-tool', {
   update(oldData) {
     this.updateEnabled()
   },
-  activatePencil() {
+  activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
     if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
@@ -138,6 +138,18 @@ AFRAME.registerComponent('pencil-tool', {
         this.updateEnabled()
       }
     })
+
+    // Move the pencil's parent to the world root, so it doesn't get
+    // accidentally hidden when the UI is hidden
+    if (!subPencil)
+    {
+      let wm = new THREE.Matrix4
+      this.el.object3D.updateMatrixWorld()
+      wm.copy(this.el.object3D.matrixWorld)
+      this.el.object3D.parent.remove(this.el.object3D)
+      document.querySelector('#world-root').object3D.add(this.el.object3D)
+      Util.applyMatrix(wm, this.el.object3D)
+    }
 
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
@@ -218,7 +230,7 @@ AFRAME.registerComponent('multi-pencil-base', {
     let activate = (e) => {
       if (e.detail === 'grabbed')
       {
-        this.el.querySelectorAll('*[pencil-tool]').forEach(e => e.components['pencil-tool'].activatePencil())
+        this.el.querySelectorAll('*[pencil-tool]').forEach(e => e.components['pencil-tool'].activatePencil({subPencil: true}))
         this.el.removeEventListener('stateadded', activate)
       }
     };

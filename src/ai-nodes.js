@@ -1,6 +1,7 @@
 import {Node, CanvasNode} from './layer.js'
 const STYLE_MODEL_PATH = require('./ai-models/saved_model_style_js/model.json')
 const TRANSFORM_MODEL_PATH = require('./ai-models/saved_model_transformer_separable_js/model.json')
+const RENDER_MODEL_PATH = require('./ai-models/render/model.json')
 
 var requireAI = require.context('./ai-models', true, /./);
 requireAI.keys().forEach(requireAI);
@@ -26,6 +27,22 @@ AFRAME.registerSystem('ai', {
     })()
 
     return await this.loadingModels
+  },
+  async loadRenderModels() {
+    if (this.loadingRenderModels) return await this.loadingRenderModels
+
+    this.loadingRenderModels = (async () => {
+      console.log("Loading render model")
+
+      let tf = await this.tf()
+      this.renderNet = await tf.loadGraphModel(RENDER_MODEL_PATH)
+      this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[1].size = "-1"
+      this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[2].size = "-1"
+      this.renderNet.executor.inputs[0].shape[1] = -1
+      this.renderNet.executor.inputs[0].shape[2] = -1
+    })()
+
+    return await this.loadingRenderModels
   }
 })
 
@@ -95,5 +112,64 @@ export class StyleTransferNode extends CanvasNode {
 
     await tf.browser.toPixels(stylized, this.canvas);
     stylized.dispose();
+  }
+}
+
+export class AIRenderNode extends CanvasNode {
+  constructor(compositor, opts = {}) {
+    super(compositor, opts)
+    Object.defineProperty(this, "system", {enumerable: false, value: AFRAME.scenes[0].systems.ai})
+    Object.defineProperty(this, "data", {enumerable: false, value: {}})
+  }
+
+  disconnectDestination()
+  {
+    this.destination = undefined
+  }
+  touch() {
+    super.touch()
+    this.data.styleEncodingTime = 0
+  }
+  async updateCanvas(frame) {
+    if (!this.destination) return
+    let canvas = this.canvas
+
+    if (!this.checkIfUpdateNeeded(frame)) return
+
+
+    if (this.data.isRunningInference) {
+      this.data.resetUpdateTime
+      return
+    }
+
+    this.data.isRunningInference = true
+    await this.runInference()
+    this.data.isRunningInference = false
+
+    this.updateTime = document.querySelector('a-scene').time
+
+    if (this.resetUpdateTime)
+    {
+      this.updateTime = 0
+    }
+  }
+  async runInference() {
+    await this.system.loadRenderModels()
+    let tf = await this.system.tf()
+    let {renderNet} = this.system
+    await tf.nextFrame()
+
+    let inputCanvas = this.destination.canvas
+
+    let rendered = await tf.tidy(() => {
+      let input = tf.browser.fromPixels(inputCanvas).toFloat().div(tf.scalar(127.5)).sub(1.0)
+      // input = tf.image.resizeBilinear(input, [256,256])
+      let res = renderNet.predict(input.expandDims(), {training: true}).add(tf.scalar(1)).mul(0.5).squeeze()
+      res = tf.image.resizeBilinear(res, [inputCanvas.height, inputCanvas.width])
+      return res
+    })
+
+    await tf.browser.toPixels(rendered, this.canvas)
+    rendered.dispose()
   }
 }
