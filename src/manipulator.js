@@ -332,6 +332,7 @@ AFRAME.registerComponent('manipulator', {
 
       if (this.resetZoom) {
         this.zoomAmmount = 0
+        this.scaleAmmount = 0
         this.resetZoom = false
       }
     }
@@ -343,9 +344,9 @@ AFRAME.registerComponent('mouse-manipulator', {
   init() {
     this.el.setAttribute('manipulator', {useRay: true})
     document.addEventListener('mousedown', e => {
-      if (!e.shiftKey) return
-      let allowLeftClick = true
-      if (!allowLeftClick && (!e.buttons || e.buttons == 1)) return
+      if (!(this.el.is('grabmode') || e.shiftKey)) return
+      if (this.el.is('grabbing')) return
+
       this.el.components.manipulator.onGripClose()
     })
 
@@ -355,8 +356,17 @@ AFRAME.registerComponent('mouse-manipulator', {
     })
 
     document.addEventListener('wheel', e => {
-      if (!e.shiftKey) return
-      this.el.components.manipulator.zoomAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
+      if (!(this.el.is('grabmode') || e.shiftKey)) return
+
+      if (e.altKey)
+      {
+        this.el.components.manipulator.scaleAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
+      }
+      else
+      {
+        this.el.components.manipulator.zoomAmmount = e.deltaY * ((e.deltaY > 50 || e.deltaY < -50) ? 0.01 : 1)
+      }
+
       this.el.components.manipulator.resetZoom = true
     })
 

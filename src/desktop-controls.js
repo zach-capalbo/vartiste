@@ -27,12 +27,24 @@ AFRAME.registerComponent('desktop-controls', {
   },
   setupLookControls() {
     this.el.sceneEl.canvas.removeEventListener('mousedown', this.el.components['look-controls'].onMouseDown)
+
     document.body.oncontextmenu = (e) => false
+
+    shouldLook = function (evt) {
+      var sceneEl = this.el.sceneEl;
+      if (!this.data.enabled || (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected())) { return false; }
+      if (this.el.is('looking')) return true
+
+      // Handle only not primary button.
+      if (evt.button == 0 && !evt.shiftKey) { return false; }
+
+      return true
+    }
+
     this.el.components['look-controls'].onMouseDown = (function (evt) {
       var sceneEl = this.el.sceneEl;
-      if (!this.data.enabled || (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected())) { return; }
-      // Handle only not primary button.
-      if (evt.button == 0 && !evt.shiftKey) { return; }
+
+      if (!shouldLook.call(this, evt)) return
 
       var canvasEl = sceneEl && sceneEl.canvas;
 
@@ -63,6 +75,31 @@ AFRAME.registerComponent('desktop-controls', {
 
 AFRAME.registerSystem('desktop-controls', {
   init() {
+    document.querySelectorAll('.desktop-controls *[icon-button]').forEach(button => {
+      let icon = document.querySelector(button.getAttribute('icon-button')).cloneNode()
+      icon.setAttribute('alt', button.getAttribute('tooltip'))
+      icon.setAttribute('title', button.getAttribute('tooltip'))
+      button.append(icon)
+      button.setAttribute('href', '#')
 
+      button.addEventListener('click', () => {
+        this[button.getAttribute('click-action')]()
+      })
+    })
+  },
+  rotateCamera() {
+    document.querySelector('#camera').addState('looking')
+    document.querySelector('#mouse').addState('looking')
+    document.querySelector('#mouse').removeState('grabmode')
+  },
+  draw() {
+    document.querySelector('#camera').removeState('looking')
+    document.querySelector('#mouse').removeState('looking')
+    document.querySelector('#mouse').removeState('grabmode')
+  },
+  grab() {
+    document.querySelector('#camera').addState('looking')
+    document.querySelector('#mouse').addState('looking')
+    document.querySelector('#mouse').addState('grabmode')
   }
 })
