@@ -3,8 +3,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
   a-sky color="#333" hide-in-ar-mode=""
 
   a-entity#artist-root
-    a-entity#camera-root
-      a-entity#camera camera="active: true" desktop-controls=""
+    a-entity#camera-root desktop-controls=""
+      a-entity#camera camera="active: true"
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
         a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 

@@ -1,6 +1,7 @@
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Util} from './util.js'
 import Gif from 'gif.js'
+import {Pool} from './pool.js'
 
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
@@ -21,6 +22,7 @@ function gcd(x, y) {
 
 AFRAME.registerComponent('toolbox-shelf', {
   init() {
+    Pool.init(this)
     this.el.addEventListener('click', (e) => {
       let action = e.target.getAttribute("click-action") + 'Action';
       if (action in this)
@@ -260,5 +262,40 @@ AFRAME.registerComponent('toolbox-shelf', {
   },
   presentationAction() {
     this.el.sceneEl.systems.networking.presentationMode()
+  },
+  captureRenderAction() {
+    let {width, height} = Compositor.el.getAttribute('geometry')
+    Compositor.el.object3D.updateMatrixWorld()
+
+    let offset = new THREE.Object3D()
+    Compositor.el.object3D.add(offset)
+    offset.position.z += 10
+
+    let scale = this.pool('scale', THREE.Vector3)
+    scale.setFromMatrixScale(Compositor.el.object3D.matrixWorld)
+    width = width * scale.x
+    height = height * scale.y
+
+    let camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 0.1, 10)
+
+    // Only show the canvas
+    camera.layers.mask = 2
+    let scene = this.el.sceneEl.object3D
+    console.log("Caputreing", width, height, camera)
+
+    scene.add(camera)
+    //
+    // var helper = new THREE.CameraHelper( camera );
+    // scene.add( helper );
+
+    Util.positionObject3DAtTarget(camera, offset, {scale: {x:1,y:1,z:1}})
+
+    // Compositor.el.object3D.add(camera)
+    let downloadUrl = this.el.sceneEl.systems['camera-capture'].captureToCanvas(camera).toDataURL()
+    let settings = this.el.sceneEl.systems['settings-system']
+    settings.download(downloadUrl, `${settings.projectName}-${settings.formatFileDate()}-render.png`, "Rendered Canvas")
+
+    scene.remove(camera)
+
   }
 })
