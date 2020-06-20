@@ -4,6 +4,12 @@ import {Pool} from './pool.js'
 AFRAME.registerSystem('frame', {
   init() {
     this.pinnedTargets = {}
+    this.el.addEventListener('startsnap', () => {
+      document.querySelectorAll('*[frame]').forEach(el => el.components.frame.hide())
+    })
+    this.el.addEventListener('endsnap', () => {
+      document.querySelectorAll('*[frame]').forEach(el => el.components.frame.unhide())
+    })
   },
   pinFrameTo(frame, target) {
     this.pinnedTargets[target.id] = this.pinnedTargets[target.id] || []
@@ -47,6 +53,8 @@ AFRAME.registerComponent("frame", {
 
     let buttonCount = 0
 
+    this.objects = []
+
     if (this.data.closable)
     {
       let closeButton = document.createElement('a-entity')
@@ -56,6 +64,7 @@ AFRAME.registerComponent("frame", {
       closeButton.setAttribute('scale', `0.3 0.3 1`)
       closeButton.setAttribute('frame-action', "closeFrame")
       this.el.append(closeButton)
+      this.objects.push(closeButton)
     }
 
     if (this.data.pinnable) {
@@ -66,6 +75,7 @@ AFRAME.registerComponent("frame", {
       closeButton.setAttribute('scale', `0.3 0.3 1`)
       closeButton.setAttribute('frame-action', "pinFrame")
       this.el.append(closeButton)
+      this.objects.push(closeButton)
     }
   },
   remove() {
@@ -89,11 +99,13 @@ AFRAME.registerComponent("frame", {
       let lineObject = new THREE.Line(outline, new THREE.LineBasicMaterial( { color: this.data.outlineColor, linewidth: 5 } ))
       this.el.object3D.add(lineObject)
       this.lineObject = lineObject
+      this.objects.push(lineObject)
     }
     else if (!this.data.outline && this.lineObject)
     {
       this.el.object3D.remove(this.lineObject)
       delete this.lineObject
+      this.objects.splice(this.objects.indexOf(this.lineObject), 1)
     }
   },
   closeFrame() {
@@ -153,5 +165,19 @@ AFRAME.registerComponent("frame", {
     Util.positionObject3DAtTarget(this.el.object3D, target.object3D, {scale: pinSize, transformOffset: offset})
 
     this.el.addState('pinned')
-  }
+  },
+  hide() {
+    for (let o of this.objects)
+    {
+      o = (o.object3D) ? o.object3D : o
+      o.visible = false
+    }
+  },
+  unhide() {
+    for (let o of this.objects)
+    {
+      o = (o.object3D) ? o.object3D : o
+      o.visible = true
+    }
+  },
 })

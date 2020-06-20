@@ -1,5 +1,7 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
+import {Undo} from './undo.js'
+
 AFRAME.registerSystem('camera-capture', {
   getTempCanvas() {
     let {width, height} = Compositor.component;
@@ -67,11 +69,11 @@ AFRAME.registerSystem('camera-capture', {
 
     let destCtx = canvas.getContext('2d')
 
-    destCtx.translate(canvas.width, canvas.height)
-    destCtx.scale(-1, -1)
+    destCtx.translate(0, canvas.height)
+    destCtx.scale(1, -1)
     destCtx.drawImage(targetTempCanvas, 0, 0, canvas.width, canvas.height)
-    destCtx.scale(-1, -1)
-    destCtx.translate(-canvas.width, -canvas.height)
+    destCtx.scale(1, -1)
+    destCtx.translate(0, -canvas.height)
 
     renderer.xr.enabled = wasXREnabled
 
@@ -132,10 +134,13 @@ AFRAME.registerComponent('camera-tool', {
   },
   takePicture() {
     console.log("Taking picture")
+    Undo.pushCanvas(Compositor.component.activeLayer.canvas)
+    this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
     this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, Compositor.component.activeLayer.canvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
+    this.el.sceneEl.emit("endsnap", {source: this.el})
   },
   activate() {
     var helper = new THREE.CameraHelper( this.camera );
