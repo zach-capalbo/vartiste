@@ -1,2 +1,4 @@
 .desktop-controls
-  .control icon-button="#asset-arrow-all" click-action="rotateCamera"
+  a.control icon-button="#asset-lead-pencil" click-action="draw" tooltip='Draw'
+  a.control icon-button="#asset-arrow-all" click-action="rotateCamera" tooltip="Rotate Camera"
+  a.control icon-button="#asset-hand-no-lines" click-action="grab" tooltip="Grab"

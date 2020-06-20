@@ -57,6 +57,10 @@ AFRAME.registerComponent('compositor', {
 
     this.el.setAttribute('material', {src: compositeCanvas})
     this.el.getObject3D('mesh').material.map.flipY = this.data.flipY
+
+    // Appear in main camera and canvas-only camera
+    this.el.getObject3D('mesh').layers.mask = 3
+
     this.flipUVY()
 
     this.layers = [new Layer(this.width, this.height), new Layer(this.width, this.height)]

@@ -3,10 +3,10 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
   a-sky color="#333" hide-in-ar-mode=""
 
   a-entity#artist-root
-    a-entity#camera-root
-      a-entity#camera camera="active: true" desktop-controls=""
+    a-entity#camera-root desktop-controls=""
+      a-entity#camera camera="active: true"
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
-        a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
+        a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound=""
@@ -46,6 +46,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
             a-entity pencil-tool="pressureTip: true; extraStates: erasing" position="-0.4 0 0"
             a-entity pencil-tool="tipRatio: 0.35; radius: 0.01; extraStates: erasing" position="-0.5 0 0"
             a-entity hammer-tool="" position="-0.6 0 0"
+            a-entity camera-tool="" position="-0.8 0 0"
             a-entity pencil-broom="" position="-0.55 -0.45 -0.1"
             a-entity spike-ball="" position="-0.1 -0.45 -0.1"
             a-entity drip-tool="" position="-0.8 -0.45 -0.1"

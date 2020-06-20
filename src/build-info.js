@@ -3,7 +3,7 @@ const exec = util.promisify(require('child_process').exec);
 const packageInfo = require('../package.json')
 
 let branchName;
-let isMaster;
+let isRelease;
 
 async function sh(cmd) {
   let {stdout, stderr} = await exec(cmd)
@@ -20,7 +20,7 @@ async function version() {
   let rawVersion = packageInfo.version
   let versionParts = rawVersion.split('.')
 
-  if (!isMaster) {
+  if (!isRelease) {
     return `${versionParts[0]}.${branchName}`
   }
 
@@ -43,7 +43,7 @@ module.exports = async function (opions, loaderContext) {
       branchName = "GIT_ERROR"
     }
   }
-  isMaster = branchName === 'master'
+  isRelease = branchName === 'release'
 
   let info = await {
     version: await version(),

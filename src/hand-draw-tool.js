@@ -33,6 +33,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       document.addEventListener('mousedown', e => {
         if (e.button !== 0) return
         if (e.shiftKey) return
+        if (this.el.is('looking')) return
         this.pressure = 1.0
         this.isDrawing = true
         this.startDraw()
@@ -40,6 +41,7 @@ AFRAME.registerComponent('hand-draw-tool', {
 
       document.addEventListener('mouseup', e=> {
         if (e.button !== 0) return
+        if (this.el.is('looking')) return
         if (this.isDrawing) {
           this.isDrawing = false
           this.endDraw()
@@ -49,12 +51,14 @@ AFRAME.registerComponent('hand-draw-tool', {
       document.addEventListener('touchstart', e => {
         if (e.touches.length !== 1) return
         if (e.shiftKey) return
+        if (this.el.is('looking')) return
         this.pressure = 1.0
         this.isDrawing = true
         this.startDraw()
       })
 
       document.addEventListener('touchend', e => {
+        if (this.el.is('looking')) return
         if (this.isDrawing) {
           this.isDrawing = false
           this.endDraw()

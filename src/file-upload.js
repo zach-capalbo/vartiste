@@ -21,7 +21,7 @@ async function addImageLayer(file) {
 export function addImageReferenceViewer(image) {
   let viewer = document.createElement('a-entity')
   viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
-  viewer.setAttribute('material', {src: image, shader: 'flat'})
+  viewer.setAttribute('material', {src: image, shader: 'flat', transparent: true})
   viewer.setAttribute('position')
   viewer.classList.add("clickable")
   viewer.classList.add("reference-image")
