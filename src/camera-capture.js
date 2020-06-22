@@ -41,6 +41,8 @@ AFRAME.registerSystem('camera-capture', {
     return this.targetTempCanvas
   },
   captureToCanvas(camera, canvas) {
+    if (!canvas) canvas = this.getTempCanvas()
+
     let renderer = this.el.sceneEl.renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
@@ -54,8 +56,6 @@ AFRAME.registerSystem('camera-capture', {
     let newTarget = new THREE.WebGLRenderTarget(targetTempCanvas.width, targetTempCanvas.height)
 
     renderer.setRenderTarget(newTarget)
-
-    if (!canvas) canvas = this.getTempCanvas()
 
     let ctx = targetTempCanvas.getContext('2d')
 

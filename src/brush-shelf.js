@@ -1,4 +1,5 @@
 import {BrushList} from './brush-list.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('brush-shelf', {
   init() {
@@ -65,5 +66,10 @@ AFRAME.registerComponent('brush-shelf', {
   },
   decreaseBrushSizeAction() {
     this.system.scaleBrush(-100)
+  },
+  clearLayerAction() {
+    Undo.pushCanvas(Compositor.component.activeLayer.canvas)
+    Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
+    Compositor.component.activeLayer.touch()
   }
 })
