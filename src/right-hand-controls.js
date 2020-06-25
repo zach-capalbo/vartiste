@@ -24,7 +24,7 @@ AFRAME.registerComponent('right-hand-controls', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
     this.paintSystem = document.querySelector('a-scene').systems['paint-system']
-    this.el.setAttribute('joystick-turn', "target: #camera-root")
+    this.el.setAttribute('joystick-turn', "target: #artist-root")
     this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: true})
     this.el.setAttribute('smooth-controller', "")
 

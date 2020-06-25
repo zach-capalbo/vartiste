@@ -7,13 +7,16 @@ AFRAME.registerComponent('pencil-tool', {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
     pressureTip: {type: 'boolean', default: false},
+    detailTip: {type: 'boolean', default: false},
 
     radius: {default: 0.03},
     tipRatio: {default: 0.2},
     extraStates: {type: 'array'},
 
     enabled: {default: true},
-    waitForGrab: {default: true}
+    waitForGrab: {default: true},
+
+    locked: {default: false}
   },
   init() {
     this.el.classList.add('grab-root')
@@ -41,7 +44,15 @@ AFRAME.registerComponent('pencil-tool', {
 
     let tip;
 
-    if (this.data.pressureTip)
+    if (this.data.detailTip)
+    {
+      tip = document.createElement('a-cone')
+      tip.setAttribute('radius-top', radius)
+      tip.setAttribute('radius-bottom', 0)
+      tip.setAttribute('segments-height', 2)
+      tip.setAttribute('segments-radial', 4)
+    }
+    else if (this.data.pressureTip)
     {
       tip = document.createElement('a-sphere')
       tip.setAttribute('radius', tipHeight / 2)
@@ -73,6 +84,15 @@ AFRAME.registerComponent('pencil-tool', {
     else
     {
       tip.setAttribute("show-current-color", "")
+
+      if (this.data.detailTip)
+      {
+        Util.whenLoaded(tip, () => {
+          tip.setAttribute('material', {shader: 'standard'})
+          tip.getObject3D('mesh').material.flatShading = true
+          tip.getObject3D('mesh').material.needsUpdate = true
+        })
+      }
     }
     tip.classList.add('clickable')
     tip.setAttribute('propogate-grab', "")
@@ -219,6 +239,27 @@ AFRAME.registerComponent('pencil-tool', {
       handDrawTool.isDrawing = true
       handDrawTool.startDraw()
     }
+  },
+  createLockedClone() {
+    let clone = document.createElement('a-entity')
+    this.el.parentEl.append(clone)
+    clone.setAttribute('pencil-tool', Object.assign({locked: true}, this.el.getAttribute('pencil-tool')))
+
+    Util.whenLoaded(clone, () => {
+      Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
+      let newComponent = clone.components['pencil-tool']
+      let handDrawTool = clone.components['hand-draw-tool']
+      let oldPaintSystem = handDrawTool.system
+      newComponent.tip.removeAttribute('show-current-color')
+      newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
+
+      handDrawTool.system = {
+        data: Object.assign({}, oldPaintSystem.data),
+        brush: oldPaintSystem.brush
+      }
+    })
+
+    return clone
   }
 })
 

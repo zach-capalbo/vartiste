@@ -4,7 +4,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
 
   a-entity#artist-root
     a-entity#camera-root desktop-controls=""
-      a-entity#camera camera="active: true"
+      a-entity#camera camera="active: true" look-controls="hmdEnabled: true; enabled: false"
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
         a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 
@@ -40,7 +40,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
             == partial('./partials/environment-manager-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity pencil-tool=""
-            a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.1 0 0"
+            a-entity pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="-0.07 0 0"
+            a-entity pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.12 0 0"
             a-entity pencil-tool="scaleTip: false" position="-0.2 0 0"
             a-entity pencil-tool="pressureTip: true" position="-0.3 0 0"
             a-entity pencil-tool="pressureTip: true; extraStates: erasing" position="-0.4 0 0"
