@@ -1,6 +1,7 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
+import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 
 AFRAME.registerSystem('camera-capture', {
   getTempCanvas() {
@@ -80,6 +81,10 @@ AFRAME.registerSystem('camera-capture', {
     renderer.setRenderTarget(oldTarget)
     newTarget.dispose()
     return canvas
+  },
+  capturePanorama() {
+    var equiManaged = new CubemapToEquirectangular( this.el.sceneEl.renderer, true );
+    equiManaged.update( document.querySelector('#camera').getObject3D('camera'), this.el.sceneEl.object3D );
   }
 })
 

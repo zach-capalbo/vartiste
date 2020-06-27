@@ -168,13 +168,13 @@ document.body.ondrop = (e) => {
         {
           addImageLayer(file)
         }
-        return
+        continue
       }
 
       if (/\.(hdri?|exr)$/i.test(file.name))
       {
         addHDRImage(file)
-        return
+        continue
       }
 
       if (/\.(glb)|(gltf)$/i.test(file.name))
@@ -187,7 +187,7 @@ document.body.ondrop = (e) => {
         {
           addGlbViewer(file)
         }
-        return
+        continue
       }
 
       file.text().then(t => {
