@@ -98,10 +98,14 @@ AFRAME.registerComponent('manipulator', {
     let startMatrix = new THREE.Matrix4
     startMatrix.copy(this.target.object3D.matrix)
     let obj3d = this.target.object3D
-    Undo.push(() => {
-      obj3d.matrix.copy(startMatrix)
-      obj3d.matrix.decompose(obj3d.position, obj3d.quaternion, obj3d.scale)
-    })
+
+    if (this.grabOptions.undoable)
+    {
+      Undo.push(() => {
+        obj3d.matrix.copy(startMatrix)
+        obj3d.matrix.decompose(obj3d.position, obj3d.quaternion, obj3d.scale)
+      })
+    }
 
     this.el.addState('grabbing')
 
@@ -389,7 +393,8 @@ AFRAME.registerComponent('propogate-grab', {
 AFRAME.registerComponent('grab-options', {
   schema: {
     showHand: {type: 'boolean', default: true},
-    scalable: {type: 'boolean', default: true}
+    scalable: {type: 'boolean', default: true},
+    undoable: {type: 'boolean', default: false}
   }
 })
 
