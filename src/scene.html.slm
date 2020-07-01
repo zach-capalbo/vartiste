@@ -38,7 +38,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
           == partial('./partials/toolbox-shelf.html.slm')
           a-entity position="0 -1.5 0"
             == partial('./partials/environment-manager-shelf.html.slm')
-          a-entity position="0 0 0.3"
+          a-entity position="-3.0 -1.5 0"
             == partial('./partials/timer-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity pencil-tool=""

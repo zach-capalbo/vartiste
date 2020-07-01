@@ -8,6 +8,7 @@ AFRAME.registerSystem('_timer-system', {
 AFRAME.registerComponent('timer-system', {
   schema: {
     switchReferences: {default: false},
+    shuffleReferences: {default: false},
     freshLayer: {default: false},
   },
   update(oldData) {
@@ -22,6 +23,8 @@ AFRAME.registerComponent('timer-system', {
     this.startTime = this.el.sceneEl.time
     this.setTimeout(this.startTime)
     console.log("Starting timer at", this.startTime, this.timerActive, this.timeoutTime)
+
+    if (!this.timerActive) return
 
     if (this.data.switchReferences) {
       this.swapReference()
@@ -64,6 +67,14 @@ AFRAME.registerComponent('timer-system', {
     let references = Array.from(document.querySelectorAll('.reference-image'))
     let current = references.find(r => r.getAttribute('visible'))
     let next = references[(references.indexOf(current) + 1) % references.length]
+
+    if (this.data.shuffleReferences)
+    {
+      do {
+        next = references[Math.floor(Math.random() * references.length)]
+      } while (next == current)
+    }
+
     for (let r of references) {
       if (r == next) continue
       r.setAttribute('visible', false)
