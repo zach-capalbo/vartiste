@@ -47,6 +47,8 @@ require('./environment-manager.js')
 require('./networking')
 require('./optimization-components')
 require('./camera-capture')
+require('./timer')
+require('./user-media')
 
 require('./app.styl')
 

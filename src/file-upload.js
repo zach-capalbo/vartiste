@@ -23,6 +23,7 @@ export function addImageReferenceViewer(image) {
   viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
   viewer.setAttribute('material', {src: image, shader: 'flat', transparent: true})
   viewer.setAttribute('position')
+  viewer.setAttribute('frame', 'closable: true')
   viewer.classList.add("clickable")
   viewer.classList.add("reference-image")
   document.querySelector('#reference-spawn').append(viewer)
@@ -37,7 +38,7 @@ async function addImageReference(file) {
   await new Promise((r,e) => image.onload = r)
   image.onload = undefined
 
-  addImageReferenceViewer(image)
+  return addImageReferenceViewer(image)
 }
 
 async function addHDRImage(file) {
@@ -146,6 +147,7 @@ document.body.ondragover = (e) => {
 document.body.ondrop = (e) => {
   console.log("Drop", e.detail)
   e.preventDefault()
+  let referenceIdx = 0
 
   if (e.dataTransfer.items) {
     let settings = document.querySelector('a-scene').systems['settings-system']
@@ -162,19 +164,20 @@ document.body.ondrop = (e) => {
       {
         if (settings.data.addReferences)
         {
-          addImageReference(file)
+          let nextIdx = referenceIdx++
+          addImageReference(file).then(reference => reference.setAttribute('position', `${nextIdx * 0.1} 0 ${nextIdx * -0.02}`))
         }
         else
         {
           addImageLayer(file)
         }
-        return
+        continue
       }
 
       if (/\.(hdri?|exr)$/i.test(file.name))
       {
         addHDRImage(file)
-        return
+        continue
       }
 
       if (/\.(glb)|(gltf)$/i.test(file.name))
@@ -187,7 +190,7 @@ document.body.ondrop = (e) => {
         {
           addGlbViewer(file)
         }
-        return
+        continue
       }
 
       file.text().then(t => {

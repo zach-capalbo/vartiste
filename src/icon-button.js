@@ -208,7 +208,7 @@ AFRAME.registerComponent('toggle-button', {
       else
       {
         this.data.toggled = !this.data.toggled
-        this.setValue(this.data.toggled)
+        this.setToggle(this.data.toggled)
       }
     }
   },
@@ -255,12 +255,21 @@ AFRAME.registerComponent('toggle-button', {
 AFRAME.registerComponent('system-click-action', {
   schema: {
     system: {type: 'string'},
+    component: {type: 'string'},
     action: {type: 'string'}
   },
   events: {
     click: function() {
       console.log("Clicking", this)
-      this.el.sceneEl.systems[this.data.system][this.data.action]()
+
+      if (this.data.component)
+      {
+        this.el.sceneEl.components[this.data.component][this.data.action]()
+      }
+      else
+      {
+        this.el.sceneEl.systems[this.data.system][this.data.action]()
+      }
     }
   }
 })
