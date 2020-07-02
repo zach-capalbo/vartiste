@@ -57,10 +57,17 @@ AFRAME.registerComponent('timer-system', {
     }
 
     if (this.data.freshLayer) {
-      Compositor.component.activeLayer.visible = false
-      Compositor.el.emit('layerupdated', {layer: Compositor.component.activeLayer})
-      let layerIdx = Compositor.component.layers.indexOf(Compositor.component.activeLayer)
-      Compositor.component.addLayer(layerIdx)
+      if (Compositor.component.data.useNodes)
+      {
+        Compositor.component.addFrameAfter()
+      }
+      else
+      {
+        Compositor.component.activeLayer.visible = false
+        Compositor.el.emit('layerupdated', {layer: Compositor.component.activeLayer})
+        let layerIdx = Compositor.component.layers.indexOf(Compositor.component.activeLayer)
+        Compositor.component.addLayer(layerIdx)
+      }
     }
   },
   swapReference() {

@@ -50,32 +50,22 @@ AFRAME.registerComponent("frame", {
   init() {
     Pool.init(this)
     let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
+    this.width = width
+    this.height = height
 
-    let buttonCount = 0
+    this.buttonCount = 0
 
     this.objects = []
 
     if (this.data.closable)
     {
-      let closeButton = document.createElement('a-entity')
-      closeButton.setAttribute('icon-button', '#asset-close-circle-outline')
-      closeButton.setAttribute('button-style', 'buttonType: plane; color: #26211c')
-      closeButton.setAttribute('position', `${width / 2 - 0.055 - buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
-      closeButton.setAttribute('scale', `0.3 0.3 1`)
+      let closeButton = this.addButton('#asset-close-circle-outline')
       closeButton.setAttribute('frame-action', "closeFrame")
-      this.el.append(closeButton)
-      this.objects.push(closeButton)
     }
 
     if (this.data.pinnable) {
-      let closeButton = document.createElement('a-entity')
-      closeButton.setAttribute('icon-button', '#asset-hand-right')
-      closeButton.setAttribute('button-style', 'buttonType: plane; color: #26211c')
-      closeButton.setAttribute('position', `${width / 2 - 0.055 - buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
-      closeButton.setAttribute('scale', `0.3 0.3 1`)
+      let closeButton = this.addButton('#asset-hand-right')
       closeButton.setAttribute('frame-action', "pinFrame")
-      this.el.append(closeButton)
-      this.objects.push(closeButton)
     }
   },
   remove() {
@@ -107,6 +97,17 @@ AFRAME.registerComponent("frame", {
       delete this.lineObject
       this.objects.splice(this.objects.indexOf(this.lineObject), 1)
     }
+  },
+  addButton(icon) {
+    let {width, height} = this
+    let button = document.createElement('a-entity')
+    button.setAttribute('icon-button', icon)
+    button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
+    button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
+    button.setAttribute('scale', `0.3 0.3 1`)
+    this.el.append(button)
+    this.objects.push(button)
+    return button
   },
   closeFrame() {
     this.el.parentEl.removeChild(this.el)
