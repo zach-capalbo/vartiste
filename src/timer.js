@@ -79,7 +79,7 @@ AFRAME.registerComponent('timer-system', {
     {
       do {
         next = references[Math.floor(Math.random() * references.length)]
-      } while (next == current)
+      } while (next == current && references.length > 1)
     }
 
     for (let r of references) {
