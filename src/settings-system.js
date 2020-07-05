@@ -3,16 +3,21 @@ import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
+import {Util} from './util.js'
 
 import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
-AFRAME.registerSystem('settings-system', {
+Util.registerComponentSystem('settings-system', {
   schema: {
     addReferences: {default: false}
   },
   init() {
+    console.log("Starting settings")
     this.projectName = "vartiste-project"
     this.quality = 1.0
+    this.el.emit('projectnamechanged')
+    this.mediumStabilizationAction()
+    this.fullQualityAction()
   },
   popup(url, description) {
     this.el.emit('open-popup', `Attempted to open a poup for ${description}. You may need to take off your headset to view it. You may also need to disable your popup blocker.`)
@@ -212,12 +217,14 @@ AFRAME.registerSystem('settings-system', {
   setQuality(scale) {
     document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
     this.quality = scale
+    this.el.emit('qualitychanged', {quality: scale})
   },
   lowQualityAction() { this.setQuality(0.25) },
   mediumQualityAction() { this.setQuality(0.5) },
   fullQualityAction() { this.setQuality(1.0) },
   setStabilizeAmount(amount) {
     document.querySelectorAll('*[smooth-controller]').forEach((e) => e.setAttribute('smooth-controller', {amount}))
+    this.el.emit('stabilizationchanged', {stabilization: amount})
   },
   noStabilizationAction() { this.setStabilizeAmount(1) },
   mediumStabilizationAction() { this.setStabilizeAmount(4) },

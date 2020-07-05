@@ -207,7 +207,14 @@ AFRAME.registerComponent('manipulator', {
     this.endPoint.visible = false
     this.el.removeState('grabbing')
   },
-  onGripClose(){
+  onGripClose(e){
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    if (this.el.is('grabbing')) return
+
     if (this.data.useRay)
     {
       if (!this.raycaster.intersectedEls.length > 0)
@@ -240,6 +247,7 @@ AFRAME.registerComponent('manipulator', {
   },
   onGripOpen() {
     this.stopGrab()
+    console.log("GripOpen")
   },
   tick(t, dt) {
     if (this.target) {

@@ -61,6 +61,22 @@ AFRAME.registerComponent('brush-shelf', {
       }
     })
   },
+  toggleTriggerGrabAction() {
+    document.querySelectorAll('*[manipulator]').forEach(e=>{
+      if (e.is("grabmode"))
+      {
+        e.removeState("grabmode")
+        e.removeEventListener('triggerdown', e.components.manipulator.onGripClose)
+        e.removeEventListener('triggerup', e.components.manipulator.onGripOpen)
+      }
+      else
+      {
+        e.addState("grabmode")
+        e.addEventListener('triggerdown', e.components.manipulator.onGripClose)
+        e.addEventListener('triggerup', e.components.manipulator.onGripOpen)
+      }
+    })
+  },
   increaseBrushSizeAction() {
     this.system.scaleBrush(100)
   },

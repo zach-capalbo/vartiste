@@ -26,8 +26,25 @@ AFRAME.registerComponent('settings-shelf', {
     this.el.sceneEl.addEventListener('projectnamechanged', e => {
       this.el.querySelector('.project-name').setAttribute('text', {value: this.el.sceneEl.systems['settings-system'].projectName})
     })
+    Util.whenLoaded(this.el.querySelector('.project-name'), () => {
+      console.log("Setting project name edit", this.el.sceneEl.systems['settings-system'].projectName)
+      this.el.querySelector('.project-name').setAttribute('text', {value: this.el.sceneEl.systems['settings-system'].projectName})
+    })
+
     this.el.sceneEl.addEventListener('open-popup', e => {
       this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
+    })
+
+    this.el.sceneEl.addEventListener('stabilizationchanged', e => {
+      this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 4.0)
+      this.el.querySelector('[click-action="mediumStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 4.0 && e.detail.stabilization < 12.0)
+      this.el.querySelector('[click-action="maxStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 12.0)
+    })
+
+    this.el.sceneEl.addEventListener('qualitychanged', e => {
+      this.el.querySelector('[click-action="lowQuality"]').components['toggle-button'].setToggle(e.detail.quality <= 0.25)
+      this.el.querySelector('[click-action="mediumQuality"]').components['toggle-button'].setToggle(e.detail.quality > 0.25 && e.detail.quality <= 0.5)
+      this.el.querySelector('[click-action="fullQuality"]').components['toggle-button'].setToggle(e.detail.quality > 0.5)
     })
 
     document.getElementById('canvas-view').addEventListener('resized', e => {
@@ -105,11 +122,7 @@ AFRAME.registerComponent('settings-shelf', {
       compositor.el.setAttribute('material', {shader: 'flat'})
     }
   },
-  toggleReferenceImportAction() {
-    this.system.data.addReferences = !this.system.data.addReferences
-  }
 })
-
 
 AFRAME.registerComponent('load-shelf', {
   events: {

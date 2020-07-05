@@ -234,6 +234,13 @@ AFRAME.registerComponent('toggle-button', {
           this.setToggle(!!this.data.target.getAttribute(this.data.component)[this.data.property], {update: false})
         })
       }
+      else
+      {
+        if (this.data.toggled !== oldData.toggled)
+        {
+          this.setToggle(this.data.toggled)
+        }
+      }
     }
   },
   setToggle(value) {

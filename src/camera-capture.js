@@ -89,6 +89,10 @@ AFRAME.registerSystem('camera-capture', {
 })
 
 AFRAME.registerComponent('camera-tool', {
+  schema: {
+    orthographic: {default: false},
+    fov: {default: 45.0}
+  },
   events: {
     click: function(e) {
       this.takePicture()
@@ -109,7 +113,15 @@ AFRAME.registerComponent('camera-tool', {
       width = width * scale.x
       height = height * scale.y
 
-      let camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10)
+      let camera;
+      if (this.data.orthographic)
+      {
+        camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 0.1, 10)
+      }
+      else
+      {
+        camera = new THREE.PerspectiveCamera(this.data.fov, width / height, 0.1, 10)
+      }
       this.el.object3D.add(camera)
 
       this.camera = camera
