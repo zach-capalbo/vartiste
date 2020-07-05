@@ -1,11 +1,6 @@
 import {Util} from './util.js'
 
-AFRAME.registerSystem('_timer-system', {
-  init() {
-    this.el.sceneEl.setAttribute('timer-system', "")
-  }
-})
-AFRAME.registerComponent('timer-system', {
+Util.registerComponentSystem('timer-system', {
   schema: {
     switchReferences: {default: false},
     shuffleReferences: {default: false},

@@ -93,6 +93,16 @@ const Util = {
     destMat.premultiply(invMat)
 
     Util.applyMatrix(destMat, obj)
+  },
+  registerComponentSystem(name, obj)
+  {
+    AFRAME.registerComponent(name, obj)
+    AFRAME.registerSystem('_' + name, {
+      init() {
+        this.el.sceneEl.setAttribute(name, "")
+        this.el.sceneEl.systems[name] = this.el.sceneEl.components[name]
+      }
+    })
   }
 }
 
