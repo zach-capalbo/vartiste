@@ -153,7 +153,7 @@ AFRAME.registerComponent('hide-in-ar-mode', {
   init: function () {
     this.el.sceneEl.addEventListener('enter-vr', (ev) => {
       this.wasVisible = this.el.getAttribute('visible');
-      if (this.el.sceneEl.is('ar-mode')) {
+      if (this.el.sceneEl.is('ar-mode') || navigator.userAgent.includes("Mchr/")) {
         this.el.setAttribute('visible', false);
       }
     });
