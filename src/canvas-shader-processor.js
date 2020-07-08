@@ -1,7 +1,11 @@
 let glBackingCanvas
 
 export class CanvasShaderProcessor {
-  constructor({source, canvas}) {
+  constructor({source, canvas, fx}) {
+      if (fx) {
+        source = require(`./shaders/fx/${fx}.glsl`)
+      }
+
     this.source = source
 
     this.canvas = canvas
@@ -202,3 +206,5 @@ export class CanvasShaderProcessor {
     ctx.globalCompositeOperation = oldOp
   }
 }
+
+window.CanvasShaderProcessor = CanvasShaderProcessor

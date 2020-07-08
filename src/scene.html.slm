@@ -10,9 +10,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
 
       - for hand of ["left", "right"]
         a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound=""
-          /a-entity.clickable id="${hand}-hand-model" gltf-model="https://cdn.aframe.io/controllers/valve/index/valve_index_${hand}.gltf"
 
-  /== partial('./partials/popup-shelf.html.slm')
   a-entity#world-root
     a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3
@@ -23,7 +21,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
     a-entity light="type: ambient; color: #fff; intensity: 1.6"
     a-entity light="type: directional; intensity: 3.26" position="0 0.68 0.45"
     a-entity light="type: directional; color: #fff; intensity: 1.26" position="0 -0.68 -0.45"
-    /a-entity#environment position="0 -7 0" environment="preset:starry"
+    
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
     a-entity#unhide-ui bypass-hidden-updates="" position="-2 0 -1" rotation="0 90 0" visible="false"
       a-entity scale="0.3 0.3 1" shelf="width: 1; height: 1"

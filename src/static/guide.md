@@ -20,7 +20,7 @@ squeezing the grip on the Valve Index).
 
 # Drawing Tutorials
 
-## 
+##
 
 # Interface Reference
 

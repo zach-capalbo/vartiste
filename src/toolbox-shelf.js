@@ -2,6 +2,7 @@ import {CanvasRecorder} from './canvas-recorder.js'
 import {Util} from './util.js'
 import Gif from 'gif.js'
 import {Pool} from './pool.js'
+import {Undo} from './undo.js'
 
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
@@ -24,6 +25,12 @@ AFRAME.registerComponent('toolbox-shelf', {
   init() {
     Pool.init(this)
     this.el.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('node-fx'))
+      {
+        this.applyFXAction(e.target.getAttribute('node-fx'))
+        return
+      }
+
       let action = e.target.getAttribute("click-action") + 'Action';
       if (action in this)
       {
@@ -297,5 +304,19 @@ AFRAME.registerComponent('toolbox-shelf', {
 
     scene.remove(camera)
 
+  },
+  applyFXAction(fx = "invert") {
+    let layer = Compositor.component.activeLayer
+    let canvas = layer.canvas
+    Undo.pushCanvas(canvas)
+    let processor = new CanvasShaderProcessor({fx})
+    processor.setInputCanvas(canvas)
+    processor.update()
+    let ctx = Compositor.component.activeLayer.canvas.getContext('2d')
+    let oldOperation = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'copy'
+    ctx.drawImage(processor.canvas, 0, 0)
+    ctx.globalCompositeOperation = oldOperation
+    layer.touch()
   }
 })
