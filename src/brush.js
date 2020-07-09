@@ -175,9 +175,12 @@ class ProceduralBrush extends Brush {
 
   drawTo(ctx, x, y, opts = {}) {
     let {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = opts
+
+    if (this.invertScale) scale = 1.1 - scale
+
     if (this.hqBlending && hqBlending && !eraser)
     {
-      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts})
+      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts, scale})
       return
     }
 
@@ -199,15 +202,7 @@ class ProceduralBrush extends Brush {
       ctx.scale(1/scale, 1/scale)
     }
 
-    if (this.invertScale)
-    {
-      ctx.scale(1.0 - scale, 1.0 - scale)
-      console.log("invertScale", scale, 1.0 - scale)
-    }
-    else {
-      ctx.scale(scale, scale)
-      console.log("No invert scale")
-    }
+    ctx.scale(scale, scale)
     ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
 
     ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
