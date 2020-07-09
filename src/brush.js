@@ -15,6 +15,8 @@ class ProceduralBrush extends Brush {
     dragRotate=false,
     hqBlending=false,
     drawEdges=false,
+    invertScale=false,
+    minMovement=undefined,
     ...options} = {})
   {
     super();
@@ -33,6 +35,8 @@ class ProceduralBrush extends Brush {
     this.hqBlending = hqBlending
     this.drawEdges = drawEdges
     this.dragRotate = dragRotate
+    this.invertScale = invertScale
+    this.minMovement = minMovement
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -195,7 +199,15 @@ class ProceduralBrush extends Brush {
       ctx.scale(1/scale, 1/scale)
     }
 
-    ctx.scale(scale, scale)
+    if (this.invertScale)
+    {
+      ctx.scale(1.0 - scale, 1.0 - scale)
+      console.log("invertScale", scale, 1.0 - scale)
+    }
+    else {
+      ctx.scale(scale, scale)
+      console.log("No invert scale")
+    }
     ctx.rotate(this.autoRotate ? 2*Math.PI*Math.random() : rotation)
 
     ctx.drawImage(this.overlayCanvas, - this.width / 2, - this.height / 2)
