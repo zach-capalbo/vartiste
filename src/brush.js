@@ -17,6 +17,7 @@ class ProceduralBrush extends Brush {
     drawEdges=false,
     invertScale=false,
     minMovement=undefined,
+    tooltip=undefined,
     ...options} = {})
   {
     super();
@@ -37,6 +38,7 @@ class ProceduralBrush extends Brush {
     this.dragRotate = dragRotate
     this.invertScale = invertScale
     this.minMovement = minMovement
+    this.tooltip = tooltip
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width

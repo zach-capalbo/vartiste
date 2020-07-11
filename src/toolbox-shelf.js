@@ -4,6 +4,8 @@ import Gif from 'gif.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 
+import './framework/SubdivisionModifier.js'
+
 function lcm(x,y) {
   return Math.abs((x * y) / gcd(x,y))
 }
@@ -318,5 +320,17 @@ AFRAME.registerComponent('toolbox-shelf', {
     ctx.drawImage(processor.canvas, 0, 0)
     ctx.globalCompositeOperation = oldOperation
     layer.touch()
+  },
+  downloadAllLayers() {
+    Compositor.component.layers.forEach(l => $('a-scene').systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: l.id}, l.id))
+  },
+  subdivide() {
+    let mod = new THREE.SubdivisionModifier(2)
+    Compositor.meshRoot.traverse(o => {
+      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+      {
+        o.geometry = mod.modify(o.geometry)
+      }
+    })
   }
 })
