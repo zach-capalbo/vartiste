@@ -106,6 +106,7 @@ AFRAME.registerComponent('camera-tool', {
     Pool.init(this)
     this.el.classList.add('grab-root')
     this.el.classList.add('clickable')
+    this.el.setAttribute('grab-options', "showHand: false")
 
     const depth = 0.1
     const cameraWidth = 0.3
@@ -178,45 +179,41 @@ AFRAME.registerComponent('spray-can-tool', {
   dependencies: ['camera-tool'],
   init() {
     Pool.init(this)
-    this.el.setAttribute('camera-tool', {fov: 1.5, autoCamera: false})
+    this.el.setAttribute('camera-tool', {autoCamera: false})
     this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
     this.el.components['camera-tool'].takePicture = this.takePicture;
 
     (function(self) {
       this.cameraCanvas = document.createElement('canvas')
-      this.cameraCanvas.width = 30
-      this.cameraCanvas.height = 30
+      this.cameraCanvas.width = 64
+      this.cameraCanvas.height = 64
       this.targetCanvas = document.createElement('canvas')
       this.targetCanvas.width = 1024
       this.targetCanvas.height = 512
 
-      let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
+      let camera = new THREE.PerspectiveCamera(10, 1, 0.1, 1)
+      camera.layers.mask = 2
       this.el.object3D.add(camera)
       this.camera = camera
 
-      let body = document.createElement('a-box')
-      body.setAttribute('depth', 0.1)
-      body.setAttribute('width', 0.1)
-      body.setAttribute('height', 0.1)
+      let body = document.createElement('a-cylinder')
+      body.setAttribute('radius', 0.1)
+      body.setAttribute('height', 0.3)
       body.setAttribute('propogate-grab', "")
-      body.setAttribute('position', `0 0 ${-0.1 / 2 - 0.001}`)
-      body.setAttribute('material', 'src:#asset-shelf')
+      body.setAttribute('segments-radial', 10)
+      body.setAttribute('segments-height', 1)
+      body.setAttribute('position', `0 -.17 ${-0.1 / 2 - 0.001}`)
+      body.setAttribute('material', 'src:#asset-shelf; metalness: 0.7')
       body.classList.add('clickable')
       this.el.append(body)
       this.captureToCanvas = self.captureToCanvas
+
+      this.el.sceneEl.addEventListener('brushscalechanged', () => {
+        this.savedBrush = undefined
+      })
     }).call(this.el.components['camera-tool'], this)
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
-    //
-    // let activate = (e) => {
-    //   if (e.detail === 'grabbed') {
-    //     this.activate()
-    //   }
-    // };
-    // let deactivate = (e) => {
-    //
-    // };
-    // this.el.addEventListener('stateadded', activate)
   },
   captureToCanvas(camera, canvas) {
     let renderer = this.el.sceneEl.renderer
@@ -273,7 +270,14 @@ AFRAME.registerComponent('spray-can-tool', {
       shaderMaterial = this.shaderMaterial
     }
 
-    Compositor.mesh.material = shaderMaterial
+    Compositor.meshRoot.traverse(o =>
+      {
+        if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+        {
+          o.material = shaderMaterial
+          o.layers.mask = 3
+        }
+      })
 
     // this.cameraCanvas.clearRect(0, 0, this.cameraCanvas.width, this.cameraCanvas.height)
     let capturedImage = this.cameraCanvas
@@ -315,7 +319,7 @@ AFRAME.registerComponent('spray-can-tool', {
     let brushData = this.brushData
 
     // let imageDataTime = Date.now() - startTime - pictureTime
-    var x,y,r,g,b,bx,by,u,v,xx,yy;
+    var x,y,r,g,b,a,bx,by,u,v,xx,yy;
 
     if (!this.touchedPixels)
     {
@@ -331,6 +335,7 @@ AFRAME.registerComponent('spray-can-tool', {
         r = capturedData.data[((y * capturedImage.width) + x) * 4 + 0]
         g = capturedData.data[((y * capturedImage.width) + x) * 4 + 1]
         b = capturedData.data[((y * capturedImage.width) + x) * 4 + 2]
+        a = capturedData.data[((y * capturedImage.width) + x) * 4 + 3]
 
         bx = Math.floor(x / capturedImage.width * brush.width)
         by = Math.floor(y / capturedImage.height * brush.height)
@@ -346,7 +351,7 @@ AFRAME.registerComponent('spray-can-tool', {
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = brush.color3.r * 255
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = brush.color3.g * 255
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = brush.color3.b * 255
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] = brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3]
+        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] = brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * a / 255.0
       }
     }
     // let mathTime = Date.now() - startTime - pictureTime - imageDataTime
@@ -373,7 +378,13 @@ AFRAME.registerComponent('spray-can-tool', {
 
     // let drawTime = Date.now() - startTime - pictureTime
 
-    Compositor.mesh.material = oldMaterial
+    Compositor.meshRoot.traverse(o =>
+      {
+        if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+        {
+          o.material = oldMaterial
+        }
+      })
 
     this.helper.visible = true
     // this.el.sceneEl.emit("endsnap", {source: this.el})
@@ -383,6 +394,8 @@ AFRAME.registerComponent('spray-can-tool', {
   tick(t, dt) {
     if (!this.el.components['camera-tool'].helper) return
     if (!this.el.is("grabbed")) return
+    if (!this.el.grabbingManipulator) return
+    if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
     this.takePicture()
   }
 })
