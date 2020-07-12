@@ -171,78 +171,38 @@ AFRAME.registerComponent('camera-tool', {
 
 
 AFRAME.registerComponent('spray-can-tool', {
-  schema: {
-    orthographic: {default: false},
-    fov: {default: 5.0}
-  },
-  events: {
-    click: function(e) {
-      this.takePicture()
-    },
-  },
+  dependencies: ['camera-tool'],
   init() {
     Pool.init(this)
-    this.el.classList.add('grab-root')
-    this.el.classList.add('clickable')
+    this.el.setAttribute('camera-tool', {fov: 1.5})
+    this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
+    this.el.components['camera-tool'].takePicture = this.takePicture
 
-    const depth = 0.1
-    const cameraWidth = 0.3
-    Util.whenLoaded(Compositor.el, () => {
-      let {width, height} = Compositor.el.getAttribute('geometry')
-      Compositor.el.object3D.updateMatrixWorld()
-      let scale = this.pool('scale', THREE.Vector3)
-      scale.setFromMatrixScale(Compositor.el.object3D.matrixWorld)
-      width = width * scale.x
-      height = height * scale.y
-
-      let camera;
-      if (this.data.orthographic)
-      {
-        camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 0.1, 10)
-      }
-      else
-      {
-        camera = new THREE.PerspectiveCamera(this.data.fov, width / height, 0.1, 10)
-      }
-      this.el.object3D.add(camera)
-
-      this.camera = camera
-
-      let body = document.createElement('a-box')
-      body.setAttribute('depth', depth)
-      body.setAttribute('width', cameraWidth)
-      body.setAttribute('height', height / width * cameraWidth)
-      body.setAttribute('propogate-grab', "")
-      body.setAttribute('position', `0 0 ${-depth / 2 - 0.001}`)
-      body.setAttribute('material', 'src:#asset-shelf')
-      body.classList.add('clickable')
-      this.el.append(body)
-
-      Compositor.el.addEventListener('resized', (e) => {
-        let {width, height} = e.detail
-      })
-    })
-
-    let activate = (e) => {
-      if (e.detail === 'grabbed') {
-        this.activate()
-        this.el.removeEventListener('stateadded', activate)
-      }
-    };
-    this.el.addEventListener('stateadded', activate)
+    this.cameraCanvas = document.createElement('canvas')
+    this.cameraCanvas.width = 30
+    this.cameraCanvas.height = 30
   },
   takePicture() {
     console.log("Taking picture")
     Undo.pushCanvas(Compositor.component.activeLayer.canvas)
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
-    let processor = new CanvasShaderProcessor({fx: 'uv-index'})
-    processor.setInputCanvas(Compositor.component.compositeCanvas)
-    processor.update()
-    Compositor.material.map.image = processor.canvas
-    Compositor.material.map.needsUpdate = true
+    // let processor = new CanvasShaderProcessor({fx: 'uv-index'})
+    // processor.setInputCanvas(Compositor.component.compositeCanvas)
+    // processor.update()
+    // Compositor.material.map.image = processor.canvas
+    // Compositor.material.map.needsUpdate = true
 
-    let capturedImage = this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera)
+    let oldMaterial = Compositor.material
+    let shaderMaterial = new THREE.ShaderMaterial({
+      fragmentShader: require('./shaders/uv-index.glsl'),
+      vertexShader: require('./shaders/pass-through.vert')
+    })
+
+    Compositor.mesh.material = shaderMaterial
+
+    // this.cameraCanvas.clearRect(0, 0, this.cameraCanvas.width, this.cameraCanvas.height)
+    let capturedImage = this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.cameraCanvas)
 
     // TODO: Shaderize this
     let capturedData = capturedImage.getContext("2d").getImageData(0, 0, capturedImage.width, capturedImage.height)
@@ -252,19 +212,20 @@ AFRAME.registerComponent('spray-can-tool', {
     {
       for (let x = 0; x < capturedImage.width; x++)
       {
-        let ulow = capturedData.data[((y * capturedImage.width) + x) * 4 + 0]
-        let uhigh = capturedData.data[((y * capturedImage.width) + x) * 4 + 1]
-        let vlow = capturedData.data[((y * capturedImage.width) + x) * 4 + 2]
-        let vhigh = capturedData.data[((y * capturedImage.width) + x) * 4 + 3]
+        let r = capturedData.data[((y * capturedImage.width) + x) * 4 + 0]
+        let g = capturedData.data[((y * capturedImage.width) + x) * 4 + 1]
+        let b = capturedData.data[((y * capturedImage.width) + x) * 4 + 2]
 
-        let u = (ulow + (uhigh << 8)) / 65536
-        let v = (vlow + (vhigh << 8)) / 65536
+
+
+        let u = (((b & 0xF0) >> 4) * 256 + r) / 4096
+        let v = ((b & 0x0F) * 256 + g) / 4096
 
         let xx = Math.round(u * targetCanvas.width)
         let yy = Math.round(v * targetCanvas.height)
         if ((x + y * capturedData.width) % 1000 == 0)
         {
-          console.log("UV", u, v, xx, yy, ulow, uhigh, vlow, vhigh)
+          // console.log("UV", u, v, xx, yy, r,g,b)
         }
         targetData.data[[((yy * targetCanvas.width) + xx) * 4 + 0]] = 0
         targetData.data[[((yy * targetCanvas.width) + xx) * 4 + 1]] = 100
@@ -274,6 +235,8 @@ AFRAME.registerComponent('spray-can-tool', {
     }
     targetCanvas.getContext("2d").putImageData(targetData, 0, 0)
     Compositor.component.activeLayer.touch()
+
+    Compositor.mesh.material = oldMaterial
 
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})
