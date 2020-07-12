@@ -171,6 +171,13 @@ AFRAME.registerComponent('camera-tool', {
     var helper = new THREE.CameraHelper( this.camera );
     this.helper = helper
     this.el.sceneEl.object3D.add( helper );
+
+    let wm = new THREE.Matrix4
+    this.el.object3D.updateMatrixWorld()
+    wm.copy(this.el.object3D.matrixWorld)
+    this.el.object3D.parent.remove(this.el.object3D)
+    document.querySelector('#world-root').object3D.add(this.el.object3D)
+    Util.applyMatrix(wm, this.el.object3D)
   }
 })
 
@@ -191,7 +198,7 @@ AFRAME.registerComponent('spray-can-tool', {
       this.targetCanvas.width = 1024
       this.targetCanvas.height = 512
 
-      let camera = new THREE.PerspectiveCamera(10, 1, 0.1, 1)
+      let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
       camera.layers.mask = 2
       this.el.object3D.add(camera)
       this.camera = camera
