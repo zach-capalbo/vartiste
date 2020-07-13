@@ -96,6 +96,8 @@ AFRAME.registerComponent('draw-canvas', {
 
     let hqBlending = this.brush.hqBlending && highQuality && this.brush.opacity < 0.3
 
+    hqBlending = hqBlending || this.brush.hqBlending === 'always'
+
     if (!this.wasDrawing && sourceEl)
     {
       Undo.pushCanvas(canvas)
@@ -112,11 +114,17 @@ AFRAME.registerComponent('draw-canvas', {
       this.undoFrame = this.currentFrame
     }
 
-    if (this.brush.dragRotate)
+    if (this.brush.dragRotate || this.brush.minMovement)
     {
+      let pixelThresholdHeight = 4 / height
+      let pixelThresholdWidth = 4 / width
+      if (this.brush.minMovement) {
+        pixelThresholdWidth = this.brush.minMovement
+        pixelThresholdHeight = this.brush.minMovement
+      }
       if (!lastParams) return
       let oldPoint = this.uvToPoint(lastParams.uv, canvas)
-      if (Math.abs(y - oldPoint.y) < 4 / height && Math.abs(x - oldPoint.x) < 4 / width) return
+      if (Math.abs(y - oldPoint.y) < pixelThresholdHeight && Math.abs(x - oldPoint.x) < pixelThresholdWidth) return
       rotation = Math.atan2(y - oldPoint.y, x - oldPoint.x)
       lastParams.rotation = rotation
     }

@@ -15,6 +15,9 @@ class ProceduralBrush extends Brush {
     dragRotate=false,
     hqBlending=false,
     drawEdges=false,
+    invertScale=false,
+    minMovement=undefined,
+    tooltip=undefined,
     ...options} = {})
   {
     super();
@@ -33,6 +36,9 @@ class ProceduralBrush extends Brush {
     this.hqBlending = hqBlending
     this.drawEdges = drawEdges
     this.dragRotate = dragRotate
+    this.invertScale = invertScale
+    this.minMovement = minMovement
+    this.tooltip = tooltip
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -171,9 +177,12 @@ class ProceduralBrush extends Brush {
 
   drawTo(ctx, x, y, opts = {}) {
     let {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = opts
+
+    if (this.invertScale) scale = 1.1 - scale
+
     if (this.hqBlending && hqBlending && !eraser)
     {
-      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts})
+      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts, scale})
       return
     }
 
