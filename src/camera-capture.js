@@ -159,10 +159,11 @@ AFRAME.registerComponent('camera-tool', {
   },
   takePicture() {
     console.log("Taking picture")
-    Undo.pushCanvas(Compositor.component.activeLayer.canvas)
+    let targetCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
+    Undo.pushCanvas(targetCanvas)
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
-    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, Compositor.component.activeLayer.canvas)
+    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})
@@ -294,7 +295,7 @@ AFRAME.registerComponent('spray-can-tool', {
     // TODO: Shaderize this
     let capturedData = this.captureToCanvas(this.camera, this.cameraCanvas)
     let targetCanvas = this.targetCanvas
-    let finalDestinationCanvas = Compositor.component.activeLayer.canvas
+    let finalDestinationCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
 
     if (targetCanvas.width !== finalDestinationCanvas.width || targetCanvas.height !== finalDestinationCanvas.height)
     {
