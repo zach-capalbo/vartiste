@@ -76,14 +76,16 @@ AFRAME.registerComponent('draw-canvas', {
     }
   },
 
-  wrappedDraw(x,y, ctx, drawOptions) {
-    this.brush.drawTo(ctx,  x, y, drawOptions)
+  wrappedDraw(x,y, ctx, brush, drawOptions) {
+    brush.drawTo(ctx,  x, y, drawOptions)
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined, brush = undefined}) {
     if (canvas === null) canvas = this.data.canvas
 
     if (canvas.touch) canvas.touch()
+
+    if (!brush) brush = this.brush
 
     let ctx = canvas.getContext('2d');
     let {width, height} = canvas
@@ -94,7 +96,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     let highQuality = this.el.sceneEl.systems['settings-system'].quality > 0.75
 
-    let hqBlending = this.brush.hqBlending && highQuality && this.brush.opacity < 0.3
+    let hqBlending = brush.hqBlending && highQuality && brush.opacity < 0.3
 
     hqBlending = hqBlending || this.brush.hqBlending === 'always'
 
@@ -114,13 +116,13 @@ AFRAME.registerComponent('draw-canvas', {
       this.undoFrame = this.currentFrame
     }
 
-    if (this.brush.dragRotate || this.brush.minMovement)
+    if (brush.dragRotate || brush.minMovement)
     {
       let pixelThresholdHeight = 4 / height
       let pixelThresholdWidth = 4 / width
-      if (this.brush.minMovement) {
-        pixelThresholdWidth = this.brush.minMovement
-        pixelThresholdHeight = this.brush.minMovement
+      if (brush.minMovement) {
+        pixelThresholdWidth = brush.minMovement
+        pixelThresholdHeight = brush.minMovement
       }
       if (!lastParams) return
       let oldPoint = this.uvToPoint(lastParams.uv, canvas)
@@ -130,7 +132,7 @@ AFRAME.registerComponent('draw-canvas', {
     }
 
     try {
-      if (this.brush.connected && highQuality && lastParams) {
+      if (brush.connected && highQuality && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )
         let numPoints = Math.max(Math.floor(distance ), 1)
@@ -149,13 +151,13 @@ AFRAME.registerComponent('draw-canvas', {
           lerpedOpts.distance = THREE.Math.lerp(lastParams.distance, distance, lerp)
           lerpedOpts.scale = THREE.Math.lerp(lastParams.scale, scale, lerp)
 
-          this.wrap(xx,yy,width,height, this.wrappedDraw, ctx, lerpedOpts)
+          this.wrap(xx,yy,width,height, this.wrappedDraw, ctx, brush, lerpedOpts)
         }
       }
       else
       {
         let drawOptions = {rotation, pressure, distance, imageData, scale}
-        this.wrap(x,y,width,height, this.wrappedDraw, ctx, drawOptions)
+        this.wrap(x,y,width,height, this.wrappedDraw, ctx, brush, drawOptions)
       }
     }
     catch (e)

@@ -2,7 +2,11 @@ import Convolve from "convolve"
 import Color from "color"
 import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 
-class Brush {}
+class Brush {
+  clone() {
+    return Object.assign( Object.create( Object.getPrototypeOf(this)), this)
+  }
+}
 
 class ProceduralBrush extends Brush {
   constructor({
@@ -178,7 +182,10 @@ class ProceduralBrush extends Brush {
   drawTo(ctx, x, y, opts = {}) {
     let {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = opts
 
-    if (this.invertScale) scale = 1.1 - scale
+    if (this.invertScale) {
+      scale = 1.1 - scale
+      pressure = pressure * pressure
+    }
 
     if (this.hqBlending && hqBlending && !eraser)
     {

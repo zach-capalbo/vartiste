@@ -255,7 +255,7 @@ AFRAME.registerComponent('pencil-tool', {
 
       handDrawTool.system = {
         data: Object.assign({}, oldPaintSystem.data),
-        brush: oldPaintSystem.brush
+        brush: oldPaintSystem.brush.clone()
       }
     })
 

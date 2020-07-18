@@ -321,13 +321,27 @@ AFRAME.registerComponent('spray-can-tool', {
     if (this.savedBrush != brush)
     {
       this.savedBrush = brush
+
+      if (!brush.overlayCanvas)
+      {
+        console.error("Cannot spray paint brush with no canvas")
+        return
+      }
+
       this.brushData = brush.overlayCanvas.getContext("2d").getImageData(0, 0, brush.width, brush.height)
+
+      this.camera.fov = 5 * brush.width / brush.baseWidth
+      this.camera.aspect = brush.width / brush.height
+      this.camera.updateProjectionMatrix()
+      this.helper.update()
+      // this.cameraCanvas.width = Math.round(brush.width)
+      // this.cameraCanvas.height = Math.round(brush.height)
     }
 
     let brushData = this.brushData
 
     // let imageDataTime = Date.now() - startTime - pictureTime
-    var x,y,r,g,b,a,bx,by,u,v,xx,yy;
+    var x,y,r,g,b,a,bx,by,u,v,xx,yy,len,angle;
 
     if (!this.touchedPixels)
     {
@@ -335,6 +349,8 @@ AFRAME.registerComponent('spray-can-tool', {
     }
 
     let touchedPixels = this.touchedPixels
+
+    let rotation = 2*Math.PI*Math.random()
 
     for (y = 0; y < capturedImage.height; y++)
     {
@@ -348,6 +364,17 @@ AFRAME.registerComponent('spray-can-tool', {
         bx = Math.floor(x / capturedImage.width * brush.width)
         by = Math.floor(y / capturedImage.height * brush.height)
 
+        if (brush.autoRotate)
+        {
+          bx = x / capturedImage.width
+          by = y / capturedImage.height
+          len = Math.sqrt((bx - 0.5) * (bx - 0.5) + (by - 0.5) * (by - 0.5))
+          angle = Math.atan2(by - 0.5, bx - 0.5)
+          angle -= rotation
+          bx = Math.floor((len * Math.cos(angle) + 0.5) * brush.width)
+          by = Math.floor((len * Math.sin(angle) + 0.5) * brush.height)
+        }
+
         u = (((b & 0xF0) >> 4) * 256 + r) / 4096
         v = ((b & 0x0F) * 256 + g) / 4096
 
@@ -359,7 +386,7 @@ AFRAME.registerComponent('spray-can-tool', {
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = brush.color3.r * 255
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = brush.color3.g * 255
         targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = brush.color3.b * 255
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] = brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * a / 255.0
+        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] += brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * a / 255.0
       }
     }
     // let mathTime = Date.now() - startTime - pictureTime - imageDataTime
