@@ -424,3 +424,15 @@ AFRAME.registerComponent('lock-axes', {
     }
   }
 })
+
+AFRAME.registerComponent('grab-activate', {
+  init() {
+    let activate = (e) => {
+      if (e.detail === 'grabbed') {
+        this.el.emit('activate')
+        this.el.removeEventListener('stateadded', activate)
+      }
+    };
+    this.el.addEventListener('stateadded', activate)
+  }
+})

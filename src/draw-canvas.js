@@ -290,9 +290,10 @@ AFRAME.registerComponent('draw-canvas', {
   },
 
   eraseUV(uv, rawParams = {}) {
-    let {pressure = 1.0, canvas = null, rotation=0.0, scale=1.0, sourceEl = undefined} = rawParams
+    let {pressure = 1.0, canvas = null, rotation=0.0, scale=1.0, sourceEl = undefined, brush = undefined} = rawParams
     if (canvas == null) canvas = this.data.canvas
     if (canvas.touch) canvas.touch()
+    if (!brush) brush = this.brush
     if (!this.wasErasing && sourceEl)
     {
       Undo.pushCanvas(canvas)
@@ -318,7 +319,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     ctx.globalCompositeOperation = 'destination-out'
 
-    this.wrap(x, y, width, height, this.wrappedDraw, ctx, Object.assign({eraser: true}, rawParams))
+    this.wrap(x, y, width, height, this.wrappedDraw, ctx, brush, Object.assign({eraser: true}, rawParams))
     ctx.restore()
   },
 });

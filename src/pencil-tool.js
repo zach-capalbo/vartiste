@@ -2,7 +2,43 @@ import {Sfx} from './sfx.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
+AFRAME.registerSystem('pencil-tool', {
+  clonePencil() {
+    if (!this.lastGrabbed) return
+    this.lastGrabbed.createLockedClone()
+  },
+  toggleGrabRotation() {
+    document.querySelectorAll('*[manipulator]').forEach(e=>{
+      if (e.is("rotating"))
+      {
+        e.removeState("rotating")
+      }
+      else
+      {
+        e.addState("rotating")
+      }
+    })
+  },
+  toggleTriggerGrab() {
+    document.querySelectorAll('*[manipulator]').forEach(e=>{
+      if (e.is("grabmode"))
+      {
+        e.removeState("grabmode")
+        e.removeEventListener('triggerdown', e.components.manipulator.onGripClose)
+        e.removeEventListener('triggerup', e.components.manipulator.onGripOpen)
+      }
+      else
+      {
+        e.addState("grabmode")
+        e.addEventListener('triggerdown', e.components.manipulator.onGripClose)
+        e.addEventListener('triggerup', e.components.manipulator.onGripOpen)
+      }
+    })
+  },
+})
+
 AFRAME.registerComponent('pencil-tool', {
+  dependencies: ['grab-activate'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -14,12 +50,24 @@ AFRAME.registerComponent('pencil-tool', {
     extraStates: {type: 'array'},
 
     enabled: {default: true},
-    waitForGrab: {default: true},
 
     locked: {default: false}
   },
+  events: {
+    'bbuttonup': function(e) {
+      this.createLockedClone()
+    },
+    'stateadded': function(e) {
+      if (e.detail === 'grabbed') {
+        this.system.lastGrabbed = this
+      }
+    },
+    activate: function() { this.activatePencil() }
+  },
   init() {
     this.el.classList.add('grab-root')
+
+    this.el.sceneEl.systems['button-caster'].install(['bbutton'])
 
     for (let s of this.data.extraStates)
     {
@@ -115,25 +163,18 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.setAttribute('hand-draw-tool', "")
     this.el.setAttribute('grab-options', "showHand: false")
 
-    if (this.data.waitForGrab)
-    {
-      this.raycasterTick = this.el.components.raycaster.tick
-      this.el.components.raycaster.tick = function() {}
-      let activate = (e) => {
-        if (e.detail === 'grabbed') {
-          this.activatePencil()
-          this.el.removeEventListener('stateadded', activate)
-        }
-      };
-      this.el.addEventListener('stateadded', activate)
-    }
-    else
-    {
-      this.activatePencil()
-    }
+    // Pre-activation
+    this.raycasterTick = this.el.components.raycaster.tick
+    this.el.components.raycaster.tick = function() {}
+
   },
   update(oldData) {
     this.updateEnabled()
+
+    if (this.el.hasAttribute('preactivate-tooltip') && !this.el.hasAttribute('tooltip-style'))
+    {
+      this.el.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.2 0")
+    }
   },
   activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
@@ -250,8 +291,11 @@ AFRAME.registerComponent('pencil-tool', {
       let newComponent = clone.components['pencil-tool']
       let handDrawTool = clone.components['hand-draw-tool']
       let oldPaintSystem = handDrawTool.system
-      newComponent.tip.removeAttribute('show-current-color')
-      newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
+      if (newComponent.tip.hasAttribute('show-current-color'))
+      {
+        newComponent.tip.removeAttribute('show-current-color')
+        newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
+      }
 
       handDrawTool.system = {
         data: Object.assign({}, oldPaintSystem.data),

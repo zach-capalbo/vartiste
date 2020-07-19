@@ -5,6 +5,7 @@ require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
 require('./framework/hide-in-ar.js')
 require('./framework/billboard.js')
+require('./framework/fix-lost-controllers.js')
 // require('./framework/three-skip-invisible-update.js')
 
 require('./paint-system')

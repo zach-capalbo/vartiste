@@ -142,7 +142,7 @@ AFRAME.registerComponent('hand-draw-tool', {
       }
     }
 
-    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection}
+    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection, brush: this.system.brush}
 
     if (this.hasDrawn && this.singleShot) return
 
@@ -186,5 +186,73 @@ AFRAME.registerComponent('hand-draw-tool', {
       }
 
     }
+  }
+})
+
+AFRAME.registerSystem('button-caster', {
+  init() {
+    this.casters = []
+    this.installedButtons = new Set()
+    this.triggeredEls = {}
+  },
+  register(el) {
+    this.casters.push(el)
+
+    for (let button of this.installedButtons)
+    {
+      el.addEventListener(button + 'down', e => {
+        this.forwardDownEvent(el, button, e)
+      })
+
+      el.addEventListener(button + 'up', e => {
+        this.forwardUpEvent(el, button, e)
+      })
+    }
+  },
+  install(buttons) {
+    for (let button of buttons)
+    {
+      if (this.installedButtons.has(button)) continue
+
+      for (let caster of this.casters) {
+        caster.addEventListener(button + 'down', e => {
+          this.forwardDownEvent(caster, button, e)
+        })
+
+        caster.addEventListener(button + 'up', e => {
+          this.forwardUpEvent(caster, button, e)
+        })
+      }
+
+      this.triggeredEls[button] = new Set()
+
+      this.installedButtons.add(button)
+    }
+  },
+  forwardDownEvent(caster, button, e) {
+    console.log("Forwarding button", caster, button, e)
+    if (caster.components.raycaster.intersections.length == 0) return
+
+    let intersection = caster.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
+    let el = intersection.object.el
+
+    if (this.triggeredEls[button].has(el)) return
+
+    el.emit(button + 'down', e.detail)
+
+    this.triggeredEls[button].add(el)
+  },
+  forwardUpEvent(caster, button, e) {
+    for (let el of this.triggeredEls[button])
+    {
+      el.emit(button + 'up', e.detail)
+      this.triggeredEls[button].delete(el)
+    }
+  }
+})
+
+AFRAME.registerComponent('button-caster', {
+  init() {
+    this.system.register(this.el)
   }
 })

@@ -92,6 +92,7 @@ AFRAME.registerSystem('camera-capture', {
 })
 
 AFRAME.registerComponent('camera-tool', {
+  dependencies: ['grab-activate'],
   schema: {
     orthographic: {default: false},
     fov: {default: 45.0},
@@ -101,6 +102,7 @@ AFRAME.registerComponent('camera-tool', {
     click: function(e) {
       this.takePicture()
     },
+    activate: function() { this.activate() }
   },
   init() {
     Pool.init(this)
@@ -148,14 +150,6 @@ AFRAME.registerComponent('camera-tool', {
         let {width, height} = e.detail
       })
     })
-
-    let activate = (e) => {
-      if (e.detail === 'grabbed') {
-        this.activate()
-        this.el.removeEventListener('stateadded', activate)
-      }
-    };
-    this.el.addEventListener('stateadded', activate)
   },
   takePicture() {
     console.log("Taking picture")
@@ -185,6 +179,14 @@ AFRAME.registerComponent('camera-tool', {
 
 AFRAME.registerComponent('spray-can-tool', {
   dependencies: ['camera-tool'],
+  schema: {
+    locked: {default: false}
+  },
+  events: {
+    'stateadded': function(e) {
+      if (e.detail === 'grabbed') this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+    }
+  },
   init() {
     Pool.init(this)
     this.el.setAttribute('camera-tool', {autoCamera: false})
@@ -198,6 +200,7 @@ AFRAME.registerComponent('spray-can-tool', {
       this.targetCanvas = document.createElement('canvas')
       this.targetCanvas.width = 1024
       this.targetCanvas.height = 512
+      this.sprayCanTool = self
 
       let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
       camera.layers.mask = 2
@@ -211,7 +214,7 @@ AFRAME.registerComponent('spray-can-tool', {
       body.setAttribute('segments-radial', 10)
       body.setAttribute('segments-height', 1)
       body.setAttribute('position', `0 -.17 ${-0.1 / 2 - 0.001}`)
-      body.setAttribute('material', 'src:#asset-shelf; metalness: 0.7')
+      body.setAttribute('material', 'src:#asset-shelf; metalness: 0.7; side: double')
       body.classList.add('clickable')
       this.el.append(body)
       this.captureToCanvas = self.captureToCanvas
@@ -263,8 +266,10 @@ AFRAME.registerComponent('spray-can-tool', {
     // this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
 
-    let brush = this.el.sceneEl.systems['paint-system'].brush
+    let brush = this.sprayCanTool.data.locked ? this.sprayCanTool.brush : this.el.sceneEl.systems['paint-system'].brush
     let color = brush.color3
+
+    console.log("Using brush", this.sprayCanTool.data.locked, brush)
 
     let oldMaterial = Compositor.material
     let shaderMaterial = this.shaderMaterial
@@ -378,8 +383,8 @@ AFRAME.registerComponent('spray-can-tool', {
         u = (((b & 0xF0) >> 4) * 256 + r) / 4096
         v = ((b & 0x0F) * 256 + g) / 4096
 
-        xx = Math.round(u * targetCanvas.width)
-        yy = Math.round(v * targetCanvas.height)
+        xx = Math.round(u * targetCanvas.width + Math.random() - 0.5)
+        yy = Math.round(v * targetCanvas.height + Math.random() - 0.5)
 
         touchedPixels[((yy * targetCanvas.width) + xx) * 4] = true
 
@@ -432,5 +437,16 @@ AFRAME.registerComponent('spray-can-tool', {
     if (!this.el.grabbingManipulator) return
     if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
     this.takePicture()
+  },
+  createLockedClone() {
+    let clone = document.createElement('a-entity')
+    clone.setAttribute('camera-tool', {autoCamera: false})
+    this.el.parentEl.append(clone)
+    clone.setAttribute('spray-can-tool', 'locked: true')
+    Util.whenLoaded(clone, () => {
+      Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
+      let newComponent = clone.components['spray-can-tool']
+      newComponent.brush = this.el.sceneEl.systems['paint-system'].brush.clone()
+    })
   }
 })

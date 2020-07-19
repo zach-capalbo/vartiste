@@ -87,11 +87,23 @@ class ButtonMaps {
     this.buttons = this.buttons.concat(Object.keys(map))
   }
   install(where) {
-    console.log("Buttons", this.buttons)
-    for (let button of new Set(this.buttons))
+    console.log("Buttons", this.buttons, where)
+
+    let buttonsToInstall = new Set(this.buttons)
+
+    let eventTarget
+    if (where.el.hasAttribute('button-caster')) {
+      eventTarget = where.el
+    }
+    else {
+      eventTarget = where.el.sceneEl
+      where.el.sceneEl.systems['button-caster'].install(buttonsToInstall)
+    }
+
+    for (let button of buttonsToInstall)
     {
       console.log("Installing", button)
-      where.el.addEventListener(button + 'down', e => {
+      eventTarget.addEventListener(button + 'down', e => {
         for (let preState of Object.keys(this.maps))
         {
           if (preState === "") continue

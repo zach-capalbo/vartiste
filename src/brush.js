@@ -1,6 +1,7 @@
 import Convolve from "convolve"
 import Color from "color"
 import {CanvasShaderProcessor} from './canvas-shader-processor.js'
+import {Util} from './util.js'
 
 class Brush {
   clone() {
@@ -55,6 +56,12 @@ class ProceduralBrush extends Brush {
     }
 
     this.changeColor('#FFF')
+  }
+  clone() {
+    let clone = super.clone()
+    clone.overlayCanvas = Util.cloneCanvas(this.overlayCanvas)
+    console.log("Returning cloned brush")
+    return clone
   }
 
   changeColor(color) {
@@ -272,6 +279,11 @@ class ImageBrush extends ProceduralBrush{
 
     super(Object.assign({drawEdges: true}, options, {width, height}))
 
+    if (!options.tooltip)
+    {
+      this.tooltip = Util.titleCase(name.replace(/[\_\-\.]/g, " "))
+    }
+
     this.image = image
     this.previewSrc = image
     this.image.decode().then(() => this.updateBrush())
@@ -333,13 +345,14 @@ class LambdaBrush extends ProceduralBrush {
 }
 
 class FillBrush extends Brush {
-  constructor({mode = "source-over", previewSrc} = {}) {
+  constructor({mode = "source-over", previewSrc, tooltip = undefined} = {}) {
     super();
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
     this.mode = mode
     this.hqBlending = false
     this.width = 48
     this.height = 48
+    this.tooltip = tooltip || `Fill ${mode}`
   }
   changeColor(color) {
     this.color = color
@@ -377,6 +390,7 @@ class NoiseBrush extends ProceduralBrush {
     lightness=true,
     opacityness=false,
     round=false,
+    tooltip=undefined,
     ...options} = {})
   {
     super(options)
@@ -386,6 +400,7 @@ class NoiseBrush extends ProceduralBrush {
     this.opacityness = opacityness
     this.round = round
     this.previewSrc = undefined
+    this.tooltip = tooltip || "Noise"
     this.updateBrush()
   }
   createBrush()
@@ -453,11 +468,13 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor({baseBrush, type, previewSrc, dragRotate = false}) {
+  constructor({baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
     super()
     this.baseBrush = baseBrush
     this.dragRotate = dragRotate
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
+
+    this.tooltip = tooltip || (baseBrush.tooltip ? `${baseBrush.tooltip} (${type})` : Util.titleCase(type))
 
     for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
     {
