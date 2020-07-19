@@ -102,7 +102,10 @@ AFRAME.registerComponent('camera-tool', {
     click: function(e) {
       this.takePicture()
     },
-    activate: function() { this.activate() }
+    activate: function() { this.activate() },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+    }
   },
   init() {
     Pool.init(this)
@@ -173,7 +176,15 @@ AFRAME.registerComponent('camera-tool', {
     this.el.object3D.parent.remove(this.el.object3D)
     document.querySelector('#world-root').object3D.add(this.el.object3D)
     Util.applyMatrix(wm, this.el.object3D)
-  }
+  },
+  createLockedClone() {
+    let clone = document.createElement('a-entity')
+    clone.setAttribute('camera-tool', this.el.getAttribute('camera-tool'))
+    this.el.parentEl.append(clone)
+    Util.whenLoaded(clone, () => {
+      Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
+    })
+  },
 })
 
 
