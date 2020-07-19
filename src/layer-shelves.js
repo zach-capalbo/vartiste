@@ -54,6 +54,8 @@ AFRAME.registerComponent("layer-shelves", {
     let modePopup = container.querySelector('.mode-popup')
     modePopup.addEventListener('click', e => { this.handleModeSelection(layer, modePopup, e) })
 
+    container.addEventListener('bbuttonup', e => this.popoutLayer(layer))
+
     if (this.compositor.data.useNodes)
     {
       container.querySelector('*[shelf]')['redirect-grab'] = container

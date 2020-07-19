@@ -175,7 +175,7 @@ export class CanvasShaderProcessor {
   }
   drawBrush(brush, ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, reupdate=true} = {})
   {
-    let {width, height} = brush
+    let {width, height, autoRotate} = brush
     width = Math.floor(width)
     height = Math.floor(height)
 
@@ -190,7 +190,7 @@ export class CanvasShaderProcessor {
       u_y: y,
       u_brush_width: brush.width * scale,
       u_brush_height: brush.height * scale,
-      u_brush_rotation: rotation,
+      u_brush_rotation: autoRotate ? 2*Math.PI*Math.random() : rotation,
       u_opacity: brush.opacity * pressure,
       u_t: document.querySelector('a-scene').time % 1.0
     })

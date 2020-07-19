@@ -103,6 +103,9 @@ const Util = {
         this.el.sceneEl.systems[name] = this.el.sceneEl.components[name]
       }
     })
+  },
+  titleCase(str) {
+    return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))
   }
 }
 

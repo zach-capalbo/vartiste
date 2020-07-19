@@ -31,6 +31,7 @@ AFRAME.registerComponent('brush-shelf', {
       let button = document.createElement('a-entity')
       button.setAttribute('icon-button', brush.previewSrc)
       button.setAttribute('brush-idx', idx)
+      button.setAttribute('tooltip', brush.tooltip)
 
       this.brushButtons.push(button)
       brushRow.append(button)
@@ -48,34 +49,6 @@ AFRAME.registerComponent('brush-shelf', {
   },
   toggleOrientationAction() {
     document.querySelectorAll('*[hand-draw-tool]').forEach(e=>e.setAttribute('tracked-controls', {orientationOffset: {x: 43 + 90, y: 180, z: 90}}))
-  },
-  toggleGrabRotationAction() {
-    document.querySelectorAll('*[manipulator]').forEach(e=>{
-      if (e.is("rotating"))
-      {
-        e.removeState("rotating")
-      }
-      else
-      {
-        e.addState("rotating")
-      }
-    })
-  },
-  toggleTriggerGrabAction() {
-    document.querySelectorAll('*[manipulator]').forEach(e=>{
-      if (e.is("grabmode"))
-      {
-        e.removeState("grabmode")
-        e.removeEventListener('triggerdown', e.components.manipulator.onGripClose)
-        e.removeEventListener('triggerup', e.components.manipulator.onGripOpen)
-      }
-      else
-      {
-        e.addState("grabmode")
-        e.addEventListener('triggerdown', e.components.manipulator.onGripClose)
-        e.addEventListener('triggerup', e.components.manipulator.onGripOpen)
-      }
-    })
   },
   increaseBrushSizeAction() {
     this.system.scaleBrush(100)
