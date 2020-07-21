@@ -5,7 +5,8 @@ AFRAME.registerComponent('shelf', {
   schema: {
     width: {default: 4},
     height: {default: 3},
-    frame: {default: true}
+    frame: {default: true},
+    name: {type: 'string'}
   },
   init() {
     var container = document.createElement("a-entity")

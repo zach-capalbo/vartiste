@@ -29,11 +29,13 @@ AFRAME.registerComponent('tooltip', {
   popup() {
     this.tooltip.object3D.position.y = this.targetY
     this.tooltip.setAttribute('visible', true)
+    this.el.sceneEl.components['speech'].speak(this.data)
   },
   hide() {
+    this.el.sceneEl.components['speech'].cancel(this.data)
     this.tooltip.object3D.position.y = -99999999
     this.tooltip.setAttribute('visible', false)
-    this.el.sceneEl.emit('refreshobjects')
+    // this.el.sceneEl.emit('refreshobjects')
   }
 })
 

@@ -50,6 +50,7 @@ require('./optimization-components')
 require('./camera-capture')
 require('./timer')
 require('./user-media')
+require('./speech')
 
 require('./app.styl')
 
