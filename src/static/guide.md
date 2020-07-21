@@ -52,13 +52,15 @@ Once in VR, you can grab the canvas and bring it closer to you. Grab it using by
 pointing at it, then hold your controller's Grab trigger or buttons, and then
 press down on the joystick or trackpad. This should bring the canvas closer to
 you. While bringing it in, you might want to also hold left on the joystick or
-trackpad to make it smaller.
+trackpad to make it smaller. You can adjust the reference photo in the same way,
+too.
 
 ![Grab Canvas](./images/grab_canvas.png)
 
 Next, look over your left shoulder. You should see a bunch of pencils and other
 grabbable tools. Point at one of them, and do the same grab and bring closer
-action as before.
+action as before. Grab it with a comfortable grip, and bring it to the canvas to
+start drawing!
 
 ## Use VARTISTE to paint on Gravity Sketch models
 
