@@ -6,7 +6,17 @@ Util.registerComponentSystem('speech', {
   init() {
     this.utteranceCache = {}
 
-    if (localStorage.speak === "true") {
+
+    let params = new URLSearchParams(document.location.search)
+    if (params.get("speak") === "true")
+    {
+      this.el.setAttribute('speech', {speak: true})
+    }
+    else if (params.get("speak") === "false")
+    {
+      this.el.setAttribute('speech', {speak: false})
+    }
+    else if (localStorage.speak === "true") {
       this.el.setAttribute('speech', {speak: true})
     }
   },
