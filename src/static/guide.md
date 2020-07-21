@@ -40,6 +40,28 @@ find it easier to do this step before entering VR, personally.
 
 ![Illustration of enabling reference toggle, and dragging and dropping photo file](./images/reference_import.png)
 
+Next enter VR and put on your headset. *Note:* Before you do, you'll probably
+want some way to keep following along with this guide. If your headset has a
+virtual desktop setting (e.g., Oculus Dash), you can use that, or you can use
+the experimental Share Desktop button to share the browser window into your
+desktop.
+
+![Show desktop button](./images/show_desktop.png)
+
+Once in VR, you can grab the canvas and bring it closer to you. Grab it using by
+pointing at it, then hold your controller's Grab trigger or buttons, and then
+press down on the joystick or trackpad. This should bring the canvas closer to
+you. While bringing it in, you might want to also hold left on the joystick or
+trackpad to make it smaller. You can adjust the reference photo in the same way,
+too.
+
+![Grab Canvas](./images/grab_canvas.png)
+
+Next, look over your left shoulder. You should see a bunch of pencils and other
+grabbable tools. Point at one of them, and do the same grab and bring closer
+action as before. Grab it with a comfortable grip, and bring it to the canvas to
+start drawing!
+
 ## Use VARTISTE to paint on Gravity Sketch models
 
 # Interface Reference

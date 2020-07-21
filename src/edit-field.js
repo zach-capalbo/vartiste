@@ -8,6 +8,10 @@ AFRAME.registerComponent('edit-field', {
     component: {type: 'string'},
     property: {type: 'string'}
   },
+  events: {
+    'popuplaunched': function(e) { this.connectKeyboard()},
+    'popupclosed': function(e) { this.disconnectKeyboard()}
+  },
   init() {
     this.numpad = this.el.components['popup-button'].popup
     let {numpad} = this
@@ -88,6 +92,26 @@ AFRAME.registerComponent('edit-field', {
   },
   clear(e) {
     this.setValue("")
+  },
+  connectKeyboard() {
+    console.log("Connecting keyboard")
+    let form = document.createElement('input')
+    this.keyUpListener = e => {
+      console.log("Keyboard got key", e.key)
+      let ne = new e.constructor(e.type, e)
+      form.dispatchEvent(ne)
+      e.preventDefault()
+      // e.stopPropagation()
+      // let buttonValue = e.key
+      // let existingValue = this.el.getAttribute('text').value
+      this.setValue(form.value)
+    };
+    document.addEventListener('keyup', this.keyUpListener)
+  },
+  disconnectKeyboard() {
+    if (!this.keyUpListener) return
+    document.removeEventListener('keyup', this.keyUpListener)
+    delete this.keyUpListener
   }
 })
 
@@ -185,5 +209,6 @@ AFRAME.registerComponent('popup-button', {
   closePopup() {
     this.popup.setAttribute('visible', false)
     this.popup.setAttribute('position', '0 -999999 0.1')
+    this.el.emit('popupclosed')
   }
 })
