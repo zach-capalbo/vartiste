@@ -280,7 +280,7 @@ AFRAME.registerComponent('spray-can-tool', {
     let brush = this.sprayCanTool.data.locked ? this.sprayCanTool.brush : this.el.sceneEl.systems['paint-system'].brush
     let color = brush.color3
 
-    console.log("Using brush", this.sprayCanTool.data.locked, brush)
+    // console.log("Using brush", this.sprayCanTool.data.locked, brush)
 
     let oldMaterial = Compositor.material
     let shaderMaterial = this.shaderMaterial
@@ -459,5 +459,110 @@ AFRAME.registerComponent('spray-can-tool', {
       let newComponent = clone.components['spray-can-tool']
       newComponent.brush = this.el.sceneEl.systems['paint-system'].brush.clone()
     })
+  }
+})
+
+
+AFRAME.registerComponent('eye-drop-tool', {
+  dependencies: ['camera-tool'],
+  schema: {
+    locked: {default: false}
+  },
+  events: {
+    'stateadded': function(e) {
+      // if (e.detail === 'grabbed') this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+    }
+  },
+  init() {
+    Pool.init(this)
+    this.el.setAttribute('camera-tool', {autoCamera: false})
+    this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
+    this.el.components['camera-tool'].takePicture = this.takePicture;
+
+    (function(self) {
+      this.cameraCanvas = document.createElement('canvas')
+      this.cameraCanvas.width = 64
+      this.cameraCanvas.height = 64
+
+      this.eyeDropTool = self
+
+      let width = 0.07
+      let camera = new THREE.OrthographicCamera( - width / 2, width / 2, width / 2, - width / 2, 0.2, 1)
+      this.el.object3D.add(camera)
+      this.camera = camera
+
+      let body = document.createElement('a-sphere')
+      body.setAttribute('radius', 0.07)
+      body.setAttribute('propogate-grab', "")
+      body.setAttribute('segments-radial', 8)
+      body.setAttribute('segments-height', 8)
+      body.setAttribute('position', `0 0 ${-0.1 / 2 - 0.001}`)
+      body.setAttribute('material', "side: double")
+      body.setAttribute('show-current-color', "")
+      Util.whenLoaded(body, () => body.setAttribute('material', {shader: 'standard'}))
+      body.classList.add('clickable')
+      this.el.append(body)
+
+      // this.el.sceneEl.addEventListener('brushscalechanged', () => {
+      //   this.savedBrush = undefined
+      // })
+    }).call(this.el.components['camera-tool'], this)
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+  },
+  takePicture() {
+    let startTime = Date.now()
+    console.log("Sampling Color picture")
+    this.el.sceneEl.emit("startsnap", {source: this.el})
+    this.helper.visible = false
+
+    let targetCanvas = this.cameraCanvas
+    let targetContext = targetCanvas.getContext("2d")
+
+    targetContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height)
+    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+
+    let imageData = targetContext.getImageData(0, 0, targetCanvas.width, targetCanvas.height)
+
+    let avg = {r:0.0, g:0.0, b:0.0, alpha: 0}
+    let {height, width} = targetCanvas
+    for (let j = 0; j < targetCanvas.height; j++)
+    {
+      for (let i = 0; i < targetCanvas.width; i++)
+      {
+        avg.r += imageData.data[4*(j * width + i) + 0] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
+        avg.g += imageData.data[4*(j * width + i) + 1] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
+        avg.b += imageData.data[4*(j * width + i) + 2] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
+        avg.alpha += imageData.data[4*(j * width + i) + 3] / 255.0
+      }
+    }
+
+    if (avg.alpha > 0.00001)
+    {
+      avg.r /= avg.alpha
+      avg.g /= avg.alpha
+      avg.b /= avg.alpha
+    }
+    else
+    {
+      avg.r = 0
+      avg.g = 0
+      avg.b = 0
+    }
+
+    this.helper.visible = true
+    this.el.sceneEl.emit("endsnap", {source: this.el})
+
+    let color = `rgba(${Math.round(avg.r * 255)}, ${Math.round(avg.g * 255)}, ${Math.round(avg.b * 255)}, 1.0)`
+    this.el.sceneEl.systems['paint-system'].selectColor(color)
+
+    // console.log("Took", Date.now() - startTime, pictureTime, drawTime, imageDataTime, mathTime)
+  },
+  tick(t, dt) {
+    if (!this.el.components['camera-tool'].helper) return
+    if (!this.el.is("grabbed")) return
+    if (!this.el.grabbingManipulator) return
+    if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
+    this.takePicture()
   }
 })
