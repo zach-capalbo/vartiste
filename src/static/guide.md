@@ -60,7 +60,14 @@ too.
 Next, look over your left shoulder. You should see a bunch of pencils and other
 grabbable tools. Point at one of them, and do the same grab and bring closer
 action as before. Grab it with a comfortable grip, and bring it to the canvas to
-start drawing!
+start drawing! I'm going to use the detail pencil brush.
+
+You can adjust the overall scale of the pencil by pointing at the canvas and
+pressing up or down on the joystick / trackpad, or using the up and down arrows
+on the brush shelf.
+
+Now get comfortable and start sketching. I like to lower the opacity a bit to
+start.
 
 ## Use VARTISTE to paint on Gravity Sketch models
 

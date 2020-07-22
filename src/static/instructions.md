@@ -60,6 +60,7 @@ For Oculus Touch controllers:
   - Joystick Up/Down: Push / pull grabbed object
   - Joystick Press: Toggle Orbit Mode
   - A: Toggle Rotation Lock
+  - B: Clone Pencil tool
  - Right Hand (While Grabbing during Orbit Mode)
   - Joystick Right/Left: Rotate grabbed object on Z axis
   - Joystick Up/Down: Rotate grabbed object on Y axis
