@@ -94,7 +94,7 @@ let app = Object.assign({
   },
 }, config);
 
-let static = ['landing', 'license'].map(name => { return Object.assign({
+let static = ['landing', 'license', 'guide'].map(name => { return Object.assign({
     entry: {
       [name]: `./src/static/${name}.js`
     },

@@ -3,8 +3,8 @@ html
   head
     title VARTISTE
     script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"
-  body.instructions
-    #content
+  body
+    #content.guide
     footer
       span<> © 2020
       a href="https://zachcapalbo.com" Zachary Capalbo

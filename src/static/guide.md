@@ -1,3 +1,7 @@
+<img src="../assets/vartiste.png" class="logo">
+
+<a class="vartiste-url" href="https://vartiste.xyz">https://vartiste.xyz</a>
+
 # Interface Overview
 
 The VARTISTE interface is mainly divided into 3 sections:
@@ -20,6 +24,7 @@ squeezing the grip on the Valve Index).
 
 # Drawing Tutorials
 
+<a name="sketch"></a>
 ## Sketching Practice
 
 Sketching with VARTISTE can be pretty fun and roughly approximate sketching with
@@ -62,15 +67,44 @@ grabbable tools. Point at one of them, and do the same grab and bring closer
 action as before. Grab it with a comfortable grip, and bring it to the canvas to
 start drawing! I'm going to use the detail pencil brush.
 
+![Pencils](./images/pencils.png)
+
 You can adjust the overall scale of the pencil by pointing at the canvas and
 pressing up or down on the joystick / trackpad, or using the up and down arrows
 on the brush shelf.
 
 Now get comfortable and start sketching. I like to lower the opacity a bit to
-start.
+start. Just grab the pencil, and apply the tip to the canvas. The more you press
+into it, the heavier / more opaque the stroke will be.
 
-## Use VARTISTE to paint on Gravity Sketch models
+![Drawing example](./images/drawing.png)
 
+At any point, you can press the Save ![Save Icon](../assets/floppy.png) button
+to download a `.vartiste` project file, or the Save to Browser ![Floppy Disk
+with globe](../assets/save-to-browser.png) to save the VARTISTE project right
+into your browsers local storage. Saving with either method will allow you to
+open the project again and continue where you left off. Simple drag and drop the
+`.vartiste` onto the browser window, or use the Open ![Folder Icon](../assets/folder-open-outline.png) button to load a project from browser storage.
+
+Once you're done drawing, you can download the canvas as a PNG, using the Export as PNG ![Camera Icon](../assets/camera.png) button. Note that this saves a single image, and doesn't preserve your layers or reference images. For that you should save a `.vartiste` project file.
+
+![Settings Shelf with Export Button highlighted](./images/export.png)
+
+Extra tip: If you start from the [Paper
+Template](/index.html?load=gallery/paper.vartiste), you can follow these same
+instructions and it'll feel even more like sketching on "real" paper. You can access the templates from the Gallery secion of the [Instructions Page](/landing.html)
+
+![Paper Template on Instructions Page](./images/template_landing.png)
+
+There are a lot of other ways to draw with VARTISTE, and a ton more features to
+explore, but this should be enough to get you started!
+
+## Use VARTISTE to paint on [Gravity Sketch](https://www.gravitysketch.com/) models
+
+COMING SOON! Follow [@zach_geek](https://twitter.com/zach_geek) on Twitter to
+get updates.
+
+<!--
 # Interface Reference
 
 ## Settings Shelf
@@ -106,3 +140,4 @@ moved around
 ## References
 
 ## Skeletonator
+-->

@@ -35,13 +35,18 @@ Click on any of the entries below to load them into VARTISTE.
 Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link) I'd love to see what people are making with VARTISTE!
 
 
-## Tutorial
+## Tutorials
+
+Text Tutorials:
+
+ - [Quick Start Guide: Pencil Sketching](guide.html#sketch)
+ - _Gravity Sketch to VARTISTE_: **COMING SOON**
 
 There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/playlist?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-There's also a list of VARTISTE feature demos:
+You can also reference any of the feature demos posted on Twitter:
 
 <a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
 
@@ -60,7 +65,7 @@ For Oculus Touch controllers:
   - Joystick Up/Down: Push / pull grabbed object
   - Joystick Press: Toggle Orbit Mode
   - A: Toggle Rotation Lock
-  - B: Clone Pencil tool
+  - B: Clone pencil tool
  - Right Hand (While Grabbing during Orbit Mode)
   - Joystick Right/Left: Rotate grabbed object on Z axis
   - Joystick Up/Down: Rotate grabbed object on Y axis
