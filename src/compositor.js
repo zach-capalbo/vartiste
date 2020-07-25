@@ -616,7 +616,7 @@ AFRAME.registerComponent('compositor', {
         if (layer.needsUpdate === false) {
           modesUsed.add(layer.mode)
         }
-        if (material.type !== "MeshStandardMaterial") continue
+        if (material.type !== "MeshStandardMaterial" && material.type !== "MeshMatcapMaterial") continue
 
         if (modesUsed.has(layer.mode)) continue;
 
