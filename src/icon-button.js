@@ -35,6 +35,10 @@ AFRAME.registerSystem('icon-button', {
     this.faceMaterials = {}
 
     this.bgMaterials = {}
+    // this.bgMaterial = new THREE.MeshMatcapMaterial()
+    // this.bgMaterial.matcap = new THREE.Texture()
+    // this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
+    // this.bgMaterial.matcap.needsUpdate = true
     this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
 
     this.tmpColor = new THREE.Color()
