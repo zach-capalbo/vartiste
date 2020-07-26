@@ -1,6 +1,7 @@
 import {Sfx} from './sfx.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import Color from "color"
 
 AFRAME.registerSystem('pencil-tool', {
   clonePencil() {
@@ -88,6 +89,7 @@ AFRAME.registerComponent('pencil-tool', {
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
+    this.handle = cylinder
     this.el.append(cylinder)
 
     let tip;
@@ -296,6 +298,9 @@ AFRAME.registerComponent('pencil-tool', {
         newComponent.tip.removeAttribute('show-current-color')
         newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
       }
+
+      newComponent.handle.setAttribute('material', 'emissive', Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex())
+      newComponent.handle.setAttribute('material', 'emissiveIntensity', 0.04)
 
       handDrawTool.system = {
         data: Object.assign({}, oldPaintSystem.data),
