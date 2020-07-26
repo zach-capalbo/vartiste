@@ -472,17 +472,17 @@ AFRAME.registerComponent('spray-can-tool', {
 
     let pixelToClear
 
-    // if (this.data.projector)
-    // {
-    //   for (pixelToClear in this.touchedPixels)
-    //   {
-    //     pixelToClear = parseInt(pixelToClear)
-    //     projectorData[pixelToClear  + 0] = 0
-    //     projectorData[pixelToClear  + 1] = 0
-    //     projectorData[pixelToClear  + 2] = 0
-    //     projectorData[pixelToClear  + 3] = 0
-    //   }
-    // }
+    if (this.data.projector)
+    {
+      for (pixelToClear in this.touchedPixels)
+      {
+        pixelToClear = parseInt(pixelToClear)
+        projectorData[pixelToClear  + 0] = 0
+        projectorData[pixelToClear  + 1] = 0
+        projectorData[pixelToClear  + 2] = 0
+        projectorData[pixelToClear  + 3] = 0
+      }
+    }
 
     for (pixelToClear in this.touchedPixels)
     {
