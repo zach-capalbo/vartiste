@@ -39,7 +39,8 @@ const THREED_MODES = [
   "emissiveMap",
   "metalnessMap",
   "roughnessMap",
-  "envMap"
+  "envMap",
+  "matcap"
 ]
 
 const FX = [
@@ -51,7 +52,8 @@ const FX = [
   'grayscale-to-alpha',
   'alpha-to-grayscale',
   'invert',
-  'uv-offset'
+  'uv-offset',
+  'show-uv'
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)

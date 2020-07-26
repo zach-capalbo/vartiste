@@ -112,3 +112,11 @@ const Util = {
 Pool.init(Util)
 
 export {Util}
+
+class DebugUtils {
+  canvas(canvas) {
+    document.querySelector('a-scene').systems['settings-system'].download(canvas.toDataURL(), {extension: 'png', suffix: 'debug'}, "Debug Image")
+  }
+}
+
+window.VDBG = new DebugUtils

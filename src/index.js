@@ -51,6 +51,8 @@ require('./camera-capture')
 require('./timer')
 require('./user-media')
 require('./speech')
+require('./uv-unwrapper')
+require('./matcap-shader')
 
 require('./app.styl')
 

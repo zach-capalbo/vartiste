@@ -78,6 +78,8 @@ async function addGlbViewer(file) {
 
   let compositor = document.getElementById('canvas-view').components.compositor
 
+  compositor.el.setAttribute('compositor', {wrapTexture: true})
+
   for (let material of Object.values(materials))
   {
     for (let mode of ["map"].concat(THREED_MODES))

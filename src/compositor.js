@@ -13,6 +13,8 @@ function createTexture() {
   let t = new THREE.Texture()
   t.generateMipmaps = false
   t.minFilter = THREE.LinearFilter
+  // t.wrapS = THREE.RepeatWrapping
+  // t.wrapT = THREE.RepeatWrapping
   return t
 }
 
@@ -32,6 +34,7 @@ AFRAME.registerComponent('compositor', {
     useNodes: {default: false},
     flipY: {default: false},
     skipDrawing: {default: false},
+    wrapTexture: {default: false},
   },
 
   init() {
@@ -616,7 +619,7 @@ AFRAME.registerComponent('compositor', {
         if (layer.needsUpdate === false) {
           modesUsed.add(layer.mode)
         }
-        if (material.type !== "MeshStandardMaterial") continue
+        if (material.type !== "MeshStandardMaterial" && material.type !== "MeshMatcapMaterial") continue
 
         if (modesUsed.has(layer.mode)) continue;
 
@@ -637,6 +640,9 @@ AFRAME.registerComponent('compositor', {
         if (material[layer.mode].flipY != this.data.flipY) {
           material[layer.mode].flipY = this.data.flipY
         }
+
+        material[layer.mode].wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+        material[layer.mode].wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
         if (material[layer.mode].image !== layerCanvas)
         {
@@ -704,6 +710,8 @@ AFRAME.registerComponent('compositor', {
       }
       if (material.map.flipY != this.data.flipY) material.map.flipY = this.data.flipY
       material.map.needsUpdate = true
+      material.map.wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+      material.map.wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
       if (material.type !== "MeshStandardMaterial") return
       for (let mode of THREED_MODES)
