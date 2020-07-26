@@ -220,15 +220,16 @@ AFRAME.registerSystem('environment-manager', {
   },
 
   installMatcap() {
-    let material = new THREE.MeshMatcapMaterial({skinning: true})
-    material.matcap = new THREE.Texture()
-    material.matcap.image = document.querySelector('#asset-matcap')
-    material.matcap.needsUpdate = true
-
-    material.map = new THREE.Texture({image: Compositor.material.map.image})
-    material.needsUpdate = true
-    Compositor.el.getObject3D('mesh').material = material
-    Compositor.mesh.material = material
+    Compositor.el.setAttribute('material', 'shader', 'matcap')
+    // let material = new THREE.MeshMatcapMaterial({skinning: true})
+    // material.matcap = new THREE.Texture()
+    // material.matcap.image = document.querySelector('#asset-matcap')
+    // material.matcap.needsUpdate = true
+    //
+    // material.map = new THREE.Texture({image: Compositor.material.map.image})
+    // material.needsUpdate = true
+    // Compositor.el.getObject3D('mesh').material = material
+    // Compositor.mesh.material = material
   },
 
   tick(t,dt) {

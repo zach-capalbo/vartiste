@@ -39,7 +39,8 @@ const THREED_MODES = [
   "emissiveMap",
   "metalnessMap",
   "roughnessMap",
-  "envMap"
+  "envMap",
+  "matcap"
 ]
 
 const FX = [

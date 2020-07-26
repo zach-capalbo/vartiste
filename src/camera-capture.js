@@ -396,6 +396,8 @@ AFRAME.registerComponent('spray-can-tool', {
     // let imageDataTime = Date.now() - startTime - pictureTime
     var x,y,r,g,b,a,bx,by,u,v,xx,yy,len,angle;
 
+    let flipY = Compositor.component.data.flipY
+
     if (!this.touchedPixels)
     {
       this.touchedPixels = {}
@@ -404,6 +406,8 @@ AFRAME.registerComponent('spray-can-tool', {
     let touchedPixels = this.touchedPixels
 
     let rotation = 2*Math.PI*Math.random()
+
+    let projectorColor = this.pool("projectorColor", THREE.Color)
 
     for (y = 0; y < capturedImage.height; y++)
     {
@@ -430,6 +434,7 @@ AFRAME.registerComponent('spray-can-tool', {
 
         u = (((b & 0xF0) >> 4) * 256 + r) / 4096
         v = ((b & 0x0F) * 256 + g) / 4096
+        v = flipY ? 1.0 - v : v
 
         xx = Math.round(u * targetCanvas.width + Math.random() - 0.5)
         yy = Math.round(v * targetCanvas.height + Math.random() - 0.5)
@@ -438,9 +443,11 @@ AFRAME.registerComponent('spray-can-tool', {
 
         if (this.data.projector)
         {
-          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = projectorData[((y * capturedImage.width) + x) * 4 + 0]
-          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = projectorData[((y * capturedImage.width) + x) * 4 + 1]
-          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = projectorData[((y * capturedImage.width) + x) * 4 + 2]
+          projectorColor.setRGB(projectorData[((y * capturedImage.width) + x) * 4 + 0] / 255.0, projectorData[((y * capturedImage.width) + x) * 4 + 1] / 255.0, projectorData[((y * capturedImage.width) + x) * 4 + 2] / 255.0)
+          // projectorColor.convertSRGBToLinear()
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = Math.round(projectorColor.r * 255)
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = Math.round(projectorColor.g * 255)
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = Math.round(projectorColor.b * 255)
           targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] += brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * projectorData[((y * capturedImage.width) + x) * 4 + 3] / 255.0
         }
         else
