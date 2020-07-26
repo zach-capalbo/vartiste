@@ -191,7 +191,8 @@ AFRAME.registerComponent('camera-tool', {
 AFRAME.registerComponent('spray-can-tool', {
   dependencies: ['camera-tool'],
   schema: {
-    locked: {default: false}
+    locked: {default: false},
+    projector: {default: false},
   },
   events: {
     'stateadded': function(e) {
@@ -237,7 +238,20 @@ AFRAME.registerComponent('spray-can-tool', {
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
   },
-  captureToCanvas(camera, canvas) {
+  update(oldData)
+  {
+    (function(self) {
+      this.data.projector = self.data.projector
+      if (this.data.projector !== oldData.projector && this.data.projector && !this.projectorCanvas)
+      {
+        this.projectorCanvas = document.createElement('canvas')
+        this.projectorCanvas.width = this.cameraCanvas.width
+        this.projectorCanvas.height = this.cameraCanvas.height
+        this.projectorData = this.projectorCanvas.getContext('2d').getImageData(0, 0, this.projectorCanvas.width, this.projectorCanvas.height)
+      }
+    }).call(this.el.components['camera-tool'], this)
+  },
+  captureToCanvas(camera, canvas, data) {
     let renderer = this.el.sceneEl.renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
@@ -254,14 +268,6 @@ AFRAME.registerComponent('spray-can-tool', {
     renderer.setRenderTarget(newTarget)
 
     renderer.render(this.el.sceneEl.object3D, camera);
-
-    let data = this.buffer
-
-    if (!data)
-    {
-      data = canvas.getContext("2d").getImageData(0, 0, width, height)
-      this.buffer = data
-    }
 
     renderer.readRenderTargetPixels(newTarget, 0, 0, width, height, data.data)
 
@@ -303,15 +309,46 @@ AFRAME.registerComponent('spray-can-tool', {
         }
       })
 
+    if (this.data.projector) {
+      document.getElementById('world-root').object3D.traverse(o => {
+        if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+        {
+          if (!(o.layers.mask & 2)) {
+            o.layers.mask |= 4
+          }
+        }
+      })
+    }
+
     // this.cameraCanvas.clearRect(0, 0, this.cameraCanvas.width, this.cameraCanvas.height)
     let capturedImage = this.cameraCanvas
 
     // let pictureTime = Date.now() - startTime
 
+    if (!this.buffer) {
+      this.buffer = this.cameraCanvas.getContext("2d").getImageData(0, 0, this.cameraCanvas.width, this.cameraCanvas.height)
+    }
+
     // TODO: Shaderize this
-    let capturedData = this.captureToCanvas(this.camera, this.cameraCanvas)
+    let capturedData = this.captureToCanvas(this.camera, this.cameraCanvas, this.buffer)
     let targetCanvas = this.targetCanvas
     let finalDestinationCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
+
+    Compositor.meshRoot.traverse(o =>
+      {
+        if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+        {
+          o.material = oldMaterial
+        }
+      })
+
+    let projectorData
+    if (this.data.projector)
+    {
+      this.camera.layers.mask = 4
+      projectorData = this.captureToCanvas(this.camera, this.projectorCanvas, this.projectorData).data
+      this.camera.layers.mask = 2
+    }
 
     if (targetCanvas.width !== finalDestinationCanvas.width || targetCanvas.height !== finalDestinationCanvas.height)
     {
@@ -399,10 +436,20 @@ AFRAME.registerComponent('spray-can-tool', {
 
         touchedPixels[((yy * targetCanvas.width) + xx) * 4] = true
 
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = brush.color3.r * 255
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = brush.color3.g * 255
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = brush.color3.b * 255
-        targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] += brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * a / 255.0
+        if (this.data.projector)
+        {
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = projectorData[((y * capturedImage.width) + x) * 4 + 0]
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = projectorData[((y * capturedImage.width) + x) * 4 + 1]
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = projectorData[((y * capturedImage.width) + x) * 4 + 2]
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] += brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * projectorData[((y * capturedImage.width) + x) * 4 + 3] / 255.0
+        }
+        else
+        {
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 0] = brush.color3.r * 255
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 1] = brush.color3.g * 255
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 2] = brush.color3.b * 255
+          targetData.data[((yy * targetCanvas.width) + xx) * 4 + 3] += brushData.data[((by * brush.overlayCanvas.width) + bx) * 4 + 3] * a / 255.0
+        }
       }
     }
     // let mathTime = Date.now() - startTime - pictureTime - imageDataTime
@@ -417,6 +464,19 @@ AFRAME.registerComponent('spray-can-tool', {
     Compositor.component.activeLayer.touch()
 
     let pixelToClear
+
+    // if (this.data.projector)
+    // {
+    //   for (pixelToClear in this.touchedPixels)
+    //   {
+    //     pixelToClear = parseInt(pixelToClear)
+    //     projectorData[pixelToClear  + 0] = 0
+    //     projectorData[pixelToClear  + 1] = 0
+    //     projectorData[pixelToClear  + 2] = 0
+    //     projectorData[pixelToClear  + 3] = 0
+    //   }
+    // }
+
     for (pixelToClear in this.touchedPixels)
     {
       pixelToClear = parseInt(pixelToClear)
@@ -428,14 +488,6 @@ AFRAME.registerComponent('spray-can-tool', {
     }
 
     // let drawTime = Date.now() - startTime - pictureTime
-
-    Compositor.meshRoot.traverse(o =>
-      {
-        if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
-        {
-          o.material = oldMaterial
-        }
-      })
 
     this.helper.visible = true
     // this.el.sceneEl.emit("endsnap", {source: this.el})
