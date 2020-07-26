@@ -1,5 +1,5 @@
 // require('./framework/aframe.js')
-require('aframe-environment-component')
+// require('aframe-environment-component')
 
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')

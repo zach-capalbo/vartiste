@@ -110,4 +110,41 @@ let static = ['landing', 'license', 'guide'].map(name => { return Object.assign(
   }, config);
 })
 
-module.exports = [app].concat(static)
+let toolkit = Object.assign({
+  entry: {
+    toolkit: './src/vartiste-toolkit.js'
+  },
+  plugins: [
+    // new FaviconsWebpackPlugin(faviconPath),
+    // new HtmlWebpackPlugin({
+    //   template: './src/template.html.slm',
+    //   filename: 'index.html'
+    // }),
+  ],
+  // optimization: {
+  //   splitChunks: {}
+  // },
+}, config, {
+  output: {
+    filename: 'vartiste-toolkit.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+});
+
+let toolkitTest = Object.assign({
+    entry: {
+      toolkitTest: `./src/toolkit/toolkit-test.js`
+    },
+    plugins: [
+      // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
+      // new CleanWebpackPlugin(),
+      new FaviconsWebpackPlugin(faviconPath),
+      new HtmlWebpackPlugin({
+        template: `./src/toolkit/toolkit-test.html.slm`,
+        filename: `toolkit-test.html`,
+        inject: false
+      }),
+    ],
+  }, config);
+
+module.exports = [app, toolkit, toolkitTest].concat(static)

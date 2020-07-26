@@ -188,7 +188,7 @@ applied to different frames, giving a kind of animated brush effect.
     As long as everything shares the same UV map, you can import the large model
     at the end to combine it all.
   - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
-  - I've gotten the best performance out of Chrome (You may need to [launch with special flags](https://github.com/aframevr/aframe/issues/4558))
+  - I've gotten the best performance out of Chrome (You may need to [launch with special flags](https://github.com/aframevr/aframe/issues/4558), or use an old version that supports your headset api (e.g., 81.0.4044.92))
 - **Trick:** To _Copy and Paste_ try this:
   1. Duplicate ![Plus Box Multiple](../assets/plus-box-multiple.png) the layer
   1. Erase the parts of the duplicated layer that you don't want copied
