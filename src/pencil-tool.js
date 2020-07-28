@@ -8,6 +8,21 @@ AFRAME.registerSystem('pencil-tool', {
     if (!this.lastGrabbed) return
     this.lastGrabbed.createLockedClone()
   },
+  deletePencil() {
+    if (!this.lastGrabbed) return
+    if (!this.lastGrabbed.data.locked) return
+    this.lastGrabbed.el.remove()
+  },
+  unlockPencil() {
+    if (!this.lastGrabbed) return
+    if (!this.lastGrabbed.data.locked) return
+    let system = this.systems['paint-system']
+    let tool = this.lastGrabbed.el.components['hand-draw-tool']
+    if (!tool) return
+    Object.assign(system.data, tool.system.data)
+    system.brush = tool.system.brush
+    system.el.emit('brushchanged', {brush: system.brush})
+  },
   toggleGrabRotation() {
     document.querySelectorAll('*[manipulator]').forEach(e=>{
       if (e.is("rotating"))
@@ -286,7 +301,7 @@ AFRAME.registerComponent('pencil-tool', {
   createLockedClone() {
     let clone = document.createElement('a-entity')
     this.el.parentEl.append(clone)
-    clone.setAttribute('pencil-tool', Object.assign({locked: true}, this.el.getAttribute('pencil-tool')))
+    clone.setAttribute('pencil-tool', Object.assign({}, this.el.getAttribute('pencil-tool'), {locked: true}))
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)

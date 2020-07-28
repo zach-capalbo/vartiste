@@ -4,6 +4,9 @@ import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 
 class Brush {
+  constructor() {
+    this.ignoredAttributes = []
+  }
   clone() {
     return Object.assign( Object.create( Object.getPrototypeOf(this)), this)
   }
@@ -49,11 +52,16 @@ class ProceduralBrush extends Brush {
     overlayCanvas.width = width
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
+    Util.unenumerable(this, "overlayCanvas")
 
     if (this.hqBlending)
     {
       this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
+      Util.unenumerable(this, "hqBlender")
     }
+
+    Util.unenumerable(this, "color3")
+    Util.unenumerable(this, "ccolor")
 
     this.changeColor('#FFF')
   }

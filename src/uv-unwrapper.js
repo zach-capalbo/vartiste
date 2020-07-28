@@ -1,8 +1,45 @@
+import {Pool} from './pool.js'
 
 AFRAME.registerSystem('uv-unwrapper', {
   init() {
+    Pool.init(this)
+    this.spheres = []
   },
   createCube() {
+
+  },
+  createSphere() {
+    let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
+    boundingSphere.copy(Compositor.mesh.geometry.boundingSphere)
+    boundingSphere.applyMatrix4(Compositor.mesh.matrixWorld)
+
+    let sphere = document.createElement('a-sphere')
+    sphere.setAttribute('position', boundingSphere.center)
+    sphere.setAttribute('radius', boundingSphere.radius)
+    sphere.setAttribute('material', 'wireframe: true; shader: matcap')
+    sphere.classList.add('clickable')
+    this.el.append(sphere)
+
+    this.spheres.push(sphere)
+  },
+  unwrap()
+  {
+    let geometry = Compositor.mesh.geometry
+    for (let sphere of this.spheres)
+    {
+      geometry = this.unwrapASphere(geometry, sphere)
+    }
+    Compositor.mesh.geometry = geometry
+  },
+  unwrapASphere(geometry, asphere)
+  {
+    let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
+    boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
+    boundingSphere.applyMatrix4(asphere.getObject3D('mesh').matrixWorld)
+    let invMat = this.pool('invMat', THREE.Matrix4)
+    invMat.getInverse(Compositor.mesh.matrixWorld)
+    boundingSphere.applyMatrix4(invMat)
+    return this.applySphere(geometry, boundingSphere)
 
   },
   sphereProject(v, sphere, uv){
@@ -12,7 +49,6 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     // Need to check against other faces for angle wrap around
     uv.x =  (spherical.theta + Math.PI)/ Math.PI / 2
-
     uv.y = (spherical.phi) / Math.PI
 
     // console.log(v, spherical, uv)
@@ -30,8 +66,6 @@ AFRAME.registerSystem('uv-unwrapper', {
     if (geometry.attributes.uv === undefined) {
         geometry.addAttribute('uv', new THREE.Float32BufferAttribute(coords, 2));
     }
-
-
 
     let v0 = new THREE.Vector3
     let v1 = new THREE.Vector3
@@ -143,16 +177,4 @@ AFRAME.registerSystem('uv-unwrapper', {
     return geometry
 
   },
-  unwrap() {
-
-    for (let sphere of this.spheres)
-    {
-
-    }
-
-    for (let cube of this.cubes)
-    {
-
-    }
-  }
 })
