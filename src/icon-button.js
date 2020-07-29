@@ -20,6 +20,12 @@ AFRAME.registerComponent('button-style', {
 })
 
 AFRAME.registerSystem('icon-button', {
+  schema: {
+    shader: {default: 'standard'},
+    matcap: {default: '#asset-matcap'},
+    metalness: {default: 0.3},
+    roughness: {default: 1.0}
+  },
   init() {
     this.width = 0.4
     this.depth = 0.05
@@ -35,11 +41,22 @@ AFRAME.registerSystem('icon-button', {
     this.faceMaterials = {}
 
     this.bgMaterials = {}
-    // this.bgMaterial = new THREE.MeshMatcapMaterial()
-    // this.bgMaterial.matcap = new THREE.Texture()
-    // this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
-    // this.bgMaterial.matcap.needsUpdate = true
-    this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
+
+    if (this.data.shader === 'matcap')
+    {
+      this.bgMaterial = new THREE.MeshMatcapMaterial()
+      this.bgMaterial.matcap = new THREE.Texture()
+      this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
+      this.bgMaterial.matcap.needsUpdate = true
+    }
+    else if (this.data.shader === 'standard')
+    {
+      this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
+    }
+    else
+    {
+      this.bgMaterial = new THREE.MeshBasicMaterial()
+    }
 
     this.tmpColor = new THREE.Color()
   }

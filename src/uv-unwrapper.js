@@ -31,7 +31,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     }
     Compositor.mesh.geometry = geometry
   },
-  unwrapASphere(geometry, asphere)
+  unwrapASphere(geometry, asphere, region)
   {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
     boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
@@ -39,7 +39,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     let invMat = this.pool('invMat', THREE.Matrix4)
     invMat.getInverse(Compositor.mesh.matrixWorld)
     boundingSphere.applyMatrix4(invMat)
-    return this.applySphere(geometry, boundingSphere)
+    return this.applySphere(geometry, boundingSphere, region)
 
   },
   sphereProject(v, sphere, uv){
@@ -53,18 +53,23 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     // console.log(v, spherical, uv)
   },
-  applySphere(geometry, sphere) {
+  applySphere(geometry, sphere, region) {
     if (typeof sphere === 'undefined')
     {
       sphere = geometry.boundingSphere
     }
 
-    geometry.removeAttribute('uv');
+    // geometry.removeAttribute('uv');
     geometry = geometry.toNonIndexed()
     let coords = [];
-    coords.length = 2 * geometry.attributes.position.array.length / 3;
+
     if (geometry.attributes.uv === undefined) {
-        geometry.addAttribute('uv', new THREE.Float32BufferAttribute(coords, 2));
+      coords.length = 2 * geometry.attributes.position.array.length / 3;
+      geometry.addAttribute('uv', new THREE.Float32BufferAttribute(coords, 2));
+    }
+    else
+    {
+      coords = geometry.attributes.uv.array
     }
 
     let v0 = new THREE.Vector3
@@ -87,6 +92,11 @@ AFRAME.registerSystem('uv-unwrapper', {
       v0.fromBufferAttribute(geometry.attributes.position, idx0);
       v1.fromBufferAttribute(geometry.attributes.position, idx1)
       v2.fromBufferAttribute(geometry.attributes.position, idx2)
+
+      if (!sphere.containsPoint(v0) || !sphere.containsPoint(v1) || !sphere.containsPoint(v2))
+      {
+        continue;
+      }
 
       let log = false
       let reused = false
@@ -118,40 +128,12 @@ AFRAME.registerSystem('uv-unwrapper', {
         uv2.x += 1.0;
       }
 
-      if (reused)
-      {
-        if (uv0.x !== coords[2 * idx0])
-        {
-          log = true
-        }
-        if (uv1.x !== coords[2 * idx1])
-        {
-          log = true
-        }
-        if (uv2.x !== coords[2 * idx2])
-        {
-          log = true
-        }
-      }
-
-      if (log) {
-        console.log(uv0, uv1, uv2, rightmost, coords[2 * idx0], coords[2 * idx1], coords[2 * idx2])
-      }
-
-      if (!coords[2 * idx0]) {
-        coords[2 * idx0] = uv0.x;
-        coords[2 * idx0 + 1] = uv0.y;
-      }
-
-      if (!coords[2 * idx1]) {
-        coords[2 * idx1] = uv1.x;
-        coords[2 * idx1 + 1] = uv1.y;
-      }
-
-      if (!coords[2 * idx2]) {
-        coords[2 * idx2] = uv2.x;
-        coords[2 * idx2 + 1] = uv2.y;
-      }
+      coords[2 * idx0] = uv0.x;
+      coords[2 * idx0 + 1] = uv0.y;
+      coords[2 * idx1] = uv1.x;
+      coords[2 * idx1 + 1] = uv1.y;
+      coords[2 * idx2] = uv2.x;
+      coords[2 * idx2 + 1] = uv2.y;
 
       // if (coords[2 * idx0] < 0.2 &&
       //   (coords[2 * idx1] > 0.5 || coords[2 * idx2] > 0.5))

@@ -55,6 +55,9 @@ AFRAME.registerComponent("frame", {
 
     this.buttonCount = 0
 
+    this.buttonRow = document.createElement('a-entity')
+    this.el.append(this.buttonRow)
+
     this.objects = []
 
     if (this.data.closable)
@@ -105,7 +108,7 @@ AFRAME.registerComponent("frame", {
     button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
     button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
     button.setAttribute('scale', `0.3 0.3 1`)
-    this.el.append(button)
+    this.buttonRow.append(button)
     this.objects.push(button)
     return button
   },

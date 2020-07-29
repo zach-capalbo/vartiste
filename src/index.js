@@ -64,33 +64,9 @@ if (location.host === "vartiste.xyz")
 
 document.write(require('./scene.html.slm'));
 
-for (let fileName of require.context('./assets/', true, /.*/).keys()) {
-  let asset = fileName.slice("./".length)
-  if (asset.startsWith(".")) continue
+const {loadAllAssets} = require('./assets.js')
 
-  let elementType = 'a-asset-item'
-
-  let assetSrc = require(`./assets/${asset}`)
-
-// if (assetSrc.startsWith("asset/") && /\.(png|jpg)/i.test(assetSrc))
-  if ((assetSrc.startsWith("asset/") && /\.(png|jpg)$/i.test(assetSrc) )
-    || /^data:image/.test(assetSrc))
-  {
-    assetSrc = `${assetSrc}`
-    elementType = 'img'
-  }
-  else if (asset.endsWith(".wav"))
-  {
-    elementType = 'audio'
-  }
-
-  var element = document.createElement(elementType)
-
-  element.setAttribute("src", assetSrc)
-  element.id = `asset-${asset.split(".")[0]}`
-  document.getElementById('assets').append(element)
-}
-
+loadAllAssets()
 
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
 document.getElementById('left-hand').setAttribute('left-hand-controls', "")

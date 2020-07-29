@@ -5,11 +5,16 @@ html
     script src="https://aframe.io/releases/1.0.4/aframe.js"
     script src="/vartiste-toolkit.js"
   body
-    a-scene
+    a-scene icon-button="shader: matcap"
       a-assets
         vartiste-assets
       a-sky color="#333"
+
+      a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.6"
+      a-entity light="type: ambient; color: #fff; intensity: 0.6"
+
       a-entity vartiste-user-root=""
       a-entity position="0 0 -2.5"
-        a-entity shelf="" scale="0.3 0.3 0.3"
+        a-entity.grab-root shelf=""
+          a-entity icon-button="" tooltip="Hi"
           a-entity icon-button="" tooltip="Hi"
