@@ -27,6 +27,6 @@ export function loadAsset(fileName) {
 
 export function loadAllAssets() {
   for (let fileName of require.context('./assets/', true, /.*/).keys()) {
-    document.getElementById('assets').append(loadAsset(fileName))
+    document.querySelector('a-assets').append(loadAsset(fileName))
   }
 }

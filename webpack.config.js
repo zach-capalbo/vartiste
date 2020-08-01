@@ -142,9 +142,16 @@ let toolkitTest = Object.assign({
       new HtmlWebpackPlugin({
         template: `./src/toolkit/toolkit-test.html.slm`,
         filename: `toolkit-test.html`,
-        inject: false
+        // inject: false
       }),
     ],
   }, config);
 
-module.exports = [app, toolkit, toolkitTest].concat(static)
+if (process.env.VARTISTE_TOOLKIT==="true")
+{
+  module.exports = [toolkit, toolkitTest]
+}
+else
+{
+  module.exports = [app, toolkit, toolkitTest].concat(static)
+}

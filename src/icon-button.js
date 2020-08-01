@@ -21,7 +21,7 @@ AFRAME.registerComponent('button-style', {
 
 AFRAME.registerSystem('icon-button', {
   schema: {
-    shader: {default: 'standard'},
+    shader: {default: 'matcap'},
     matcap: {default: '#asset-matcap'},
     metalness: {default: 0.3},
     roughness: {default: 1.0}
@@ -102,7 +102,7 @@ AFRAME.registerComponent('icon-button', {
 
     this.el.classList.add('clickable')
 
-    let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
+    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 

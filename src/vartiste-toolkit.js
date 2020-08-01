@@ -12,6 +12,11 @@ AFRAME.registerSystem('vartiste-assets', {
       this.el.sceneEl.append(assets)
     }
 
+    if (assets.querySelector('*[vartiste-assets]'))
+    {
+      loadAllAssets()
+    }
+
     if (!assets.querySelector('#asset-shelf'))
     {
       assets.append(loadAsset('./shelf.png'))
@@ -31,6 +36,12 @@ AFRAME.registerSystem('vartiste-assets', {
     {
       assets.append(loadAsset('./hand.glb'))
     }
+
+    if (!assets.querySelector('#asset-close-circle-outline'))
+    {
+      assets.append(loadAsset('./close-circle-outline.png'))
+    }
+
   }
 })
 

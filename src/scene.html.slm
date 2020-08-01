@@ -1,4 +1,4 @@
-a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="enabled: false" settings-system=""
+a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="enabled: false" settings-system="" icon-button="shader: standard"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
 
