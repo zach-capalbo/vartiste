@@ -41,7 +41,6 @@ pages:
   only:
     - release
 
-
 toolkit:
   stage: deploy
   when: manual
@@ -49,8 +48,8 @@ toolkit:
     VARTISTE_TOOLKIT: 'true'
   script:
     - npm install
-    - tookit_deploy.sh
+    - bash toolkit_deploy.sh
   artifacts:
     expire_in: 1 week
     paths:
-      - dist
+      - 'dist/*.tgz'
