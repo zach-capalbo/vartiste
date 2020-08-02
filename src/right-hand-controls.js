@@ -1,25 +1,5 @@
 import {ButtonMaps, Axes, JoystickDirections} from './joystick-directions.js'
 
-AFRAME.registerComponent('joystick-turn', {
-  schema: {
-    amount: {type: 'number', default: 3.14 / 4},
-    target: {type: 'selector'}
-  },
-  init() {
-    JoystickDirections.install(this)
-  },
-  leftClick() {
-    const { amount } = this.data;
-    this.data.target.object3D.rotation.y += amount;
-  },
-  rightClick() {
-    const { amount } = this.data;
-    this.data.target.object3D.rotation.y -= amount;
-  }
-}
-);
-
-
 AFRAME.registerComponent('right-hand-controls', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {

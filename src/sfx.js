@@ -15,6 +15,7 @@ AFRAME.registerSystem('sfx-system', {
 
     // Try to work around bug that slows chrome down
     Util.whenLoaded(soundContainer, () => {
+      if (!this.el.audioListener) return
       Object.defineProperty(this.el.audioListener.context.listener, 'positionX', {value: undefined})
     })
   }
@@ -49,6 +50,10 @@ class SfxMgr {
 
     console.log("Finding", `sfx-${sfx.sfx || sfx}`)
     let sound = document.getElementById(`sfx-${sfx.sfx || sfx}`)
+    if (!sound) {
+      console.warn("No sound asset for", sfx)
+      return
+    }
     el.object3D.getWorldPosition(sound.object3D.position)
     sound.setAttribute('sound', {volume})
     sound.components.sound.playSound()

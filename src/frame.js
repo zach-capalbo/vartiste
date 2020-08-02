@@ -37,7 +37,8 @@ AFRAME.registerComponent("frame", {
     pinnable: {default: true},
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
-    geometryTarget: {type: 'selector'}
+    geometryTarget: {type: 'selector'},
+    grabbable: {default: true}
   },
   events: {
     click: function (e) {
@@ -54,6 +55,9 @@ AFRAME.registerComponent("frame", {
     this.height = height
 
     this.buttonCount = 0
+
+    this.buttonRow = document.createElement('a-entity')
+    this.el.append(this.buttonRow)
 
     this.objects = []
 
@@ -97,6 +101,15 @@ AFRAME.registerComponent("frame", {
       delete this.lineObject
       this.objects.splice(this.objects.indexOf(this.lineObject), 1)
     }
+
+    if (this.data.grabbable)
+    {
+      this.el.classList.add('clickable')
+    }
+    else
+    {
+      this.el.classList.remove('clickable')
+    }
   },
   addButton(icon) {
     let {width, height} = this
@@ -105,7 +118,7 @@ AFRAME.registerComponent("frame", {
     button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
     button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
     button.setAttribute('scale', `0.3 0.3 1`)
-    this.el.append(button)
+    this.buttonRow.append(button)
     this.objects.push(button)
     return button
   },

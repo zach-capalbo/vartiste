@@ -106,6 +106,14 @@ const Util = {
   },
   titleCase(str) {
     return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))
+  },
+  unenumerable(obj, prop)
+  {
+    return
+    let pname = "__" + prop
+    let initVal = obj[prop]
+    Object.defineProperty(obj, prop, {enumerable: false, get: () => obj[pname], set: (v) => obj[pname] = v})
+    obj[pname] = initVal
   }
 }
 

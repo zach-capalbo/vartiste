@@ -1,11 +1,27 @@
 import {Sfx} from './sfx.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import Color from "color"
 
 AFRAME.registerSystem('pencil-tool', {
   clonePencil() {
     if (!this.lastGrabbed) return
     this.lastGrabbed.createLockedClone()
+  },
+  deletePencil() {
+    if (!this.lastGrabbed) return
+    if (!this.lastGrabbed.data.locked) return
+    this.lastGrabbed.el.remove()
+  },
+  unlockPencil() {
+    if (!this.lastGrabbed) return
+    if (!this.lastGrabbed.data.locked) return
+    let system = this.systems['paint-system']
+    let tool = this.lastGrabbed.el.components['hand-draw-tool']
+    if (!tool) return
+    Object.assign(system.data, tool.system.data)
+    system.brush = tool.system.brush
+    system.el.emit('brushchanged', {brush: system.brush})
   },
   toggleGrabRotation() {
     document.querySelectorAll('*[manipulator]').forEach(e=>{
@@ -88,6 +104,7 @@ AFRAME.registerComponent('pencil-tool', {
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
+    this.handle = cylinder
     this.el.append(cylinder)
 
     let tip;
@@ -284,7 +301,7 @@ AFRAME.registerComponent('pencil-tool', {
   createLockedClone() {
     let clone = document.createElement('a-entity')
     this.el.parentEl.append(clone)
-    clone.setAttribute('pencil-tool', Object.assign({locked: true}, this.el.getAttribute('pencil-tool')))
+    clone.setAttribute('pencil-tool', Object.assign({}, this.el.getAttribute('pencil-tool'), {locked: true}))
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
@@ -296,6 +313,9 @@ AFRAME.registerComponent('pencil-tool', {
         newComponent.tip.removeAttribute('show-current-color')
         newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
       }
+
+      newComponent.handle.setAttribute('material', 'emissive', Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex())
+      newComponent.handle.setAttribute('material', 'emissiveIntensity', 0.04)
 
       handDrawTool.system = {
         data: Object.assign({}, oldPaintSystem.data),

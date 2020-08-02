@@ -20,6 +20,12 @@ AFRAME.registerComponent('button-style', {
 })
 
 AFRAME.registerSystem('icon-button', {
+  schema: {
+    shader: {default: 'matcap'},
+    matcap: {default: '#asset-matcap'},
+    metalness: {default: 0.3},
+    roughness: {default: 1.0}
+  },
   init() {
     this.width = 0.4
     this.depth = 0.05
@@ -35,11 +41,22 @@ AFRAME.registerSystem('icon-button', {
     this.faceMaterials = {}
 
     this.bgMaterials = {}
-    // this.bgMaterial = new THREE.MeshMatcapMaterial()
-    // this.bgMaterial.matcap = new THREE.Texture()
-    // this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
-    // this.bgMaterial.matcap.needsUpdate = true
-    this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
+
+    if (this.data.shader === 'matcap')
+    {
+      this.bgMaterial = new THREE.MeshMatcapMaterial()
+      this.bgMaterial.matcap = new THREE.Texture()
+      this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
+      this.bgMaterial.matcap.needsUpdate = true
+    }
+    else if (this.data.shader === 'standard')
+    {
+      this.bgMaterial = new THREE.MeshStandardMaterial({metalness: 0.3, roughness: 1.0})
+    }
+    else
+    {
+      this.bgMaterial = new THREE.MeshBasicMaterial()
+    }
 
     this.tmpColor = new THREE.Color()
   }
@@ -85,7 +102,7 @@ AFRAME.registerComponent('icon-button', {
 
     this.el.classList.add('clickable')
 
-    let indexId = Array.from(this.el.parentEl.childNodes).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
+    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
     this.el.object3D.position.z += depth
     this.el.object3D.position.x += (width + 0.05) * indexId
 

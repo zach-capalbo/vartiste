@@ -200,6 +200,9 @@ Util.registerComponentSystem('settings-system', {
   helpAction() {
     this.popup("landing.html", "Instructions")
   },
+  feedbackAction() {
+    this.popup("https://forms.gle/SnNFFLyPve3kQc7Y9", "Feedback Survey")
+  },
   formatFileDate() {
     let date = new Date()
     return date.toJSON().split(":")[0]

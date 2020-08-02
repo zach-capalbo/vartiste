@@ -148,4 +148,24 @@ const JoystickDirections = {
   }
 }
 
+AFRAME.registerComponent('joystick-turn', {
+  schema: {
+    amount: {type: 'number', default: 3.14 / 4},
+    target: {type: 'selector'}
+  },
+  init() {
+    JoystickDirections.install(this)
+  },
+  leftClick() {
+    const { amount } = this.data;
+    this.data.target.object3D.rotation.y += amount;
+  },
+  rightClick() {
+    const { amount } = this.data;
+    this.data.target.object3D.rotation.y -= amount;
+  }
+}
+);
+
+
 export { JoystickDirections, ButtonMaps, Axes }

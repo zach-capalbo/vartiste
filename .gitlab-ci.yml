@@ -40,3 +40,16 @@ pages:
       - public
   only:
     - release
+
+toolkit:
+  stage: deploy
+  when: manual
+  variables:
+    VARTISTE_TOOLKIT: 'true'
+  script:
+    - npm install
+    - bash toolkit_deploy.sh
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - 'dist/*.tgz'
