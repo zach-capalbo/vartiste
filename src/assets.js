@@ -18,7 +18,7 @@ export function loadAsset(fileName) {
     elementType = 'audio'
   }
 
-  if (assetSrc.startsWith("asset/") && VARTISTE_TOOLKIT_URL)
+  if (assetSrc.startsWith("asset/") && window.VARTISTE_TOOLKIT_URL)
   {
     assetSrc = `${VARTISTE_TOOLKIT_URL}/${assetSrc}`
   }
