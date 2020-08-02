@@ -5,4 +5,16 @@ a-entity#artist-root
       a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 
     - for hand of ["left", "right"]
-      a-entity id="${hand}-hand" laser-controls="hand: ${hand}" raycaster="objects: .clickable, .canvas; interval: 10;" hand-draw-tool="" fix-raycaster="" valve-index-controls="hand:${hand}" sound="" button-caster=""
+      a-entity[
+        id="${hand}-hand"
+        laser-controls="hand: ${hand}"
+        raycaster="objects: .clickable, .canvas; interval: 10;"
+        hand-draw-tool=""
+        fix-raycaster=""
+        valve-index-controls="hand:${hand}"
+        sound=""
+        button-caster=""
+        manipulator="useRay: true"
+        smooth-controller=""
+        vartiste-rotation-button-mapping=""
+      ]

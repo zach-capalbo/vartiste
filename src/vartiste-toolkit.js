@@ -67,16 +67,35 @@ require('./demo-overlay')
 require('./joystick-directions')
 require('./popup-shelf')
 require('./smooth-controller')
+const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')
 const {Pool} = require('./pool')
 const materialTransformations = require('./material-transformations')
 window.VARTISTE = {}
 VARTISTE.Util = require('./util.js')
+Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo})
 
+AFRAME.registerComponent('vartiste-rotation-button-mapping', {
+  dependencies: ['raycaster', 'laser-controls'],
+  init() {
+    let buttonMap = new ButtonMaps()
+
+    buttonMap.setMap({
+      'abutton': buttonMap.toggle('rotating'),
+      'trackpad': buttonMap.toggle('rotating'),
+      'thumbstick': buttonMap.toggle('orbiting')
+    }, "grabbing")
+
+    buttonMap.install(this)
+  },
+})
 
 AFRAME.registerComponent('vartiste-user-root', {
   init() {
     this.el.innerHTML = require('./partials/artist-root.html.slm')
+    this.el.querySelector('#right-hand').setAttribute('joystick-turn', "target: #artist-root")
+
+
   }
 })
