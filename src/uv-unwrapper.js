@@ -8,6 +8,25 @@ AFRAME.registerSystem('uv-unwrapper', {
   createCube() {
 
   },
+  createCylinder() {
+    let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
+    boundingSphere.copy(Compositor.mesh.geometry.boundingSphere)
+    boundingSphere.applyMatrix4(Compositor.mesh.matrixWorld)
+
+    let boundingBox = this.pool('boundingBox', THREE.Box3)
+    boundingBox.copy(Compositor.mesh.geometry.boundingBox)
+    boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
+
+    let sphere = document.createElement('a-cylinder')
+    sphere.setAttribute('position', boundingSphere.center)
+    sphere.setAttribute('radius', boundingSphere.radius)
+    sphere.setAttribute('height', boundingBox.height)
+    sphere.setAttribute('material', 'wireframe: true; shader: matcap')
+    sphere.classList.add('clickable')
+    this.el.append(sphere)
+
+    this.spheres.push(sphere)
+  },
   createSphere() {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
     boundingSphere.copy(Compositor.mesh.geometry.boundingSphere)
@@ -22,12 +41,44 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     this.spheres.push(sphere)
   },
+  divideCanvasRegions() {
+    // There's a math way to do this. I can't figure it out right now...
+    let numberOfRegions = this.spheres.length
+    let numberOfHorizontalCuts = 1
+    let numberOfVerticalCuts = 1
+
+    while (numberOfHorizontalCuts * numberOfVerticalCuts < numberOfRegions)
+    {
+      if (numberOfVerticalCuts > numberOfHorizontalCuts)
+      {
+        numberOfHorizontalCuts++
+      }
+      else
+      {
+        numberOfVerticalCuts++
+      }
+    }
+
+    let boxes = []
+    for (let y = 0; y < numberOfHorizontalCuts; ++y)
+    {
+      for (let x = 0; x < numberOfVerticalCuts; ++x)
+      {
+        boxes.push(new THREE.Box2(new THREE.Vector2(x / numberOfVerticalCuts, y / numberOfHorizontalCuts),
+                                  new THREE.Vector2((x + 1) / numberOfVerticalCuts, (y + 1) / numberOfHorizontalCuts)))
+      }
+    }
+
+    return boxes
+  },
   unwrap()
   {
+    let divisions = this.divideCanvasRegions()
     let geometry = Compositor.mesh.geometry
+    let divisionIdx = 0
     for (let sphere of this.spheres)
     {
-      geometry = this.unwrapASphere(geometry, sphere)
+      geometry = this.unwrapASphere(geometry, sphere, divisions[divisionIdx++])
     }
     Compositor.mesh.geometry = geometry
   },
@@ -127,6 +178,15 @@ AFRAME.registerSystem('uv-unwrapper', {
       if (uv2.x + 1 - rightmost.x < rightmost.x - uv2.x) {
         uv2.x += 1.0;
       }
+
+      uv0.x = THREE.Math.mapLinear(uv0.x, 0, 1, region.min.x, region.max.x)
+      uv0.y = THREE.Math.mapLinear(uv0.y, 0, 1, region.min.y, region.max.y)
+
+      uv1.x = THREE.Math.mapLinear(uv1.x, 0, 1, region.min.x, region.max.x)
+      uv1.y = THREE.Math.mapLinear(uv1.y, 0, 1, region.min.y, region.max.y)
+
+      uv2.x = THREE.Math.mapLinear(uv2.x, 0, 1, region.min.x, region.max.x)
+      uv2.y = THREE.Math.mapLinear(uv2.y, 0, 1, region.min.y, region.max.y)
 
       coords[2 * idx0] = uv0.x;
       coords[2 * idx0 + 1] = uv0.y;

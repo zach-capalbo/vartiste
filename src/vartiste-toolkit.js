@@ -1,5 +1,10 @@
 console.log("including VARTISTE toolkit")
 
+if (document.currentScript)
+{
+  window.VARTISTE_TOOLKIT_URL = document.currentScript.src.split('/').slice(0, -1).join("/")
+}
+
 const {loadAsset, loadAllAssets} = require('./assets.js')
 
 AFRAME.registerSystem('vartiste-assets', {

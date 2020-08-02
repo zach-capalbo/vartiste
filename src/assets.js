@@ -18,10 +18,16 @@ export function loadAsset(fileName) {
     elementType = 'audio'
   }
 
+  if (assetSrc.startsWith("asset/") && VARTISTE_TOOLKIT_URL)
+  {
+    assetSrc = `${VARTISTE_TOOLKIT_URL}/${assetSrc}`
+  }
+
   var element = document.createElement(elementType)
 
   element.setAttribute("src", assetSrc)
   element.id = `asset-${asset.split(".")[0]}`
+  element.setAttribute('crossorigin',"anonymous")
   return element
 }
 
