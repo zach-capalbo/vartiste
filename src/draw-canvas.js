@@ -39,6 +39,8 @@ AFRAME.registerComponent('draw-canvas', {
 
     let {width: uvWidth, height: uvHeight} = this.data.compositor || canvas || this.data.canvas
 
+    if (!uv) return {x: 0, y: 0}
+
     let yy = (1 + uv.y % 1) % 1
     let xx = (1 + uv.x % 1) % 1
     if (!this.data.compositor || Compositor.component.data.flipY) yy = 1.0 - yy

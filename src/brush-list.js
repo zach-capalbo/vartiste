@@ -26,7 +26,7 @@ const BrushList = [
   new FxBrush({baseBrush: new ProceduralBrush({connected: true, hqBlending: false}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
   new FxBrush({baseBrush: new ImageBrush('lines2', {width: 40, height: 20, connected: true}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
   new ProceduralBrush({connected: true, hqBlending: 'always', minMovement: 1.3, invertScale: true, tooltip: "Charcoal Stick"}),
-  new ProceduralBrush({connected: true, hqBlending: 'always', minMovement: 1.3, tooltip: "Charcol Pencil"}),
+  new ProceduralBrush({connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcol Pencil"}),
 ]
 
 export { BrushList }

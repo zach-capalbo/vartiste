@@ -3,9 +3,22 @@ import {Pool} from './pool.js'
 AFRAME.registerSystem('uv-unwrapper', {
   init() {
     Pool.init(this)
-    this.spheres = []
+    this.shapes = []
+  },
+  clearShapes() {
+    for (let shape of this.shapes)
+    {
+      shape.remove()
+    }
+    this.shapes = []
   },
   createCube() {
+    let boundingBox = this.pool('boundingBox', THREE.Box3)
+    boundingBox.copy(Compositor.mesh.geometry.boundingBox)
+    boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
+
+    let cube = document.createElement('a-box')
+    cube.setAttribute('position', boundingBox.getCenter())
 
   },
   createCylinder() {
@@ -25,7 +38,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     sphere.classList.add('clickable')
     this.el.append(sphere)
 
-    this.spheres.push(sphere)
+    this.shapes.push(sphere)
   },
   createSphere() {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
@@ -39,11 +52,11 @@ AFRAME.registerSystem('uv-unwrapper', {
     sphere.classList.add('clickable')
     this.el.append(sphere)
 
-    this.spheres.push(sphere)
+    this.shapes.push(sphere)
   },
   divideCanvasRegions() {
     // There's a math way to do this. I can't figure it out right now...
-    let numberOfRegions = this.spheres.length
+    let numberOfRegions = this.shapes.length
     let numberOfHorizontalCuts = 1
     let numberOfVerticalCuts = 1
 
@@ -76,7 +89,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     let divisions = this.divideCanvasRegions()
     let geometry = Compositor.mesh.geometry
     let divisionIdx = 0
-    for (let sphere of this.spheres)
+    for (let sphere of this.shapes)
     {
       geometry = this.unwrapASphere(geometry, sphere, divisions[divisionIdx++])
     }
@@ -90,7 +103,18 @@ AFRAME.registerSystem('uv-unwrapper', {
     let invMat = this.pool('invMat', THREE.Matrix4)
     invMat.getInverse(Compositor.mesh.matrixWorld)
     boundingSphere.applyMatrix4(invMat)
-    return this.applySphere(geometry, boundingSphere, region)
+    return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
+
+  },
+  unwrapACylinder(geometry, asphere, region)
+  {
+    let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
+    boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
+    boundingSphere.applyMatrix4(asphere.getObject3D('mesh').matrixWorld)
+    let invMat = this.pool('invMat', THREE.Matrix4)
+    invMat.getInverse(Compositor.mesh.matrixWorld)
+    boundingSphere.applyMatrix4(invMat)
+    return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
 
   },
   sphereProject(v, sphere, uv){
@@ -104,13 +128,21 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     // console.log(v, spherical, uv)
   },
-  applySphere(geometry, sphere, region) {
+  cylinderProject(v, cylinder, uv){
+    v.sub(cylinder.center)
+    let cylindrical = new THREE.Cylindrical
+    cylindrical.setFromCartesianCoords(v.x, v.y, v.z)
+    uv.x =  (cylindrical.theta + Math.PI)/ Math.PI / 2
+    uv.y = cylindrical.height / cylinder.height
+
+  },
+  applyProjection(projection, geometry, sphere, region) {
     if (typeof sphere === 'undefined')
     {
       sphere = geometry.boundingSphere
     }
 
-    // geometry.removeAttribute('uv');
+
     geometry = geometry.toNonIndexed()
     let coords = [];
 
@@ -157,11 +189,9 @@ AFRAME.registerSystem('uv-unwrapper', {
         reused = true
       }
 
-      this.sphereProject(v0, sphere, uv0);
-
-      this.sphereProject(v1, sphere, uv1);
-
-      this.sphereProject(v2, sphere, uv2);
+      projection(v0, sphere, uv0);
+      projection(v1, sphere, uv1);
+      projection(v2, sphere, uv2);
 
       // Handle wrap around
       let rightmost = uv0
@@ -194,25 +224,6 @@ AFRAME.registerSystem('uv-unwrapper', {
       coords[2 * idx1 + 1] = uv1.y;
       coords[2 * idx2] = uv2.x;
       coords[2 * idx2 + 1] = uv2.y;
-
-      // if (coords[2 * idx0] < 0.2 &&
-      //   (coords[2 * idx1] > 0.5 || coords[2 * idx2] > 0.5))
-      // {
-      //   coords[2 * idx0] = 1.0
-      // }
-      //
-      // if (coords[2 * idx1] < 0.2 &&
-      //   (coords[2 * idx0] > 0.5 || coords[2 * idx2] > 0.5))
-      // {
-      //   coords[2 * idx1] = 1.0
-      // }
-      //
-      // if (coords[2 * idx2] < 0.2 &&
-      //   (coords[2 * idx1] > 0.5 || coords[2 * idx0] > 0.5))
-      // {
-      //   coords[2 * idx2] = 1.0
-      // }
-
     }
 
     geometry.attributes.uv.array = new Float32Array(coords);

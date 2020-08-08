@@ -33,8 +33,11 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
             == partial('./partials/timer-shelf.html.slm')
           a-entity position="-1.5 2.7 0"
             == partial('./partials/pencil-control-shelf.html.slm')
+          a-entity position="-1.5 -3 0"
+            == partial('./partials/mesh-tools-shelf.html.slm')
           a-entity position="-2.2 1.6 0"
             a-entity preactivate-tooltip="Pencil" pencil-tool=""
+              /a-entity cable-connector="target:#artist-root"
             a-entity preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="-0.07 0 0"
             a-entity preactivate-tooltip="Detail Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.12 0 0"
             a-entity preactivate-tooltip="Marker" pencil-tool="scaleTip: false" position="-0.2 0 0"
