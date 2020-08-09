@@ -30,6 +30,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     let cube = document.createElement('a-box')
     cube.setAttribute('position', center)
     cube.setAttribute('material', 'wireframe: true; shader: matcap')
+    cube.setAttribute('axis-handles', '')
     let size = this.pool('boxSize', THREE.Vector3)
     boundingBox.getSize(size)
     cube.setAttribute('width', size.x)
@@ -57,6 +58,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     cube.setAttribute('width', side)
     cube.setAttribute('height', side)
     cube.setAttribute('depth', side)
+    cube.setAttribute('axis-handles', '')
     cube.classList.add('clickable')
 
     this.el.append(cube)
@@ -80,8 +82,13 @@ Util.registerComponentSystem('uv-unwrapper', {
     sphere.setAttribute('radius', Math.max(size.x, size.z))
     sphere.setAttribute('height', size.y)
     sphere.setAttribute('material', 'wireframe: true; shader: matcap')
+    sphere.setAttribute('axis-handles', '')
     sphere.classList.add('clickable')
     this.el.append(sphere)
+
+    let handle = document.createElement('a-entity')
+    handle.setAttribute('axis-handle', 'axis: y')
+    sphere.append(handle)
 
     this.shapes.push(sphere)
   },
@@ -94,6 +101,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     sphere.setAttribute('position', boundingSphere.center)
     sphere.setAttribute('radius', boundingSphere.radius)
     sphere.setAttribute('material', 'wireframe: true; shader: matcap')
+    sphere.setAttribute('axis-handles', '')
     sphere.classList.add('clickable')
     this.el.append(sphere)
 
@@ -185,12 +193,12 @@ Util.registerComponentSystem('uv-unwrapper', {
   {
     let boundingBox = this.pool('box', THREE.Box3)
     acylinder.getObject3D('mesh').geometry.computeBoundingBox()
-    acylinder.object3D.updateMatrixWorld()
+    acylinder.getObject3D('mesh').updateMatrixWorld()
     Compositor.mesh.updateMatrixWorld()
 
     boundingBox.copy(acylinder.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(acylinder.object3D.matrixWorld)
+    invMat.getInverse(acylinder.getObject3D('mesh').matrixWorld)
 
     invMat.multiply(Compositor.mesh.matrixWorld)
     boundingBox.vertexTransform = invMat
@@ -208,12 +216,12 @@ Util.registerComponentSystem('uv-unwrapper', {
   {
     let boundingBox = this.pool('box', THREE.Box3)
     abox.getObject3D('mesh').geometry.computeBoundingBox()
-    abox.object3D.updateMatrixWorld()
+    abox.getObject3D('mesh').updateMatrixWorld()
     Compositor.mesh.updateMatrixWorld()
 
     boundingBox.copy(abox.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(abox.object3D.matrixWorld)
+    invMat.getInverse(abox.getObject3D('mesh').matrixWorld)
 
 
     invMat.multiply(Compositor.mesh.matrixWorld)
@@ -241,8 +249,6 @@ Util.registerComponentSystem('uv-unwrapper', {
   cylinderProjectPoint(box, v, uv){
     v.applyMatrix4(box.vertexTransform)
     uv.y = THREE.Math.mapLinear(v.y, box.min.y, box.max.y, 0, 1)
-
-    console.log(uv.y, v, box.min, box.max)
 
     let spherical = new THREE.Spherical
     spherical.setFromCartesianCoords(v.x, v.y, v.z)
@@ -488,4 +494,95 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     // ctx.restoreState()
   },
+})
+
+AFRAME.registerComponent('axis-handles', {
+  schema: {
+    x: {default: true},
+    y: {default: true},
+    z: {default: true},
+  },
+  init() {
+    this.handles = {}
+  },
+  update(oldData) {
+    console.log('updating handles', JSON.stringify(this.data))
+    for (let axis of ['x', 'y', 'z'])
+    {
+      if (this.data[axis] && !this.handles[axis])
+      {
+        console.log("Creating for axis", axis)
+        let handle = document.createElement('a-entity')
+        handle.setAttribute('axis-handle-control', `axis: ${axis}`)
+        this.el.append(handle)
+        this.handles[axis] = handle
+      }
+      else if (!this.data[axis] && this.handles[axis])
+      {
+        this.handles[axis].remove()
+        delete this.handles[axis]
+      }
+    }
+  }
+})
+
+AFRAME.registerComponent('axis-handle-control', {
+  schema: {
+    axis: {type: 'string'}
+  },
+  events: {
+    stateadded: function (e) {
+      if (e.detail === 'grabbed')
+      {
+        this.startGrab()
+      }
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.stopGrab()
+      }
+    }
+  },
+  init() {
+    this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
+    this.el.setAttribute('grab-options', 'showHand: false')
+    this.el.setAttribute('material', 'color: #9ae58b; shader: standard')
+    this.el.classList.add('clickable')
+
+    this.startPosition = new THREE.Vector3
+  },
+  update(oldData) {
+    Util.whenLoaded(this.el.parentEl, () => {
+      this.resetPosition()
+    })
+  },
+  startGrab() {
+    this.startPosition.copy(this.el.object3D.position)
+  },
+  stopGrab() {
+    this.target.geometry.computeBoundingBox()
+    let box = this.target.geometry.boundingBox
+    let axis = this.data.axis
+    let endPosition = this.el.object3D.position
+    // let newScale = box.max[axis] / (this.startPosition[axis] - this.offset) * (endPosition[axis] - this.offset)
+    let newScale = (endPosition[axis] - this.offset) / box.max[axis]
+
+    this.target.scale[axis] = newScale
+    if (axis !== 'x') this.el.object3D.position.x = 0
+    if (axis !== 'y') this.el.object3D.position.y = 0
+    if (axis !== 'z') this.el.object3D.position.z = 0
+  },
+  resetPosition() {
+    this.target = this.el.parentEl.getObject3D('mesh')
+    this.target.geometry.computeBoundingBox()
+    let box = this.target.geometry.boundingBox
+    this.offset = 0.08
+    switch (this.data.axis)
+    {
+      case 'x': this.el.setAttribute('position', `${box.max.x + this.offset} 0 0`); break;
+      case 'y': this.el.setAttribute('position', `0 ${box.max.y + this.offset} 0`); break;
+      case 'z': this.el.setAttribute('position', `0 0 ${box.max.z + this.offset}`); break;
+    }
+  }
 })
