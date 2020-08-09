@@ -325,22 +325,4 @@ AFRAME.registerComponent('toolbox-shelf', {
   downloadAllLayers() {
     Compositor.component.layers.forEach(l => $('a-scene').systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: l.id}, l.id))
   },
-  subdivide() {
-    let mod = new THREE.SubdivisionModifier(2)
-    Compositor.meshRoot.traverse(o => {
-      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
-      {
-        o.geometry = mod.modify(o.geometry)
-      }
-    })
-  },
-  simplify(factor = 0.5) {
-    let mod = new THREE.SimplifyModifier()
-    Compositor.meshRoot.traverse(o => {
-      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
-      {
-        o.geometry = mod.modify(o.geometry, o.geometry.attributes.position.count * factor)
-      }
-    })
-  }
 })

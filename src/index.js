@@ -53,6 +53,8 @@ require('./user-media')
 require('./speech')
 require('./uv-unwrapper')
 require('./matcap-shader')
+require('./cable-connector')
+require('./mesh-tools')
 
 require('./app.styl')
 
