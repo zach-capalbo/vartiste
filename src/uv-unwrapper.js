@@ -1,6 +1,11 @@
 import {Pool} from './pool.js'
+import {Util} from './util.js'
 
-AFRAME.registerSystem('uv-unwrapper', {
+Util.registerComponentSystem('uv-unwrapper', {
+  schema: {
+    autoClear: {default: false},
+    margin: {default: 0.02},
+  },
   init() {
     Pool.init(this)
     this.shapes = []
@@ -12,7 +17,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     }
     this.shapes = []
   },
-  createCube() {
+  createBoundingBox() {
     let boundingBox = this.pool('boundingBox', THREE.Box3)
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
@@ -31,7 +36,27 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     this.el.append(cube)
     this.shapes.push(cube)
+  },
+  createCube() {
+    let boundingBox = this.pool('boundingBox', THREE.Box3)
+    boundingBox.copy(Compositor.mesh.geometry.boundingBox)
+    boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
+    let center = this.pool('center', THREE.Vector3)
+    boundingBox.getCenter(center)
+    let cube = document.createElement('a-box')
+    cube.setAttribute('position', center)
+    cube.setAttribute('material', 'wireframe: true; shader: matcap')
+    let size = this.pool('boxSize', THREE.Vector3)
+    let side = (size.x + size.y + size.z) / 3
+    boundingBox.getSize(size)
+    cube.setAttribute('width', side)
+    cube.setAttribute('height', side)
+    cube.setAttribute('depth', side)
+    cube.classList.add('clickable')
+
+    this.el.append(cube)
+    this.shapes.push(cube)
   },
   createCylinder() {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
@@ -89,8 +114,11 @@ AFRAME.registerSystem('uv-unwrapper', {
     {
       for (let x = 0; x < numberOfVerticalCuts; ++x)
       {
-        boxes.push(new THREE.Box2(new THREE.Vector2(x / numberOfVerticalCuts, y / numberOfHorizontalCuts),
-                                  new THREE.Vector2((x + 1) / numberOfVerticalCuts, (y + 1) / numberOfHorizontalCuts)))
+        let newBox = new THREE.Box2(new THREE.Vector2(x / numberOfVerticalCuts, y / numberOfHorizontalCuts),
+                                  new THREE.Vector2((x + 1) / numberOfVerticalCuts, (y + 1) / numberOfHorizontalCuts))
+
+        newBox.expandByScalar(- this.data.margin)
+        boxes.push(newBox)
       }
     }
 
@@ -103,6 +131,11 @@ AFRAME.registerSystem('uv-unwrapper', {
     let divisionIdx = 0
 
     geometry = geometry.toNonIndexed()
+
+    if (this.data.autoClear)
+    {
+      geometry.removeAttribute('uv')
+    }
 
     if (geometry.attributes.uv === undefined) {
       let coords = [];
@@ -121,6 +154,7 @@ AFRAME.registerSystem('uv-unwrapper', {
     }
 
     Compositor.mesh.geometry = geometry
+    Compositor.mesh.geometry.attributes.uv.needsUpdate = true
   },
   unwrapASphere(geometry, asphere, region)
   {
@@ -147,11 +181,23 @@ AFRAME.registerSystem('uv-unwrapper', {
   {
     let boundingBox = this.pool('box', THREE.Box3)
     abox.getObject3D('mesh').geometry.computeBoundingBox()
+    abox.object3D.updateMatrixWorld()
+    Compositor.mesh.updateMatrixWorld()
+
     boundingBox.copy(abox.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(Compositor.mesh.matrixWorld)
-    invMat.multiply(abox.getObject3D('mesh').matrixWorld)
+    invMat.getInverse(abox.object3D.matrixWorld)
+
+
+    invMat.multiply(Compositor.mesh.matrixWorld)
     boundingBox.vertexTransform = invMat
+    boundingBox.containsPoint = (point) => {
+      let p = this.pool('p', THREE.Vector3)
+      p.copy(point)
+      p.applyMatrix4(boundingBox.vertexTransform)
+      
+      return THREE.Box3.prototype.containsPoint.call(boundingBox, p)
+    }
     return this.applyProjection(this.boxProject, geometry, boundingBox, region)
   },
   sphereProjectPoint(sphere, v, uv){
@@ -173,14 +219,14 @@ AFRAME.registerSystem('uv-unwrapper', {
     uv.y = cylindrical.height / cylinder.height
   },
   sphereProject(v0, v1, v2, uv0, uv1, uv2, sphere){
-    sphereProjectPoint(sphere, v0, uv0)
-    sphereProjectPoint(sphere, v1, uv1)
-    sphereProjectPoint(sphere, v2, uv2)
+    this.sphereProjectPoint(sphere, v0, uv0)
+    this.sphereProjectPoint(sphere, v1, uv1)
+    this.sphereProjectPoint(sphere, v2, uv2)
   },
   cylinderProject(v0, v1, v2, uv0, uv1, uv2, cylinder){
-    cylinderProjectPoint(cylinder, v0, uv0)
-    cylinderProjectPoint(cylinder, v1, uv1)
-    cylinderProjectPoint(cylinder, v2, uv2)
+    this.cylinderProjectPoint(cylinder, v0, uv0)
+    this.cylinderProjectPoint(cylinder, v1, uv1)
+    this.cylinderProjectPoint(cylinder, v2, uv2)
   },
   boxProject(v0, v1, v2, uv0, uv1, uv2, box) {
     v0.applyMatrix4(box.vertexTransform)
@@ -263,6 +309,8 @@ AFRAME.registerSystem('uv-unwrapper', {
       quadrant.max.y = 0.5 + yOffset
     }
 
+    quadrant.expandByScalar(- this.data.margin)
+
     uv0.x = THREE.Math.mapLinear(uv0.x, 0, 1, quadrant.min.x, quadrant.max.x)
     uv0.y = THREE.Math.mapLinear(uv0.y, 0, 1, quadrant.min.y, quadrant.max.y)
 
@@ -271,7 +319,6 @@ AFRAME.registerSystem('uv-unwrapper', {
 
     uv2.x = THREE.Math.mapLinear(uv2.x, 0, 1, quadrant.min.x, quadrant.max.x)
     uv2.y = THREE.Math.mapLinear(uv2.y, 0, 1, quadrant.min.y, quadrant.max.y)
-
   },
   applyProjection(projection, geometry, shape, region) {
     if (typeof shape === 'undefined')
@@ -304,6 +351,7 @@ AFRAME.registerSystem('uv-unwrapper', {
 
       if (!shape.containsPoint(v0) || !shape.containsPoint(v1) || !shape.containsPoint(v2))
       {
+
         continue;
       }
 
@@ -350,7 +398,7 @@ AFRAME.registerSystem('uv-unwrapper', {
       coords[2 * idx2 + 1] = uv2.y;
     }
 
-    geometry.attributes.uv.array = new Float32Array(coords);
+    // geometry.attributes.uv.array = new Float32Array(coords);
     return geometry
 
   },
