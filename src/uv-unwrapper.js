@@ -1,10 +1,12 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
+import {Undo} from './undo.js'
 
 Util.registerComponentSystem('uv-unwrapper', {
   schema: {
     autoClear: {default: false},
     margin: {default: 0.02},
+    autoDraw: {default: true},
   },
   init() {
     Pool.init(this)
@@ -19,6 +21,7 @@ Util.registerComponentSystem('uv-unwrapper', {
   },
   createBoundingBox() {
     let boundingBox = this.pool('boundingBox', THREE.Box3)
+    Compositor.mesh.geometry.computeBoundingBox()
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
@@ -39,6 +42,7 @@ Util.registerComponentSystem('uv-unwrapper', {
   },
   createCube() {
     let boundingBox = this.pool('boundingBox', THREE.Box3)
+    Compositor.mesh.geometry.computeBoundingBox()
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
@@ -60,6 +64,7 @@ Util.registerComponentSystem('uv-unwrapper', {
   },
   createCylinder() {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
+    Compositor.mesh.geometry.computeBoundingBox()
     boundingSphere.copy(Compositor.mesh.geometry.boundingSphere)
     boundingSphere.applyMatrix4(Compositor.mesh.matrixWorld)
 
@@ -155,6 +160,12 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     Compositor.mesh.geometry = geometry
     Compositor.mesh.geometry.attributes.uv.needsUpdate = true
+
+    if (this.data.autoDraw)
+    {
+      Compositor.component.addLayer(Compositor.component.layers.length)
+      this.drawUVs()
+    }
   },
   unwrapASphere(geometry, asphere, region)
   {
@@ -195,7 +206,7 @@ Util.registerComponentSystem('uv-unwrapper', {
       let p = this.pool('p', THREE.Vector3)
       p.copy(point)
       p.applyMatrix4(boundingBox.vertexTransform)
-      
+
       return THREE.Box3.prototype.containsPoint.call(boundingBox, p)
     }
     return this.applyProjection(this.boxProject, geometry, boundingBox, region)
@@ -400,6 +411,53 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     // geometry.attributes.uv.array = new Float32Array(coords);
     return geometry
+  },
+  drawUVs() {
+    let canvas = Compositor.drawableCanvas
+    Undo.pushCanvas(canvas)
 
+    let geometry = Compositor.mesh.geometry
+    geometry = geometry.toNonIndexed()
+
+    let ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    let uvToPoint = (...args) => Compositor.el.components['draw-canvas'].uvToPoint(...args)
+
+    // ctx.saveState()
+
+    let vertexUvs = geometry.attributes.uv
+    let uv0 = new THREE.Vector2()
+    let uv1 = new THREE.Vector2()
+    let uv2 = new THREE.Vector2()
+
+    let uv
+
+    for (let vi = 0; vi < vertexUvs.count; vi += 3 )
+    {
+      uv0.fromBufferAttribute(vertexUvs, vi)
+      uv1.fromBufferAttribute(vertexUvs, vi + 1)
+      uv2.fromBufferAttribute(vertexUvs, vi + 2)
+
+      ctx.beginPath()
+      ctx.lineWidth = "0.5"
+      ctx.strokeStyle = this.el.sceneEl.systems['paint-system'].data.color
+      uv = uvToPoint(uv0, canvas, {useTransform: false})
+      ctx.moveTo(uv.x, uv.y)
+
+      uv = uvToPoint(uv1, canvas, {useTransform: false})
+      ctx.lineTo(uv.x, uv.y)
+
+      uv = uvToPoint(uv2, canvas, {useTransform: false})
+      ctx.lineTo(uv.x, uv.y)
+
+      uv = uvToPoint(uv0, canvas, {useTransform: false})
+      ctx.lineTo(uv.x, uv.y)
+      ctx.stroke()
+    }
+
+    if (canvas.touch) canvas.touch()
+
+    // ctx.restoreState()
   },
 })

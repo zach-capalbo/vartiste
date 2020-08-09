@@ -957,6 +957,10 @@ class CompositorFinder {
     if (compositionView.getObject3D('mesh')) return compositionView.object3D
     return this.el.object3D
   }
+
+  get drawableCanvas() {
+    return this.component.activeLayer.frame(this.component.currentFrame)
+  }
 }
 
 window.Compositor = new CompositorFinder()
