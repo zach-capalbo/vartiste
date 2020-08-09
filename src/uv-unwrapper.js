@@ -6,7 +6,7 @@ Util.registerComponentSystem('uv-unwrapper', {
   schema: {
     autoClear: {default: false},
     margin: {default: 0.02},
-    autoDraw: {default: true},
+    autoDraw: {default: false},
   },
   init() {
     Pool.init(this)
@@ -72,10 +72,13 @@ Util.registerComponentSystem('uv-unwrapper', {
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
+    let size = this.pool('size', THREE.Vector3)
+    boundingBox.getSize(size)
+
     let sphere = document.createElement('a-cylinder')
     sphere.setAttribute('position', boundingSphere.center)
-    sphere.setAttribute('radius', boundingSphere.radius)
-    sphere.setAttribute('height', boundingBox.height)
+    sphere.setAttribute('radius', Math.max(size.x, size.z))
+    sphere.setAttribute('height', size.y)
     sphere.setAttribute('material', 'wireframe: true; shader: matcap')
     sphere.classList.add('clickable')
     this.el.append(sphere)
@@ -178,15 +181,28 @@ Util.registerComponentSystem('uv-unwrapper', {
     return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
 
   },
-  unwrapACylinder(geometry, asphere, region)
+  unwrapACylinder(geometry, acylinder, region)
   {
-    let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
-    boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
-    boundingSphere.applyMatrix4(asphere.getObject3D('mesh').matrixWorld)
+    let boundingBox = this.pool('box', THREE.Box3)
+    acylinder.getObject3D('mesh').geometry.computeBoundingBox()
+    acylinder.object3D.updateMatrixWorld()
+    Compositor.mesh.updateMatrixWorld()
+
+    boundingBox.copy(acylinder.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(Compositor.mesh.matrixWorld)
-    boundingSphere.applyMatrix4(invMat)
-    return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
+    invMat.getInverse(acylinder.object3D.matrixWorld)
+
+    invMat.multiply(Compositor.mesh.matrixWorld)
+    boundingBox.vertexTransform = invMat
+    boundingBox.containsPoint = (point) => {
+      let p = this.pool('p', THREE.Vector3)
+      p.copy(point)
+      p.applyMatrix4(boundingBox.vertexTransform)
+
+      return THREE.Box3.prototype.containsPoint.call(boundingBox, p)
+    }
+    boundingBox.sphere = acylinder.getObject3D('mesh').geometry.boundingSphere
+    return this.applyProjection(this.cylinderProject, geometry, boundingBox, region)
   },
   unwrapABox(geometry, abox, region)
   {
@@ -222,22 +238,26 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     // console.log(v, spherical, uv)
   },
-  cylinderProjectPoint(cylinder, v, uv){
-    v.sub(cylinder.center)
-    let cylindrical = new THREE.Cylindrical
-    cylindrical.setFromCartesianCoords(v.x, v.y, v.z)
-    uv.x =  (cylindrical.theta + Math.PI)/ Math.PI / 2
-    uv.y = cylindrical.height / cylinder.height
+  cylinderProjectPoint(box, v, uv){
+    v.applyMatrix4(box.vertexTransform)
+    uv.y = THREE.Math.mapLinear(v.y, box.min.y, box.max.y, 0, 1)
+
+    console.log(uv.y, v, box.min, box.max)
+
+    let spherical = new THREE.Spherical
+    spherical.setFromCartesianCoords(v.x, v.y, v.z)
+
+    uv.x =  (spherical.theta + Math.PI)/ Math.PI / 2
   },
   sphereProject(v0, v1, v2, uv0, uv1, uv2, sphere){
     this.sphereProjectPoint(sphere, v0, uv0)
     this.sphereProjectPoint(sphere, v1, uv1)
     this.sphereProjectPoint(sphere, v2, uv2)
   },
-  cylinderProject(v0, v1, v2, uv0, uv1, uv2, cylinder){
-    this.cylinderProjectPoint(cylinder, v0, uv0)
-    this.cylinderProjectPoint(cylinder, v1, uv1)
-    this.cylinderProjectPoint(cylinder, v2, uv2)
+  cylinderProject(v0, v1, v2, uv0, uv1, uv2, box){
+    this.cylinderProjectPoint(box, v0, uv0)
+    this.cylinderProjectPoint(box, v1, uv1)
+    this.cylinderProjectPoint(box, v2, uv2)
   },
   boxProject(v0, v1, v2, uv0, uv1, uv2, box) {
     v0.applyMatrix4(box.vertexTransform)
@@ -339,6 +359,8 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     let coords = geometry.attributes.uv.array
 
+    let canWrap = !(region.min.x > 0 || region.max.x < 1 || region.min.y > 0 || region.max.y < 1)
+
     let v0 = new THREE.Vector3
     let v1 = new THREE.Vector3
     let v2 = new THREE.Vector3
@@ -400,6 +422,12 @@ Util.registerComponentSystem('uv-unwrapper', {
 
       uv2.x = THREE.Math.mapLinear(uv2.x, 0, 1, region.min.x, region.max.x)
       uv2.y = THREE.Math.mapLinear(uv2.y, 0, 1, region.min.y, region.max.y)
+
+      if (!canWrap) {
+        region.clampPoint(uv0, uv0)
+        region.clampPoint(uv1, uv1)
+        region.clampPoint(uv2, uv2)
+      }
 
       coords[2 * idx0] = uv0.x;
       coords[2 * idx0 + 1] = uv0.y;
