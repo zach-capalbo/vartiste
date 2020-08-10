@@ -21,7 +21,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI"
     a-entity#ui bypass-hidden-updates=""
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
-          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"== partial('./partials/color-selection-shelf.html.slm')
+          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"
+            a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf" position="0 0 0" scale="0.3 0.3 1"
           a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf" position="-1.5 1.6 0" scale="0.3 0.3 1"
           == partial('./partials/about-shelf.html.slm')
