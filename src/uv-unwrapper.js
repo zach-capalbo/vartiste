@@ -169,6 +169,15 @@ Util.registerComponentSystem('uv-unwrapper', {
       }
     }
 
+    let count = geometry.attributes.uv.count * 2
+    for (let i = 0; i < count; ++i)
+    {
+      if (isNaN(geometry.attributes.uv.array[i]))
+      {
+        geometry.attributes.uv.array[i] = 0
+      }
+    }
+
     Compositor.mesh.geometry = geometry
     Compositor.mesh.geometry.attributes.uv.needsUpdate = true
 
