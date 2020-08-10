@@ -1,4 +1,4 @@
-import {Axes} from './joystick-directions.js'
+import {JoystickDirections, Axes} from './joystick-directions.js'
 
 AFRAME.registerSystem('demo-overlay', {
   init() {
@@ -68,8 +68,18 @@ AFRAME.registerComponent('demo-overlay', {
       if (!part) continue
       part.material = new THREE.MeshStandardMaterial({color: this.data.defaultColor})
       let button = buttonMap[modelPiece]
+      let speakText = button
+      if (button.endsWith("button"))
+      {
+        speakText = button[0]
+      }
+      else if (speakText === "grip")
+      {
+        speakText = "grab"
+      }
       this.data.hand.addEventListener(button + 'down', e => {
         part.material.color.set(this.data.pressedColor)
+        this.el.sceneEl.systems['speech'].speak(speakText)
       })
       this.data.hand.addEventListener(button + 'up', e => {
         part.material.color.set(this.data.defaultColor)
@@ -78,7 +88,6 @@ AFRAME.registerComponent('demo-overlay', {
 
     let part = this.model.children.find(m => m.name === "body")
     part.material = new THREE.MeshStandardMaterial({color: "#333", transparent: true, opacity: 0.5})
-
 
     this.data.hand.addEventListener('axismove', e => {
       let {axis} = e.detail
@@ -94,6 +103,13 @@ AFRAME.registerComponent('demo-overlay', {
         this.moved = false
       }
     })
+
+    JoystickDirections.install({
+      leftClick: () => this.el.sceneEl.systems.speech.speak("Left"),
+      rightClick: () => this.el.sceneEl.systems.speech.speak("Right"),
+      upClick: () => this.el.sceneEl.systems.speech.speak("Down"),
+      downClick: () => this.el.sceneEl.systems.speech.speak("Up"),
+    }, {targetEl: this.data.hand, whenGrabbing: true})
   },
   tock() {
     let camera = this.el.sceneEl.camera

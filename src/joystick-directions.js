@@ -12,9 +12,11 @@ const Axes = {
 }
 
 class JoystickDirectionHandler {
-  constructor(where) {
+  constructor(where, {targetEl, whenGrabbing = false} = {}) {
     this.dirX = 0;
     this.dirY = 0;
+
+    if (targetEl === undefined) targetEl = where.el
 
     this.rightClick = this.leftClick = this.upClick = this.downClick = function() {}
 
@@ -37,19 +39,19 @@ class JoystickDirectionHandler {
 
     if (!(this.handleX || this.handleY)) return;
 
-    where.el.addEventListener('axismove', e => {
-      if (where.el.is('grabbing')) return;
+    targetEl.addEventListener('axismove', e => {
+      if (targetEl.is('grabbing') && !whenGrabbing) return;
 
       const { detail } = e;
 
       if (this.handleX)
       {
-        if ((detail.axis[Axes.left_right(where.el)] > 0.8) && (this.dirX !== 1)) {
+        if ((detail.axis[Axes.left_right(targetEl)] > 0.8) && (this.dirX !== 1)) {
           this.dirX = 1;
           this.rightClick(detail)
-        } else if ((-0.8 < detail.axis[Axes.left_right(where.el)] && detail.axis[Axes.left_right(where.el)] < 0.8) && (this.dirX !== 0)) {
+        } else if ((-0.8 < detail.axis[Axes.left_right(targetEl)] && detail.axis[Axes.left_right(targetEl)] < 0.8) && (this.dirX !== 0)) {
           return this.dirX = 0;
-        } else if ((detail.axis[Axes.left_right(where.el)] < -0.8) && (this.dirX !== -1)) {
+        } else if ((detail.axis[Axes.left_right(targetEl)] < -0.8) && (this.dirX !== -1)) {
           this.dirX = -1;
           this.leftClick(detail);
         }
@@ -57,15 +59,15 @@ class JoystickDirectionHandler {
 
       if (this.handleY)
       {
-        if ((detail.axis[Axes.up_down(where.el)] > 0.8) && (this.dirY !== 1)) {
-          console.log("Clicking up", detail.axis[Axes.up_down(where.el)], this.dirY)
+        if ((detail.axis[Axes.up_down(targetEl)] > 0.8) && (this.dirY !== 1)) {
+          console.log("Clicking up", detail.axis[Axes.up_down(targetEl)], this.dirY)
           this.dirY = 1;
           this.upClick(detail)
-        } else if ((-0.8 < detail.axis[Axes.up_down(where.el)] && detail.axis[Axes.up_down(where.el)] < 0.8) && (this.dirY !== 0)) {
-          console.log("Clicking reset", detail.axis[Axes.up_down(where.el)], this.dirY)
+        } else if ((-0.8 < detail.axis[Axes.up_down(targetEl)] && detail.axis[Axes.up_down(targetEl)] < 0.8) && (this.dirY !== 0)) {
+          console.log("Clicking reset", detail.axis[Axes.up_down(targetEl)], this.dirY)
           return this.dirY = 0;
-        } else if ((detail.axis[Axes.up_down(where.el)] < -0.8) && (this.dirY !== -1)) {
-          console.log("Clicking down", detail.axis[Axes.up_down(where.el)], this.dirY)
+        } else if ((detail.axis[Axes.up_down(targetEl)] < -0.8) && (this.dirY !== -1)) {
+          console.log("Clicking down", detail.axis[Axes.up_down(targetEl)], this.dirY)
           this.dirY = -1;
           this.downClick(detail);
         }
@@ -143,8 +145,8 @@ class ButtonMaps {
 }
 
 const JoystickDirections = {
-  install(where) {
-    new JoystickDirectionHandler(where)
+  install(where, opts) {
+    new JoystickDirectionHandler(where, opts)
   }
 }
 
