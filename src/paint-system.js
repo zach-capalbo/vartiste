@@ -18,14 +18,12 @@ AFRAME.registerSystem('paint-system', {
   },
 
   selectColor(color) {
-    console.log("Setting color", color)
     this.data.color = color
     this.brush.changeColor(color)
     this.el.emit('colorchanged', {color})
   },
 
   selectOpacity(opacity) {
-    console.log("Setting opacity", opacity)
     this.data.opacity = opacity
     this.brush.changeOpacity(opacity)
     this.el.emit('opacitychanged', {opacity})

@@ -40,7 +40,7 @@ AFRAME.registerComponent("color-picker", {
       h = angle / 360;
       s = polarPosition.r;
       l = this.data.brightness;
-      console.log(this.data.brightness, l)
+      
       var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
       this.handleColor(color)
     })
