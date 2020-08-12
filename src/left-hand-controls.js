@@ -36,7 +36,14 @@ AFRAME.registerComponent('left-hand-controls', {
     this.el.addEventListener('ybuttondown', () => {
       if (!this.el.is("grabbing"))
       {
-        this.el.sceneEl.systems['settings-system'].toggleUIAction()
+        if (this.el.sceneEl.systems['speech'].recognition)
+        {
+          this.el.sceneEl.systems['speech'].listen()
+        }
+        else
+        {
+          this.el.sceneEl.systems['settings-system'].toggleUIAction()
+        }
       }
     })
   },

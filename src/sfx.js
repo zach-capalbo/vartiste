@@ -28,6 +28,9 @@ class SfxMgr {
       clock: false,// 'click',
       joystick: 'navigation_backward-selection',
       bang: 'sfx-clock',
+      recognition: 'navigation_forward-selection',
+      listening: 'sfx-click',
+      recognitionerror: 'error',
     }
 
     for (let k in map)

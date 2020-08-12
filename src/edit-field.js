@@ -1,4 +1,7 @@
 import {Util} from './util.js'
+AFRAME.registerSystem('edit-field', {
+
+})
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text", 'popup-button'],
   schema: {
@@ -15,6 +18,10 @@ AFRAME.registerComponent('edit-field', {
   init() {
     this.numpad = this.el.components['popup-button'].popup
     let {numpad} = this
+
+    this.inputField = document.createElement('input')
+    this.inputField.classList.add('keyboard-form')
+    document.body.append(this.inputField)
 
     numpad.addEventListener('click', e => this.buttonClicked(e))
 
@@ -95,18 +102,19 @@ AFRAME.registerComponent('edit-field', {
   },
   connectKeyboard() {
     console.log("Connecting keyboard")
-    let form = document.createElement('input')
-    this.keyUpListener = e => {
-      console.log("Keyboard got key", e.key)
-      let ne = new e.constructor(e.type, e)
-      form.dispatchEvent(ne)
-      e.preventDefault()
-      // e.stopPropagation()
-      // let buttonValue = e.key
-      // let existingValue = this.el.getAttribute('text').value
-      this.setValue(form.value)
-    };
-    document.addEventListener('keyup', this.keyUpListener)
+    this.inputField.focus()
+    // let form = document.createElement('input')
+    // this.keyUpListener = e => {
+    //   console.log("Keyboard got key", e.key)
+    //   let ne = new e.constructor(e.type, e)
+    //   form.dispatchEvent(ne)
+    //   e.preventDefault()
+    //   // e.stopPropagation()
+    //   // let buttonValue = e.key
+    //   // let existingValue = this.el.getAttribute('text').value
+    //   this.setValue(form.value)
+    // };
+    // document.addEventListener('keyup', this.keyUpListener)
   },
   disconnectKeyboard() {
     if (!this.keyUpListener) return
