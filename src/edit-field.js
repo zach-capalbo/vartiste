@@ -21,7 +21,20 @@ AFRAME.registerComponent('edit-field', {
 
     this.inputField = document.createElement('input')
     this.inputField.classList.add('keyboard-form')
+    this.inputField.editField = this
     document.body.append(this.inputField)
+
+    this.inputField.addEventListener('keyup', (e) => {
+      if (event.key === "Enter")
+      {
+        this.ok()
+      }
+    })
+
+    this.inputField.addEventListener('input', (e) => {
+      this.setValue(this.inputField.value)
+      // this.numpad.querySelector('.value').setAttribute('text', {value: this.inputField.value})
+    })
 
     numpad.addEventListener('click', e => this.buttonClicked(e))
 
@@ -64,9 +77,13 @@ AFRAME.registerComponent('edit-field', {
       }
     }
   },
+  remove() {
+    this.inputField.remove()
+  },
   setValue(value, {update=true} = {}) {
     this.numpad.querySelector('.value').setAttribute('text', {value})
     this.el.setAttribute('text', {value})
+    this.inputField.value = value
     if (update && this.data.target)
     {
       this.data.target.setAttribute(this.data.component, {[this.data.property]: value})
@@ -89,6 +106,8 @@ AFRAME.registerComponent('edit-field', {
       let existingValue = this.el.getAttribute('text').value
       this.setValue(existingValue + buttonValue)
     }
+
+    this.inputField.focus()
   },
   backspace(e) {
     this.setValue(this.el.getAttribute('text').value.slice(0, -1))
@@ -117,9 +136,8 @@ AFRAME.registerComponent('edit-field', {
     // document.addEventListener('keyup', this.keyUpListener)
   },
   disconnectKeyboard() {
-    if (!this.keyUpListener) return
-    document.removeEventListener('keyup', this.keyUpListener)
-    delete this.keyUpListener
+    this.inputField.blur()
+    this.el.sceneEl.focus()
   }
 })
 

@@ -137,11 +137,30 @@ Util.registerComponentSystem('speech', {
   {
     Sfx.recognition(this.el)
 
+    let inputField = document.querySelector('input:focus')
+
+    if (inputField)
+    {
+      if (text === "okay" && inputField.editField)
+      {
+        inputField.editField.ok()
+        return
+      }
+      else if (text === "clear") {
+        inputField.editField.clear()
+        return
+      }
+
+      inputField.value = text
+      inputField.dispatchEvent(new Event('input'))
+      return
+    }
+
     let target = Array.from(document.querySelectorAll('*[tooltip]')).find(el => el.getAttribute('tooltip').toLowerCase() === text.toLowerCase())
 
     if (target)
     {
-      target.emit('click', {})
+      target.emit('click', {type: "speech"})
       return
     }
 
