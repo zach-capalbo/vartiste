@@ -322,7 +322,7 @@ AFRAME.registerComponent('pencil-tool', {
         brush: oldPaintSystem.brush.clone()
       }
 
-      clone.emit('activated', {})
+      clone.emit('activate', {})
     })
 
     return clone
@@ -654,5 +654,54 @@ AFRAME.registerComponent('six-dof-tool', {
     let target = document.querySelector('#camera')
     Util.positionObject3DAtTarget(this.el.object3D, target.object3D, {transformOffset: {x: 0, y: 0, z: -0.5}})
     this.el.emit('activate')
+  }
+})
+
+AFRAME.registerComponent('viewport-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    click: function(e) {
+      this.positionViewport()
+    }
+  },
+  init() {
+    Pool.init(this)
+    this.el.classList.add('grab-root')
+    let body = document.createElement('a-cylinder')
+    body.setAttribute('height', 0.3)
+    body.setAttribute('radius', 0.07)
+    body.setAttribute('segments-radial', 6)
+    body.setAttribute('segments-height', 1)
+    body.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    body.classList.add('clickable')
+    body.setAttribute('propogate-grab', "")
+    this.el.append(body)
+
+    let base = document.createElement('a-cylinder')
+    base.setAttribute('height', 0.07)
+    base.setAttribute('radius', 0.2)
+    base.setAttribute('segments-radial', 6)
+    base.setAttribute('segments-height', 1)
+    base.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    base.classList.add('clickable')
+    base.setAttribute('propogate-grab', "")
+    base.setAttribute('position', '0 -0.15 0')
+    this.el.append(base)
+
+    let arrow = document.createElement('a-cone')
+    arrow.setAttribute('radius-bottom', 0.04)
+    arrow.setAttribute('height', 0.1)
+    arrow.setAttribute('position', '0 0.08 -0.1')
+    arrow.setAttribute('rotation', '-90 0 0')
+    arrow.setAttribute('segments-radial', 4)
+    arrow.setAttribute('material', 'src: #asset-shelf; metalness: 0.4; roughness: 0.7; flatShading: true')
+    this.el.append(arrow)
+  },
+  positionViewport() {
+    let offset = this.pool('offset', THREE.Vector3)
+    offset.copy(document.querySelector('#camera').object3D.position)
+    offset.multiplyScalar(-1)
+    offset.y += 0.2
+    Util.positionObject3DAtTarget(document.querySelector('#camera-root').object3D, this.el.object3D, {transformOffset: offset})
   }
 })
