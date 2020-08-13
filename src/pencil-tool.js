@@ -54,7 +54,7 @@ AFRAME.registerSystem('pencil-tool', {
 })
 
 AFRAME.registerComponent('pencil-tool', {
-  dependencies: ['grab-activate'],
+  dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -321,6 +321,8 @@ AFRAME.registerComponent('pencil-tool', {
         data: Object.assign({}, oldPaintSystem.data),
         brush: oldPaintSystem.brush.clone()
       }
+
+      clone.emit('activated', {})
     })
 
     return clone
@@ -348,7 +350,7 @@ AFRAME.registerComponent('multi-pencil-base', {
 })
 
 AFRAME.registerComponent('pencil-broom', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   init() {
     this.base = this.el.components['multi-pencil-base']
 
@@ -368,7 +370,7 @@ AFRAME.registerComponent('pencil-broom', {
 })
 
 AFRAME.registerComponent('spike-ball', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   init() {
     this.base = this.el.components['multi-pencil-base']
     for (let i = 0; i < 10; i++)
@@ -386,7 +388,7 @@ AFRAME.registerComponent('spike-ball', {
 })
 
 AFRAME.registerComponent('hammer-tool', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -490,6 +492,7 @@ AFRAME.registerComponent('hammer-tool', {
 })
 
 AFRAME.registerComponent('drip-tool', {
+  dependencies: ['six-dof-tool'],
   schema: {
     radius: {default: 0.06},
     tipRatio: {default: 0.2},
@@ -636,4 +639,20 @@ AFRAME.registerComponent('vertex-tool', {
   init() {
 
   },
+})
+
+AFRAME.registerComponent('six-dof-tool', {
+  events: {
+    click: function(e) {
+      if (e.detail && e.detail.type === "speech")
+      {
+        this.flyToUser()
+      }
+    }
+  },
+  flyToUser() {
+    let target = document.querySelector('#camera')
+    Util.positionObject3DAtTarget(this.el.object3D, target.object3D, {transformOffset: {x: 0, y: 0, z: -0.5}})
+    this.el.emit('activate')
+  }
 })

@@ -40,7 +40,7 @@ AFRAME.registerComponent("color-picker", {
       h = angle / 360;
       s = polarPosition.r;
       l = this.data.brightness;
-      
+
       var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
       this.handleColor(color)
     })
@@ -247,7 +247,13 @@ AFRAME.registerComponent("palette", {
 
     this.data.colors.push(system.data.color)
     this.data.colors.splice(0, 1)
-    this.update()
+
+    let buttons = this.el.querySelectorAll('*[icon-button]')
+    for (let i = 0; i < this.data.colors.length; ++i)
+    {
+      buttons[i].setAttribute('button-style', 'color', this.data.colors[i])
+      buttons[i].components['icon-button'].setColor(this.data.colors[i])
+    }
   },
   addButton(color) {
     let newButton = document.createElement('a-entity')

@@ -92,7 +92,7 @@ AFRAME.registerSystem('camera-capture', {
 })
 
 AFRAME.registerComponent('camera-tool', {
-  dependencies: ['grab-activate'],
+  dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
     orthographic: {default: false},
     fov: {default: 45.0},

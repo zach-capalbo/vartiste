@@ -156,7 +156,7 @@ Util.registerComponentSystem('speech', {
       return
     }
 
-    let target = Array.from(document.querySelectorAll('*[tooltip]')).find(el => el.getAttribute('tooltip').toLowerCase() === text.toLowerCase())
+    let target = Array.from(document.querySelectorAll('*[tooltip]')).find(el => el.getAttribute('tooltip').toLowerCase() === text.toLowerCase() || el.hasAttribute('speech-alias') && el.getAttribute('speech-alias') === text.toLowerCase())
 
     if (target)
     {
