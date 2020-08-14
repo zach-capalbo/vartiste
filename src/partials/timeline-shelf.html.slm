@@ -4,7 +4,7 @@ a-entity.grab-root timeline-shelf="" shelf="" position="-3.0 0.0 0" scale="0.3 0
     a-entity icon-button="#asset-plus-box-multiple" click-action="duplicateFrameBefore" tooltip="Duplicate Frame to Before"
     a-entity icon-button="#asset-plus-box-outline" click-action="addFrameBefore" tooltip="Insert Frame Before"
     a-entity icon-button="#asset-arrow-left" click-action="previousFrame" tooltip="Previous Frame"
-    a-entity icon-button="#asset-play-pause" click-action="playPauseAnimation" tooltip="Play / Pause" speech-alias="play"
+    a-entity icon-button="#asset-play-pause" click-action="playPauseAnimation" tooltip="Play / Pause" speech-alias="play; pause"
     a-entity icon-button="#asset-arrow-right" click-action="nextFrame" tooltip="Next Frame"
     a-entity icon-button="#asset-plus-box-outline" click-action="addFrameAfter" tooltip="Insert Frame After"
     a-entity icon-button="#asset-plus-box-multiple" click-action="duplicateFrameAfter" tooltip="Duplicate Frame to After"

@@ -156,11 +156,15 @@ Util.registerComponentSystem('speech', {
       return
     }
 
-    let target = Array.from(document.querySelectorAll('*[tooltip]')).find(el => el.getAttribute('tooltip').toLowerCase() === text.toLowerCase() || el.hasAttribute('speech-alias') && el.getAttribute('speech-alias') === text.toLowerCase())
+    let target = Array.from(document.querySelectorAll('*[tooltip]')).find(el => el.getAttribute('tooltip').toLowerCase() === text.toLowerCase())
+
+    if (!target) {
+      target = Array.from(document.querySelectorAll('*[speech-alias]')).find(el => el.getAttribute('speech-alias').split(";").some(s => s.trim().toLowerCase() === text.toLowerCase()))
+    }
 
     if (target)
     {
-      target.emit('click', {type: "speech"})
+      target.emit('click', {type: "speech"}, true)
       return
     }
 

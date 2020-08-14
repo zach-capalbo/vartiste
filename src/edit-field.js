@@ -95,6 +95,8 @@ AFRAME.registerComponent('edit-field', {
     let parentVisible = true
     o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
 
+    this.inputField.focus()
+
     let numpad = this.numpad
     if (e.target.hasAttribute('action'))
     {
@@ -106,8 +108,6 @@ AFRAME.registerComponent('edit-field', {
       let existingValue = this.el.getAttribute('text').value
       this.setValue(existingValue + buttonValue)
     }
-
-    this.inputField.focus()
   },
   backspace(e) {
     this.setValue(this.el.getAttribute('text').value.slice(0, -1))

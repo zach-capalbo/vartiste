@@ -1,6 +1,7 @@
 AFRAME.registerComponent('timeline-shelf', {
   init() {
     this.el.addEventListener('click', (e) => {
+      console.log("Timeline click", e, e.target, e.target.getAttribute('click-action'))
       let compositor = document.getElementById('canvas-view').components.compositor
       let rawAction = e.target.getAttribute("click-action");
       let action = rawAction + "Action"

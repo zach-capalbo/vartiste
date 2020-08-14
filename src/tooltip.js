@@ -65,3 +65,13 @@ AFRAME.registerComponent('preactivate-tooltip', {
     this.el.setAttribute('tooltip', this.data)
   }
 })
+
+AFRAME.registerComponent('hidden-tooltip', {
+  schema: {default: ""},
+  init() {
+    this.el.setAttribute('tooltip-style', "offset: 0 -999999 0")
+  },
+  update() {
+    this.el.setAttribute('tooltip', this.data)
+  }
+})

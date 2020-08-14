@@ -678,8 +678,8 @@ AFRAME.registerComponent('viewport-tool', {
     this.el.append(body)
 
     let base = document.createElement('a-cylinder')
-    base.setAttribute('height', 0.07)
-    base.setAttribute('radius', 0.2)
+    base.setAttribute('height', 0.06)
+    base.setAttribute('radius', 0.16)
     base.setAttribute('segments-radial', 6)
     base.setAttribute('segments-height', 1)
     base.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
@@ -690,7 +690,7 @@ AFRAME.registerComponent('viewport-tool', {
 
     let arrow = document.createElement('a-cone')
     arrow.setAttribute('radius-bottom', 0.04)
-    arrow.setAttribute('height', 0.1)
+    arrow.setAttribute('height', 0.08)
     arrow.setAttribute('position', '0 0.08 -0.1')
     arrow.setAttribute('rotation', '-90 0 0')
     arrow.setAttribute('segments-radial', 4)
@@ -698,10 +698,28 @@ AFRAME.registerComponent('viewport-tool', {
     this.el.append(arrow)
   },
   positionViewport() {
+    let cameraObj = document.querySelector('#camera').object3D
     let offset = this.pool('offset', THREE.Vector3)
-    offset.copy(document.querySelector('#camera').object3D.position)
+    offset.copy(cameraObj.position)
     offset.multiplyScalar(-1)
     offset.y += 0.2
-    Util.positionObject3DAtTarget(document.querySelector('#camera-root').object3D, this.el.object3D, {transformOffset: offset})
+
+    let cameraForward = this.pool('cameraForward', THREE.Vector3)
+    let forward = this.pool('forward', THREE.Vector3)
+    cameraObj.getWorldDirection(cameraForward)
+    this.el.object3D.getWorldDirection(forward)
+    forward.y = 0
+    cameraForward.y = 0
+    forward.normalize()
+    cameraForward.normalize()
+
+    let angle = forward.angleTo(cameraForward)
+
+    let targetObj = document.querySelector('#camera-root').object3D
+    Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
+
+    targetObj.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    // document.querySelector('#camera').object3D.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+
   }
 })
