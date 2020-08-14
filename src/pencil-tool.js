@@ -54,7 +54,7 @@ AFRAME.registerSystem('pencil-tool', {
 })
 
 AFRAME.registerComponent('pencil-tool', {
-  dependencies: ['grab-activate'],
+  dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -321,6 +321,8 @@ AFRAME.registerComponent('pencil-tool', {
         data: Object.assign({}, oldPaintSystem.data),
         brush: oldPaintSystem.brush.clone()
       }
+
+      clone.emit('activate', {})
     })
 
     return clone
@@ -348,7 +350,7 @@ AFRAME.registerComponent('multi-pencil-base', {
 })
 
 AFRAME.registerComponent('pencil-broom', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   init() {
     this.base = this.el.components['multi-pencil-base']
 
@@ -368,7 +370,7 @@ AFRAME.registerComponent('pencil-broom', {
 })
 
 AFRAME.registerComponent('spike-ball', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   init() {
     this.base = this.el.components['multi-pencil-base']
     for (let i = 0; i < 10; i++)
@@ -386,7 +388,7 @@ AFRAME.registerComponent('spike-ball', {
 })
 
 AFRAME.registerComponent('hammer-tool', {
-  dependencies: ['multi-pencil-base'],
+  dependencies: ['multi-pencil-base', 'six-dof-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -490,6 +492,7 @@ AFRAME.registerComponent('hammer-tool', {
 })
 
 AFRAME.registerComponent('drip-tool', {
+  dependencies: ['six-dof-tool'],
   schema: {
     radius: {default: 0.06},
     tipRatio: {default: 0.2},
@@ -636,4 +639,87 @@ AFRAME.registerComponent('vertex-tool', {
   init() {
 
   },
+})
+
+AFRAME.registerComponent('six-dof-tool', {
+  events: {
+    click: function(e) {
+      if (e.detail && e.detail.type === "speech")
+      {
+        this.flyToUser()
+      }
+    }
+  },
+  flyToUser() {
+    let target = document.querySelector('#camera')
+    Util.positionObject3DAtTarget(this.el.object3D, target.object3D, {transformOffset: {x: 0, y: 0, z: -0.5}})
+    this.el.emit('activate')
+  }
+})
+
+AFRAME.registerComponent('viewport-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    click: function(e) {
+      this.positionViewport()
+    }
+  },
+  init() {
+    Pool.init(this)
+    this.el.classList.add('grab-root')
+    let body = document.createElement('a-cylinder')
+    body.setAttribute('height', 0.3)
+    body.setAttribute('radius', 0.07)
+    body.setAttribute('segments-radial', 6)
+    body.setAttribute('segments-height', 1)
+    body.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    body.classList.add('clickable')
+    body.setAttribute('propogate-grab', "")
+    this.el.append(body)
+
+    let base = document.createElement('a-cylinder')
+    base.setAttribute('height', 0.06)
+    base.setAttribute('radius', 0.16)
+    base.setAttribute('segments-radial', 6)
+    base.setAttribute('segments-height', 1)
+    base.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    base.classList.add('clickable')
+    base.setAttribute('propogate-grab', "")
+    base.setAttribute('position', '0 -0.15 0')
+    this.el.append(base)
+
+    let arrow = document.createElement('a-cone')
+    arrow.setAttribute('radius-bottom', 0.04)
+    arrow.setAttribute('height', 0.08)
+    arrow.setAttribute('position', '0 0.08 -0.1')
+    arrow.setAttribute('rotation', '-90 0 0')
+    arrow.setAttribute('segments-radial', 4)
+    arrow.setAttribute('material', 'src: #asset-shelf; metalness: 0.4; roughness: 0.7; flatShading: true')
+    this.el.append(arrow)
+  },
+  positionViewport() {
+    let cameraObj = document.querySelector('#camera').object3D
+    let offset = this.pool('offset', THREE.Vector3)
+    offset.copy(cameraObj.position)
+    offset.multiplyScalar(-1)
+    offset.y += 0.2
+
+    let cameraForward = this.pool('cameraForward', THREE.Vector3)
+    let forward = this.pool('forward', THREE.Vector3)
+    cameraObj.getWorldDirection(cameraForward)
+    this.el.object3D.getWorldDirection(forward)
+    forward.y = 0
+    cameraForward.y = 0
+    forward.normalize()
+    cameraForward.normalize()
+
+    let angle = forward.angleTo(cameraForward)
+
+    let targetObj = document.querySelector('#camera-root').object3D
+    Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
+
+    targetObj.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    // document.querySelector('#camera').object3D.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+
+  }
 })

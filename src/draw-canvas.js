@@ -112,6 +112,7 @@ AFRAME.registerComponent('draw-canvas', {
       }, {once: true})
       this.wasDrawing = true
       this.undoFrame = this.currentFrame
+      document.getElementById('recent-colors').components['palette'].addToPalette()
     }
     else if (sourceEl && this.currentFrame !== this.undoFrame)
     {

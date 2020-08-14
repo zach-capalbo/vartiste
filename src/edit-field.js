@@ -1,4 +1,7 @@
 import {Util} from './util.js'
+AFRAME.registerSystem('edit-field', {
+
+})
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text", 'popup-button'],
   schema: {
@@ -15,6 +18,23 @@ AFRAME.registerComponent('edit-field', {
   init() {
     this.numpad = this.el.components['popup-button'].popup
     let {numpad} = this
+
+    this.inputField = document.createElement('input')
+    this.inputField.classList.add('keyboard-form')
+    this.inputField.editField = this
+    document.body.append(this.inputField)
+
+    this.inputField.addEventListener('keyup', (e) => {
+      if (event.key === "Enter")
+      {
+        this.ok()
+      }
+    })
+
+    this.inputField.addEventListener('input', (e) => {
+      this.setValue(this.inputField.value)
+      // this.numpad.querySelector('.value').setAttribute('text', {value: this.inputField.value})
+    })
 
     numpad.addEventListener('click', e => this.buttonClicked(e))
 
@@ -57,9 +77,13 @@ AFRAME.registerComponent('edit-field', {
       }
     }
   },
+  remove() {
+    this.inputField.remove()
+  },
   setValue(value, {update=true} = {}) {
     this.numpad.querySelector('.value').setAttribute('text', {value})
     this.el.setAttribute('text', {value})
+    this.inputField.value = value
     if (update && this.data.target)
     {
       this.data.target.setAttribute(this.data.component, {[this.data.property]: value})
@@ -70,6 +94,8 @@ AFRAME.registerComponent('edit-field', {
     let o = e.target.object3D
     let parentVisible = true
     o.traverseAncestors(a => parentVisible = parentVisible && a.visible)
+
+    this.inputField.focus()
 
     let numpad = this.numpad
     if (e.target.hasAttribute('action'))
@@ -95,23 +121,23 @@ AFRAME.registerComponent('edit-field', {
   },
   connectKeyboard() {
     console.log("Connecting keyboard")
-    let form = document.createElement('input')
-    this.keyUpListener = e => {
-      console.log("Keyboard got key", e.key)
-      let ne = new e.constructor(e.type, e)
-      form.dispatchEvent(ne)
-      e.preventDefault()
-      // e.stopPropagation()
-      // let buttonValue = e.key
-      // let existingValue = this.el.getAttribute('text').value
-      this.setValue(form.value)
-    };
-    document.addEventListener('keyup', this.keyUpListener)
+    this.inputField.focus()
+    // let form = document.createElement('input')
+    // this.keyUpListener = e => {
+    //   console.log("Keyboard got key", e.key)
+    //   let ne = new e.constructor(e.type, e)
+    //   form.dispatchEvent(ne)
+    //   e.preventDefault()
+    //   // e.stopPropagation()
+    //   // let buttonValue = e.key
+    //   // let existingValue = this.el.getAttribute('text').value
+    //   this.setValue(form.value)
+    // };
+    // document.addEventListener('keyup', this.keyUpListener)
   },
   disconnectKeyboard() {
-    if (!this.keyUpListener) return
-    document.removeEventListener('keyup', this.keyUpListener)
-    delete this.keyUpListener
+    this.inputField.blur()
+    this.el.sceneEl.focus()
   }
 })
 

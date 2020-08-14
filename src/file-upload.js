@@ -2,6 +2,7 @@ import {Layer} from './layer.js'
 import shortid from 'shortid'
 import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
+import {Util} from './util.js'
 
 async function addImageLayer(file) {
   let image = new Image()
@@ -141,67 +142,80 @@ async function addGlbReference(file) {
 
 }
 
-document.body.ondragover = (e) => {
-  // console.log("Drag over", e.detail)
-  e.preventDefault()
-}
 
-document.body.ondrop = (e) => {
-  console.log("Drop", e.detail)
-  e.preventDefault()
-  let referenceIdx = 0
+Util.registerComponentSystem('file-upload', {
+  schema: {
 
-  if (e.dataTransfer.items) {
+  },
+  init() {
+    document.body.ondragover = (e) => {
+      // console.log("Drag over", e.detail)
+      e.preventDefault()
+    }
+
+    document.body.ondrop = (e) => {
+      console.log("Drop", e.detail)
+      e.preventDefault()
+      let referenceIdx = 0
+
+      if (e.dataTransfer.items) {
+        for (let item of e.dataTransfer.items)
+        {
+          if (item.kind !== 'file') continue
+
+          let file = item.getAsFile()
+
+          console.log("dropping", item.type, item.kind, file.name)
+
+          this.handleFile(file, item.type)
+        }
+      }
+      else {
+        console.log("length", e.dataTransfer.files.length)
+      }
+    }
+  },
+  handleFile(file, {itemType, positionIdx}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
-    for (let item of e.dataTransfer.items)
+    let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
+
+    if (isImage)
     {
-      if (item.kind !== 'file') continue
-
-      let file = item.getAsFile()
-
-      console.log("dropping", item.type, item.kind, file.name)
-
-      if (/image\//.test(item.type))
+      if (settings.data.addReferences)
       {
-        if (settings.data.addReferences)
-        {
-          let nextIdx = referenceIdx++
-          addImageReference(file).then(reference => reference.setAttribute('position', `${nextIdx * 0.1} 0 ${nextIdx * -0.02}`))
-        }
-        else
-        {
-          addImageLayer(file)
-        }
-        continue
+        if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
+        addImageReference(file).then(reference => reference.setAttribute('position', `${positionIdx * 0.1} 0 ${positionIdx * -0.02}`))
       }
-
-      if (/\.(hdri?|exr)$/i.test(file.name))
+      else
       {
-        addHDRImage(file)
-        continue
+        addImageLayer(file)
       }
-
-      if (/\.(glb)|(gltf)$/i.test(file.name))
-      {
-        if (settings.data.addReferences)
-        {
-          addGlbReference(file)
-        }
-        else
-        {
-          addGlbViewer(file)
-        }
-        continue
-      }
-
-      file.text().then(t => {
-        console.log("Texted")
-        settings.load(t)
-      }).catch(e => console.error("Couldn't load", e))
+      return
     }
+
+    if (/\.(hdri?|exr)$/i.test(file.name))
+    {
+      addHDRImage(file)
+      return
+    }
+
+    if (/\.(glb)|(gltf)$/i.test(file.name))
+    {
+      if (settings.data.addReferences)
+      {
+        addGlbReference(file)
+      }
+      else
+      {
+        addGlbViewer(file)
+      }
+      return
+    }
+
+    file.text().then(t => {
+      console.log("Texted")
+      settings.load(t)
+    }).catch(e => console.error("Couldn't load", e))
   }
-  else {
-    console.log("length", e.dataTransfer.files.length)
-  }
-}
+})

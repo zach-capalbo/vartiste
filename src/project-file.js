@@ -18,6 +18,7 @@ class ProjectFile {
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
     if (!('environment' in obj)) obj.environment = {state: 'reset'}
+    if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
 
     if ('skeletonator' in obj)
     {
@@ -65,11 +66,12 @@ class ProjectFile {
     let settings = document.getElementsByTagName('a-scene')[0].systems['settings-system']
     settings.setProjectName(obj.projectName)
 
-    document.querySelector('*[palette]').setAttribute('palette', {colors: obj.palette})
+    document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
 
     let environmentManager = compositor.el.sceneEl.systems['environment-manager']
     if (obj.environment.state === 'reset') {
       environmentManager.reset()
+      document.querySelector('a-sky').setAttribute('material', 'color', obj.backgroundColor)
     }
     else if (obj.environment.state === 'preset-hdri')
     {
@@ -154,7 +156,7 @@ class ProjectFile {
       obj.glb = base64ArrayBuffer(glb)
     }
 
-    obj.palette = document.querySelector('*[palette]').getAttribute('palette').colors
+    obj.palette = document.querySelector('#project-palette').getAttribute('palette').colors
 
     obj.referenceImages = []
     let referenceCanvas = document.createElement('canvas')
@@ -200,6 +202,7 @@ class ProjectFile {
         }
       }
     }
+    obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
 
     return obj
   }

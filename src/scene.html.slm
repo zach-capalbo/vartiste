@@ -1,4 +1,4 @@
-a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="enabled: false" settings-system="" icon-button="shader: standard"
+a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: standard"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
 
@@ -21,7 +21,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI"
     a-entity#ui bypass-hidden-updates=""
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
-          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"== partial('./partials/color-selection-shelf.html.slm')
+          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"
+            a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf" position="0 0 0" scale="0.3 0.3 1"
           a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf" position="-1.5 1.6 0" scale="0.3 0.3 1"
           == partial('./partials/about-shelf.html.slm')
@@ -52,6 +53,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true" shadow="
             a-entity preactivate-tooltip="Spray Paint Projector" spray-can-tool="projector: true" position="-1.3 -0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.35 -1.3"
             a-entity preactivate-tooltip="Pencil Broom" pencil-broom="" position="-0.55 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
             a-entity preactivate-tooltip="Pencil Spike Ball" spike-ball="" position="-0.1 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
+            /a-entity preactivate-tooltip="Viewport Positioner" viewport-tool="" position="-1.3 0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
         a-entity lock-axes="z: 0" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""

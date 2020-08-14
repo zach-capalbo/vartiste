@@ -40,7 +40,7 @@ AFRAME.registerComponent("color-picker", {
       h = angle / 360;
       s = polarPosition.r;
       l = this.data.brightness;
-      console.log(this.data.brightness, l)
+
       var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
       this.handleColor(color)
     })
@@ -208,7 +208,9 @@ AFRAME.registerComponent("show-current-brush", {
 
 AFRAME.registerComponent("palette", {
   schema: {
-    colors: {type: 'array'}
+    colors: {type: 'array'},
+    maxCount: {default: 0},
+    allowDuplicates: {default: true},
   },
   init() {
     this.el.addEventListener('click', (e) => {
@@ -219,7 +221,7 @@ AFRAME.registerComponent("palette", {
       if (!e.target.hasAttribute("button-style")) return
 
       let system = this.el.sceneEl.systems['paint-system']
-      system.selectOpacity(1.0)
+      // system.selectOpacity(1.0)
       system.selectColor(e.target.getAttribute('button-style').color)
     })
   },
@@ -233,8 +235,25 @@ AFRAME.registerComponent("palette", {
   },
   addToPalette(e) {
     let system = this.el.sceneEl.systems['paint-system']
-    this.addButton(system.data.color)
+
+    if (!this.data.allowDuplicates && this.data.colors.indexOf(system.data.color) >= 0) return
+
+    if (this.data.maxCount <= 0 || this.data.colors.length < this.data.maxCount)
+    {
+      this.addButton(system.data.color)
+      this.data.colors.push(system.data.color)
+      return
+    }
+
     this.data.colors.push(system.data.color)
+    this.data.colors.splice(0, 1)
+
+    let buttons = this.el.querySelectorAll('*[icon-button]')
+    for (let i = 0; i < this.data.colors.length; ++i)
+    {
+      buttons[i].setAttribute('button-style', 'color', this.data.colors[i])
+      buttons[i].components['icon-button'].setColor(this.data.colors[i])
+    }
   },
   addButton(color) {
     let newButton = document.createElement('a-entity')
