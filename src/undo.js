@@ -81,6 +81,9 @@ class UndoStack {
       throw e
     }
   }
+  clear() {
+    this.stack = []
+  }
 }
 
 const Undo = new UndoStack

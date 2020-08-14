@@ -73,7 +73,7 @@ For Oculus Touch controllers:
  - Left Hand:
   - Trigger: Draw
   - X Button: Undo
-  - Y Button: Toggle UI
+  - Y Button: Speech Recognition (If supported by browser). Otherwise, Toggle UI
   - Press Joystick: Reset camera
   - Joystick Right/Left: Next/Previous frame
   - Joystick Up: Add blank frame

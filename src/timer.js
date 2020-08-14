@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Undo} from './undo.js'
 
 Util.registerComponentSystem('timer-system', {
   schema: {
@@ -63,6 +64,7 @@ Util.registerComponentSystem('timer-system', {
         let layerIdx = Compositor.component.layers.indexOf(Compositor.component.activeLayer)
         Compositor.component.addLayer(layerIdx)
       }
+      Undo.clear()
     }
   },
   swapReference() {
