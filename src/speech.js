@@ -205,8 +205,12 @@ AFRAME.registerComponent('speech-recognition-button', {
 
       this.originalColor = this.el.components['button-style'].data.color
       recognition.addEventListener('start', () => {
+        if (!this.inError)
+        {
+          this.originalColor = this.el.components['button-style'].data.color
+        }
+
         this.inError = false
-        this.originalColor = this.el.components['button-style'].data.color
         this.el.setAttribute('button-style', {color: this.el.components['button-style'].data.toggleOnColor})
       })
 
