@@ -475,3 +475,112 @@ export class GroupNode extends PassthroughNode {
 
   }
 }
+
+export class NetworkInputNode extends CanvasNode {
+  constructor(...opts) {
+    super(...opts)
+
+    this._name = this.id
+
+  }
+  get name() {
+    return this._name
+  }
+  set name(name) {
+    console.log("Set name")
+    if (name !== this._name)
+    {
+      if (this.pcall)
+      {
+        this.pcall.hangup()
+      }
+      this._name = name
+      this.pcall = this.compositor.el.sceneEl.systems['networking'].callFor(this._name, (video) => this.video = video)
+
+      console.log("pcall", this.pcall)
+    }
+  }
+  get receivingBroadcast()
+  {
+    return !!this.video
+  }
+  updateCanvas(frame) {
+    if (!this.video) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
+    if (this.canvas.width !== this.video.width || this.canvas.height !== this.video.height)
+    {
+      this.canvas.width = this.video.videoWidth
+      this.canvas.height = this.video.videoHeight
+    }
+
+    this.video.width = this.video.videoWidth
+    this.video.height = this.video.videoHeight
+
+    if (this.canvas.width === 0 || this.canvas.height === 0)
+    {
+      return
+    }
+
+    let ctx = this.canvas.getContext('2d')
+    // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    try {
+      ctx.drawImage(this.video, 0, 0)
+    } catch (e)
+    {
+      console.error(this.canvas.width, this.canvas.height, this.video, e)
+    }
+  }
+  touch() {
+    this.updateTime = document.querySelector('a-scene').time
+  }
+}
+
+export class NetworkOutputNode extends CanvasNode {
+  constructor(...opts) {
+    super(...opts)
+
+    this._name = this.id
+  }
+  get name() {
+    return this._name
+  }
+  set name(name) {
+    console.log("Set name")
+    if (name !== this._name)
+    {
+      if (this.peer)
+      {
+        this.peer.destroy()
+      }
+      this._name = name
+      this.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, {oncall: () => this.touch()})
+    }
+  }
+  get broadcasting() {
+    return this.peer
+  }
+  checkIfUpdateNeeded() { return true }
+  updateCanvas(frame)
+  {
+    if (!this.destination) return
+
+    if (!this.checkIfUpdateNeeded(frame)) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
+    // No transparency in peerjs right now. grr
+    let ctx = this.canvas.getContext('2d')
+    ctx.fillStyle = "#fff"
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    this.destination.draw(ctx, frame, {mode: 'source-over'})
+
+    for (let source of this.sources)
+    {
+      if (!source) continue
+      source.draw(ctx, frame, {mode: this.mode})
+    }
+  }
+}
