@@ -235,8 +235,19 @@ VARTISTE is hosted by [Gitlab Pages](https://about.gitlab.com/product/pages/).
 The Gitlab Pages server may collect  standard information under the [Gitlab
 Privacy Policy](https://about.gitlab.com/privacy/)
 
-This landing page employs Twitter and Youtube embedded videos. These services
+This landing page employs Twitter and YouTube embedded videos. These services
 have their own privacy policies.
+
+Using Broadcast and Receive nodes relies on [PeerJS]() for WebRTC routing.
+PeerJS [does not persist information about the
+connection](https://github.com/peers/peerjs/issues/649), and the actual canvases
+are transmitted directly to receivers through WebRTC. VARTISTE does not collect
+any information about or have any control over WebRTC identifiers or canvas
+information. **Please note that by using a Broadcast node, you are transmitting
+your canvas information to anyone who knows or can guess the name of the node.
+Likewise, by using a Receiver node you are connecting to whoever is currently
+broadcasting to that name. Names are not secured, checked, or in any other way
+managed by VARTISTE.**
 
 ## About
 
