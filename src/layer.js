@@ -1,5 +1,6 @@
 import shortid from 'shortid'
 import {THREED_MODES} from "./layer-modes.js"
+import {CanvasShaderProcessor} from "./canvas-shader-processor.js"
 
 export class Layer {
   constructor(width, height) {
@@ -481,7 +482,7 @@ export class NetworkInputNode extends CanvasNode {
     super(...opts)
 
     this._name = this.id
-
+    this.alphaProcessor = new CanvasShaderProcessor({fx: 'grayscale-to-alpha'})
   }
   get name() {
     return this._name
@@ -495,7 +496,11 @@ export class NetworkInputNode extends CanvasNode {
         this.peer.destroy
       }
       this._name = name
-      this.peer = this.compositor.el.sceneEl.systems['networking'].callFor(this._name, (video) => this.video = video)
+      this.peer = this.compositor.el.sceneEl.systems['networking'].callFor(this._name,
+        {
+          onvideo: (video) => this.video = video,
+          onalpha: (video) => this.alphaVideo = video
+        })
 
       console.log("pcall", this.peer)
     }
@@ -526,8 +531,26 @@ export class NetworkInputNode extends CanvasNode {
     let ctx = this.canvas.getContext('2d')
     // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
+    if (this.alphaVideo && this.alphaVideo.width === 0 && this.alphaVideo.videoWidth > 0)
+    {
+      this.alphaVideo.width = this.alphaVideo.videoWidth
+      this.alphaVideo.height = this.alphaVideo.videoHeight
+      this.alphaProcessor.setInputCanvas(this.alphaVideo)
+      this.alphaProcessor.canvas.width = this.alphaVideo.width
+      this.alphaProcessor.canvas.height = this.alphaVideo.height
+    }
+
     try {
-      ctx.drawImage(this.video, 0, 0)
+      ctx.drawImage(this.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
+
+      if (this.alphaVideo && this.alphaVideo.width)
+      {
+        this.alphaProcessor.setInputCanvas(this.alphaVideo)
+        this.alphaProcessor.update()
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.drawImage(this.alphaProcessor.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.globalCompositeOperation = 'source-over'
+      }
     } catch (e)
     {
       console.error(this.canvas.width, this.canvas.height, this.video, e)
@@ -543,6 +566,13 @@ export class NetworkOutputNode extends CanvasNode {
     super(...opts)
 
     this._name = this.id
+
+    let alphaCanvas = document.createElement('canvas')
+    alphaCanvas.width = 1024
+    alphaCanvas.height = 512
+
+    this.alphaProcessor = new CanvasShaderProcessor({fx: 'alpha-to-grayscale', canvas: alphaCanvas})
+    this.alphaProcessor.setInputCanvas(this.canvas)
   }
   get name() {
     return this._name
@@ -556,11 +586,12 @@ export class NetworkOutputNode extends CanvasNode {
         this.peer.destroy()
       }
       this._name = name
-      this.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, {oncall: () => this.touch()})
+      this.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.alphaProcessor.canvas)
     }
   }
   get broadcasting() {
-    return this.peer
+    return true
+    // return this.peer
   }
   checkIfUpdateNeeded() { return true }
   updateCanvas(frame)
@@ -573,14 +604,15 @@ export class NetworkOutputNode extends CanvasNode {
 
     // No transparency in peerjs right now. grr
     let ctx = this.canvas.getContext('2d')
+
+    this.destination.draw(ctx, frame, {mode: 'copy'})
+
+    this.alphaProcessor.setInputCanvas(this.canvas)
+    this.alphaProcessor.update()
+
+    ctx.globalCompositeOperation = 'destination-over'
     ctx.fillStyle = "#fff"
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    this.destination.draw(ctx, frame, {mode: 'source-over'})
-
-    for (let source of this.sources)
-    {
-      if (!source) continue
-      source.draw(ctx, frame, {mode: this.mode})
-    }
+    ctx.globalCompositeOperation = 'source-over'
   }
 }

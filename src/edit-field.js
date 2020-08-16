@@ -137,7 +137,7 @@ AFRAME.registerComponent('edit-field', {
   },
   disconnectKeyboard() {
     this.inputField.blur()
-    this.el.sceneEl.focus()
+    this.el.sceneEl.canvas.focus()
   }
 })
 
