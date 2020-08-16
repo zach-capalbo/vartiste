@@ -1,4 +1,5 @@
 import {Pool} from './pool.js'
+import {NetworkOutputNode, NetworkInputNode} from './layer.js'
 import shortid from 'shortid'
 
 AFRAME.registerSystem('networking', {
@@ -6,12 +7,14 @@ AFRAME.registerSystem('networking', {
     enabled: {default: true},
     host: {default: "http://localhost:3000"},
     frameRate: {default: 15},
+    connectAttemptDowntime: {default: 30000},
   },
   init() {
     let params = new URLSearchParams(document.location.search)
-    let networked = params.get("networked")
-    console.log("Checking networked", networked, params)
-    // if (!networked) this.data.enabled = false
+    console.log("Checking networked", params)
+
+    let broadcastTo = params.get("broadcastTo")
+
 
     Pool.init(this)
     this.tick = AFRAME.utils.throttleTick(this.tick, Math.round(1000 / this.data.frameRate), this)
@@ -35,13 +38,41 @@ AFRAME.registerSystem('networking', {
     Compositor.component.preOverlayCanvas.style = 'position: absolute; top: 0; left: 0; z-index: 100000; width: 100%; height: 100%'
   },
 
-  async callFor(id, {onvideo, onalpha}) {
+  createSymmetricLink() {
+    let parts = []
+    for (let node of Compositor.component.allNodes)
+    {
+      if (node instanceof NetworkOutputNode)
+      {
+        parts.push(`receiveFrom=${node.name}`)
+      }
+      else if (node instanceof NetworkInputNode)
+      {
+        parts.push(`broadcastTo=${node.name}`)
+      }
+    }
+
+    let link = `${location.origin}/?${parts.join("&")}`
+
+    console.log('Link', link)
+    this.el.sceneEl.systems['settings-system'].copyToClipboard(link, "Connection link")
+  },
+
+  async callFor(id, {onvideo, onalpha, onpeer, onerror}) {
     console.log("Calling for", id)
-    let peer = new this.peerjs.Peer(`vartiste-callfor-${shortid.generate()}-${id}`)
+    let peer = new this.peerjs.Peer(`vartiste-callfor-${shortid.generate()}-${id}-x`)
 
-    await new Promise((r,e) => peer.on('open', r, {once: true}))
+    await new Promise((r,e) => {
+      peer.on('open', r, {once: true})
+      peer.on('error', e, {once: true})
+    })
 
-    let pcall = peer.call(`vartiste-answerTo-${id}`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
+    peer.on('error', (e) => {
+      console.log("Failed to call", e)
+      onerror(e)
+    })
+
+    let pcall = peer.call(`vartiste-answerTo-${id}-x`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote stream", id, remoteStream)
@@ -60,7 +91,7 @@ AFRAME.registerSystem('networking', {
       console.warn("Could not call to", id, e )
     })
 
-    pcall = peer.call(`vartiste-answerTo-${id}`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'alpha'}})
+    pcall = peer.call(`vartiste-answerTo-${id}-x`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'alpha'}})
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote alpha stream", id, remoteStream)
@@ -85,7 +116,7 @@ AFRAME.registerSystem('networking', {
     //
     // })
 
-    return peer
+    onpeer(peer)
   },
 
   answerTo(id, canvas, alphaCanvas) {
@@ -97,7 +128,7 @@ AFRAME.registerSystem('networking', {
       alphaStream = alphaCanvas.captureStream(this.data.frameRate)
     }
 
-    let peer = new this.peerjs.Peer(`vartiste-answerTo-${id}`)
+    let peer = new this.peerjs.Peer(`vartiste-answerTo-${id}-x`)
     console.log('answer peer', peer)
     peer.on('call', async (call) => {
       console.info("Got call", call.metadata)
@@ -120,6 +151,14 @@ AFRAME.registerSystem('networking', {
   tick(t, dt) {
     for (let node of Compositor.component.allNodes)
     {
+      if (node.needsConnection)
+      {
+        if (t - (node.lastAttempt || 0) >= this.data.connectAttemptDowntime)
+        {
+          node.lastAttempt = t
+          node.connectNetwork()
+        }
+      }
       if (node.broadcasting)
       {
         node.updateCanvas(Compositor.component.currentFrame)

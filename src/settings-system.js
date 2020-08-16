@@ -18,6 +18,9 @@ Util.registerComponentSystem('settings-system', {
     this.el.emit('projectnamechanged')
     this.mediumStabilizationAction()
     this.fullQualityAction()
+
+    this.clipboardInput = document.createElement('input')
+    document.body.append(this.clipboardInput)
   },
   popup(url, description) {
     this.el.emit('open-popup', `Attempted to open a poup for ${description}. You may need to take off your headset to view it. You may also need to disable your popup blocker.`)
@@ -42,6 +45,15 @@ Util.registerComponentSystem('settings-system', {
     // document.body.append(desktopLink)
 
     desktopLink.click()
+  },
+  copyToClipboard(text, description) {
+    this.clipboardInput.value = text
+    this.clipboardInput.select();
+    this.clipboardInput.setSelectionRange(0, 99999); /*For mobile devices*/
+
+    document.execCommand("copy");
+
+    this.el.emit('open-popup', `Attempted to copy ${description} to the clipboard!`)
   },
   makeFileName({extension = "", suffix}) {
     if (suffix) suffix = `-${suffix}`

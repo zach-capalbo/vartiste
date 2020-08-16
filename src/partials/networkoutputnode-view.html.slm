@@ -1,6 +1,7 @@
 a-entity.node-shelf.grab-root shelf=""
   a-entity position="-1.3 1.2 0"
     a-entity click-action="delete" icon-button="#asset-delete" tooltip="Delete Node"
+    a-entity system-click-action="system: networking; action: createSymmetricLink" icon-button="#asset-web" tooltip="Copy Connection Link to Clipboard"
 
   /a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
   a-entity.name edit-field="type: string; tooltip: Edit Broadcast Name" position="0 1.2 0" text="value: Output Name; wrapCount: 20; width: 3"

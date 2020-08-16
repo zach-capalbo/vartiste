@@ -483,6 +483,7 @@ export class NetworkInputNode extends CanvasNode {
 
     this._name = this.id
     this.alphaProcessor = new CanvasShaderProcessor({fx: 'grayscale-to-alpha'})
+    this.needsConnection = true
   }
   get name() {
     return this._name
@@ -496,18 +497,30 @@ export class NetworkInputNode extends CanvasNode {
         this.peer.destroy
       }
       this._name = name
-      this.peer = this.compositor.el.sceneEl.systems['networking'].callFor(this._name,
-        {
-          onvideo: (video) => this.video = video,
-          onalpha: (video) => this.alphaVideo = video
-        })
-
-      console.log("pcall", this.peer)
+      this.connectNetwork()
     }
   }
   get receivingBroadcast()
   {
     return !!this.video
+  }
+  connectNetwork()
+  {
+    this.needsConnection = false
+    this.compositor.el.sceneEl.systems['networking'].callFor(this._name,
+      {
+        onvideo: (video) => this.video = video,
+        onalpha: (video) => this.alphaVideo = video,
+        onpeer: (peer) => this.peer = peer,
+        onerror: (error) => {
+          console.log("Clearing receive layer", this.name)
+          delete this.video
+          delete this.alphaVideo
+          this.peer.destroy()
+          delete this.peer
+          this.needsConnection = true
+        }
+      })
   }
   updateCanvas(frame) {
     if (!this.video) return
@@ -525,6 +538,8 @@ export class NetworkInputNode extends CanvasNode {
 
     if (this.canvas.width === 0 || this.canvas.height === 0)
     {
+      this.canvas.width = 10
+      this.canvas.height = 10
       return
     }
 
