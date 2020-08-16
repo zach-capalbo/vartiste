@@ -301,3 +301,10 @@ AFRAME.registerComponent('system-click-action', {
     }
   }
 })
+
+AFRAME.registerComponent('icon-row', {
+  init() {
+    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
+    this.el.object3D.position.y -= (0.4 + 0.1) * indexId
+  }
+})

@@ -490,14 +490,14 @@ export class NetworkInputNode extends CanvasNode {
     console.log("Set name")
     if (name !== this._name)
     {
-      if (this.pcall)
+      if (this.peer)
       {
-        this.pcall.hangup()
+        this.peer.destroy
       }
       this._name = name
-      this.pcall = this.compositor.el.sceneEl.systems['networking'].callFor(this._name, (video) => this.video = video)
+      this.peer = this.compositor.el.sceneEl.systems['networking'].callFor(this._name, (video) => this.video = video)
 
-      console.log("pcall", this.pcall)
+      console.log("pcall", this.peer)
     }
   }
   get receivingBroadcast()

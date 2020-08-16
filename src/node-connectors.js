@@ -240,6 +240,16 @@ AFRAME.registerComponent('node-control-panel', {
     let useNodes = Compositor.component.data.useNodes
     this.el.querySelector('.globe-control').setAttribute('visible', useNodes)
     this.el.querySelectorAll('*[new-node-type]').forEach(el => el.setAttribute('visible', useNodes))
+    if (useNodes)
+    {
+      this.el.setAttribute('shelf', 'height', 3)
+      this.el.setAttribute('shelf', 'offset', '0 -0.75 0')
+    }
+    else
+    {
+      this.el.setAttribute('shelf', 'height', 1.5)
+      this.el.setAttribute('shelf', 'offset', '0 0 0')
+    }
   },
   newLayer(e) {
     let compositor = Compositor.component

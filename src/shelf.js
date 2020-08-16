@@ -5,6 +5,7 @@ AFRAME.registerComponent('shelf', {
   schema: {
     width: {default: 4},
     height: {default: 3},
+    offset: {type: 'vec3', default: '0 0 0'},
     frame: {default: true},
     name: {type: 'string'}
   },
@@ -35,6 +36,7 @@ AFRAME.registerComponent('shelf', {
     if (this.container.hasLoaded)
     {
       this.container.querySelector('.bg').setAttribute('geometry', {width: this.data.width, height: this.data.height})
+      this.container.setAttribute('position', this.data.offset)
 
       if (!this.el.hasAttribute('frame') && this.data.frame)
       {

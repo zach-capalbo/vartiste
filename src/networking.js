@@ -66,7 +66,7 @@ AFRAME.registerSystem('networking', {
       console.warn("Could not call to", id, e )
     })
 
-    return pcall
+    return peer
   },
 
   answerTo(id, canvas, {oncall = function() {}} = {}) {
