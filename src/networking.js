@@ -1,4 +1,5 @@
 import {Pool} from './pool.js'
+import {Util} from './util.js'
 import {NetworkOutputNode, NetworkInputNode} from './layer.js'
 import shortid from 'shortid'
 
@@ -10,22 +11,42 @@ AFRAME.registerSystem('networking', {
     connectAttemptDowntime: {default: 30000},
   },
   init() {
-    let params = new URLSearchParams(document.location.search)
-    console.log("Checking networked", params)
-
-    let broadcastTo = params.get("broadcastTo")
-
-
     Pool.init(this)
     this.tick = AFRAME.utils.throttleTick(this.tick, Math.round(1000 / this.data.frameRate), this)
-
-    this.startupPeer()
 
     let emptyCanvas = document.createElement('canvas')
     emptyCanvas.width = 5
     emptyCanvas.height = 5
     document.body.append(emptyCanvas)
     this.emptyCanvas = emptyCanvas
+
+    this.startupPeer()
+    .then(() => {
+      Util.whenLoaded(Compositor.el, () => {
+        let params = new URLSearchParams(document.location.search)
+        console.log("Checking networked", params)
+
+        let switchToNodes = false
+
+        for (let broadcastTo of params.getAll("broadcastTo"))
+        {
+          switchToNodes = true
+          this.addBroadcastTo(broadcastTo)
+        }
+
+        for (let receiveFrom of params.getAll('receiveFrom'))
+        {
+          switchToNodes = true
+          this.addReceiveFrom(receiveFrom)
+        }
+
+        if (switchToNodes)
+        {
+          Compositor.el.setAttribute('compositor', 'useNodes', true)
+        }
+      })
+    })
+
   },
   async startupPeer() {
     let peerPackage = await import('peerjs');
@@ -52,10 +73,28 @@ AFRAME.registerSystem('networking', {
       }
     }
 
-    let link = `${location.origin}/?${parts.join("&")}`
+    let link = `${location.origin}${location.pathname}?${parts.join("&")}`
 
     console.log('Link', link)
     this.el.sceneEl.systems['settings-system'].copyToClipboard(link, "Connection link")
+  },
+
+  addBroadcastTo(id) {
+    let node = new NetworkOutputNode(Compositor.component)
+    node.name = id
+    node.shelfMatrix.fromArray([0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0.6533299092054572, 0.009472981401967163, 0.31182788983072185, 1])
+    node.shelfMatrix.setPosition((Compositor.component.allNodes.length - 2) * 0.65, 0, 0.3)
+    node.connectDestination(Compositor.component.layers[1])
+  },
+
+  addReceiveFrom(id) {
+    let node = new NetworkInputNode(Compositor.component)
+    node.name = id
+    node.shelfMatrix.fromArray([0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0.6533299092054572, 0.009472981401967163, 0.31182788983072185, 1])
+    node.shelfMatrix.setPosition((Compositor.component.allNodes.length - 2) * 0.65, 0, 0.3)
+    let compositionNode = Compositor.component.allNodes[1]
+    compositionNode.connectInput(node, {type: 'source', index: compositionNode.sources.length})
+    // node.connectDestination(Compositor.component.layers[1])
   },
 
   async callFor(id, {onvideo, onalpha, onpeer, onerror}) {

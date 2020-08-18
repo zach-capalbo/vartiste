@@ -482,9 +482,13 @@ export class NetworkInputNode extends CanvasNode {
     super(...opts)
 
     this._name = this.id
-    this.alphaProcessor = new CanvasShaderProcessor({fx: 'grayscale-to-alpha'})
-    this.needsConnection = true
+
+    Object.defineProperty(this, "networkData", {enumerable: false, value: {}})
+
+    this.networkData.alphaProcessor = new CanvasShaderProcessor({fx: 'grayscale-to-alpha'})
+    this.networkData.needsConnection = true
   }
+  get needsConnection() { return this.networkData.needsConnection }
   get name() {
     return this._name
   }
@@ -492,9 +496,9 @@ export class NetworkInputNode extends CanvasNode {
     console.log("Set name")
     if (name !== this._name)
     {
-      if (this.peer)
+      if (this.networkData.peer)
       {
-        this.peer.destroy
+        this.networkData.peer.destroy
       }
       this._name = name
       this.connectNetwork()
@@ -502,23 +506,23 @@ export class NetworkInputNode extends CanvasNode {
   }
   get receivingBroadcast()
   {
-    return !!this.video
+    return !!this.networkData.video
   }
   connectNetwork()
   {
-    this.needsConnection = false
+    this.networkData.needsConnection = false
     this.compositor.el.sceneEl.systems['networking'].callFor(this._name,
       {
-        onvideo: (video) => this.video = video,
-        onalpha: (video) => this.alphaVideo = video,
-        onpeer: (peer) => this.peer = peer,
+        onvideo: (video) => this.networkData.video = video,
+        onalpha: (video) => this.networkData.alphaVideo = video,
+        onpeer: (peer) => this.networkData.peer = peer,
         onerror: (error) => {
           console.log("Clearing receive layer", this.name)
-          delete this.video
-          delete this.alphaVideo
-          this.peer.destroy()
-          delete this.peer
-          this.needsConnection = true
+          delete this.networkData.video
+          delete this.networkData.alphaVideo
+          this.networkData.peer.destroy()
+          delete this.networkData.peer
+          this.networkData.needsConnection = true
         }
       })
   }
@@ -527,14 +531,14 @@ export class NetworkInputNode extends CanvasNode {
 
     this.updateTime = document.querySelector('a-scene').time
 
-    if (this.canvas.width !== this.video.width || this.canvas.height !== this.video.height)
+    if (this.canvas.width !== this.networkData.video.width || this.canvas.height !== this.networkData.video.height)
     {
-      this.canvas.width = this.video.videoWidth
-      this.canvas.height = this.video.videoHeight
+      this.canvas.width = this.networkData.video.videoWidth
+      this.canvas.height = this.networkData.video.videoHeight
     }
 
-    this.video.width = this.video.videoWidth
-    this.video.height = this.video.videoHeight
+    this.video.width = this.networkData.video.videoWidth
+    this.video.height = this.networkData.video.videoHeight
 
     if (this.canvas.width === 0 || this.canvas.height === 0)
     {
@@ -546,24 +550,24 @@ export class NetworkInputNode extends CanvasNode {
     let ctx = this.canvas.getContext('2d')
     // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-    if (this.alphaVideo && this.alphaVideo.width === 0 && this.alphaVideo.videoWidth > 0)
+    if (this.networkData.alphaVideo && this.networkData.alphaVideo.width === 0 && this.networkData.alphaVideo.videoWidth > 0)
     {
-      this.alphaVideo.width = this.alphaVideo.videoWidth
-      this.alphaVideo.height = this.alphaVideo.videoHeight
-      this.alphaProcessor.setInputCanvas(this.alphaVideo)
-      this.alphaProcessor.canvas.width = this.alphaVideo.width
-      this.alphaProcessor.canvas.height = this.alphaVideo.height
+      this.networkData.alphaVideo.width = this.networkData.alphaVideo.videoWidth
+      this.networkData.alphaVideo.height = this.networkData.alphaVideo.videoHeight
+      this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
+      this.networkData.alphaProcessor.canvas.width = this.networkData.alphaVideo.width
+      this.networkData.alphaProcessor.canvas.height = this.networkData.alphaVideo.height
     }
 
     try {
-      ctx.drawImage(this.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
+      ctx.drawImage(this.networkData.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
 
-      if (this.alphaVideo && this.alphaVideo.width)
+      if (this.networkData.alphaVideo && this.networkData.alphaVideo.width)
       {
-        this.alphaProcessor.setInputCanvas(this.alphaVideo)
-        this.alphaProcessor.update()
+        this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
+        this.networkData.alphaProcessor.update()
         ctx.globalCompositeOperation = 'destination-in'
-        ctx.drawImage(this.alphaProcessor.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.drawImage(this.networkData.alphaProcessor.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.globalCompositeOperation = 'source-over'
       }
     } catch (e)
