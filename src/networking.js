@@ -8,7 +8,7 @@ AFRAME.registerSystem('networking', {
     enabled: {default: true},
     host: {default: "http://localhost:3000"},
     frameRate: {default: 15},
-    connectAttemptDowntime: {default: 30000},
+    connectAttemptDowntime: {default: 10000},
   },
   init() {
     Pool.init(this)
@@ -97,9 +97,17 @@ AFRAME.registerSystem('networking', {
     // node.connectDestination(Compositor.component.layers[1])
   },
 
+  callForName(id) {
+    return `vartiste-callfor-${shortid.generate()}-${id}-x`.replaceAll("_", "-")
+  },
+
+  answerToName(id) {
+    return `vartiste-answerTo-${id}-x`.replaceAll("_", "-")
+  },
+
   async callFor(id, {onvideo, onalpha, onpeer, onerror}) {
     console.log("Calling for", id)
-    let peer = new this.peerjs.Peer(`vartiste-callfor-${shortid.generate()}-${id}-x`)
+    let peer = new this.peerjs.Peer(this.callForName(id))
 
     await new Promise((r,e) => {
       peer.on('open', r, {once: true})
@@ -111,7 +119,7 @@ AFRAME.registerSystem('networking', {
       onerror(e)
     })
 
-    let pcall = peer.call(`vartiste-answerTo-${id}-x`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
+    let pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote stream", id, remoteStream)
@@ -130,7 +138,7 @@ AFRAME.registerSystem('networking', {
       console.warn("Could not call to", id, e )
     })
 
-    pcall = peer.call(`vartiste-answerTo-${id}-x`, this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'alpha'}})
+    pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'alpha'}})
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote alpha stream", id, remoteStream)
@@ -167,7 +175,7 @@ AFRAME.registerSystem('networking', {
       alphaStream = alphaCanvas.captureStream(this.data.frameRate)
     }
 
-    let peer = new this.peerjs.Peer(`vartiste-answerTo-${id}-x`)
+    let peer = new this.peerjs.Peer(this.answerToName(id))
     console.log('answer peer', peer)
     peer.on('call', async (call) => {
       console.info("Got call", call.metadata)
@@ -192,9 +200,9 @@ AFRAME.registerSystem('networking', {
     {
       if (node.needsConnection)
       {
-        if (t - (node.lastAttempt || 0) >= this.data.connectAttemptDowntime)
+        if (t - (node.networkData.lastAttempt || 0) >= this.data.connectAttemptDowntime)
         {
-          node.lastAttempt = t
+          node.networkData.lastAttempt = t
           node.connectNetwork()
         }
       }

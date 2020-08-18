@@ -527,7 +527,7 @@ export class NetworkInputNode extends CanvasNode {
       })
   }
   updateCanvas(frame) {
-    if (!this.video) return
+    if (!this.networkData.video) return
 
     this.updateTime = document.querySelector('a-scene').time
 
@@ -537,8 +537,8 @@ export class NetworkInputNode extends CanvasNode {
       this.canvas.height = this.networkData.video.videoHeight
     }
 
-    this.video.width = this.networkData.video.videoWidth
-    this.video.height = this.networkData.video.videoHeight
+    this.networkData.video.width = this.networkData.video.videoWidth
+    this.networkData.video.height = this.networkData.video.videoHeight
 
     if (this.canvas.width === 0 || this.canvas.height === 0)
     {
@@ -586,12 +586,16 @@ export class NetworkOutputNode extends CanvasNode {
 
     this._name = this.id
 
+    Object.defineProperty(this, "networkData", {enumerable: false, value: {}})
+
     let alphaCanvas = document.createElement('canvas')
     alphaCanvas.width = 1024
     alphaCanvas.height = 512
 
-    this.alphaProcessor = new CanvasShaderProcessor({fx: 'alpha-to-grayscale', canvas: alphaCanvas})
-    this.alphaProcessor.setInputCanvas(this.canvas)
+    this.networkData.alphaProcessor = new CanvasShaderProcessor({fx: 'alpha-to-grayscale', canvas: alphaCanvas})
+    this.networkData.alphaProcessor.setInputCanvas(this.canvas)
+
+    this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas)
   }
   get name() {
     return this._name
@@ -600,12 +604,12 @@ export class NetworkOutputNode extends CanvasNode {
     console.log("Set name")
     if (name !== this._name)
     {
-      if (this.peer)
+      if (this.networkData.peer)
       {
-        this.peer.destroy()
+        this.networkData.peer.destroy()
       }
       this._name = name
-      this.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.alphaProcessor.canvas)
+      this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas)
     }
   }
   get broadcasting() {
@@ -626,8 +630,8 @@ export class NetworkOutputNode extends CanvasNode {
 
     this.destination.draw(ctx, frame, {mode: 'copy'})
 
-    this.alphaProcessor.setInputCanvas(this.canvas)
-    this.alphaProcessor.update()
+    this.networkData.alphaProcessor.setInputCanvas(this.canvas)
+    this.networkData.alphaProcessor.update()
 
     ctx.globalCompositeOperation = 'destination-over'
     ctx.fillStyle = "#fff"
