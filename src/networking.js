@@ -109,20 +109,25 @@ AFRAME.registerSystem('networking', {
     console.log("Calling for", id)
     let peer = new this.peerjs.Peer(this.callForName(id))
 
-    await new Promise((r,e) => {
-      peer.on('open', r, {once: true})
-      peer.on('error', e, {once: true})
-    })
-
     peer.on('error', (e) => {
       console.log("Failed to call", e)
       onerror(e)
     })
 
+    try {
+      await new Promise((r,e) => {
+        peer.on('open', r, {once: true})
+        peer.on('error', e, {once: true})
+      })
+    } catch (e) {
+      return
+    }
+
     let pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote stream", id, remoteStream)
+
       let video = document.createElement('video')
       video.autoplay = true
       video.srcObject = remoteStream
@@ -158,6 +163,11 @@ AFRAME.registerSystem('networking', {
       console.warn("Could not call to", id, e )
     })
 
+    pcall.on('close', () => {
+      console.log("Closed connection to", id)
+      onerror()
+    })
+
     // let dataConnection = peer.connect(`vartiste-answerTo-${id}`)
     // dataConnection.on('data', (data) => {
     //
@@ -177,6 +187,11 @@ AFRAME.registerSystem('networking', {
 
     let peer = new this.peerjs.Peer(this.answerToName(id))
     console.log('answer peer', peer)
+
+    peer.on('error', (e) => {
+      console.error('Error answering', id, e)
+    })
+
     peer.on('call', async (call) => {
       console.info("Got call", call.metadata)
 
