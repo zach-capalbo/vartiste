@@ -540,7 +540,7 @@ export class NetworkInputNode extends CanvasNode {
     this.networkData.video.width = this.networkData.video.videoWidth
     this.networkData.video.height = this.networkData.video.videoHeight
 
-    if (this.canvas.width === 0 || this.canvas.height === 0)
+    if (this.canvas.width === 0 || this.canvas.height === 0 || this.networkData.video.readyState < 3)
     {
       this.canvas.width = 10
       this.canvas.height = 10
@@ -550,19 +550,35 @@ export class NetworkInputNode extends CanvasNode {
     let ctx = this.canvas.getContext('2d')
     // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
-    if (this.networkData.alphaVideo && this.networkData.alphaVideo.width === 0 && this.networkData.alphaVideo.videoWidth > 0)
+    if (this.networkData.alphaVideo && this.networkData.alphaVideo.paused)
     {
+      this.networkData.alphaVideo.play()
+      return
+    }
+
+    if (this.networkData.video && this.networkData.video.paused)
+    {
+      this.networkData.video.play()
+      return
+    }
+
+    if (this.networkData.alphaVideo && !this.networkData.alphaVideo.paused && this.networkData.alphaVideo.readyState >= 3 && this.networkData.alphaVideo.width === 0 && this.networkData.alphaVideo.videoWidth > 0)
+    {
+
+      console.log("Setting up initial alpha video", this.networkData.alphaVideo.width, this.networkData.alphaVideo.height, this.networkData.alphaVideo, this.networkData.alphaVideo.readyState)
       this.networkData.alphaVideo.width = this.networkData.alphaVideo.videoWidth
       this.networkData.alphaVideo.height = this.networkData.alphaVideo.videoHeight
-      this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
+
       this.networkData.alphaProcessor.canvas.width = this.networkData.alphaVideo.width
       this.networkData.alphaProcessor.canvas.height = this.networkData.alphaVideo.height
+
+      this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
     }
 
     try {
       ctx.drawImage(this.networkData.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
 
-      if (this.networkData.alphaVideo && this.networkData.alphaVideo.width)
+      if (this.networkData.alphaVideo && this.networkData.alphaVideo.width && this.networkData.alphaVideo.readyState >= 3)
       {
         this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
         this.networkData.alphaProcessor.update()

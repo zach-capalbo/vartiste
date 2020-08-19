@@ -20,6 +20,9 @@ AFRAME.registerSystem('networking', {
     document.body.append(emptyCanvas)
     this.emptyCanvas = emptyCanvas
 
+    this.callingPeers = []
+    this.answeringPeers = []
+
     this.startupPeer()
     .then(() => {
       Util.whenLoaded(Compositor.el, () => {
@@ -98,11 +101,11 @@ AFRAME.registerSystem('networking', {
   },
 
   callForName(id) {
-    return `vartiste-callfor-${shortid.generate()}-${id}-x`.replaceAll("_", "-")
+    return `vartiste-callfor-${shortid.generate()}-${id}-x`.replaceAll("_", "")
   },
 
   answerToName(id) {
-    return `vartiste-answerTo-${id}-x`.replaceAll("_", "-")
+    return `vartiste-answerTo-${id}-x`.replaceAll("_", "")
   },
 
   async callFor(id, {onvideo, onalpha, onpeer, onerror}) {
@@ -114,6 +117,11 @@ AFRAME.registerSystem('networking', {
       onerror(e)
     })
 
+    peer.on('close', () => {
+      console.log("Closing peer", id)
+      onerror()
+    })
+
     try {
       await new Promise((r,e) => {
         peer.on('open', r, {once: true})
@@ -123,6 +131,8 @@ AFRAME.registerSystem('networking', {
       return
     }
 
+    this.callingPeers.push(peer)
+
     let pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
 
     pcall.on('stream', async (remoteStream) => {
@@ -130,6 +140,7 @@ AFRAME.registerSystem('networking', {
 
       let video = document.createElement('video')
       video.autoplay = true
+      video.muted = true
       video.srcObject = remoteStream
       video.classList.add('rtc-stream')
 
@@ -149,6 +160,7 @@ AFRAME.registerSystem('networking', {
       console.log("Got remote alpha stream", id, remoteStream)
       let video = document.createElement('video')
       video.autoplay = true
+      video.muted = true
       video.srcObject = remoteStream
       video.classList.add('rtc-stream')
 
@@ -229,6 +241,18 @@ AFRAME.registerSystem('networking', {
       if (node.receivingBroadcast)
       {
         node.touch()
+      }
+    }
+
+    for (let peer of this.callingPeers)
+    {
+      for (let connection of Array.from(peer._connections))
+      {
+        if (connection[1][0].peerConnection.connectionState === 'disconnected')
+        {
+          console.log("Closing dangling connection", peer)
+          peer.destroy()
+        }
       }
     }
   }
