@@ -564,6 +564,8 @@ export class NetworkInputNode extends CanvasNode {
 
     this.networkData.alphaVideo.width = this.canvas.width
     this.networkData.alphaVideo.height = this.canvas.height
+    this.networkData.alphaProcessor.canvas.width = this.canvas.width
+    this.networkData.alphaProcessor.canvas.height = this.canvas.height
 
     try {
       ctx.drawImage(this.networkData.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
