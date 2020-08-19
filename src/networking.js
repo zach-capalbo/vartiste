@@ -108,7 +108,7 @@ AFRAME.registerSystem('networking', {
     return `vartiste-answerTo-${id}-x`.replaceAll("_", "")
   },
 
-  async callFor(id, {onvideo, onalpha, onpeer, onerror}) {
+  async callFor(id, {onvideo, onalpha, onpeer, onerror, onsize}) {
     console.log("Calling for", id)
     let peer = new this.peerjs.Peer(this.callForName(id))
 
@@ -132,6 +132,13 @@ AFRAME.registerSystem('networking', {
     }
 
     this.callingPeers.push(peer)
+
+    let connection = peer.connect(this.answerToName(id), {reliable: true})
+
+    connection.on('data', (d) => {
+      console.log("Received connection data", d)
+      onsize(d)
+    })
 
     let pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
 
@@ -217,6 +224,11 @@ AFRAME.registerSystem('networking', {
       {
         call.answer(stream);
       }
+    })
+
+    peer.on('connection', (connection) => {
+      console.log("Got a data connection")
+      connection.send({width: canvas.width, height: canvas.height})
     })
 
     return peer
