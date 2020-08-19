@@ -17,6 +17,7 @@ AFRAME.registerSystem('networking', {
     let emptyCanvas = document.createElement('canvas')
     emptyCanvas.width = 5
     emptyCanvas.height = 5
+    emptyCanvas.getContext('2d').fillRect(0, 0, emptyCanvas.width, emptyCanvas.height)
     document.body.append(emptyCanvas)
     this.emptyCanvas = emptyCanvas
 
@@ -101,11 +102,11 @@ AFRAME.registerSystem('networking', {
   },
 
   callForName(id) {
-    return `vartiste-callfor-${shortid.generate()}-${id}-x`.replaceAll("_", "")
+    return `vartiste-callfor-${shortid.generate()}-${id}-x`.replace(/_/g, "").replace(/-+/g, '-')
   },
 
   answerToName(id) {
-    return `vartiste-answerTo-${id}-x`.replaceAll("_", "")
+    return `vartiste-answerTo-${id}-x`.replace(/_/g, "").replace(/-+/g, '-')
   },
 
   async callFor(id, {onvideo, onalpha, onpeer, onerror, onsize}) {
@@ -140,7 +141,16 @@ AFRAME.registerSystem('networking', {
       onsize(d)
     })
 
-    let pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
+
+    try {
+      var pcall = peer.call(this.answerToName(id), this.emptyCanvas.captureStream(this.data.frameRate), {metadata: {type: 'color'}})
+    }
+    catch (e)
+    {
+      console.error(e)
+      onerror(e)
+      return
+    }
 
     pcall.on('stream', async (remoteStream) => {
       console.log("Got remote stream", id, remoteStream)
@@ -195,7 +205,7 @@ AFRAME.registerSystem('networking', {
     onpeer(peer)
   },
 
-  answerTo(id, canvas, alphaCanvas) {
+  answerTo(id, canvas, alphaCanvas, {onerror}) {
     var stream = canvas.captureStream(this.data.frameRate)
     var alphaStream
 
@@ -209,6 +219,7 @@ AFRAME.registerSystem('networking', {
 
     peer.on('error', (e) => {
       console.error('Error answering', id, e)
+      onerror(e)
     })
 
     peer.on('call', async (call) => {
@@ -267,5 +278,13 @@ AFRAME.registerSystem('networking', {
         }
       }
     }
+  }
+})
+
+AFRAME.registerComponent('newtork-node-connection-status-indicator', {
+  init() {
+  },
+  tick() {
+
   }
 })

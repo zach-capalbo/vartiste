@@ -524,8 +524,13 @@ export class NetworkInputNode extends CanvasNode {
           console.log("Clearing receive layer", this.name)
           delete this.networkData.video
           delete this.networkData.alphaVideo
-          this.networkData.peer.destroy()
-          delete this.networkData.peer
+
+          if (this.networkData.peer)
+          {
+            this.networkData.peer.destroy()
+            delete this.networkData.peer
+          }
+
           this.networkData.needsConnection = true
         }
       })
@@ -603,7 +608,7 @@ export class NetworkOutputNode extends CanvasNode {
     this.networkData.alphaProcessor = new CanvasShaderProcessor({fx: 'alpha-to-grayscale', canvas: alphaCanvas})
     this.networkData.alphaProcessor.setInputCanvas(this.canvas)
 
-    this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas)
+    this.networkData.needsConnection = true
   }
   get name() {
     return this._name
@@ -615,14 +620,31 @@ export class NetworkOutputNode extends CanvasNode {
       if (this.networkData.peer)
       {
         this.networkData.peer.destroy()
+        this.networkData.needsConnection = true
       }
       this._name = name
-      this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas)
+
     }
   }
   get broadcasting() {
     return true
     // return this.peer
+  }
+  get needsConnection() { return this.networkData.needsConnection }
+  connectNetwork() {
+    this.networkData.needsConnection = false
+    try {
+      this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas, {
+        onerror: (e) => {
+          this.networkData.needsConnection = true
+        }
+      })
+    }
+    catch (e)
+    {
+      console.error(e)
+      this.networkData.needsConnection = true
+    }
   }
   checkIfUpdateNeeded() { return true }
   updateCanvas(frame)
