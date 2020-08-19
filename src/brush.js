@@ -129,6 +129,7 @@ class ProceduralBrush extends Brush {
     let {width, height} = this
 
     if (width <= 0 || height <= 0) return
+    if (ctx.canvas.width <= 0 || ctx.canvas.height <= 0) return
 
     if (this.hqBlending)
     {

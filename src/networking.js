@@ -283,8 +283,49 @@ AFRAME.registerSystem('networking', {
 
 AFRAME.registerComponent('newtork-node-connection-status-indicator', {
   init() {
+    this.el.setAttribute('icon-button', '#asset-web')
+    this.el.setAttribute('button-style', 'buttonType: plane')
+    this.setDisconnected()
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, 1000, this)
+  },
+  setDisconnected() {
+    this.connected = false
+    this.el.setAttribute('button-style', 'color', '#fcc')
+    this.el.setAttribute('tooltip', 'Disconnected')
+    this.el.components['icon-button'].clickTime = 1
+  },
+  setConnected() {
+    this.connected = true
+    this.el.setAttribute('button-style', 'color', '#cfc')
+    this.el.setAttribute('tooltip', 'Connected (Disconnect)')
+    this.el.components['icon-button'].clickTime = 1
+  },
+  setLimbo() {
+    this.connected = false
+    this.el.setAttribute('button-style', 'color', '#fce')
+    this.el.setAttribute('tooltip', 'Connecting...')
+    this.el.components['icon-button'].clickTime = 1
   },
   tick() {
+    let connectionName = this.el.parentEl.querySelector('.name').getAttribute('text').value
+    // console.log("connectionName", connectionName)
 
+    let node = Compositor.component.allNodes.find(n => n.name === connectionName)
+
+    if (!node) return
+
+    if (node.needsConnection && this.connected)
+    {
+      this.setDisconnected()
+    }
+    else if (!node.needsConnection && !this.connected && node.networkData.peer && (node.networkData.video || node.broadcasting))
+    {
+      this.setConnected()
+    }
+    else if (!node.needsConnection && !this.connected)
+    {
+      this.setLimbo()
+    }
   }
 })

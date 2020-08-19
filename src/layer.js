@@ -637,6 +637,7 @@ export class NetworkOutputNode extends CanvasNode {
       this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas, {
         onerror: (e) => {
           this.networkData.needsConnection = true
+          delete this.networkData.peer
         }
       })
     }
@@ -644,6 +645,7 @@ export class NetworkOutputNode extends CanvasNode {
     {
       console.error(e)
       this.networkData.needsConnection = true
+      delete this.networkData.peer
     }
   }
   checkIfUpdateNeeded() { return true }
