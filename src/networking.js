@@ -292,13 +292,13 @@ AFRAME.registerComponent('newtork-node-connection-status-indicator', {
   setDisconnected() {
     this.connected = false
     this.el.setAttribute('button-style', 'color', '#fcc')
-    this.el.setAttribute('tooltip', 'Disconnected')
+    this.el.setAttribute('tooltip', 'Problem Connecting')
     this.el.components['icon-button'].clickTime = 1
   },
   setConnected() {
     this.connected = true
     this.el.setAttribute('button-style', 'color', '#cfc')
-    this.el.setAttribute('tooltip', 'Connected (Disconnect)')
+    this.el.setAttribute('tooltip', 'Connected')
     this.el.components['icon-button'].clickTime = 1
   },
   setLimbo() {
