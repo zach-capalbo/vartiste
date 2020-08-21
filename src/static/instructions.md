@@ -165,6 +165,7 @@ node connector, and dragging it to an input node connector
 
 <img alt="Node Connector Illustration" src="./images/node_connector.png" class="screenshot">
 
+<a name="multidraw"></a>
 ## Multiplayer Drawing (Multidraw)
 
 In order to use multiplayer in VARTISTE, you must enable the Node Compositing
