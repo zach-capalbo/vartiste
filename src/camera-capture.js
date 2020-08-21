@@ -231,6 +231,8 @@ AFRAME.registerComponent('spray-can-tool', {
       this.el.append(body)
       this.captureToCanvas = self.captureToCanvas
 
+      this.wasDrawing = false
+
       this.el.sceneEl.addEventListener('brushscalechanged', () => {
         this.savedBrush = undefined
       })
@@ -502,11 +504,18 @@ AFRAME.registerComponent('spray-can-tool', {
     // console.log("Took", Date.now() - startTime, pictureTime, drawTime, imageDataTime, mathTime)
   },
   tick(t, dt) {
+    let initialWasDrawing = this.wasDrawing
+    this.wasDrawing = false
     if (!this.el.components['camera-tool'].helper) return
     if (!this.el.is("grabbed")) return
     if (!this.el.grabbingManipulator) return
     if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
+    if (!initialWasDrawing)
+    {
+      Undo.pushCanvas(Compositor.drawableCanvas)
+    }
     this.takePicture()
+    this.wasDrawing = true
   },
   createLockedClone() {
     let clone = document.createElement('a-entity')

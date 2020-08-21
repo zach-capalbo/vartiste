@@ -66,9 +66,6 @@ For Oculus Touch controllers:
   - Joystick Press: Toggle Orbit Mode
   - A: Toggle Rotation Lock
   - B: Clone pencil tool
- - Right Hand (While Grabbing during Orbit Mode)
-  - Joystick Right/Left: Rotate grabbed object on Z axis
-  - Joystick Up/Down: Rotate grabbed object on Y axis
 
  - Left Hand:
   - Trigger: Draw
@@ -139,7 +136,6 @@ To import a 3D model, drag and drop it onto the browser window. The model should
 appear in front, and the 2D canvas view will flip to behind you.
 **Note the following:**
  - Only `.glb` format is supported (GLTF binary)
- - The UVs must be already present in the glb file
  - Draco compression is not currently supported
  - Existing textures will be resized to the main canvas size
  - Vertex colors are not currently imported
@@ -164,7 +160,20 @@ Switch](../assets/light-switch.png) button on the Layer / Node control panel.
 
 Node mode works in a roughly similar way to the Blender compositing nodes, for
 instance. Outputs from Layers and nodes are connected to Node inputs, allowing
-dynamically updating effects.
+dynamically updating effects. Node connections are formed by grabbing an output
+node connector, and dragging it to an input node connector
+
+![Node Connector Illustration](./images/node_connector.png)
+
+## Multiplayer Drawing (Multidraw)
+
+In order to use multiplayer in VARTISTE, you must enable the Node Compositing
+System.
+
+Creating a Multidraw Broardcast node ![New Multidraw Broadcast
+Node](../assets/cube-send.png) will allow you to share your drawing live with
+others. Whatever is connected to the input of the Broadcast Node will be
+broadcast over the internet. Whoever knows the name that is set on the node (you can leave this to the randomly generated name or set your own) can create a Multidraw Receiver Node to connect and incorporate your drawing into theirs.
 
 ## Animation System
 

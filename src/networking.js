@@ -34,12 +34,22 @@ AFRAME.registerSystem('networking', {
 
         for (let broadcastTo of params.getAll("broadcastTo"))
         {
+          if (broadcastTo === 'random')
+          {
+            broadcastTo = shortid.generate()
+          }
+
           switchToNodes = true
           this.addBroadcastTo(broadcastTo)
         }
 
         for (let receiveFrom of params.getAll('receiveFrom'))
         {
+          if (receiveFrom === 'random')
+          {
+            receiveFrom = shortid.generate()
+          }
+
           switchToNodes = true
           this.addReceiveFrom(receiveFrom)
         }
