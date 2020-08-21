@@ -1,5 +1,6 @@
 import shortid from 'shortid'
 import {THREED_MODES} from "./layer-modes.js"
+import {CanvasShaderProcessor} from "./canvas-shader-processor.js"
 
 export class Layer {
   constructor(width, height) {
@@ -473,5 +474,200 @@ export class OutputNode extends MaterialNode {
 export class GroupNode extends PassthroughNode {
   constructor(compositor) {
 
+  }
+}
+
+export class NetworkInputNode extends CanvasNode {
+  constructor(...opts) {
+    super(...opts)
+
+    this._name = this.id
+
+    Object.defineProperty(this, "networkData", {enumerable: false, value: {}})
+
+    this.networkData.alphaProcessor = new CanvasShaderProcessor({fx: 'grayscale-to-alpha'})
+    this.networkData.needsConnection = true
+  }
+  get needsConnection() { return this.networkData.needsConnection }
+  get name() {
+    return this._name
+  }
+  set name(name) {
+    console.log("Set name")
+    if (name !== this._name)
+    {
+      if (this.networkData.peer)
+      {
+        this.networkData.peer.destroy
+      }
+      this._name = name
+      this.connectNetwork()
+    }
+  }
+  get receivingBroadcast()
+  {
+    return !!this.networkData.video
+  }
+  connectNetwork()
+  {
+    this.networkData.needsConnection = false
+    this.compositor.el.sceneEl.systems['networking'].callFor(this._name,
+      {
+        onvideo: (video) => this.networkData.video = video,
+        onalpha: (video) => this.networkData.alphaVideo = video,
+        onpeer: (peer) => this.networkData.peer = peer,
+        onsize: (size) => {
+          this.canvas.width = size.width
+          this.canvas.height = size.height
+        },
+        onerror: (error) => {
+          console.log("Clearing receive layer", this.name)
+          delete this.networkData.video
+          delete this.networkData.alphaVideo
+
+          if (this.networkData.peer)
+          {
+            this.networkData.peer.destroy()
+            delete this.networkData.peer
+          }
+
+          this.networkData.needsConnection = true
+        }
+      })
+  }
+  updateCanvas(frame) {
+    if (!this.networkData.video) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
+    if (this.canvas.width === 0 || this.canvas.height === 0)
+    {
+      this.canvas.width = 10
+      this.canvas.height = 10
+      return
+    }
+
+    let ctx = this.canvas.getContext('2d')
+    // ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    if (this.networkData.alphaVideo && this.networkData.alphaVideo.paused)
+    {
+      this.networkData.alphaVideo.play()
+      return
+    }
+
+    if (this.networkData.video && this.networkData.video.paused)
+    {
+      this.networkData.video.play()
+      return
+    }
+
+    if (!this.networkData.alphaVideo)
+    {
+      return
+    }
+
+    this.networkData.alphaVideo.width = this.canvas.width
+    this.networkData.alphaVideo.height = this.canvas.height
+    this.networkData.alphaProcessor.canvas.width = this.canvas.width
+    this.networkData.alphaProcessor.canvas.height = this.canvas.height
+
+    try {
+      ctx.drawImage(this.networkData.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
+
+      if (this.networkData.alphaVideo && this.networkData.alphaVideo.width && this.networkData.alphaVideo.readyState >= 3)
+      {
+        this.networkData.alphaProcessor.setInputCanvas(this.networkData.alphaVideo)
+        this.networkData.alphaProcessor.update()
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.drawImage(this.networkData.alphaProcessor.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.globalCompositeOperation = 'source-over'
+      }
+    } catch (e)
+    {
+      console.error(this.canvas.width, this.canvas.height, this.video, e)
+    }
+  }
+  touch() {
+    this.updateTime = document.querySelector('a-scene').time
+  }
+}
+
+export class NetworkOutputNode extends CanvasNode {
+  constructor(...opts) {
+    super(...opts)
+
+    this._name = this.id
+
+    Object.defineProperty(this, "networkData", {enumerable: false, value: {}})
+
+    let alphaCanvas = document.createElement('canvas')
+    alphaCanvas.width = 1024
+    alphaCanvas.height = 512
+
+    this.networkData.alphaProcessor = new CanvasShaderProcessor({fx: 'alpha-to-grayscale', canvas: alphaCanvas})
+    this.networkData.alphaProcessor.setInputCanvas(this.canvas)
+
+    this.networkData.needsConnection = true
+  }
+  get name() {
+    return this._name
+  }
+  set name(name) {
+    console.log("Set name")
+    if (name !== this._name)
+    {
+      if (this.networkData.peer)
+      {
+        this.networkData.peer.destroy()
+        this.networkData.needsConnection = true
+      }
+      this._name = name
+
+    }
+  }
+  get broadcasting() {
+    return true
+    // return this.peer
+  }
+  get needsConnection() { return this.networkData.needsConnection }
+  connectNetwork() {
+    this.networkData.needsConnection = false
+    try {
+      this.networkData.peer = this.compositor.el.sceneEl.systems['networking'].answerTo(this._name, this.canvas, this.networkData.alphaProcessor.canvas, {
+        onerror: (e) => {
+          this.networkData.needsConnection = true
+          delete this.networkData.peer
+        }
+      })
+    }
+    catch (e)
+    {
+      console.error(e)
+      this.networkData.needsConnection = true
+      delete this.networkData.peer
+    }
+  }
+  checkIfUpdateNeeded() { return true }
+  updateCanvas(frame)
+  {
+    if (!this.destination) return
+
+    if (!this.checkIfUpdateNeeded(frame)) return
+
+    this.updateTime = document.querySelector('a-scene').time
+
+    // No transparency in peerjs right now. grr
+    let ctx = this.canvas.getContext('2d')
+
+    this.destination.draw(ctx, frame, {mode: 'copy'})
+
+    this.networkData.alphaProcessor.setInputCanvas(this.canvas)
+    this.networkData.alphaProcessor.update()
+
+    ctx.globalCompositeOperation = 'destination-over'
+    ctx.fillStyle = "#fff"
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.globalCompositeOperation = 'source-over'
   }
 }

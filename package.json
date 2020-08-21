@@ -56,6 +56,7 @@
     "convolve": "^0.1.0",
     "dexie": "^2.0.4",
     "gif.js": "^0.2.0",
+    "peerjs": "^1.3.1",
     "three.cubemap-to-equirectangular": "^1.1.2",
     "val-loader": "^2.1.1"
   }

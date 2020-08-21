@@ -225,12 +225,19 @@ AFRAME.registerComponent('manipulator', {
       let targetEl = this.raycaster.intersectedEls[0]
       let intersection = this.raycaster.getIntersection(targetEl)
 
-      console.log("GRABBING", targetEl, intersection)
+      if (this.data.printUpdates)
+      {
+        console.log("GRABBING", targetEl, intersection)
+      }
+
       this.target = targetEl
 
       for (let redirection = targetEl['redirect-grab']; redirection; redirection = this.target['redirect-grab'])
       {
-        console.log("Redirecting grab to", typeof(redirection), redirection)
+        if (this.data.printUpdates)
+        {
+          console.log("Redirecting grab to", typeof(redirection), redirection)
+        }
         this.target = redirection
       }
 
@@ -247,7 +254,11 @@ AFRAME.registerComponent('manipulator', {
   },
   onGripOpen() {
     this.stopGrab()
-    console.log("GripOpen")
+
+    if (this.data.printUpdates)
+    {
+      console.log("GripOpen")
+    }
   },
   tick(t, dt) {
     if (this.target) {
@@ -273,7 +284,10 @@ AFRAME.registerComponent('manipulator', {
 
           rotAxis.normalize()
 
-          console.log(rotAxis)
+          if (this.data.printUpdates)
+          {
+            console.log(rotAxis)
+          }
 
           this.endPoint.rotateOnAxis(rotAxis, this.zoomAmmount * dt / 300)
         }

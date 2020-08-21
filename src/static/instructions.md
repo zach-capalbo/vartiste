@@ -66,9 +66,6 @@ For Oculus Touch controllers:
   - Joystick Press: Toggle Orbit Mode
   - A: Toggle Rotation Lock
   - B: Clone pencil tool
- - Right Hand (While Grabbing during Orbit Mode)
-  - Joystick Right/Left: Rotate grabbed object on Z axis
-  - Joystick Up/Down: Rotate grabbed object on Y axis
 
  - Left Hand:
   - Trigger: Draw
@@ -139,7 +136,6 @@ To import a 3D model, drag and drop it onto the browser window. The model should
 appear in front, and the 2D canvas view will flip to behind you.
 **Note the following:**
  - Only `.glb` format is supported (GLTF binary)
- - The UVs must be already present in the glb file
  - Draco compression is not currently supported
  - Existing textures will be resized to the main canvas size
  - Vertex colors are not currently imported
@@ -164,7 +160,40 @@ Switch](../assets/light-switch.png) button on the Layer / Node control panel.
 
 Node mode works in a roughly similar way to the Blender compositing nodes, for
 instance. Outputs from Layers and nodes are connected to Node inputs, allowing
-dynamically updating effects.
+dynamically updating effects. Node connections are formed by grabbing an output
+node connector, and dragging it to an input node connector
+
+<img alt="Node Connector Illustration" src="./images/node_connector.png" class="screenshot">
+
+## Multiplayer Drawing (Multidraw)
+
+In order to use multiplayer in VARTISTE, you must enable the Node Compositing
+System.
+
+Creating a Multidraw Broadcast node ![New Multidraw Broadcast
+Node](../assets/cube-send.png) will allow you to share your drawing live with
+others. Whatever is connected to the input of the Broadcast Node will be
+broadcast over the internet. Whoever knows the name that is set on the node (you
+can leave this to the randomly generated name or set your own) can create a
+Multidraw Receiver Node to connect and incorporate your drawing into theirs.
+
+Creating a Multidraw Receiver Node will allow you to receive a live drawing over
+the internet. You can connect the Receiver Node output to an input in order to
+incorporate it into your drawing.
+
+You can use both Broadcast and Receive nodes in your composition in order to
+build a collaborative drawing experience. Click the Copy Connection Link to
+Clipboard ![Web Icon](../assets/web.png) to copy a link which you can share;
+whoever access the links will autoconnect to your multidraw nodes.
+
+Please note that Broadcast names are handled on a first-come-first-serve basis
+via [PeerServer Cloud](https://peerjs.com/peerserver.html). There is no
+guarantee that you will be able to use the name you enter, nor that you will be
+able to use the same name again after you close the page. See [the Privacy
+Policy](#privacy) for further disclaimers.
+
+Use this link to quickly get started with pre-connected, randomly generated
+Broadcast and Receiver nodes: [`https://vartiste.xyz/?broadcastTo=random&receiveFrom=random`](/?broadcastTo=random&receiveFrom=random)
 
 ## Animation System
 
@@ -225,6 +254,7 @@ If you feel inclined, you can also [Contribute code in the form of a Merge Reque
 VARTISTE is an open source project under the Apache 2.0 license. You can find
 the source code here: <https://gitlab.com/zach-geek/vartiste>
 
+<a name="privacy"></a>
 ## Privacy Policy
 
 VARTISTE is a client-side-only application. No information about you whatsoever
@@ -235,8 +265,19 @@ VARTISTE is hosted by [Gitlab Pages](https://about.gitlab.com/product/pages/).
 The Gitlab Pages server may collect  standard information under the [Gitlab
 Privacy Policy](https://about.gitlab.com/privacy/)
 
-This landing page employs Twitter and Youtube embedded videos. These services
+This landing page employs Twitter and YouTube embedded videos. These services
 have their own privacy policies.
+
+Using Broadcast and Receive nodes relies on [PeerJS]() for WebRTC routing.
+PeerJS [does not persist information about the
+connection](https://github.com/peers/peerjs/issues/649), and the actual canvases
+are transmitted directly to receivers through WebRTC. VARTISTE does not collect
+any information about or have any control over WebRTC identifiers or canvas
+information. **Please note that by using a Broadcast node, you are transmitting
+your canvas information to anyone who knows or can guess the name of the node.
+Likewise, by using a Receiver node you are connecting to whoever is currently
+broadcasting to that name. Names are not secured, checked, or in any other way
+managed by VARTISTE.**
 
 ## About
 

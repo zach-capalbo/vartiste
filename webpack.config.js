@@ -9,6 +9,7 @@ let config = {
   devtool: 'inline-source-map',
   devServer: {
     contentBase: './dist',
+    disableHostCheck: true,
   },
   output: {
     filename: '[name].bundle.[contenthash].js',
