@@ -163,17 +163,37 @@ instance. Outputs from Layers and nodes are connected to Node inputs, allowing
 dynamically updating effects. Node connections are formed by grabbing an output
 node connector, and dragging it to an input node connector
 
-![Node Connector Illustration](./images/node_connector.png)
+<img alt="Node Connector Illustration" src="./images/node_connector.png" class="screenshot">
 
 ## Multiplayer Drawing (Multidraw)
 
 In order to use multiplayer in VARTISTE, you must enable the Node Compositing
 System.
 
-Creating a Multidraw Broardcast node ![New Multidraw Broadcast
+Creating a Multidraw Broadcast node ![New Multidraw Broadcast
 Node](../assets/cube-send.png) will allow you to share your drawing live with
 others. Whatever is connected to the input of the Broadcast Node will be
-broadcast over the internet. Whoever knows the name that is set on the node (you can leave this to the randomly generated name or set your own) can create a Multidraw Receiver Node to connect and incorporate your drawing into theirs.
+broadcast over the internet. Whoever knows the name that is set on the node (you
+can leave this to the randomly generated name or set your own) can create a
+Multidraw Receiver Node to connect and incorporate your drawing into theirs.
+
+Creating a Multidraw Receiver Node will allow you to receive a live drawing over
+the internet. You can connect the Receiver Node output to an input in order to
+incorporate it into your drawing.
+
+You can use both Broadcast and Receive nodes in your composition in order to
+build a collaborative drawing experience. Click the Copy Connection Link to
+Clipboard ![Web Icon](../assets/web.png) to copy a link which you can share;
+whoever access the links will autoconnect to your multidraw nodes.
+
+Please note that Broadcast names are handled on a first-come-first-serve basis
+via [PeerServer Cloud](https://peerjs.com/peerserver.html). There is no
+guarantee that you will be able to use the name you enter, nor that you will be
+able to use the same name again after you close the page. See [the Privacy
+Policy](#privacy) for further disclaimers.
+
+Use this link to quickly get started with pre-connected, randomly generated
+Broadcast and Receiver nodes: [`https://vartiste.xyz/?broadcastTo=random&receiveFrom=random`](/?broadcastTo=random&receiveFrom=random)
 
 ## Animation System
 
@@ -234,6 +254,7 @@ If you feel inclined, you can also [Contribute code in the form of a Merge Reque
 VARTISTE is an open source project under the Apache 2.0 license. You can find
 the source code here: <https://gitlab.com/zach-geek/vartiste>
 
+<a name="privacy"></a>
 ## Privacy Policy
 
 VARTISTE is a client-side-only application. No information about you whatsoever
