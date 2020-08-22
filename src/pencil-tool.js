@@ -723,6 +723,8 @@ AFRAME.registerComponent('viewport-tool', {
     arrow.setAttribute('segments-radial', 4)
     arrow.setAttribute('material', 'src: #asset-shelf; metalness: 0.4; roughness: 0.7; flatShading: true')
     this.el.append(arrow)
+
+    this.el.setAttribute('summonable', 'speechOnly', 'true')
   },
   positionViewport() {
     let cameraObj = document.querySelector('#camera').object3D
@@ -743,9 +745,16 @@ AFRAME.registerComponent('viewport-tool', {
     let angle = forward.angleTo(cameraForward)
 
     let targetObj = document.querySelector('#camera-root').object3D
-    Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
 
-    targetObj.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    let oldRotation = this.pool('oldRotation', THREE.Quaternion)
+    oldRotation.copy(targetObj.quaternion)
+    Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
+    targetObj.quaternion.copy(oldRotation)
+
+    if (!this.el.sceneEl.is('vr-mode'))
+    {
+      document.querySelector('#camera-root').components['look-controls'].yawObject.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    }
     // document.querySelector('#camera').object3D.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
 
   }
