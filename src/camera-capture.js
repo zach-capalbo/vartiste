@@ -197,7 +197,10 @@ AFRAME.registerComponent('spray-can-tool', {
   },
   events: {
     'stateadded': function(e) {
-      if (e.detail === 'grabbed') this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+      if (e.detail === 'grabbed') {
+        this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+        this.updateBrushSize()
+      }
     }
   },
   init() {
@@ -231,11 +234,17 @@ AFRAME.registerComponent('spray-can-tool', {
       body.classList.add('clickable')
       this.el.append(body)
       this.captureToCanvas = self.captureToCanvas
+      self.updateBrushSize = self.updateBrushSize.bind(this)
+      this.updateBrushSize = self.updateBrushSize
 
       this.wasDrawing = false
 
       this.el.sceneEl.addEventListener('brushscalechanged', () => {
         this.savedBrush = undefined
+        if (this.el.is("grabbed"))
+        {
+          this.updateBrushSize()
+        }
       })
     }).call(this.el.components['camera-tool'], this)
 
@@ -253,6 +262,29 @@ AFRAME.registerComponent('spray-can-tool', {
         this.projectorData = this.projectorCanvas.getContext('2d').getImageData(0, 0, this.projectorCanvas.width, this.projectorCanvas.height)
       }
     }).call(this.el.components['camera-tool'], this)
+  },
+  updateBrushSize() {
+    let brush = this.sprayCanTool.data.locked ? this.sprayCanTool.brush : this.el.sceneEl.systems['paint-system'].brush
+    if (this.savedBrush != brush)
+    {
+      this.savedBrush = brush
+
+      if (!brush.overlayCanvas)
+      {
+        console.error("Cannot spray paint brush with no canvas")
+        return false
+      }
+
+      this.brushData = brush.overlayCanvas.getContext("2d").getImageData(0, 0, brush.width, brush.height)
+
+      this.camera.fov = 5 * brush.width / brush.baseWidth
+      this.camera.aspect = brush.width / brush.height
+      this.camera.updateProjectionMatrix()
+      this.helper.update()
+      // this.cameraCanvas.width = Math.round(brush.width)
+      // this.cameraCanvas.height = Math.round(brush.height)
+    }
+    return true
   },
   captureToCanvas(camera, canvas, data) {
     let renderer = this.el.sceneEl.renderer
@@ -374,24 +406,9 @@ AFRAME.registerComponent('spray-can-tool', {
 
     let targetData = this.targetData
 
-    if (this.savedBrush != brush)
+    if (!this.updateBrushSize())
     {
-      this.savedBrush = brush
-
-      if (!brush.overlayCanvas)
-      {
-        console.error("Cannot spray paint brush with no canvas")
-        return
-      }
-
-      this.brushData = brush.overlayCanvas.getContext("2d").getImageData(0, 0, brush.width, brush.height)
-
-      this.camera.fov = 5 * brush.width / brush.baseWidth
-      this.camera.aspect = brush.width / brush.height
-      this.camera.updateProjectionMatrix()
-      this.helper.update()
-      // this.cameraCanvas.width = Math.round(brush.width)
-      // this.cameraCanvas.height = Math.round(brush.height)
+      return
     }
 
     let brushData = this.brushData
