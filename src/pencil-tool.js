@@ -119,6 +119,8 @@ AFRAME.registerComponent('pencil-tool', {
         this.el.components['hand-draw-tool'].system = lockedSystem
         this.el.emit('activate', {})
       })
+
+      this.el.setAttribute('six-dof-tool', 'locked', true)
     }
 
     let radius = this.data.radius
@@ -368,24 +370,6 @@ AFRAME.registerComponent('pencil-tool', {
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
-      // let newComponent = clone.components['pencil-tool']
-      // let handDrawTool = clone.components['hand-draw-tool']
-      // let oldPaintSystem = handDrawTool.system
-      // if (newComponent.tip.hasAttribute('show-current-color'))
-      // {
-      //   newComponent.tip.removeAttribute('show-current-color')
-      //   newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
-      // }
-      //
-      // newComponent.handle.setAttribute('material', 'emissive', Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex())
-      // newComponent.handle.setAttribute('material', 'emissiveIntensity', 0.04)
-      //
-      // handDrawTool.system = {
-      //   data: Object.assign({}, oldPaintSystem.data),
-      //   brush: oldPaintSystem.brush.clone()
-      // }
-
-      // clone.emit('activate', {})
     })
 
     return clone
