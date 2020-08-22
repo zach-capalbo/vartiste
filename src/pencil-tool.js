@@ -642,18 +642,45 @@ AFRAME.registerComponent('vertex-tool', {
 })
 
 AFRAME.registerComponent('six-dof-tool', {
+  init() {
+    this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
+  }
+})
+
+AFRAME.registerComponent('summonable', {
+  schema: {
+    speechOnly: {default: false},
+    once: {default: true},
+    activateOnSummon: {default: true}
+  },
   events: {
+    activate: function(e) {
+      this.hasFlown = true
+    },
     click: function(e) {
-      if (e.detail && e.detail.type === "speech")
-      {
-        this.flyToUser()
-      }
+      if (this.data.once && this.hasFlown) return
+      if ((this.data.speechOnly) && !(e.detail && e.detail.type === "speech")) return
+
+      this.flyToUser()
     }
   },
   flyToUser() {
+    this.hasFlown = true
     let target = document.querySelector('#camera')
-    Util.positionObject3DAtTarget(this.el.object3D, target.object3D, {transformOffset: {x: 0, y: 0, z: -0.5}})
-    this.el.emit('activate')
+
+    let flyingEl = this.el
+
+    while (flyingEl['redirect-grab'])
+    {
+      flyingEl = flyingEl['redirect-grab']
+    }
+
+    Util.positionObject3DAtTarget(flyingEl.object3D, target.object3D, {transformOffset: {x: 0, y: 0, z: -0.5}})
+
+    if (this.data.activateOnSummon)
+    {
+      this.el.emit('activate')
+    }
   }
 })
 

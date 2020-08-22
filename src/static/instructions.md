@@ -219,7 +219,9 @@ applied to different frames, giving a kind of animated brush effect.
     at the end to combine it all.
   - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
   - I've gotten the best performance out of Chrome (You may need to [launch with special flags](https://github.com/aframevr/aframe/issues/4558))
-    - Works with Chrome canary 86.0.4214.0: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`
+    - Works with Chrome canary 86.0.4214.0:
+      - Oculus: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`
+      - SteamVR: `start chrome.exe --disable-features=XRSandbox --enable-features=OpenVR --force-webxr-runtime=OpenVR`
 - **Trick:** To _Copy and Paste_ try this:
   1. Duplicate ![Plus Box Multiple](../assets/plus-box-multiple.png) the layer
   1. Erase the parts of the duplicated layer that you don't want copied
