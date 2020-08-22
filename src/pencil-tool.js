@@ -2,6 +2,8 @@ import {Sfx} from './sfx.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import Color from "color"
+import {Brush} from './brush.js'
+import {BrushList} from './brush-list.js'
 
 AFRAME.registerSystem('pencil-tool', {
   clonePencil() {
@@ -54,7 +56,7 @@ AFRAME.registerSystem('pencil-tool', {
 })
 
 AFRAME.registerComponent('pencil-tool', {
-  dependencies: ['grab-activate', 'six-dof-tool'],
+  dependencies: ['grab-activate', 'six-dof-tool', 'hand-draw-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -67,7 +69,10 @@ AFRAME.registerComponent('pencil-tool', {
 
     enabled: {default: true},
 
-    locked: {default: false}
+    locked: {default: false},
+    brush: {default: undefined, type: 'string'},
+    paintSystemData: {default: undefined, type: 'string'},
+    lockedColor: {type: 'color'}
   },
   events: {
     'bbuttonup': function(e) {
@@ -90,6 +95,32 @@ AFRAME.registerComponent('pencil-tool', {
       this.el.addState(s)
     }
 
+    var lockedSystem
+    if (this.data.locked)
+    {
+      let systemData;
+
+      if (this.data.systemData)
+      {
+        systemData = JSON.parse(this.data.paintSystemData)
+      }
+      else
+      {
+        systemData = Object.assign({}, this.el.sceneEl.systems['paint-system'].data)
+      }
+      let brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
+      console.log("Restoring brush", brush)
+      lockedSystem = {
+        data: systemData,
+        brush
+      }
+
+      Util.whenLoaded(this.el, () => {
+        this.el.components['hand-draw-tool'].system = lockedSystem
+        this.el.emit('activate', {})
+      })
+    }
+
     let radius = this.data.radius
     let height = 0.3
     let tipHeight = height * this.data.tipRatio
@@ -104,8 +135,15 @@ AFRAME.registerComponent('pencil-tool', {
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
+
     this.handle = cylinder
     this.el.append(cylinder)
+
+    if (this.data.locked)
+    {
+      cylinder.setAttribute('material', 'emissive', this.data.lockedColor)
+      cylinder.setAttribute('material', 'emissiveIntensity', 0.04)
+    }
 
     let tip;
 
@@ -148,7 +186,14 @@ AFRAME.registerComponent('pencil-tool', {
     }
     else
     {
-      tip.setAttribute("show-current-color", "")
+      if (this.data.locked)
+      {
+         tip.setAttribute('material', {color: lockedSystem.brush.color, shader: 'flat'})
+      }
+      else
+      {
+        tip.setAttribute("show-current-color", "")
+      }
 
       if (this.data.detailTip)
       {
@@ -162,16 +207,25 @@ AFRAME.registerComponent('pencil-tool', {
     tip.classList.add('clickable')
     tip.setAttribute('propogate-grab', "")
     this.el.append(tip)
-    tip.setAttribute('material', 'side: double')
+    tip.setAttribute('material', 'side', 'double')
     this.tip = tip
 
     let brushPreview = document.createElement('a-plane')
-    brushPreview.setAttribute("show-current-brush", "")
+    this.el.append(brushPreview)
+
+    if (this.data.locked)
+    {
+      brushPreview.setAttribute("material", {src: lockedSystem.brush.previewSrc, transparent: true})
+    }
+    else
+    {
+      brushPreview.setAttribute("show-current-brush", "")
+    }
     brushPreview.setAttribute('width', radius)
     brushPreview.setAttribute('height', radius)
     brushPreview.setAttribute('rotation', '-90 180 0')
     brushPreview.setAttribute('position', `0 ${cylinderHeight / 2 + 0.0001} 0`)
-    this.el.append(brushPreview)
+
 
 
     this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
@@ -301,28 +355,37 @@ AFRAME.registerComponent('pencil-tool', {
   createLockedClone() {
     let clone = document.createElement('a-entity')
     this.el.parentEl.append(clone)
-    clone.setAttribute('pencil-tool', Object.assign({}, this.el.getAttribute('pencil-tool'), {locked: true}))
+
+    let paintSystem = this.el.components['hand-draw-tool'].system
+
+    clone.setAttribute('pencil-tool', Object.assign({}, this.el.getAttribute('pencil-tool'), {
+      locked: true,
+      brush: paintSystem.brush.store(),
+      paintSystemData: JSON.stringify(paintSystem.data),
+      lockedColor: Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex(),
+    }))
+    clone.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: 'pencil-tool'})
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
-      let newComponent = clone.components['pencil-tool']
-      let handDrawTool = clone.components['hand-draw-tool']
-      let oldPaintSystem = handDrawTool.system
-      if (newComponent.tip.hasAttribute('show-current-color'))
-      {
-        newComponent.tip.removeAttribute('show-current-color')
-        newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
-      }
+      // let newComponent = clone.components['pencil-tool']
+      // let handDrawTool = clone.components['hand-draw-tool']
+      // let oldPaintSystem = handDrawTool.system
+      // if (newComponent.tip.hasAttribute('show-current-color'))
+      // {
+      //   newComponent.tip.removeAttribute('show-current-color')
+      //   newComponent.tip.setAttribute('material', {color: oldPaintSystem.data.color, shader: 'flat'})
+      // }
+      //
+      // newComponent.handle.setAttribute('material', 'emissive', Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex())
+      // newComponent.handle.setAttribute('material', 'emissiveIntensity', 0.04)
+      //
+      // handDrawTool.system = {
+      //   data: Object.assign({}, oldPaintSystem.data),
+      //   brush: oldPaintSystem.brush.clone()
+      // }
 
-      newComponent.handle.setAttribute('material', 'emissive', Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex())
-      newComponent.handle.setAttribute('material', 'emissiveIntensity', 0.04)
-
-      handDrawTool.system = {
-        data: Object.assign({}, oldPaintSystem.data),
-        brush: oldPaintSystem.brush.clone()
-      }
-
-      clone.emit('activate', {})
+      // clone.emit('activate', {})
     })
 
     return clone
@@ -642,6 +705,10 @@ AFRAME.registerComponent('vertex-tool', {
 })
 
 AFRAME.registerComponent('six-dof-tool', {
+  schema: {
+    lockedClone: {default: false},
+    lockedComponent: {type: 'string'}
+  },
   init() {
     this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
   }

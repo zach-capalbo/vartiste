@@ -4,16 +4,46 @@ import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 
 class Brush {
-  constructor() {
+  constructor(baseid) {
     this.ignoredAttributes = []
+    this.baseid = baseid
+    this.storableAttributes = [
+      'baseid',
+      'color',
+      'opacity',
+      'scale'
+    ]
   }
   clone() {
     return Object.assign( Object.create( Object.getPrototypeOf(this)), this)
   }
+  store() {
+    let obj = {}
+    for (let a of this.storableAttributes)
+    {
+      obj[a] = this[a]
+    }
+    return JSON.stringify(obj)
+  }
+  static fromStore(obj, brushList) {
+    let brush = brushList.find(b => b.baseid === obj.baseid)
+
+    if (!brush)
+    {
+      throw new Error("Can't find brush for serialized brush", obj)
+    }
+
+    brush = Object.assign(brush.clone(), obj)
+    brush.changeColor(obj.color)
+    brush.changeOpacity(obj.opacity)
+    brush.changeScale(obj.scale)
+
+    return brush
+  }
 }
 
 class ProceduralBrush extends Brush {
-  constructor({
+  constructor(baseid, {
     width=20,
     height=20,
     distanceBased=false,
@@ -28,7 +58,7 @@ class ProceduralBrush extends Brush {
     tooltip=undefined,
     ...options} = {})
   {
-    super();
+    super(baseid);
 
     this.baseWidth = width
     this.baseHeight = height
@@ -62,6 +92,7 @@ class ProceduralBrush extends Brush {
 
     Util.unenumerable(this, "color3")
     Util.unenumerable(this, "ccolor")
+    Util.unenumerable(this, "brushdata")
 
     this.changeColor('#FFF')
   }
@@ -271,7 +302,7 @@ class ProceduralBrush extends Brush {
 }
 
 class ImageBrush extends ProceduralBrush{
-  constructor(name, options = {}) {
+  constructor(baseid, name, options = {}) {
     let image;
 
     if ('width' in options && 'height' in options) {
@@ -286,7 +317,7 @@ class ImageBrush extends ProceduralBrush{
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
 
-    super(Object.assign({drawEdges: true}, options, {width, height}))
+    super(baseid, Object.assign({drawEdges: true}, options, {width, height}))
 
     if (!options.tooltip)
     {
@@ -329,8 +360,8 @@ class ImageBrush extends ProceduralBrush{
 }
 
 class LambdaBrush extends ProceduralBrush {
-  constructor(options={}, lambda) {
-    super(options)
+  constructor(baseid, options={}, lambda) {
+    super(baseid, options)
     this.lambda = lambda
     this.previewSrc = undefined
     this.updateBrush()
@@ -354,8 +385,8 @@ class LambdaBrush extends ProceduralBrush {
 }
 
 class FillBrush extends Brush {
-  constructor({mode = "source-over", previewSrc, tooltip = undefined} = {}) {
-    super();
+  constructor(baseid, {mode = "source-over", previewSrc, tooltip = undefined} = {}) {
+    super(baseid);
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
     this.mode = mode
     this.hqBlending = false
@@ -394,7 +425,7 @@ class FillBrush extends Brush {
 }
 
 class NoiseBrush extends ProceduralBrush {
-  constructor({
+  constructor(baseid, {
     rainbow=false,
     lightness=true,
     opacityness=false,
@@ -402,7 +433,7 @@ class NoiseBrush extends ProceduralBrush {
     tooltip=undefined,
     ...options} = {})
   {
-    super(options)
+    super(baseid, options)
     this.superInitialized
     this.rainbow = rainbow
     this.lightness = lightness
@@ -477,8 +508,8 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor({baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
-    super()
+  constructor(baseid, {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
+    super(baseid)
     this.baseBrush = baseBrush
     this.dragRotate = dragRotate
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})

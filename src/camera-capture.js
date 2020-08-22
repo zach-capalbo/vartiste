@@ -180,6 +180,7 @@ AFRAME.registerComponent('camera-tool', {
   createLockedClone() {
     let clone = document.createElement('a-entity')
     clone.setAttribute('camera-tool', this.el.getAttribute('camera-tool'))
+    clone.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: 'camera-tool'})
     this.el.parentEl.append(clone)
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
@@ -522,6 +523,7 @@ AFRAME.registerComponent('spray-can-tool', {
     clone.setAttribute('camera-tool', {autoCamera: false})
     this.el.parentEl.append(clone)
     clone.setAttribute('spray-can-tool', 'locked: true')
+    clone.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: 'spray-can-tool'})
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
       let newComponent = clone.components['spray-can-tool']
