@@ -779,10 +779,34 @@ AFRAME.registerComponent('viewport-tool', {
   },
   positionViewport() {
     let cameraObj = document.querySelector('#camera').object3D
-    let offset = this.pool('offset', THREE.Vector3)
-    offset.copy(cameraObj.position)
-    offset.multiplyScalar(-1)
-    offset.y += 0.2
+    // let offset = this.pool('offset', THREE.Vector3)
+    // offset.copy(cameraObj.position)
+    // offset.multiplyScalar(-1)
+    // offset.y += 0.2
+    //
+
+    //
+    // let targetObj = document.querySelector('#camera-root').object3D
+    //
+    // let oldRotation = this.pool('oldRotation', THREE.Quaternion)
+    // oldRotation.copy(targetObj.quaternion)
+    // Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
+    // targetObj.quaternion.copy(oldRotation)
+    //
+    // if (!this.el.sceneEl.is('vr-mode'))
+    // {
+    //   document.querySelector('#camera-root').components['look-controls'].yawObject.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    // }
+    // document.querySelector('#camera').object3D.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+
+    this.el.sceneEl.systems['artist-root'].resetPosition()
+    let targetObj = document.querySelector('#artist-root').object3D
+    Util.positionObject3DAtTarget(targetObj, this.el.object3D)
+    targetObj.position.y -= document.querySelector('#camera-root').object3D.position.y - 0.2
+    targetObj.quaternion.w = 1
+    targetObj.quaternion.y = 0
+    targetObj.quaternion.x = 0
+    targetObj.quaternion.z = 0
 
     let cameraForward = this.pool('cameraForward', THREE.Vector3)
     let forward = this.pool('forward', THREE.Vector3)
@@ -792,21 +816,10 @@ AFRAME.registerComponent('viewport-tool', {
     cameraForward.y = 0
     forward.normalize()
     cameraForward.normalize()
-
+    //
     let angle = forward.angleTo(cameraForward)
 
-    let targetObj = document.querySelector('#camera-root').object3D
-
-    let oldRotation = this.pool('oldRotation', THREE.Quaternion)
-    oldRotation.copy(targetObj.quaternion)
-    Util.positionObject3DAtTarget(targetObj, this.el.object3D, {transformOffset: offset})
-    targetObj.quaternion.copy(oldRotation)
-
-    if (!this.el.sceneEl.is('vr-mode'))
-    {
-      document.querySelector('#camera-root').components['look-controls'].yawObject.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
-    }
-    // document.querySelector('#camera').object3D.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
+    targetObj.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
 
   }
 })

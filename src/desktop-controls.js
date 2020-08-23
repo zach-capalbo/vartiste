@@ -101,5 +101,11 @@ AFRAME.registerSystem('desktop-controls', {
     document.querySelector('#camera-root').addState('looking')
     document.querySelector('#mouse').addState('looking')
     document.querySelector('#mouse').addState('grabmode')
+  },
+  rotateLeft() {
+    this.el.sceneEl.systems['artist-root'].rotateLeft()
+  },
+  rotateRight() {
+    this.el.sceneEl.systems['artist-root'].rotateRight()
   }
 })

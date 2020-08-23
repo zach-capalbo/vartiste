@@ -4,9 +4,11 @@ AFRAME.registerComponent('right-hand-controls', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
     this.paintSystem = document.querySelector('a-scene').systems['paint-system']
-    this.el.setAttribute('joystick-turn', "target: #artist-root")
+    // this.el.setAttribute('joystick-turn', "target: #artist-root")
     this.el.setAttribute('manipulator', {selector: '#canvas-view', useRay: true})
     this.el.setAttribute('smooth-controller', "")
+
+    JoystickDirections.install(this)
 
     this.scaleBrushAmmount = 0
     this.el.addEventListener('axismove', e => {
@@ -24,7 +26,7 @@ AFRAME.registerComponent('right-hand-controls', {
     buttonMap.setMap({
       'abutton': buttonMap.toggle('rotating'),
       'trackpad': buttonMap.toggle('rotating'),
-      'thumbstick': buttonMap.toggle('orbiting')
+      // 'thumbstick': buttonMap.toggle('orbiting')
     }, "grabbing")
 
     buttonMap.install(this)
@@ -37,5 +39,12 @@ AFRAME.registerComponent('right-hand-controls', {
     {
       this.paintSystem.scaleBrush(- dt * this.scaleBrushAmmount)
     }
+  },
+
+  leftClick() {
+    this.el.sceneEl.systems['artist-root'].rotateLeft()
+  },
+  rightClick() {
+    this.el.sceneEl.systems['artist-root'].rotateRight()
   }
 });
