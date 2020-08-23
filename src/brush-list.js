@@ -21,7 +21,7 @@ const BrushList = [
   new FillBrush('fill2', {mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')}),
   new NoiseBrush('noise1'),
   new NoiseBrush('noise2', {round: true}),
-  new ImageBrush('cloth1', 'cloth', {widht: 48, height: 48, drawEdges: true}),
+  new ImageBrush('cloth1', 'cloth', {widht: 48, height: 48, drawEdges: true, tooltip: "Hatches"}),
   new FxBrush('blur1', {baseBrush: new ProceduralBrush('', {connected: true, hqBlending: false}), type: 'blur', previewSrc: require('./assets/blur-preview.png')}),
   new FxBrush('nudge1', {baseBrush: new ProceduralBrush('', {connected: true, hqBlending: false}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
   new FxBrush('nudeg2', {baseBrush: new ImageBrush('', 'lines2', {width: 40, height: 20, connected: true}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),

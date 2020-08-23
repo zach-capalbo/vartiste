@@ -282,7 +282,10 @@ class ProceduralBrush extends Brush {
       ctx.translate(x,y)
       ctx.rotate(rotation)
 
-      ctx.drawImage(this.outlineCanvas, -width / 2, - height / 2, width, height)
+      if (this.outlineCanvas && width > 0 && height > 0)
+      {
+        ctx.drawImage(this.outlineCanvas, -width / 2, - height / 2, width, height)
+      }
 
       ctx.beginPath()
       ctx.strokeStyle = '#FFFFFF'

@@ -142,6 +142,10 @@ class ProjectFile {
       compositor.el.sceneEl.append(el)
       el.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: tool.component})
       el.setAttribute(tool.component, tool.componentData)
+      if ('tooltip' in tool)
+      {
+        el.setAttribute('preactivate-tooltip', tool.tooltip)
+      }
       let matrix = new THREE.Matrix4()
       matrix.fromArray(tool.matrix)
       Util.whenLoaded(el, () => {

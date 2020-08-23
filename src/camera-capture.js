@@ -188,12 +188,34 @@ AFRAME.registerComponent('camera-tool', {
   },
 })
 
+AFRAME.registerSystem('spray-can-tool', {
+  setSprayResolution(width, height) {
+    this.el.sceneEl.querySelectorAll('*[spray-can-tool]').forEach(el => {
+      if (el.getAttribute('spray-can-tool').locked) return
+
+      el.setAttribute('spray-can-tool', 'canvasSize', `${width} ${height}`)
+    })
+  },
+  setSprayResolutionLow() {
+    this.setSprayResolution(24, 24)
+  },
+  setSprayResolutionMedium() {
+    this.setSprayResolution(64, 64)
+  },
+  setSprayResolutionHigh() {
+    this.setSprayResolution(256, 256)
+  },
+  setSprayResolutionCanvas() {
+    this.setSprayResolution(Compositor.component.width, Compositor.component.height)
+  }
+})
 
 AFRAME.registerComponent('spray-can-tool', {
   dependencies: ['camera-tool'],
   schema: {
     locked: {default: false},
     projector: {default: false},
+    canvasSize: {type: 'vec2', default: {x: 64, y: 64}}
   },
   events: {
     'stateadded': function(e) {
@@ -211,8 +233,8 @@ AFRAME.registerComponent('spray-can-tool', {
 
     (function(self) {
       this.cameraCanvas = document.createElement('canvas')
-      this.cameraCanvas.width = 64
-      this.cameraCanvas.height = 64
+      this.cameraCanvas.width = self.data.canvasSize.x
+      this.cameraCanvas.height = self.data.canvasSize.y
       this.targetCanvas = document.createElement('canvas')
       this.targetCanvas.width = 1024
       this.targetCanvas.height = 512
@@ -253,10 +275,28 @@ AFRAME.registerComponent('spray-can-tool', {
   update(oldData)
   {
     (function(self) {
+      let updateProjector = false
       this.data.projector = self.data.projector
+
+      console.log("DATA", self.data.canvasSize,  oldData.canvasSize, this.cameraCanvas, this.projectorCanvas)
+
+      if (!oldData.canvasSize || (self.data.canvasSize && (self.data.canvasSize.x !== oldData.canvasSize.x || self.data.canvasSize.y !== oldData.canvasSize.y)))
+      {
+        this.cameraCanvas.width = self.data.canvasSize.x
+        this.cameraCanvas.height = self.data.canvasSize.y
+        delete this.buffer
+        delete this.savedBrush
+        delete this.newTarget
+        updateProjector = true
+      }
+
       if (this.data.projector !== oldData.projector && this.data.projector && !this.projectorCanvas)
       {
         this.projectorCanvas = document.createElement('canvas')
+        updateProjector = true
+      }
+
+      if (updateProjector && this.projectorCanvas) {
         this.projectorCanvas.width = this.cameraCanvas.width
         this.projectorCanvas.height = this.cameraCanvas.height
         this.projectorData = this.projectorCanvas.getContext('2d').getImageData(0, 0, this.projectorCanvas.width, this.projectorCanvas.height)

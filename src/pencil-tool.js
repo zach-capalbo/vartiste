@@ -117,7 +117,6 @@ AFRAME.registerComponent('pencil-tool', {
 
       Util.whenLoaded(this.el, () => {
         this.el.components['hand-draw-tool'].system = lockedSystem
-        this.el.emit('activate', {})
       })
 
       this.el.setAttribute('six-dof-tool', 'locked', true)
@@ -370,6 +369,7 @@ AFRAME.registerComponent('pencil-tool', {
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
+      clone.emit('activate', {})
     })
 
     return clone
