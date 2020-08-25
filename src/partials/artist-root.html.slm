@@ -1,6 +1,6 @@
 a-entity#artist-root
-  a-entity geometry="primitive: plane; width: 1; height: 1" rotation="-90 0 0"
-  a-sphere radius="0.1"
+  /a-entity geometry="primitive: plane; width: 1; height: 1" rotation="-90 0 0"
+    /a-sphere radius="0.1"
   a-entity#camera-offsetter between-target-positioner="root: #artist-root; target: #camera-root"
     a-entity#camera-root desktop-controls=""
       a-entity#camera camera="active: true" look-controls="hmdEnabled: true; enabled: false"
