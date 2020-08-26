@@ -193,5 +193,8 @@ AFRAME.registerComponent('load-shelf', {
       this.el.sceneEl.systems['settings-system'].load(t)
       this.el.emit('popupaction', 'close')
     })
+  },
+  loadURLField() {
+    this.el.sceneEl.systems['file-upload'].handleURL(this.el.querySelector('#load-url-field').getAttribute('text').value)
   }
 })
