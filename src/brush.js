@@ -13,6 +13,10 @@ class Brush {
       'opacity',
       'scale'
     ]
+    this.unenumerableAttrs = {}
+  }
+  unenumerable(attr) {
+    this.unenumerableAttrs[attr] = true
   }
   clone() {
     return Object.assign( Object.create( Object.getPrototypeOf(this)), this)
@@ -23,7 +27,7 @@ class Brush {
     {
       obj[a] = this[a]
     }
-    return JSON.stringify(obj)
+    return obj
   }
   static fromStore(obj, brushList) {
     let brush = brushList.find(b => b.baseid === obj.baseid)
@@ -34,9 +38,9 @@ class Brush {
     }
 
     brush = Object.assign(brush.clone(), obj)
+    brush.changeScale(obj.scale)
     brush.changeColor(obj.color)
     brush.changeOpacity(obj.opacity)
-    brush.changeScale(obj.scale)
 
     return brush
   }
@@ -82,23 +86,27 @@ class ProceduralBrush extends Brush {
     overlayCanvas.width = width
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
-    Util.unenumerable(this, "overlayCanvas")
+    this.unenumerable("overlayCanvas")
 
     if (this.hqBlending)
     {
       this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
-      Util.unenumerable(this, "hqBlender")
+      this.unenumerable("hqBlender")
     }
 
-    Util.unenumerable(this, "color3")
-    Util.unenumerable(this, "ccolor")
-    Util.unenumerable(this, "brushdata")
+    this.unenumerable("color3")
+    this.unenumerable("ccolor")
+    this.unenumerable("brushdata")
 
     this.changeColor('#FFF')
   }
   clone() {
     let clone = super.clone()
     clone.overlayCanvas = Util.cloneCanvas(this.overlayCanvas)
+    if (clone.hqBlending)
+    {
+      clone.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
+    }
     console.log("Returning cloned brush")
     return clone
   }
@@ -526,7 +534,6 @@ class FxBrush extends Brush {
     this.baseUpdate = this.baseBrush.updateBrush.bind(this.baseBrush)
     this.baseBrush.updateBrush = this.updateBrush.bind(this)
 
-
     this.previewSrc = previewSrc ? previewSrc : this.baseBrush.previewSrc
 
   }
@@ -535,6 +542,28 @@ class FxBrush extends Brush {
   }
   get height() {
     return this.baseBrush.height
+  }
+  clone() {
+    let clone = super.clone()
+    let baseBrush = this.baseBrush.clone()
+    clone.baseBrush = baseBrush
+    clone.fx = new CanvasShaderProcessor({source: this.fx.source})
+
+    for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
+    {
+      clone[fn] = clone.baseBrush[fn].bind(clone.baseBrush)
+    }
+    clone.baseUpdate = Object.getPrototypeOf(this.baseBrush).updateBrush.bind(clone.baseBrush)
+    clone.baseBrush.updateBrush = clone.updateBrush.bind(clone)
+    return clone
+  }
+  store() {
+    let obj = super.store()
+    for (let a of this.storableAttributes.filter(i => i !== 'baseid'))
+    {
+      obj[a] = this.baseBrush[a]
+    }
+    return obj
   }
   updateBrush() {
     this.baseUpdate()

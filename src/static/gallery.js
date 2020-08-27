@@ -1,8 +1,8 @@
 const GALLERY_ENTRIES = [
   {section: 'Templates', entries: [
     {name: "paper", displayName: "Paper Template", description: "A paper sketching starter template. Great for sketching and drawing. Best used with the detail pencil and medium-high opacity gray brush."},
-    {name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
     {name: "hubs_avatar", displayName:"Hubs Avatar", description: "Mozilla Hubs Avatar from the Mozilla Hubs team. Click here to draw your own hubs avatar!"},
+    {name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
     {name: "ai_style", displayName: 'AI Style Transfer', description: "A template to get started using AI style transfer for painting."}
   ]},
   {section: 'Artwork', entries: [

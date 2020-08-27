@@ -18,7 +18,7 @@ AFRAME.registerSystem('pencil-tool', {
   unlockPencil() {
     if (!this.lastGrabbed) return
     if (!this.lastGrabbed.data.locked) return
-    let system = this.systems['paint-system']
+    let system = this.el.systems['paint-system']
     let tool = this.lastGrabbed.el.components['hand-draw-tool']
     if (!tool) return
     Object.assign(system.data, tool.system.data)
@@ -361,7 +361,7 @@ AFRAME.registerComponent('pencil-tool', {
 
     clone.setAttribute('pencil-tool', Object.assign({}, this.el.getAttribute('pencil-tool'), {
       locked: true,
-      brush: paintSystem.brush.store(),
+      brush: JSON.stringify(paintSystem.brush.store()),
       paintSystemData: JSON.stringify(paintSystem.data),
       lockedColor: Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex(),
     }))
@@ -470,7 +470,7 @@ AFRAME.registerComponent('hammer-tool', {
     // head.classList.add('clickable')
     head.setAttribute('propogate-grab', "")
     head.setAttribute('material', 'side: double; color: #aaa; metalness: 0.9; roughness: 0.4')
-    
+
     head.setAttribute('raycaster', `objects: .canvas; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${headLength / 2}`)
     head.setAttribute('hand-draw-tool', "")
     headHolder.append(head)
