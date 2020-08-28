@@ -96,7 +96,8 @@ AFRAME.registerComponent('camera-tool', {
   schema: {
     orthographic: {default: false},
     fov: {default: 45.0},
-    autoCamera: {default: true}
+    autoCamera: {default: true},
+    near: {default: 0.1}
   },
   events: {
     click: function(e) {
@@ -133,7 +134,7 @@ AFRAME.registerComponent('camera-tool', {
       }
       else
       {
-        camera = new THREE.PerspectiveCamera(this.data.fov, width / height, 0.1, 10)
+        camera = new THREE.PerspectiveCamera(this.data.fov, width / height, this.data.near, 10)
       }
       this.el.object3D.add(camera)
 
@@ -278,7 +279,12 @@ AFRAME.registerComponent('spray-can-tool', {
       let updateProjector = false
       this.data.projector = self.data.projector
 
-      console.log("DATA", self.data.canvasSize,  oldData.canvasSize, this.cameraCanvas, this.projectorCanvas)
+      if (this.data.projector)
+      {
+        this.data.near = 0.2
+      }
+
+      // console.log("DATA", self.data.canvasSize,  oldData.canvasSize, this.cameraCanvas, this.projectorCanvas)
 
       if (!oldData.canvasSize || (self.data.canvasSize && (self.data.canvasSize.x !== oldData.canvasSize.x || self.data.canvasSize.y !== oldData.canvasSize.y)))
       {
@@ -319,7 +325,9 @@ AFRAME.registerComponent('spray-can-tool', {
 
       this.camera.fov = 5 * brush.width / brush.baseWidth
       this.camera.aspect = brush.width / brush.height
+      this.camera.near = this.data.near
       this.camera.updateProjectionMatrix()
+
       this.helper.update()
       // this.cameraCanvas.width = Math.round(brush.width)
       // this.cameraCanvas.height = Math.round(brush.height)
