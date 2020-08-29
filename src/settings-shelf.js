@@ -195,6 +195,8 @@ AFRAME.registerComponent('load-shelf', {
     })
   },
   loadURLField() {
-    this.el.sceneEl.systems['file-upload'].handleURL(this.el.querySelector('#load-url-field').getAttribute('text').value)
+    let url = this.el.querySelector('#load-url-field').getAttribute('text').value
+    console.log("Handling url:", url)
+    this.el.sceneEl.systems['file-upload'].handleURL(url)
   }
 })
