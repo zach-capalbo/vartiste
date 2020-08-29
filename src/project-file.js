@@ -225,7 +225,8 @@ class ProjectFile {
 
     obj.tools = []
 
-    document.querySelectorAll('*[six-dof-tool]').forEach(el => {
+    // document.querySelectorAll('*[six-dof-tool]').forEach(el => {
+    document.querySelectorAll('*[pencil-tool]').forEach(el => {
       let data = el.getAttribute('six-dof-tool')
       if (!data.lockedClone) return
       let lockedComponent = el.components[data.lockedComponent]

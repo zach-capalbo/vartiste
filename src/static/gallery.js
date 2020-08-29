@@ -3,6 +3,7 @@ const GALLERY_ENTRIES = [
     {name: "paper", displayName: "Paper Template", description: "A paper sketching starter template. Great for sketching and drawing."},
     {name: "hubs_avatar", displayName:"Hubs Avatar", description: "Mozilla Hubs Avatar from the Mozilla Hubs team. Click here to draw your own hubs avatar!"},
     {name: "paint-template", displayName: "Painting Template", description: "A starting point for painting kind of roughly resembling oil paintings."},
+    {name: "graffiti", displayName: "Graffiti Template", description: "A brick wall to paint on. Goes great with the spray can tool"},
     {name: "ai_style", displayName: 'AI Style Transfer', description: "A template to get started using AI style transfer for painting."},
   ]},
   {section: 'Artwork', entries: [
