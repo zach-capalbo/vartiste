@@ -20,6 +20,8 @@ AFRAME.registerComponent('manipulator', {
     this.grabber = document.createElement('a-entity')
     this.grabber.setAttribute('gltf-model', "#asset-hand")
     this.grabber.setAttribute('visible', "false")
+    this.grabber.setAttribute('material', 'shader: matcap')
+    this.grabber.setAttribute('apply-material-to-mesh', "")
     this.el.append(this.grabber)
 
     this.onGripClose = this.onGripClose.bind(this)
@@ -409,6 +411,13 @@ AFRAME.registerComponent('propogate-grab', {
         break;
       }
     }
+  }
+})
+
+AFRAME.registerComponent('redirect-grab', {
+  schema: {type: 'selector'},
+  update() {
+    this.el['redirect-grab'] = this.data
   }
 })
 

@@ -4,16 +4,50 @@ import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 
 class Brush {
-  constructor() {
+  constructor(baseid) {
     this.ignoredAttributes = []
+    this.baseid = baseid
+    this.storableAttributes = [
+      'baseid',
+      'color',
+      'opacity',
+      'scale'
+    ]
+    this.unenumerableAttrs = {}
+  }
+  unenumerable(attr) {
+    this.unenumerableAttrs[attr] = true
   }
   clone() {
     return Object.assign( Object.create( Object.getPrototypeOf(this)), this)
   }
+  store() {
+    let obj = {}
+    for (let a of this.storableAttributes)
+    {
+      obj[a] = this[a]
+    }
+    return obj
+  }
+  static fromStore(obj, brushList) {
+    let brush = brushList.find(b => b.baseid === obj.baseid)
+
+    if (!brush)
+    {
+      throw new Error("Can't find brush for serialized brush", obj)
+    }
+
+    brush = Object.assign(brush.clone(), obj)
+    brush.changeScale(obj.scale)
+    brush.changeColor(obj.color)
+    brush.changeOpacity(obj.opacity)
+
+    return brush
+  }
 }
 
 class ProceduralBrush extends Brush {
-  constructor({
+  constructor(baseid, {
     width=20,
     height=20,
     distanceBased=false,
@@ -28,7 +62,7 @@ class ProceduralBrush extends Brush {
     tooltip=undefined,
     ...options} = {})
   {
-    super();
+    super(baseid);
 
     this.baseWidth = width
     this.baseHeight = height
@@ -52,22 +86,27 @@ class ProceduralBrush extends Brush {
     overlayCanvas.width = width
     overlayCanvas.height = height
     this.overlayCanvas = overlayCanvas;
-    Util.unenumerable(this, "overlayCanvas")
+    this.unenumerable("overlayCanvas")
 
     if (this.hqBlending)
     {
       this.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
-      Util.unenumerable(this, "hqBlender")
+      this.unenumerable("hqBlender")
     }
 
-    Util.unenumerable(this, "color3")
-    Util.unenumerable(this, "ccolor")
+    this.unenumerable("color3")
+    this.unenumerable("ccolor")
+    this.unenumerable("brushdata")
 
     this.changeColor('#FFF')
   }
   clone() {
     let clone = super.clone()
     clone.overlayCanvas = Util.cloneCanvas(this.overlayCanvas)
+    if (clone.hqBlending)
+    {
+      clone.hqBlender = new CanvasShaderProcessor({source: require('./shaders/brush/hq-blending.glsl')})
+    }
     console.log("Returning cloned brush")
     return clone
   }
@@ -251,7 +290,10 @@ class ProceduralBrush extends Brush {
       ctx.translate(x,y)
       ctx.rotate(rotation)
 
-      ctx.drawImage(this.outlineCanvas, -width / 2, - height / 2, width, height)
+      if (this.outlineCanvas && width > 0 && height > 0)
+      {
+        ctx.drawImage(this.outlineCanvas, -width / 2, - height / 2, width, height)
+      }
 
       ctx.beginPath()
       ctx.strokeStyle = '#FFFFFF'
@@ -271,7 +313,7 @@ class ProceduralBrush extends Brush {
 }
 
 class ImageBrush extends ProceduralBrush{
-  constructor(name, options = {}) {
+  constructor(baseid, name, options = {}) {
     let image;
 
     if ('width' in options && 'height' in options) {
@@ -286,7 +328,7 @@ class ImageBrush extends ProceduralBrush{
     image.src = require(`./brushes/${name}.png`)
     let {width, height} = image
 
-    super(Object.assign({drawEdges: true}, options, {width, height}))
+    super(baseid, Object.assign({drawEdges: true}, options, {width, height}))
 
     if (!options.tooltip)
     {
@@ -329,8 +371,8 @@ class ImageBrush extends ProceduralBrush{
 }
 
 class LambdaBrush extends ProceduralBrush {
-  constructor(options={}, lambda) {
-    super(options)
+  constructor(baseid, options={}, lambda) {
+    super(baseid, options)
     this.lambda = lambda
     this.previewSrc = undefined
     this.updateBrush()
@@ -354,8 +396,8 @@ class LambdaBrush extends ProceduralBrush {
 }
 
 class FillBrush extends Brush {
-  constructor({mode = "source-over", previewSrc, tooltip = undefined} = {}) {
-    super();
+  constructor(baseid, {mode = "source-over", previewSrc, tooltip = undefined} = {}) {
+    super(baseid);
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
     this.mode = mode
     this.hqBlending = false
@@ -394,7 +436,7 @@ class FillBrush extends Brush {
 }
 
 class NoiseBrush extends ProceduralBrush {
-  constructor({
+  constructor(baseid, {
     rainbow=false,
     lightness=true,
     opacityness=false,
@@ -402,7 +444,7 @@ class NoiseBrush extends ProceduralBrush {
     tooltip=undefined,
     ...options} = {})
   {
-    super(options)
+    super(baseid, options)
     this.superInitialized
     this.rainbow = rainbow
     this.lightness = lightness
@@ -477,8 +519,8 @@ class NoiseBrush extends ProceduralBrush {
 }
 
 class FxBrush extends Brush {
-  constructor({baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
-    super()
+  constructor(baseid, {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
+    super(baseid)
     this.baseBrush = baseBrush
     this.dragRotate = dragRotate
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
@@ -492,7 +534,6 @@ class FxBrush extends Brush {
     this.baseUpdate = this.baseBrush.updateBrush.bind(this.baseBrush)
     this.baseBrush.updateBrush = this.updateBrush.bind(this)
 
-
     this.previewSrc = previewSrc ? previewSrc : this.baseBrush.previewSrc
 
   }
@@ -501,6 +542,28 @@ class FxBrush extends Brush {
   }
   get height() {
     return this.baseBrush.height
+  }
+  clone() {
+    let clone = super.clone()
+    let baseBrush = this.baseBrush.clone()
+    clone.baseBrush = baseBrush
+    clone.fx = new CanvasShaderProcessor({source: this.fx.source})
+
+    for (let fn of ['changeColor', 'changeScale', 'changeOpacity', 'drawOutline'])
+    {
+      clone[fn] = clone.baseBrush[fn].bind(clone.baseBrush)
+    }
+    clone.baseUpdate = Object.getPrototypeOf(this.baseBrush).updateBrush.bind(clone.baseBrush)
+    clone.baseBrush.updateBrush = clone.updateBrush.bind(clone)
+    return clone
+  }
+  store() {
+    let obj = super.store()
+    for (let a of this.storableAttributes.filter(i => i !== 'baseid'))
+    {
+      obj[a] = this.baseBrush[a]
+    }
+    return obj
   }
   updateBrush() {
     this.baseUpdate()

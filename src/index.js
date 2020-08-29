@@ -55,6 +55,7 @@ require('./uv-unwrapper')
 require('./matcap-shader')
 require('./cable-connector')
 require('./mesh-tools')
+require('./artist-positioning')
 
 require('./app.styl')
 

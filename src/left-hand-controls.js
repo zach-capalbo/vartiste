@@ -13,6 +13,7 @@ AFRAME.registerComponent('left-hand-controls', {
     })
     buttonMap.setMap({
       'xbutton': buttonMap.toggle('rotating'),
+      'abutton': buttonMap.toggle('rotating'),
       'trackpad': buttonMap.toggle('rotating')
     }, "grabbing")
     buttonMap.install(this)
@@ -26,6 +27,14 @@ AFRAME.registerComponent('left-hand-controls', {
     })
 
     this.el.addEventListener('xbuttondown', () => {
+      if (!this.el.is("grabbing"))
+      {
+        this.el.sceneEl.systems['settings-system'].undoAction()
+        // document.querySelectorAll('*[laser-controls]').forEach(el => el.pause())
+      }
+    })
+
+    this.el.addEventListener('abuttondown', () => {
       if (!this.el.is("grabbing"))
       {
         this.el.sceneEl.systems['settings-system'].undoAction()

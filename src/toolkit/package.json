@@ -13,7 +13,8 @@
   "keywords": [
     "VR",
     "aframe",
-    "vartiste"
+    "vartiste",
+    "aframe-component"
   ],
   "author": "Zach Capalbo",
   "license": "Apache-2.0",

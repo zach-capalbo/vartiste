@@ -1,4 +1,5 @@
 const utils = AFRAME.utils
+const {Util} = require('./util.js')
 
 updateMatcapMap = function (shader, data) {
   var longType = 'matcap';
@@ -136,3 +137,36 @@ function getMaterialData (data, materialData) {
 
   return materialData;
 }
+
+AFRAME.registerComponent('apply-material-to-mesh', {
+  dependencies: ['material'],
+  init() {
+    Util.whenLoaded(this.el, () => this.applyMaterial())
+    this.el.addEventListener('object3dset', (e) => {
+      this.applyMaterial()
+    })
+    this.el.addEventListener('componentchanged', (e) => {
+      if (e.detail === 'material')
+      {
+        this.applyMaterial()
+      }
+    })
+  },
+  applyMaterial(mesh = undefined)
+  {
+    if (!this.el.hasAttribute('material')) return
+    if (!mesh) mesh = this.el.getObject3D('mesh')
+
+  if (!mesh) return
+
+
+    let material = this.el.components.material.material
+
+    mesh.traverse(o => {
+      if (o.material)
+      {
+        o.material = material
+      }
+    })
+  }
+})

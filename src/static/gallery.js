@@ -1,10 +1,16 @@
 const GALLERY_ENTRIES = [
-  {name: "birdcup_c", displayName: "Flying Bird Cup", description: "Virtual Reality Animated Ceramics."},
-  {name: "hubs_avatar", displayName:"Hubs Avatar", description: "Mozilla Hubs Avatar from the Mozilla Reality team. Click here to draw your own hubs avatar!"},
-  {name: "meredith", displayName: "Meredith", description: "Meredith the Moose" },
-  {name: "paper", displayName: "Paper Template", description: "A paper sketching starter template. Great for sketching and drawing. Best used with the detail pencil and medium-high opacity gray brush."},
-  {name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
-  {name: "ai_style", displayName: 'AI Style Transfer', description: "A template to get started using AI style transfer for painting."}
+  {section: 'Templates', entries: [
+    {name: "paper", displayName: "Paper Template", description: "A paper sketching starter template. Great for sketching and drawing."},
+    {name: "hubs_avatar", displayName:"Hubs Avatar", description: "Mozilla Hubs Avatar from the Mozilla Hubs team. Click here to draw your own hubs avatar!"},
+    {name: "paint-template", displayName: "Painting Template", description: "A starting point for painting kind of roughly resembling oil paintings."},
+    {name: "graffiti", displayName: "Graffiti Template", description: "A brick wall to paint on. Goes great with the spray can tool"},
+    {name: "ai_style", displayName: 'AI Style Transfer', description: "A template to get started using AI style transfer for painting."},
+  ]},
+  {section: 'Artwork', entries: [
+    {name: "birdcup_c", displayName: "Flying Bird Cup", description: "Virtual Reality Animated Ceramics."},
+    {name: "meredith", displayName: "Meredith", description: "Meredith the Moose" },
+    {name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
+  ]}
 ]
 
 class Gallery {

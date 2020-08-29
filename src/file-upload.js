@@ -4,9 +4,26 @@ import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 
+class URLFileAdapter {
+  constructor(url) {
+    this.url = url
+    this.name = url
+  }
+  async text() {
+    let resp = await fetch(this.url)
+    return await resp.text()
+  }
+}
+
+function toSrcString(file) {
+  if (file instanceof File) return URL.createObjectURL(file)
+  if (file instanceof URLFileAdapter) return file.url
+  return file
+}
+
 async function addImageLayer(file) {
   let image = new Image()
-  image.src = URL.createObjectURL(file)
+  image.src = toSrcString(file)
   image.id = "img"
 
   await new Promise((r,e) => image.onload = r)
@@ -33,7 +50,7 @@ export function addImageReferenceViewer(image) {
 
 async function addImageReference(file) {
   let image = new Image()
-  image.src = URL.createObjectURL(file)
+  image.src = toSrcString(file)
   image.id = "img"
 
   await new Promise((r,e) => image.onload = r)
@@ -46,7 +63,7 @@ async function addHDRImage(file) {
   await new Promise( (r,e) => {
 		new RGBELoader()
 			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
-			.load( URL.createObjectURL(file) , function ( texture, textureData ) {
+			.load( toSrcString(file) , function ( texture, textureData ) {
         document.querySelector('a-scene').systems['environment-manager'].installHDREnvironment(texture)
 				r()
 			} );
@@ -175,7 +192,7 @@ Util.registerComponentSystem('file-upload', {
       }
     }
   },
-  handleFile(file, {itemType, positionIdx}) {
+  handleFile(file, {itemType, positionIdx} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
@@ -217,5 +234,8 @@ Util.registerComponentSystem('file-upload', {
       console.log("Texted")
       settings.load(t)
     }).catch(e => console.error("Couldn't load", e))
-  }
+  },
+  handleURL(url, {positionIdx} = {}) {
+    this.handleFile(new URLFileAdapter(url))
+  },
 })

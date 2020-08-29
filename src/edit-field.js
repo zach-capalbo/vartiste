@@ -9,7 +9,8 @@ AFRAME.registerComponent('edit-field', {
     type: {type: 'string', default: 'number'},
     target: {type: 'selector'},
     component: {type: 'string'},
-    property: {type: 'string'}
+    property: {type: 'string'},
+    autoClear: {type: 'boolean', default: false}
   },
   events: {
     'popuplaunched': function(e) { this.connectKeyboard()},
@@ -41,7 +42,7 @@ AFRAME.registerComponent('edit-field', {
     this.el.addEventListener('popuplaunched', e => {
       numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
       numpad.setAttribute('visible', true)
-      if (this.data.type === 'number')
+      if (this.data.type === 'number' || this.data.autoClear)
       {
         this.setValue("")
       }
@@ -118,6 +119,15 @@ AFRAME.registerComponent('edit-field', {
   },
   clear(e) {
     this.setValue("")
+  },
+  async paste(e) {
+    this.inputField.focus()
+    if (!navigator.clipboard) {
+      document.execCommand("paste")
+      return
+    }
+
+    this.setValue(await navigator.clipboard.readText())
   },
   connectKeyboard() {
     console.log("Connecting keyboard")

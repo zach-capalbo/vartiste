@@ -2,6 +2,7 @@ import {Layer} from './layer.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
 import {addImageReferenceViewer} from './file-upload.js'
+import {Util} from './util.js'
 const FILE_VERSION = 2
 class ProjectFile {
   static update(obj) {
@@ -19,6 +20,7 @@ class ProjectFile {
     if (!('referenceImages' in obj)) obj.referenceImages = []
     if (!('environment' in obj)) obj.environment = {state: 'reset'}
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
+    if (!('tools' in obj)) obj.tools = []
 
     if ('skeletonator' in obj)
     {
@@ -133,6 +135,23 @@ class ProjectFile {
     {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
     }
+
+    for (let tool of obj.tools)
+    {
+      let el = document.createElement('a-entity')
+      compositor.el.sceneEl.append(el)
+      el.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: tool.component})
+      el.setAttribute(tool.component, tool.componentData)
+      if ('tooltip' in tool)
+      {
+        el.setAttribute('preactivate-tooltip', tool.tooltip)
+      }
+      let matrix = new THREE.Matrix4()
+      matrix.fromArray(tool.matrix)
+      Util.whenLoaded(el, () => {
+        Util.applyMatrix(matrix, el.object3D)
+      })
+    }
   }
 
   async _save() {
@@ -203,6 +222,22 @@ class ProjectFile {
       }
     }
     obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
+
+    obj.tools = []
+
+    // document.querySelectorAll('*[six-dof-tool]').forEach(el => {
+    document.querySelectorAll('*[pencil-tool]').forEach(el => {
+      let data = el.getAttribute('six-dof-tool')
+      if (!data.lockedClone) return
+      let lockedComponent = el.components[data.lockedComponent]
+      el.object3D.updateMatrixWorld()
+
+      obj.tools.push({
+        component: data.lockedComponent,
+        componentData: lockedComponent.stringify(lockedComponent.data),
+        matrix: el.object3D.matrixWorld.elements
+      })
+    })
 
     return obj
   }

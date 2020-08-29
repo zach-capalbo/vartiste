@@ -2,3 +2,5 @@
   a.control icon-button="#asset-lead-pencil" click-action="draw" tooltip='Draw'
   a.control icon-button="#asset-arrow-all" click-action="rotateCamera" tooltip="Rotate Camera"
   a.control icon-button="#asset-hand-no-lines" click-action="grab" tooltip="Grab"
+  a.control icon-button="#asset-arrow-left" click-action="rotateLeft" tooltip="Rotate View Left"
+  a.control icon-button="#asset-arrow-right" click-action="rotateRight" tooltip="Rotate View Right"
