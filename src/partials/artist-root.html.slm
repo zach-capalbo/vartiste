@@ -20,4 +20,5 @@ a-entity#artist-root
           manipulator="useRay: true"
           smooth-controller=""
           vartiste-rotation-button-mapping=""
+          leap-hand="hand: ${hand}"
         ]

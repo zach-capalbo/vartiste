@@ -184,7 +184,7 @@ Util.registerComponentSystem('file-upload', {
 
           console.log("dropping", item.type, item.kind, file.name)
 
-          this.handleFile(file, item.type)
+          this.handleFile(file, {itemType: item.type, positionIdx: referenceIdx++})
         }
       }
       else {
