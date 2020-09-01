@@ -114,6 +114,9 @@ AFRAME.registerComponent('smooth-controller', {
     console.log("Installing smooth controller")
     if (this.el.components['tracked-controls-webvr']) this.el.components['tracked-controls-webvr'].updatePose = updatePose
     if (this.el.components['tracked-controls-webxr']) this.el.components['tracked-controls-webxr'].updatePose = updatePoseXR
+  },
+  stabilize(scale = 1) {
+    stabilize.call(this, this.el.object3D, scale)
   }
 })
 

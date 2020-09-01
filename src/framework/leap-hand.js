@@ -125,7 +125,8 @@ Leap.Controller.plugin('transform', transform);
  */
 export const System = AFRAME.registerSystem('leap', {
   schema: {
-    vr: {default: 'desktop'},
+    // vr: {default: 'desktop'},
+    vr: {default: true},
     scale: {default: DEFAULT_SCALE},
     position: {
       type: 'vec3',
@@ -239,16 +240,44 @@ const Component = AFRAME.registerComponent('leap-hand', {
     this.hand = hand
 
     if (hand && hand.valid) {
-      // var rotationTarget = this.handMesh.object3D.children[24]
-      // rotationTarget.updateMatrixWorld()
-      // rotationTarget.matrixWorld.decompose(this.el.object3D.position, this.el.object3D.quaternion, this.el.object3D.scale)
+      this.palmDirection = this.palmDirection || new THREE.Vector3()
+      this.handDirection = this.handDirection || new THREE.Vector3()
+      this.handDirectionQuaternion = this.handDirectionQuaternion || new THREE.Quaternion()
+      this.cameraMatrix = this.cameraMatrix || new THREE.Matrix4()
+      this.inverseMatrix = this.inverseMatrix || new THREE.Matrix4()
+
       this.el.object3D.position.fromArray(hand.palmPosition)
 
-      this.el.object3D.matrix.lookAt(this.intersector.raycaster.ray.direction, new THREE.Vector3, this.el.sceneEl.object3D.up)
+      this.palmDirection.fromArray(hand.palmNormal)
+      this.palmDirection.multiplyScalar(-1)
+
+      this.handDirection.fromArray(hand.direction)
+
+      this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
+
+      // this.el.object3D.matrix.lookAt(this.handDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
+      // this.handDirectionQuaternion.setFromRotationMatrix(this.el.object3D.matrix)
+      // this.el.object3D.quaternion.slerp(this.handDirectionQuaternion, 0.3)
+      // this.el.object3D.updateMatrix()
+
+      // let cameraObject = document.getElementById('camera').object3D
+      // cameraObject.updateMatrix()
+      // this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
+      // this.inverseMatrix.getInverse(this.cameraMatrix)
+
+      // this.el.object3D.matrix.multiply(this.cameraMatrix)
+      // this.el.object3D.matrix.decompose(this.el.object3D.position, this.el.object3D.quaternion, this.el.object3D.scale)
+
+      if (this.el.hasAttribute('smooth-controller'))
+      {
+        this.el.components['smooth-controller'].stabilize(3)
+      }
 
       this.handMesh.scaleTo(hand);
       this.handMesh.formTo(hand);
+      // this.handMesh.object3D.matrix.multiply(this.cameraMatrix)
+      // this.handMesh.object3D.matrix.decompose(this.handMesh.object3D.position, this.handMesh.object3D.quaternion, this.handMesh.object3D.scale)
       this.grabStrengthBuffer.push(hand.grabStrength);
       this.pinchStrengthBuffer.push(hand.pinchStrength);
       this.grabStrength = circularArrayAvg(this.grabStrengthBuffer);
