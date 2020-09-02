@@ -170,6 +170,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
     holdDebounce:       {default: 100}, // ms
     holdSelector:       {default: '[holdable]'},
     holdSensitivity:    {default: 0.95}, // [0,1]
+    pinchSensitivity:    {default: 0.80}, // [0,1]
     releaseSensitivity: {default: 0.75}, // [0,1]
     pinchPressureStart: {default: 0.75}, // [0, 1]
     debug:              {default: true},
@@ -252,6 +253,9 @@ const Component = AFRAME.registerComponent('leap-hand', {
       this.palmDirection.multiplyScalar(-1)
 
       this.handDirection.fromArray(hand.direction)
+      this.handDirection.multiplyScalar(-1)
+
+      this.palmDirection.lerp(this.handDirection, 0.3)
 
       this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
@@ -261,9 +265,11 @@ const Component = AFRAME.registerComponent('leap-hand', {
       // this.el.object3D.quaternion.slerp(this.handDirectionQuaternion, 0.3)
       // this.el.object3D.updateMatrix()
 
-      // let cameraObject = document.getElementById('camera').object3D
+      let cameraObject = document.getElementById('camera-root').object3D
       // cameraObject.updateMatrix()
-      // this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
+      this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
+      this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
+      this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
       // this.inverseMatrix.getInverse(this.cameraMatrix)
 
       // this.el.object3D.matrix.multiply(this.cameraMatrix)
@@ -276,17 +282,17 @@ const Component = AFRAME.registerComponent('leap-hand', {
 
       this.handMesh.scaleTo(hand);
       this.handMesh.formTo(hand);
-      // this.handMesh.object3D.matrix.multiply(this.cameraMatrix)
-      // this.handMesh.object3D.matrix.decompose(this.handMesh.object3D.position, this.handMesh.object3D.quaternion, this.handMesh.object3D.scale)
+      // this.handMesh.object3D.matrix.premultiply(this.cameraMatrix)
+      // this.cameraMatrix.decompose(this.handMesh.object3D.position, this.handMesh.object3D.quaternion, this.handMesh.object3D.scale)
       this.grabStrengthBuffer.push(hand.grabStrength);
       this.pinchStrengthBuffer.push(hand.pinchStrength);
       this.grabStrength = circularArrayAvg(this.grabStrengthBuffer);
       this.pinchStrength = circularArrayAvg(this.pinchStrengthBuffer);
       var isHolding = this.grabStrength
         > (this.isHolding ? this.data.releaseSensitivity : this.data.holdSensitivity);
-      var isPinching = !isHolding && this.pinchStrength
-        > (this.isPinching ? this.data.releaseSensitivity : this.data.holdSensitivity);
-      this.intersector.update(this.data, this.el.object3D, hand, isHolding || isPinching);
+      var isPinching = this.pinchStrength
+        > (this.isPinching ? this.data.releaseSensitivity : this.data.pinchSensitivity);
+      //this.intersector.update(this.data, this.el.object3D, hand, isHolding || isPinching);
       this.pinchEvent.value = THREE.Math.mapLinear(this.pinchStrength, this.data.pinchPressureStart, 1, 0, 1)
       this.el.emit('triggerchanged', this.pinchEvent)
       if (isPinching && !this.isPinching) this.pinch(hand);
@@ -323,11 +329,13 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   pinch: function (hand) {
+    console.log("Pinch")
     this.el.emit('triggerdown')
     this.isPinching = true
   },
 
   unpinch: function(hand) {
+    console.log("unPinch")
     this.el.emit('triggerup')
     this.isPinching = false
   },
