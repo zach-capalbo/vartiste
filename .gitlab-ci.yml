@@ -34,6 +34,9 @@ test:
 chromium:
   stage: test
   script:
+    - apt-get update
+    - apt-get install -y zip
+    - mv dist chromium/contents
     - pushd chromium/contents
     - zip -u ../chromium-vartiste.zip *
     - popd
@@ -42,7 +45,7 @@ chromium:
   artifacts:
     expire_in: 2 days
     paths:
-      - dist
+      - dist/*.zip
 
 pages:
   stage: deploy
