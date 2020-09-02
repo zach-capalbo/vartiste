@@ -11,6 +11,8 @@ as the [Valve Index](https://store.steampowered.com/valveindex) or
 
 <a class="launch-button" href="index.html">LAUNCH VARTISTE</a>
 
+<small><a href="#download">Or Download below...</a></small>
+
 VARTISTE works similar to desktop image editing software you may be used to; it
 has layers, brushes, color wheels and palettes. However, it's specially designed
 for VR headset use, so it will respond to controller pressure and position, and
@@ -245,6 +247,25 @@ applied to different frames, giving a kind of animated brush effect.
   that:
   - Use a brush that doesn't connect lines (most of the textured brushes)
   - Use a different method for unwrapping your model UV map
+
+<a name="download"></a>
+## Download
+
+You can download VARISTE as well. WebXR is currently evolving really quickly,
+and sometimes things break, or change, or become really cumbersome. To make it a
+little easier, I've packaged a version of Chromium that I've tested with
+VARTISTE, along with shortcuts to start in both Oculus and SteamVR modes. No
+more confusing command line switches. Plus it will stay separate from your main
+browser, to keep your browsing safe from crashes and experimental features.
+
+<a class="launch-button" href="chromium-vartiste.zip">Download VARTISTE for Windows</a>
+
+To run, extract the zip file to a folder, and then use the shortcuts for either
+SteamVR or Oculus mode.
+
+Linux:
+
+**COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
 ## Issues
 

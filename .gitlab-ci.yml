@@ -36,9 +36,9 @@ chromium:
   script:
     - apt-get update
     - apt-get install -y zip
-    - mv dist chromium/contents
+    - mv dist chromium/contents/chromium-vartiste
     - pushd chromium/contents
-    - zip -u ../chromium-vartiste.zip *
+    - zip -ur ../chromium-vartiste.zip *
     - popd
     - mkdir -p dist
     - mv chromium/chromium-vartiste.zip dist
