@@ -30,6 +30,20 @@ test:
     when: always
     paths:
       - tests/output
+
+chromium:
+  stage: test
+  script:
+    - pushd chromium/contents
+    - zip -u ../chromium-vartiste.zip *
+    - popd
+    - mkdir -p dist
+    - mv chromium/chromium-vartiste.zip dist
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - dist
+
 pages:
   stage: deploy
   script:
@@ -40,6 +54,17 @@ pages:
       - public
   only:
     - release
+
+fake_pages:
+  when: manual
+  stage: deploy
+  script:
+    - mkdir -p public
+    - mv dist/* public
+  artifacts:
+    paths:
+      - public
+
 
 toolkit:
   stage: deploy
