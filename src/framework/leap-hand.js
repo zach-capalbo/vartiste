@@ -165,7 +165,6 @@ var nextID = 1;
 const Component = AFRAME.registerComponent('leap-hand', {
   schema: {
     hand:               {default: '', oneOf: ['left', 'right'], required: true},
-    enablePhysics:      {default: false},
     holdDistance:       {default: 0.2}, // m
     holdDebounce:       {default: 100}, // ms
     holdSelector:       {default: '[holdable]'},
@@ -211,16 +210,6 @@ const Component = AFRAME.registerComponent('leap-hand', {
     }
   },
 
-  update: function () {
-    var data = this.data;
-    if (data.enablePhysics && !this.handBody) {
-      this.handBody = new HandBody(this.el, this);
-    } else if (!data.enablePhysics && this.handBody) {
-      this.handBody.remove();
-      this.handBody = null;
-    }
-  },
-
   remove: function () {
     if (this.handMesh) {
       this.el.removeObject3D('mesh');
@@ -243,9 +232,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
     if (hand && hand.valid) {
       this.palmDirection = this.palmDirection || new THREE.Vector3()
       this.handDirection = this.handDirection || new THREE.Vector3()
-      this.handDirectionQuaternion = this.handDirectionQuaternion || new THREE.Quaternion()
       this.cameraMatrix = this.cameraMatrix || new THREE.Matrix4()
-      this.inverseMatrix = this.inverseMatrix || new THREE.Matrix4()
 
       this.el.object3D.position.fromArray(hand.palmPosition)
 
@@ -260,20 +247,10 @@ const Component = AFRAME.registerComponent('leap-hand', {
       this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
 
-      // this.el.object3D.matrix.lookAt(this.handDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
-      // this.handDirectionQuaternion.setFromRotationMatrix(this.el.object3D.matrix)
-      // this.el.object3D.quaternion.slerp(this.handDirectionQuaternion, 0.3)
-      // this.el.object3D.updateMatrix()
-
       let cameraObject = document.getElementById('camera-root').object3D
-      // cameraObject.updateMatrix()
       this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
       this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
       this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
-      // this.inverseMatrix.getInverse(this.cameraMatrix)
-
-      // this.el.object3D.matrix.multiply(this.cameraMatrix)
-      // this.el.object3D.matrix.decompose(this.el.object3D.position, this.el.object3D.quaternion, this.el.object3D.scale)
 
       if (this.el.hasAttribute('smooth-controller'))
       {
@@ -282,8 +259,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
 
       this.handMesh.scaleTo(hand);
       this.handMesh.formTo(hand);
-      // this.handMesh.object3D.matrix.premultiply(this.cameraMatrix)
-      // this.cameraMatrix.decompose(this.handMesh.object3D.position, this.handMesh.object3D.quaternion, this.handMesh.object3D.scale)
+
       this.grabStrengthBuffer.push(hand.grabStrength);
       this.pinchStrengthBuffer.push(hand.pinchStrength);
       this.grabStrength = circularArrayAvg(this.grabStrengthBuffer);
@@ -292,15 +268,20 @@ const Component = AFRAME.registerComponent('leap-hand', {
         > (this.isHolding ? this.data.releaseSensitivity : this.data.holdSensitivity);
       var isPinching = this.pinchStrength
         > (this.isPinching ? this.data.releaseSensitivity : this.data.pinchSensitivity);
-      //this.intersector.update(this.data, this.el.object3D, hand, isHolding || isPinching);
-      this.pinchEvent.value = THREE.Math.mapLinear(this.pinchStrength, this.data.pinchPressureStart, 1, 0, 1)
-      this.el.emit('triggerchanged', this.pinchEvent)
-      if (isPinching && !this.isPinching) this.pinch(hand);
-      if (!isPinching && this.isPinching) this.unpinch(hand);
+
       if ( isHolding && !this.isHolding) this.hold(hand);
       if (!isHolding &&  this.isHolding) this.release(hand);
+      if (isPinching && !this.isPinching) this.pinch(hand);
+      if (!isPinching && this.isPinching) this.unpinch(hand);
+
+      if (!this.isHolding)
+      {
+        this.pinchEvent.value = THREE.Math.mapLinear(this.pinchStrength, this.data.pinchPressureStart, 1, 0, 1)
+        this.el.emit('triggerchanged', this.pinchEvent)
+      }
     } else if (this.isHolding) {
       this.release(null);
+      this.unpinch(null)
     }
 
     if (hand && !this.isVisible) {
@@ -329,12 +310,14 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   pinch: function (hand) {
+    if (this.isHolding) return
     console.log("Pinch")
     this.el.emit('triggerdown')
     this.isPinching = true
   },
 
   unpinch: function(hand) {
+    if (this.isHolding) return
     console.log("unPinch")
     this.el.emit('triggerup')
     this.isPinching = false
