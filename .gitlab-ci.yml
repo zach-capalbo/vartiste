@@ -30,6 +30,38 @@ test:
     when: always
     paths:
       - tests/output
+
+.chromium_base: &chromium_base
+  stage: test
+  script:
+    - apt-get update
+    - apt-get install -y zip
+    - mv dist chromium/contents/chromium-vartiste
+    - pushd chromium/contents
+    - zip -ur ../chromium-vartiste.zip *
+    - popd
+  artifacts:
+    paths:
+      - chromium/*.zip
+
+chromium:
+  <<: *chromium_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/*.zip
+
+chromium_dev:
+  <<: *chromium_base
+  except:
+    - release
+  when: manual
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - chromium/*.zip
+
 pages:
   stage: deploy
   script:
@@ -40,6 +72,18 @@ pages:
       - public
   only:
     - release
+
+fake_pages:
+  when: manual
+  stage: deploy
+  script:
+    - mkdir -p public
+    - mv dist/* public
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - public
+
 
 toolkit:
   stage: deploy
@@ -53,3 +97,16 @@ toolkit:
     expire_in: 1 week
     paths:
       - 'dist/*.tgz'
+
+itch:
+  stage: deploy
+  only:
+    - release
+  script:
+    - curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+    - unzip butler.zip
+    - chmod +x butler
+    - ./butler -V
+    - ./butler push dist/chrom*.zip zach-geek/vartiste:win32
+    - rm dist/chrom*.zip
+    - ./butler push dist zach-geek/vartiste:html5

@@ -11,6 +11,8 @@ as the [Valve Index](https://store.steampowered.com/valveindex) or
 
 <a class="launch-button" href="index.html">LAUNCH VARTISTE</a>
 
+<small><a href="#download">Or Download below...</a></small>
+
 VARTISTE works similar to desktop image editing software you may be used to; it
 has layers, brushes, color wheels and palettes. However, it's specially designed
 for VR headset use, so it will respond to controller pressure and position, and
@@ -222,6 +224,7 @@ applied to different frames, giving a kind of animated brush effect.
     - Works with Chrome canary 86.0.4214.0:
       - Oculus: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`
       - SteamVR: `start chrome.exe --disable-features=XRSandbox --enable-features=OpenVR --force-webxr-runtime=OpenVR`
+    - [Or you can download a Chromium version with pretested flags](#download)
 - **Trick:** To _Copy and Paste_ try this:
   1. Duplicate ![Plus Box Multiple](../assets/plus-box-multiple.png) the layer
   1. Erase the parts of the duplicated layer that you don't want copied
@@ -245,6 +248,23 @@ applied to different frames, giving a kind of animated brush effect.
   that:
   - Use a brush that doesn't connect lines (most of the textured brushes)
   - Use a different method for unwrapping your model UV map
+
+<a name="download"></a>
+## Download
+
+You can download VARISTE as well. WebXR is currently evolving really quickly,
+and sometimes things break, or change, or become really cumbersome. To make it a
+little easier, I've packaged a version of Chromium that I've tested with
+VARTISTE, along with a shortcut to start in SteamVR mode. No more confusing
+command line switches. Plus it will stay separate from your main browser, to
+keep your browsing safe from crashes and experimental features.
+
+<a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
+
+To run, extract the zip file to a folder, and then use the shortcuts for either
+SteamVR ~or Oculus mode~ (Oculus flags don't currently seem to work with Chromium, but Oculus works with SteamVR, so you can use that).
+
+**Linux COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
 ## Issues
 

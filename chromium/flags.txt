@@ -1,0 +1,16 @@
+--disable-features=XRSandbox
+--enable-features=OpenVR
+--force-webxr-runtime=OpenVR
+--app=https://vartiste.xyz
+--autoplay-policy=no-user-gesture-required
+
+--disable-frame-rate-limit
+--disable-gpu-sandbox
+
+--disable-gpu-vsync
+
+--disable-popup-blocking
+--disable-sync
+--disable-web-security
+
+--profile-directory

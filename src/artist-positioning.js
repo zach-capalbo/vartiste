@@ -54,3 +54,18 @@ AFRAME.registerComponent('between-target-positioner', {
   //   this.resetPosition()
   // }
 })
+
+AFRAME.registerComponent('reset-transform-on-vr', {
+  dependencies: ["look-controls"],
+  init() {
+    this.el.components['look-controls'].onEnterVR = (function () {
+      console.log("New neter")
+
+      // if (!this.el.sceneEl.checkHeadsetConnected()) { return; }
+      this.saveCameraPose();
+      this.el.object3D.position.set(0, 0, 0);
+      return
+      this.el.object3D.updateMatrix();
+    }).bind(this.el.components['look-controls'])
+  }
+})

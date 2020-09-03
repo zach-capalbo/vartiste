@@ -1,11 +1,15 @@
 // require('./framework/aframe.js')
 // require('aframe-environment-component')
 
+// window.Leap = require('leapjs')
+// require('aframe-leap-hands');
+
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
 require('./framework/hide-in-ar.js')
 require('./framework/billboard.js')
 require('./framework/fix-lost-controllers.js')
+//require('./framework/leap-hand.js')
 // require('./framework/three-skip-invisible-update.js')
 
 require('./paint-system')
