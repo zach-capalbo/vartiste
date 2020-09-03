@@ -224,6 +224,7 @@ applied to different frames, giving a kind of animated brush effect.
     - Works with Chrome canary 86.0.4214.0:
       - Oculus: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`
       - SteamVR: `start chrome.exe --disable-features=XRSandbox --enable-features=OpenVR --force-webxr-runtime=OpenVR`
+    - [Or you can download a Chromium version with pretested flags](#download)
 - **Trick:** To _Copy and Paste_ try this:
   1. Duplicate ![Plus Box Multiple](../assets/plus-box-multiple.png) the layer
   1. Erase the parts of the duplicated layer that you don't want copied
@@ -263,9 +264,7 @@ browser, to keep your browsing safe from crashes and experimental features.
 To run, extract the zip file to a folder, and then use the shortcuts for either
 SteamVR or Oculus mode.
 
-Linux:
-
-**COMING SOON**. But for now, you can install chromium version 86.0.4231.0
+**Linux COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
 ## Issues
 
