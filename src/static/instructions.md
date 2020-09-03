@@ -259,7 +259,7 @@ VARTISTE, along with shortcuts to start in both Oculus and SteamVR modes. No
 more confusing command line switches. Plus it will stay separate from your main
 browser, to keep your browsing safe from crashes and experimental features.
 
-<a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/dev/artifacts/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
+<a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
 
 To run, extract the zip file to a folder, and then use the shortcuts for either
 SteamVR or Oculus mode.

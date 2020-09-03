@@ -31,7 +31,7 @@ test:
     paths:
       - tests/output
 
-chromium:
+.chromium_base: &chromium_base
   stage: test
   script:
     - apt-get update
@@ -41,7 +41,24 @@ chromium:
     - zip -ur ../chromium-vartiste.zip *
     - popd
   artifacts:
-    expire_in: 2 days
+    paths:
+      - chromium/*.zip
+
+chromium:
+  <<: *chromium_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/*.zip
+
+chromium_dev:
+  <<: *chromium_base
+  except:
+    - release
+  when: manual
+  artifacts:
+    expire_in: 1 day
     paths:
       - chromium/*.zip
 
