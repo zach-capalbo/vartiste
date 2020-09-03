@@ -255,14 +255,14 @@ applied to different frames, giving a kind of animated brush effect.
 You can download VARISTE as well. WebXR is currently evolving really quickly,
 and sometimes things break, or change, or become really cumbersome. To make it a
 little easier, I've packaged a version of Chromium that I've tested with
-VARTISTE, along with shortcuts to start in both Oculus and SteamVR modes. No
-more confusing command line switches. Plus it will stay separate from your main
-browser, to keep your browsing safe from crashes and experimental features.
+VARTISTE, along with a shortcut to start in SteamVR mode. No more confusing
+command line switches. Plus it will stay separate from your main browser, to
+keep your browsing safe from crashes and experimental features.
 
 <a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
 
 To run, extract the zip file to a folder, and then use the shortcuts for either
-SteamVR or Oculus mode.
+SteamVR ~or Oculus mode~ (Oculus flags don't currently seem to work with Chromium, but Oculus works with SteamVR, so you can use that).
 
 **Linux COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
