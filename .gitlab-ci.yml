@@ -40,12 +40,10 @@ chromium:
     - pushd chromium/contents
     - zip -ur ../chromium-vartiste.zip *
     - popd
-    - mkdir -p dist
-    - mv chromium/chromium-vartiste.zip dist
   artifacts:
     expire_in: 2 days
     paths:
-      - dist/*.zip
+      - chromium/*.zip
 
 pages:
   stage: deploy
@@ -65,6 +63,7 @@ fake_pages:
     - mkdir -p public
     - mv dist/* public
   artifacts:
+    expire_in: 2 days
     paths:
       - public
 
@@ -91,4 +90,6 @@ itch:
     - unzip butler.zip
     - chmod +x butler
     - ./butler -V
+    - ./butler push dist/chrom*.zip zach-geek/vartiste:win32
+    - rm dist/chrom*.zip
     - ./butler push dist zach-geek/vartiste:html5
