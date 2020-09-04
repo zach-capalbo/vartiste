@@ -103,14 +103,16 @@ AFRAME.registerComponent('draw-canvas', {
 
     hqBlending = hqBlending || this.brush.hqBlending === 'always'
 
-    if (!this.wasDrawing && sourceEl)
+    let firstDraw = !this.wasDrawing
+    this.wasDrawing = true
+
+    if (firstDraw && sourceEl)
     {
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false
         delete this.imageData
       }, {once: true})
-      this.wasDrawing = true
       this.undoFrame = this.currentFrame
       document.getElementById('recent-colors').components['palette'].addToPalette()
     }
@@ -136,6 +138,12 @@ AFRAME.registerComponent('draw-canvas', {
     }
 
     try {
+      if (firstDraw && brush.startDrawing)
+      {
+        let drawOptions = {rotation, pressure, distance, imageData, scale}
+        brush.startDrawing(ctx, x, y, drawOptions)
+      }
+
       if (brush.connected && highQuality && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )

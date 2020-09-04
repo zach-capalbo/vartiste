@@ -16,7 +16,14 @@ for (let k in DEFAULT_BUTTON_STYLE_SCHEMA) {
 }
 
 AFRAME.registerComponent('button-style', {
-  schema: DEFAULT_BUTTON_STYLE_SCHEMA
+  schema: {
+    color: {type: 'color', default: "#abe"},
+    clickColor: {type: 'color', default: '#aea'},
+    intersectedColor: {type: 'color', default: '#cef'},
+    toggleOnColor: {type: 'color', default: '#bea'},
+    keepAspect: {type: 'bool', default: true},
+    buttonType: {default: 'button'}
+  }
 })
 
 AFRAME.registerSystem('icon-button', {

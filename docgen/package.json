@@ -1,0 +1,23 @@
+{
+  "name": "vartiste-docgen",
+  "version": "1.0.0",
+  "description": "Denerates documentation for VARTISTE / VARTISTE toolkit",
+  "main": "docgen.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/zach-geek/vartiste.git"
+  },
+  "author": "Zach Capalbo <zach.geek@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://gitlab.com/zach-geek/vartiste/issues"
+  },
+  "homepage": "https://gitlab.com/zach-geek/vartiste#README",
+  "dependencies": {
+    "acorn": "^8.0.1",
+    "ls": "^0.2.1"
+  }
+}

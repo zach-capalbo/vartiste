@@ -14,7 +14,7 @@ function closestPointOnMesh(point, mesh) {
 
   let faceVertex = (v, f, i) => {
     let baseIdx = (f * 9) + i * 3
-    geometry.attributes.position[baseIdx], b: geometry.attributes.position[baseIdx + 1], c: geometry.attributes.position[baseIdx + 2]
+    // geometry.attributes.position[baseIdx], b: geometry.attributes.position[baseIdx + 1], c: geometry.attributes.position[baseIdx + 2]
   }
   for (let f = 0; f < numFaces; f++)
   {
