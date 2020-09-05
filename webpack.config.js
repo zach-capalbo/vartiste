@@ -163,10 +163,6 @@ let toolkitDoc = Object.assign({
       }),
     ]
   }, config, {
-    output: {
-      filename: 'doc.js',
-      path: path.resolve(__dirname, 'dist'),
-    },
     module: {
       rules: [
         {
