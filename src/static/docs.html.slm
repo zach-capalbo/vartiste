@@ -7,7 +7,10 @@ html
     header
       img src="../assets/vartiste.png" class="logo"
       a class="vartiste-url" href="https://vartiste.xyz" https://vartiste.xyz
-    #readme
+    section
+      #readme
+    section
+      h1 Component Reference
     #content.docs
     footer
       span<> © 2020

@@ -1,4 +1,5 @@
 @import 'style.styl'
+@import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@500&display=swap');
 
 header
   max-width 80em
@@ -14,6 +15,12 @@ header
 
 code, pre
   text-align: left
+  font-family: 'Fira Mono', monospace
+
+pre
+  background-color: #f0f0f0
+  padding 0.3em
+  border-radius: 3px
 
 #readme
   code, pre
@@ -41,7 +48,7 @@ hr
     text-align left
     font-size 0.8em
     & code
-      font-size 2.5em
+      font-size 2.0em
       margin: 0 1em
   h3
     float right
