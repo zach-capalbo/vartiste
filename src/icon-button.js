@@ -15,17 +15,26 @@ for (let k in DEFAULT_BUTTON_STYLE_SCHEMA) {
   DEFAULT_BUTTON_STYLE[k] = DEFAULT_BUTTON_STYLE_SCHEMA[k].default
 }
 
+// Allows you to set the styling for an `icon-button`.
+//
+// E.g.: `<a-entity icon-button="#my-icon" button-style="color: blue"></a-entity>`
 AFRAME.registerComponent('button-style', {
   schema: {
     color: {type: 'color', default: "#abe"},
     clickColor: {type: 'color', default: '#aea'},
     intersectedColor: {type: 'color', default: '#cef'},
     toggleOnColor: {type: 'color', default: '#bea'},
+
+    // If true, preserves icon image aspect ratio
     keepAspect: {type: 'bool', default: true},
+
+    // Either 'flat' or 'button'
     buttonType: {default: 'button'}
   }
 })
 
+// System to handle caching and sharing of materials for icon buttons. At the
+// moment, it is best not to change these values dynamically.
 AFRAME.registerSystem('icon-button', {
   schema: {
     shader: {default: 'matcap'},
@@ -69,8 +78,20 @@ AFRAME.registerSystem('icon-button', {
   }
 })
 
+// Creates a square, clickable button with an icon on front.
+//
+// #### Usage Notes
+//
+// - Multiple `icon-button` will automatically arrange themselves in a row
+// depending on how many siblings it has in its parent element.
+// - `icon-button` has an implicit [`propogate-grab`](#propogate-grab), so
+//   placing them as children of a grabbable entity will automatically redirect
+//   grabs of the icon-button to the grabbable parent.
 AFRAME.registerComponent('icon-button', {
   dependencies: ['button-style'],
+
+  // Should be a selector for an image asset, or a texture map (anything that
+  // can go into a `material` `map` property should work)
   schema: {type:'string', default: ""},
   init() {
     let width = this.system.width
@@ -215,11 +236,18 @@ AFRAME.registerComponent('icon-button', {
   }
 })
 
+// Turns an [`icon-button`](#icon-button) into a toggleable button. Can store
+// the toggle state internally, or set and track a property on a component.
 AFRAME.registerComponent('toggle-button', {
   schema: {
+    // Which element contains the component to set the property on
     target: {type: 'selector'},
+    // Which component to set the property on
     component: {type: 'string'},
+    // Which property to toggle
     property: {type: 'string'},
+
+    // State of being toggled, when not using target and component
     toggled: {type: 'boolean', default: false}
   },
   events: {
@@ -287,10 +315,16 @@ AFRAME.registerComponent('toggle-button', {
   }
 })
 
+// Calls a method of a system or system-component (a component on the scene
+// element) when the element recieves a `click` event.
 AFRAME.registerComponent('system-click-action', {
   schema: {
+    // You should set either system or component
     system: {type: 'string'},
+    // You should set either system or component
     component: {type: 'string'},
+
+    // The name of the method to call when clicked
     action: {type: 'string'}
   },
   events: {
@@ -309,6 +343,9 @@ AFRAME.registerComponent('system-click-action', {
   }
 })
 
+// Automatically arrange multply rows of `icon-button`s. This will set its
+// y-position based on how many icon-rows there are before it in the parent
+// element.
 AFRAME.registerComponent('icon-row', {
   init() {
     let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)

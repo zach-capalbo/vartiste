@@ -1,6 +1,9 @@
+// Sets `needsUpdate = true` on the element's mesh's material at a throttled
+// interval. *Note,* this will only update visible meshes.
 AFRAME.registerComponent('canvas-updater', {
   dependencies: ['geometry', 'material'],
   schema: {
+    // Minimum interval milliseconds between updates
     throttle: {type: 'int', default: 300}
   },
 

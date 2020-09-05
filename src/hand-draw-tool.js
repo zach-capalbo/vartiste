@@ -2,6 +2,10 @@ import {Pool} from './pool.js'
 import {Sfx} from './sfx.js'
 import shortid from 'shortid'
 
+// Allows drawing to a [`draw-canvas`](#draw-canvas) via a raycaster.
+//
+// *Note,* this uses the [`paint-system`](#paint-system) to set information
+// about the brush, color, opacity, etc
 AFRAME.registerComponent('hand-draw-tool', {
   dependencies: ['raycaster'],
   schema: {
@@ -251,6 +255,10 @@ AFRAME.registerSystem('button-caster', {
   }
 })
 
+// Sends button press events to the closest object intersected by this element's
+// raycaster component. This way, components can listen to, eg, 'abuttondown'
+// and 'abuttonup' events on their own elements, rather than having to look for
+// every possible controller which could emit those events.
 AFRAME.registerComponent('button-caster', {
   init() {
     this.system.register(this.el)

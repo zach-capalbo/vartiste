@@ -1,12 +1,20 @@
 const shelfHtml = require('./partials/shelf.html.slm')
 const {Util} = require('./util.js')
 
+// A moveable container for other components, consisting of a handlebar and a
+// wood-like background
 AFRAME.registerComponent('shelf', {
   schema: {
     width: {default: 4},
     height: {default: 3},
+
+    // Background & grabber offset relative to contents
     offset: {type: 'vec3', default: '0 0 0'},
+
+    //  Enables the [frame](#frame) component for the shelf when true
     frame: {default: true},
+
+    // Possible future use for documentation or adding a titlebar
     name: {type: 'string'}
   },
   init() {

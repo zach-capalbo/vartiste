@@ -1,10 +1,12 @@
 import {BrushList} from './brush-list.js'
 
+// Manages drawing options such as paint brush and color
 AFRAME.registerSystem('paint-system', {
   schema: {
     color: {type: 'color', default: '#000'},
     opacity: {type: 'float', default: 0.7},
     brushScale: {type: 'float', default: 1},
+    // Index into the brush list provided by `brush-list.js`
     brushIndex: {type: 'int', default: 0},
     rotateBrush: {type: 'bool', default: true},
     wrapX: {type: 'bool', default: false},

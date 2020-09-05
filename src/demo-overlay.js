@@ -1,5 +1,9 @@
 import {JoystickDirections, Axes} from './joystick-directions.js'
 
+// Overlays two controllers attached to the camera that display which buttons
+// are being pressed. Useful for HMD-screen capture demos. Currently only oculus
+// touch controllers supported. Only enabled when `?demoMode=true` is appended
+// to the URL
 AFRAME.registerSystem('demo-overlay', {
   init() {
     let params = new URLSearchParams(document.location.search)

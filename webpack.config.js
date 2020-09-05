@@ -148,11 +148,76 @@ let toolkitTest = Object.assign({
     ],
   }, config);
 
+let toolkitDoc = Object.assign({
+    entry: {
+      toolkitDoc: `./src/docgen-entry.js`
+    },
+    plugins: [
+      // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
+      // new CleanWebpackPlugin(),
+      new FaviconsWebpackPlugin(faviconPath),
+      new HtmlWebpackPlugin({
+        template: `./src/static/docs.html.slm`,
+        filename: `docs.html`,
+        // inject: false
+      }),
+    ]
+  }, config, {
+    output: {
+      filename: 'doc.js',
+      path: path.resolve(__dirname, 'dist'),
+    },
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          exclude: /(node_modules|bower_components|index\.js|docgen-entry)/,
+          use: [
+            // {loader: 'file-loader', options: {
+            //   esModule: false,
+            //   name: '[name].doc.html'
+            // }},
+            {loader: 'html-loader'},
+            {loader: 'markdown-loader' },
+            {loader: path.resolve('./docgen/docgen-loader.js')},
+          ]
+        },
+        {
+          test: /\.html\.(slm|slim)$/,
+          use: [
+            {loader: 'html-loader'},
+            {loader: path.resolve('./slm-loader.js'), options: {useCache: false, cache: false} }
+          ]
+        },
+        { test: /oss-licenses-used/,loader: 'raw-loader'},
+        { test: /\.html\.(pug)$/, loader: 'pug-loader' },
+        { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
+        { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
+        { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
+        {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr)$/i,
+          use: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: 8192,
+                esModule: false,
+                fallback: require.resolve('file-loader'),
+                name: 'asset/[contenthash].[ext]',
+              },
+            },
+          ]
+        }
+      ]
+    }
+  });
+
 if (process.env.VARTISTE_TOOLKIT==="true")
 {
-  module.exports = [toolkit, toolkitTest]
+  // module.exports = [toolkit, toolkitTest, toolkitDoc]
 }
 else
 {
-  module.exports = [app, toolkit, toolkitTest].concat(static)
+  // module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
 }
+
+module.exports = [toolkitDoc]

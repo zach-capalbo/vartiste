@@ -40,7 +40,7 @@ updateMatcapMap = function (shader, data) {
   }
 };
 
-
+// Wraps a [THREE.MeshMatcapMaterial](https://threejs.org/docs/#api/en/materials/MeshMatcapMaterial)
 AFRAME.registerShader('matcap', {
   schema: {
     color: {type: 'color'},
@@ -138,6 +138,11 @@ function getMaterialData (data, materialData) {
   return materialData;
 }
 
+// Applies this element's
+// [`material`](https://aframe.io/docs/1.0.0/components/material.html) component
+// material to any mesh that gets set for the element. Useful, for instance, for
+// replacing the material on a
+// [`gltf-model`](https://aframe.io/docs/1.0.0/components/gltf-model.html)
 AFRAME.registerComponent('apply-material-to-mesh', {
   dependencies: ['material'],
   init() {

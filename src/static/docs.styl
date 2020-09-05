@@ -1,0 +1,58 @@
+@import 'style.styl'
+
+header
+  max-width 80em
+  margin: auto
+  text-align: center
+.logo, .screenshot
+  max-width: 100%
+  margin auto
+#content, #readme
+  max-width: 80em//calc(100% - 2em)
+  width: 100%
+  margin: auto
+
+code, pre
+  text-align: left
+
+#readme
+  code, pre
+    max-width: 100%
+    overflow-x: auto
+
+hr
+  border: 1px solid #eee
+  margin 2em
+
+.docs
+  h1
+    margin-block-start: 0em
+    text-align: left
+    position: absolute
+    left: 3px
+    font-size: medium
+    color: #aaa
+
+  h2
+    margin-block-start: 5em
+    text-align left
+    font-size 0.8em
+    & code
+      font-size 2.5em
+      margin: 0 1em
+  h3
+    float right
+
+  table
+    border-collapse: collapse
+    width 100%
+    max-width 100%
+    // transform: translate(-12.5%, 0)
+
+  tr:hover
+
+  th, td
+    border 1px solid #eee
+    padding 0.4em
+    min-width: 8em
+    word-wrap: break-word

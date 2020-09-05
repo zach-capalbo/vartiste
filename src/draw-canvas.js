@@ -2,9 +2,14 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
 
+// Allows painting to a canvas with a [`hand-draw-tool`](#hand-draw-tool). See
+// the VARTISTE toolkit demo for example usage
 AFRAME.registerComponent('draw-canvas', {
   schema: {
+    // Target canvas for painting
     canvas: {type: 'selector'},
+
+    // For VARTISTE use
     compositor: {type: 'selector'}
   },
 

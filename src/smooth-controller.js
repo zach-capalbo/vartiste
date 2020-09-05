@@ -100,8 +100,11 @@ function updatePoseXR() {
   stabilize.call(this, object3D, 2)
 }
 
+// Smooths the movements of VR controllers using a rolling average.
 AFRAME.registerComponent('smooth-controller', {
   schema: {
+    // Amount of smoothing to apply. Higher means more smoothing, but slower
+    // response to movement.
     amount: {default: 4}
   },
   init() {
@@ -120,6 +123,7 @@ AFRAME.registerComponent('smooth-controller', {
   }
 })
 
+// Forces the raycaster origin to [0,0,0]
 AFRAME.registerComponent('fix-raycaster', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {

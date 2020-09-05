@@ -17,11 +17,27 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
   function commentForLocation(loc)
   {
-      let comment = comments.find(c => (c.loc.line || c.loc.end.line) + 1 == loc.start.line)
+      let comment = []
 
-      if (!comment) return undefined
+      let startLine = loc.start.line
+      let currentComment
 
-      return comment.text.trim()
+      do {
+        currentComment = comments.find(c => (c.loc.line || c.loc.end.line) + 1 == startLine)
+
+        if (currentComment)
+        {
+          comment.push(currentComment.text.trim())
+          startLine = currentComment.loc.line || c.loc.start.line
+        }
+
+      } while(currentComment)
+
+      if (comment.length == 0) return undefined
+
+      comment = comment.reverse()
+
+      return comment.join("\n")
   }
 
   function inferType(entry)
@@ -40,7 +56,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
   function schemaToTable(schema)
   {
-      if (!schema) return "No Schema"
+      if (!schema) return
 
       headers = ["Name", "Type", "Default", "Description"]
       lines = ["|" + headers.map(h => ` ${h} `).join("|") + "|"]
@@ -48,9 +64,9 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
       let schemaProps = schema.value.properties
 
-      if (schemaProps.some(p => p.key.name === 'default' || p.key.name === 'type'))
+      if (schemaProps.some(p => p.key.name === 'default' || (p.key.name === 'type' && !p.value.properties)))
       {
-        schemaProps = [{key: "[Single Property Component]", value: schema.value, loc: schema.loc}]
+        schemaProps = [{key: {name:"[Single Property Component]"}, value: schema.value, loc: schema.loc}]
       }
 
       for (let prop of schemaProps)
@@ -66,7 +82,11 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
           row.push(prop.key.name)
           row.push(entry.type ? entry.type.value : inferType(entry))
           row.push(entry.default ? entry.default.value : "")
-          row.push(commentForLocation(prop.loc))
+
+          let comment = commentForLocation(prop.loc)
+          comment = comment ? comment.replace(/\n/gm, " ") : ""
+
+          row.push(comment)
 
           lines.push("| " + row.join(" | ") + " |")
       }
@@ -77,13 +97,13 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   function handleTopLevelExpression(expression)
   {
       if (!expression || !expression.callee || !expression.callee.property) return
-      if (!/register(Component|System|ComponentSystem)/.test(expression.callee.property.name)) return
+      if (!/register(Component|System|ComponentSystem|Shader)/.test(expression.callee.property.name)) return
 
-      let type = /register(Component|System|ComponentSystem)/.exec(expression.callee.property.name)[1]
+      let type = /register(Component|System|ComponentSystem|Shader)\b/.exec(expression.callee.property.name)[1]
 
       let componentName = expression.arguments[0].value
 
-      console.log(`Registering component "${componentName}"`)
+      // console.log(`Registering component "${componentName}"`)
 
       let schema = expression.arguments[1].properties.find(p => p.key.name == 'schema')
 
@@ -91,25 +111,35 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
       let docstring = commentForLocation(expression.loc) || ""
 
-      console.log("It has", docstring)
+      // console.log("It has", docstring)
 
       output = []
       output.push(`
-# ${type} \`${componentName}\`
-
-**Source code:** [${filename}:${expression.loc.start.line}](${sourceBaseURL}${filename}#L${expression.loc.start.line})
+<a name="${componentName}"></a>
+## ${type} \`${componentName}\` [(${filename}:${expression.loc.start.line})](${sourceBaseURL}${filename}#L${expression.loc.start.line})
 
 ${docstring}
+  `)
 
-## Schema
+      if (schemaTable)
+      {
+        output.push(`
+### ${componentName} Schema
 
 ${schemaTable}
-  `)
+`)
+      }
+
+      output.push("\n---\n")
 
       return output.join("\n")
   }
 
-  return p.body.map(e => handleTopLevelExpression(e.expression)).filter(e => !!e).join("\n\n")
+  return `
+<a name="${filename}"></a>
+# ${filename}
+
+` + p.body.map(e => handleTopLevelExpression(e.expression)).filter(e => !!e).join("\n\n")
 }
 
 module.exports = {parseToMarkdown}
