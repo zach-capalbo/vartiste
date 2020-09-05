@@ -272,6 +272,16 @@ This is a very early version of the software. It still needs a lot of love. If
 you encounter problems, you can [Submit an Issue Report](https://gitlab.com/zach-geek/vartiste/issues).
 If you feel inclined, you can also [Contribute code in the form of a Merge Request](https://gitlab.com/zach-geek/vartiste).
 
+## A-Frame VARTISTE Toolkit
+
+VARTISTE is built on top of the wonderful [A-Frame
+framework](https://aframe.io). I've compiled many of the components and systems
+I've written while building VARTISTE into a separate library that you can use in
+your own A-Frame projects. If you want to create a laser-pointer button-heavy
+interface like VARTISTE has, it's a great starting point!
+
+[Open the A-Frame VARTISTE Toolkit documentation to get started](/docs.html)
+
 ## Open Source
 
 VARTISTE is an open source project under the Apache 2.0 license. You can find

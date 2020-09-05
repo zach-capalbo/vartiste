@@ -39,10 +39,15 @@ If you want to include *all* VARTISTE assets in your project, you just need an
 </a-scene>
 ```
 
-# Components Reference
+# Component Reference
 
-Component Reference Documentation is under construction. For now, start by
-checking out the demo:
+The full API and component reference can be found at
+[https://vartiste.xyz/docs.html](https://vartiste.xyz/docs.html). Please note
+that it is still under construction. The source code is available as well at
+[https://gitlab.com/zach-geek/vartiste](https://gitlab.com/zach-geek/vartiste),
+and contributions, both code-wise and documentation-wise are welcome.
+
+# Example Scene
 
 ```html
 <!DOCTYPE html>

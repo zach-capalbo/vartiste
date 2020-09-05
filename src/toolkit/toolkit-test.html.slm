@@ -10,6 +10,7 @@ html
   body
     a-scene icon-button="shader: matcap"
       a-assets
+        canvas#draw-canvas-asset width="1024" height="768"
         /! You can use all the default VARTISTE assets with the vartiste-asset meta-asset
         /! Otherwise, only the ones needed for other components are included
         a-asset vartiste-assets=""
@@ -39,6 +40,8 @@ html
             a-entity icon-button="#asset-account-voice" system-click-action="system: toolkit-demo; action: speak" tooltip="Speak entered text if enabled"
             /! Or add component properties directly for the toggle buttons to toggle
             a-entity icon-button="#asset-check-outline" toggle-button="target: a-scene; component: speech; property: speak" tooltip="Toggle Speaking Enabled"
+
+            a-entity icon-button="#asset-help-circle-outline" system-click-action="system: toolkit-demo; action: help" tooltip="VARTISTE Toolkit Documentation"
           a-entity text="width: 3.4; wrapCount: 35; value: Welcome to the VARTISTE toolkit demo" position="0 0.5 0"
           a-entity
             /! You can use edit fields which pop up a keyboard
@@ -49,5 +52,9 @@ html
       /! You can put a frame around anything with a geometry. The frame can optionally be closeable, or pinnable to your hand
       a-image src="#asset-vartiste" frame="" position="0 2 -1" tooltip="Here's a floating frame!" tooltip-style="offset: 0 0.5 0"
 
-      /! Adding clickable to anything makes it grabbable
+      /! Adding the clickable class to anything makes it grabbable
       a-entity.clickable text="width: 2.4; wrapCount: 25; value: Desktop Controls:\n-Left Click: Click buttons\n-Right Mouse Buton Drag: Look around\n-Shift+Left Mouse Button Drag: Move things\n-WASD: Move around" position="-3.0 0 -2.5"
+
+      /! You can use some of the VARTISTE drawing tools, too!
+      a-entity.clickable position="3.1 0 -2.4" draw-canvas="canvas:#draw-canvas-asset" geometry="primitive: plane; width: 2; height: 1.75" material="shader: flat; src: #draw-canvas-asset; npot: true" canvas-updater="throttle: 5" frame="" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"
+      a-entity.clickable position="3.1 2 -2.4" geometry="primitive: circle; radius: 1; height: 1.75" color-picker=""

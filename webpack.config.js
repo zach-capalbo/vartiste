@@ -213,11 +213,9 @@ let toolkitDoc = Object.assign({
 
 if (process.env.VARTISTE_TOOLKIT==="true")
 {
-  // module.exports = [toolkit, toolkitTest, toolkitDoc]
+  module.exports = [toolkit, toolkitTest, toolkitDoc]
 }
 else
 {
-  // module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
+  module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
 }
-
-module.exports = [toolkitDoc]

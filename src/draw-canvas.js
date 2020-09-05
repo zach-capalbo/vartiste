@@ -102,7 +102,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     let imageData
 
-    let highQuality = this.el.sceneEl.systems['settings-system'].quality > 0.75
+    let highQuality = (this.el.sceneEl.systems['settings-system']) ? (this.el.sceneEl.systems['settings-system'].quality > 0.75) : true
 
     let hqBlending = brush.hqBlending && highQuality && brush.opacity < 0.3
 
@@ -119,7 +119,10 @@ AFRAME.registerComponent('draw-canvas', {
         delete this.imageData
       }, {once: true})
       this.undoFrame = this.currentFrame
-      document.getElementById('recent-colors').components['palette'].addToPalette()
+      let recentColors = document.getElementById('recent-colors')
+      if (recentColors) {
+        recentColors.components['palette'].addToPalette()
+      }
     }
     else if (sourceEl && this.currentFrame !== this.undoFrame)
     {
