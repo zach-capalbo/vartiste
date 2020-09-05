@@ -20,7 +20,9 @@ async function addDocumentation(src)
 
   let html = await contentPromise
 
-  content.innerHTML += html.default
+  console.log("Adding", src)
+
+  document.getElementById('content').innerHTML += html.default
 }
 
 (require => {
