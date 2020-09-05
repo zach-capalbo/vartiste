@@ -1,15 +1,30 @@
 import {Util} from './util.js'
 AFRAME.registerSystem('edit-field', {
-
 })
+
+// Creates an edit button, which pops up a keyboard to edit the text in the
+// elements `text` component. The keyboard can be edited either through clicking
+// the 3D buttons with the mouse or laser-controller, or by typing on a physical
+// keyboard connected to the computer, or by speech recognition on supported
+// browsers.
 AFRAME.registerComponent('edit-field', {
   dependencies: ["text", 'popup-button'],
   schema: {
+    // Tooltip to go on the edit button
     tooltip: {type: 'string'},
+
+    // What kind of keyboard to pop up. Either 'number' or 'string'
     type: {type: 'string', default: 'number'},
+
+    // [Optional] If set, will edit another elements component property
     target: {type: 'selector'},
+    // If `target` is set, this is the component to edit
     component: {type: 'string'},
+    // If `target` is set, this is the property to edit
     property: {type: 'string'},
+
+    // When true, this will clear the current value of the property when editing
+    // (mainly to avoid the user having to backspace everything)
     autoClear: {type: 'boolean', default: false}
   },
   events: {
@@ -151,13 +166,21 @@ AFRAME.registerComponent('edit-field', {
   }
 })
 
+// Creates or uses an [`icon-button`](#icon-button), which when clicked will create a popup at
+// the location of the button
 AFRAME.registerComponent('popup-button', {
   dependencies: ["text"],
   schema: {
     tooltip: {type: 'string'},
     icon: {type: 'string', default: '#asset-lead-pencil'},
+
+    // Right now, this has to be one of the precompiled VARTISTE partials. I intend to make this more extensible.
     popup: {type: 'string', default: "numpad"},
+
+    // Scale for the popup when shown
     scale: {type: 'vec3', default: '1 1 1'},
+
+    // If true, the popup entity will not be loaded until the button is clicked
     deferred: {type: 'boolean', default: false}
   },
   init() {

@@ -7,6 +7,15 @@ if (document.currentScript)
 
 const {loadAsset, loadAllAssets} = require('./assets.js')
 
+// Loads VARTISTE assets
+//
+// If there is an `a-assets` in the scene, and it contains a `vartiste-assets`
+// element, then all of the VARTISTE assets will be loaded. Otherwise only the
+// essential assets for the toolkit components will be loaded.
+//
+// *Note,* any existing assets will be kept, so you can override any VARTISTE
+// assets by including an element with the same id as the asset to override in
+// your `a-assets`.
 AFRAME.registerSystem('vartiste-assets', {
   init() {
     let assets = this.el.sceneEl.querySelector('a-assets')
@@ -67,6 +76,10 @@ require('./demo-overlay')
 require('./joystick-directions')
 require('./popup-shelf')
 require('./smooth-controller')
+require('./draw-canvas')
+require('./hand-draw-tool')
+require('./paint-system')
+require('./color-picker')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')
@@ -76,6 +89,7 @@ window.VARTISTE = {}
 VARTISTE.Util = require('./util.js')
 Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo})
 
+// Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {
   dependencies: ['raycaster', 'laser-controls'],
   init() {
@@ -91,6 +105,7 @@ AFRAME.registerComponent('vartiste-rotation-button-mapping', {
   },
 })
 
+// Applies the VARTISTE user setup, including camera and controller components
 AFRAME.registerComponent('vartiste-user-root', {
   init() {
     this.el.innerHTML = require('./partials/artist-root.html.slm')

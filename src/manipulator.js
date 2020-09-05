@@ -1,11 +1,65 @@
 import {Axes} from './joystick-directions.js'
 import {Undo} from './undo.js'
 
+// Allows `laser-controls` to grab, rotate, and scale elements in 3D.
+//
+// #### Grabbing
+//
+// Grabbing begins when the element with the `manipulator` receives the
+// `gripdown` event, or when `onGripClose` is called directly. When this occurs,
+// it will use the `raycaster` component to find the closest intersected
+// element. It will recursively search this element for redirections (see
+// below), until it finds the final grab target. *Note,* by default, VARTISTE
+// uses `.clickable, .canvas` as the raycaster selector.
+//
+// Once the final target has been selected, it receives the 'grabbed' state, and
+// the manipulator's element receives the 'grabbing' state. Every tick while
+// grabbing is occuring, the target's position and rotation will be updated to
+// match the manipulator's movements as though the target had been a child
+// object of the manipulator. (*Note,* the target's parent never changes, and it
+// does not actually become a child of the manipulator)
+//
+// #### Redirection
+//
+// An element can "redirect" or pass on being grabbed to a different element.
+// When this happens, the target of the redirection becomes the target of the
+// grab, even if it is not intersected by the raycaster. The target of the
+// redirection can in turn have its own redirection, and so forth, until a
+// target is found without a redirection. (*Note*, there is currently no
+// circular redirection detection. So keep an eye out and don't do that.)
+//
+// A redirect can be set explicitly in two ways. The first is to set the
+// javascript property `redirect-grab` directly on the grabbable element itself.
+// (E.g., from a component, setting `this.el['redirect-grab'] = someOtherEl`).
+// The second way is to use the [`redirect-grab`](#redirect-grab) component,
+// which has a `selector` property for setting the redirection.
+//
+// Redirection can also be set to propogate, via the
+// [`propogate-grab`](#propogate-grab) component. When this is set, the redirect
+// target will be the closest parent element that is grabbable (e.g., has the
+// `clickable` class). This is especially useful for building subcomponents of a
+// grabbable UI shelf, for instance. Without `propogate-grab`, the child
+// components could accidentally be grabbed off of the parent shelf.
+//
+// #### Rotation, Scaling, and Zooming
+//
+// If the `manipulator` element has the `rotating` state, then the target
+// elements' rotation is updated each tick. If not, the target maintains its
+// rotation, even as its position changes.
+//
+// Setting the `manipulator` component's `scaleAmmount` javascript property
+// (e.g., `el.components.manipulator.scaleAmmount = 1.2`) will cause the object
+// to grow bigger or smaller each tick (depending on the sign of
+// `scaleAmmount`). Setting the `zoomAmmount` will cause the object to move
+// closer or farther each tick (depending on the sign of `zoomAmmount`).
 AFRAME.registerComponent('manipulator', {
   dependencies: ['raycaster'],
   schema: {
+    // Note: **Don't Use**
     selector: {type: 'string'},
+    // Note: **Don't Use**
     useRay: {type:'boolean', default: true},
+    // Logs debug messages to the console
     printUpdates: {type: 'boolean', default: false}
   },
   pool(name, type) {
@@ -367,6 +421,9 @@ AFRAME.registerComponent('manipulator', {
   }
 })
 
+// Allows a mouse to function as a [`manipulator`](#manipulator). Shift click
+// grabs and moves objects, and the scroll wheel moves them closer or farther,
+// and scroll wheel plus the alt key scales the object bigger and smaller.
 AFRAME.registerComponent('mouse-manipulator', {
   dependencies: ["manipulator"],
   init() {
@@ -401,6 +458,8 @@ AFRAME.registerComponent('mouse-manipulator', {
   },
 })
 
+// Redirects a grab from the [`manipulator`](#manipulator) to the closest
+// grabbable parent element.
 AFRAME.registerComponent('propogate-grab', {
   init() {
     for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
@@ -414,21 +473,34 @@ AFRAME.registerComponent('propogate-grab', {
   }
 })
 
+// Redirects a grab from the [`manipulator`](#manipulator) to the closest to the
+// selector target
 AFRAME.registerComponent('redirect-grab', {
+  // Element that will
   schema: {type: 'selector'},
   update() {
     this.el['redirect-grab'] = this.data
   }
 })
 
+// Options to change the grab behavior when an element is grabbed by a
+// manipulator.
 AFRAME.registerComponent('grab-options', {
   schema: {
+    // If true, a blue hand (the `#asset-hand` asset), will be shown at the
+    // location of the grab.
     showHand: {type: 'boolean', default: true},
+
+    // If true, this element can be scaled by the manipulator
     scalable: {type: 'boolean', default: true},
+
+    // If true, grabbing this element will add an undo action to restore its
+    // initial location to the undo stack
     undoable: {type: 'boolean', default: false}
   }
 })
 
+// NOT CURRENTLY WORKING
 AFRAME.registerComponent('lock-axes', {
   schema: {
     x: {type: 'float', default: NaN},
@@ -448,6 +520,8 @@ AFRAME.registerComponent('lock-axes', {
   }
 })
 
+// The first time an element with this component is grabbed, it will emit the
+// `activate` event.
 AFRAME.registerComponent('grab-activate', {
   init() {
     let activate = (e) => {

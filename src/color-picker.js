@@ -2,7 +2,9 @@
 const Color = require('color')
 const {Undo} = require('./undo.js')
 
+// Adds a colorwheel for picking colors for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("color-picker", {
+  dependencies: ['material', 'geometry'],
   schema: {brightness: {type: 'float', default: 0.5}},
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
@@ -53,7 +55,9 @@ AFRAME.registerComponent("color-picker", {
   }
 })
 
+// Picks the brightness for a [`color-wheel`](#color-wheel)
 AFRAME.registerComponent("brightness-picker", {
+  // The element with a `color-wheel` component to set the brightness on
   schema: {target: {type: 'selector'}},
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
@@ -90,6 +94,7 @@ AFRAME.registerComponent("brightness-picker", {
   }
 })
 
+// Provides a slider to pick the opacity for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("opacity-picker", {
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
@@ -178,6 +183,7 @@ AFRAME.registerComponent("opacity-picker", {
   }
 })
 
+// Provides a little display for the current color in the [`paint-system`](#paint-system)
 AFRAME.registerComponent("show-current-color", {
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
@@ -192,6 +198,7 @@ AFRAME.registerComponent("show-current-color", {
   }
 })
 
+// Provides a little display for the current brush in the [`paint-system`](#paint-system)
 AFRAME.registerComponent("show-current-brush", {
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
@@ -206,6 +213,7 @@ AFRAME.registerComponent("show-current-brush", {
   },
 })
 
+// Provides a preset-color picker for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("palette", {
   schema: {
     colors: {type: 'array'},

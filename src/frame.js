@@ -31,13 +31,22 @@ AFRAME.registerSystem('frame', {
   }
 })
 
+// A 2D border and buttons that go around an entity
 AFRAME.registerComponent("frame", {
   schema: {
+    // If true, there's an X button to "close" (i.e., `remove()`) the entity
     closable: {default: true},
+    // If true, there's a hand button to pin the entity to the user's hand
     pinnable: {default: true},
+    // If true, there's a visible border around the entity
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
+
+    // If set, uses the selector element as the source of the geometry for the frame,
+    // rather than the current element
     geometryTarget: {type: 'selector'},
+
+    // If true, sets the element to be grabbable by [`manipulator`](#manipulator)
     grabbable: {default: true}
   },
   events: {

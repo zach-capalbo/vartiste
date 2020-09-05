@@ -5,9 +5,42 @@ const Color = require('color')
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
 const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList
 
+// System for text-to-speech and speech recognition
+//
+// #### Text To Speech
+//
+// Components can call `this.el.sceneEl.components.speech.speak(text)` to have
+// `text` read aloud
+//
+// **NOTE:** This will only work for browsers that support the
+// [SpeechSynthesis](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
+// API.
+//
+// #### Speech Recognition
+//
+// Components can call `listen()` to start speech recongition. However, it is
+// preferable to use a `speech-recognition-button` component, as it provides a
+// visual indication of when speech recongition is occuring.
+//
+// When text is recognized, the system will attempt to find an element with a
+// matching [`tooltip` component](#tooltip) or `speech-alias` attribute. If a
+// matching element is found, it will be sent the `click` event, with the detail
+// `{type: 'speech'}`
+//
+// If there is an active keyboard for an [`edit-field`](#edit-field), then the
+// keyboard's value will be set to the speech recognition result, instead.
+//
+// **NOTE:** This only works on browsers that support the
+// [SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)
+// API.
 Util.registerComponentSystem('speech', {
   schema: {
+    // If true, then text-to-speech is enabled. Note that this property is
+    // "sticky"; it gets saved to the browser `localStorage` and restored when
+    // the user next visits the page.
     speak: {default: false},
+
+    // If true, then
     autoRestart: {default: false}
   },
   init() {
@@ -181,6 +214,10 @@ Util.registerComponentSystem('speech', {
   }
 })
 
+// Adds an [icon-button](#icon-button) which can be clicked to trigger speech
+// recognition. The button will turn green while listening, and red if there is
+// a recognition error. The button will be hidden if speech recognition is not
+// available in the user's browser.
 AFRAME.registerComponent('speech-recognition-button', {
   dependencies: ['icon-button', 'button-style'],
   events: {

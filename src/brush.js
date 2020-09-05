@@ -575,4 +575,39 @@ class FxBrush extends Brush {
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush};
+class LineBrush extends Brush
+{
+  constructor(baseid, {
+    tooltip=undefined,
+  } = {}) {
+    super(baseid)
+    this.scale = 1
+    this.opacity = 1.0
+    this.tooltip = tooltip
+
+    this.unenumerable("color3")
+    this.unenumerable("ccolor")
+    this.unenumerable("brushdata")
+
+    this.changeColor('#FFF')
+  }
+
+  changeColor(color) {
+    this.color = color
+    this.color3 = new THREE.Color(this.color)
+    this.ccolor = Color(color)
+  }
+
+  changeScale(scale) {
+    this.scale = scale
+  }
+
+  changeOpacity(opacity) {
+    this.opacity = opacity
+  }
+  drawTo(ctx, x, y, opts = {}) {
+
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush};

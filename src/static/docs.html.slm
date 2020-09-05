@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title VARTISTE Toolkit Reference
+  body
+    header
+      img src="../assets/vartiste.png" class="logo"
+      a class="vartiste-url" href="https://vartiste.xyz" https://vartiste.xyz
+    section
+      #readme
+    section
+      h1 Component Reference
+    #content.docs
+    footer
+      span<> © 2020
+      a href="https://zachcapalbo.com" Zachary Capalbo
+      span<> |
+      a href="license.html" License
+      span<> |
+      a href="https://gitlab.com/zach-geek/vartiste" Source
+      span<> |
+      a href="https://gitlab.com/zach-geek/vartiste/issues" Bugs

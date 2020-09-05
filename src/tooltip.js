@@ -1,4 +1,8 @@
+// Shows some text when hovered. Can be styled with
+// [tooltip-style](#tooltip-style). If [speech](#speech) is enabled, the tooltip
+// will be read with text-to-speech when hovered.
 AFRAME.registerComponent('tooltip', {
+  // Text to show in the tooltip
   schema: {default: ""},
   events: {
     'mouseenter': function() {this.popup();},
@@ -39,6 +43,7 @@ AFRAME.registerComponent('tooltip', {
   }
 })
 
+// Allows you to change the style of the [`tooltip`](#tooltip) component somewhat
 AFRAME.registerComponent('tooltip-style', {
   dependencies: ["tooltip"],
   schema: {
@@ -53,7 +58,10 @@ AFRAME.registerComponent('tooltip-style', {
   }
 })
 
+// Creates a tooltip that goes away once the element receives the `activate`
+// event
 AFRAME.registerComponent('preactivate-tooltip', {
+  // The tooltip to show
   schema: {default: ""},
   events: {
     activate: function() {
@@ -66,7 +74,10 @@ AFRAME.registerComponent('preactivate-tooltip', {
   }
 })
 
+// Creates a tooltip which is not visible, for the purposes of enabling
+// text-to-speech on the element
 AFRAME.registerComponent('hidden-tooltip', {
+  // The tooltip text
   schema: {default: ""},
   init() {
     this.el.setAttribute('tooltip-style', "offset: 0 -999999 0")

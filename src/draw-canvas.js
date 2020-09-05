@@ -2,9 +2,14 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
 
+// Allows painting to a canvas with a [`hand-draw-tool`](#hand-draw-tool). See
+// the VARTISTE toolkit demo for example usage
 AFRAME.registerComponent('draw-canvas', {
   schema: {
+    // Target canvas for painting
     canvas: {type: 'selector'},
+
+    // For VARTISTE use
     compositor: {type: 'selector'}
   },
 
@@ -97,22 +102,27 @@ AFRAME.registerComponent('draw-canvas', {
 
     let imageData
 
-    let highQuality = this.el.sceneEl.systems['settings-system'].quality > 0.75
+    let highQuality = (this.el.sceneEl.systems['settings-system']) ? (this.el.sceneEl.systems['settings-system'].quality > 0.75) : true
 
     let hqBlending = brush.hqBlending && highQuality && brush.opacity < 0.3
 
     hqBlending = hqBlending || this.brush.hqBlending === 'always'
 
-    if (!this.wasDrawing && sourceEl)
+    let firstDraw = !this.wasDrawing
+    this.wasDrawing = true
+
+    if (firstDraw && sourceEl)
     {
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false
         delete this.imageData
       }, {once: true})
-      this.wasDrawing = true
       this.undoFrame = this.currentFrame
-      document.getElementById('recent-colors').components['palette'].addToPalette()
+      let recentColors = document.getElementById('recent-colors')
+      if (recentColors) {
+        recentColors.components['palette'].addToPalette()
+      }
     }
     else if (sourceEl && this.currentFrame !== this.undoFrame)
     {
@@ -136,6 +146,12 @@ AFRAME.registerComponent('draw-canvas', {
     }
 
     try {
+      if (firstDraw && brush.startDrawing)
+      {
+        let drawOptions = {rotation, pressure, distance, imageData, scale}
+        brush.startDrawing(ctx, x, y, drawOptions)
+      }
+
       if (brush.connected && highQuality && lastParams) {
         let oldPoint = this.uvToPoint(lastParams.uv, canvas)
         let distance = Math.sqrt( (oldPoint.x - x) * (oldPoint.x - x) + (oldPoint.y - y) * (oldPoint.y - y) )

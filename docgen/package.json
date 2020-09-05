@@ -1,8 +1,8 @@
 {
-  "name": "aframe-vartiste-toolkit",
+  "name": "vartiste-docgen",
   "version": "1.0.0",
-  "description": "Toolkit to create GUI similar to VARTISTE",
-  "main": "vartiste-toolkit.js",
+  "description": "Denerates documentation for VARTISTE / VARTISTE toolkit",
+  "main": "docgen.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,16 +10,14 @@
     "type": "git",
     "url": "git+https://gitlab.com/zach-geek/vartiste.git"
   },
-  "keywords": [
-    "VR",
-    "aframe",
-    "vartiste",
-    "aframe-component"
-  ],
-  "author": "Zach Capalbo",
+  "author": "Zach Capalbo <zach.geek@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://gitlab.com/zach-geek/vartiste/issues"
   },
-  "homepage": "https://vartiste.xyz/docs.html"
+  "homepage": "https://gitlab.com/zach-geek/vartiste#README",
+  "dependencies": {
+    "acorn": "^8.0.1",
+    "ls": "^0.2.1"
+  }
 }
