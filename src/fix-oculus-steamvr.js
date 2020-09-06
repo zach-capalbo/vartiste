@@ -13,41 +13,43 @@ AFRAME.registerComponent('fix-oculus-steamvr', {
     let oldCheck = touchComponent.checkIfControllerPresent
 
     let checkIfControllerPresent = function () {
-      if (this.controllerPresent && this.webXR === GAMEPAD_ID_WEBXR)
-      {
-        oldCheck()
+      if (!isWebXRAvailable) {
+        checkControllerPresentAndSetup(this, GAMEPAD_ID_PREFIX, {
+          hand: this.data.hand
+        });
         return;
       }
 
-      if (this.controllerPresent && this.webXR === GAMEPAD_ID_STEAMVR)
-      {
-        oldCheck()
-        return;
-      }
-
-      if (!this.controllerPresent)
-      {
-        oldCheck()
-
-        if (this.controllerPresent)
-        {
-          this.webXRId = GAMEPAD_ID_WEBXR
-          return
-        }
-      }
-
-      if (!this.controllerPresent)
-      {
-        checkControllerPresentAndSetup(this, GAMEPAD_ID_STEAMVR, {
+      if (this.controllerPresent) {
+        checkControllerPresentAndSetup(this, this.webXRId, {
           hand: this.data.hand
         });
 
-        if (this.controllerPresent)
-        {
-          this.webXRId = GAMEPAD_ID_STEAMVR
-          return
+        if (!this.controllerPresent) {
+          this.webXRId = undefined;
         }
+        return;
       }
+
+      this.webXRId = GAMEPAD_ID_WEBXR;
+      checkControllerPresentAndSetup(this, GAMEPAD_ID_WEBXR, {
+        hand: this.data.hand
+      });
+
+      if (this.controllerPresent) {
+        return;
+      }
+
+      this.webXRId = GAMEPAD_ID_STEAMVR;
+      checkControllerPresentAndSetup(this, GAMEPAD_ID_STEAMVR, {
+        hand: this.data.hand
+      });
+
+      if (this.controllerPresent) {
+        return;
+      }
+
+      this.webXRId = undefined;
     };
 
     let injectTrackedControls = function () {
