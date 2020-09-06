@@ -60,6 +60,7 @@ require('./matcap-shader')
 require('./cable-connector')
 require('./mesh-tools')
 require('./artist-positioning')
+require('./fix-oculus-steamvr')
 
 require('./app.styl')
 

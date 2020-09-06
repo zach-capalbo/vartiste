@@ -21,5 +21,6 @@ a-entity#artist-root
             manipulator="useRay: true"
             smooth-controller=""
             vartiste-rotation-button-mapping=""
+            fix-oculus-steamvr=""
             _leap-hand="hand: ${hand}"
           ]
