@@ -243,10 +243,23 @@ AFRAME.registerComponent('compositor', {
   },
   setLayerBlendMode(layer,mode) {
     let oldMode = layer.mode
-    Undo.push(() => this.setLayerBlendMode(layer, oldMode))
-    layer.mode = mode
-    layer.touch()
-    this.el.emit('layerupdated', {layer})
+    Undo.collect(() => {
+      Undo.push(() => this.setLayerBlendMode(layer, oldMode))
+      layer.mode = mode
+
+      if (mode === 'normalMap')
+      {
+        Undo.pushCanvas(layer.canvas)
+        let ctx = layer.canvas.getContext('2d')
+        ctx.globalCompositeOperation = 'destination-over'
+        ctx.fillStyle = 'rgb(128, 128, 255)'
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.globalCompositeOperation = 'source-over'
+      }
+
+      layer.touch()
+      this.el.emit('layerupdated', {layer})
+    })
   },
   grabLayer(layer) {
     if (this.grabbedLayer == layer)

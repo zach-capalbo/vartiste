@@ -65,6 +65,30 @@ class UndoStack {
       this.stack.splice(0, 1)
     }
   }
+  collect(f) {
+    var realStack = this.stack
+    var realMaxSize = this.maxSize
+
+    this.stack = []
+    this.maxSize = 9999
+
+    try {
+      f()
+    }
+    finally {
+      var collectedStack = this.stack
+      this.stack = realStack
+      this.maxSize = realMaxSize
+    }
+
+    collectedStack.reverse()
+    this.push(() => {
+      for (let ff of collectedStack)
+      {
+        ff()
+      }
+    })
+  }
   undo() {
     if (this.stack.length === 0) return
     this.block(this.stack.pop())
