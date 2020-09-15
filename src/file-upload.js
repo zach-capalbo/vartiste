@@ -184,7 +184,7 @@ Util.registerComponentSystem('file-upload', {
 
           console.log("dropping", item.type, item.kind, file.name)
 
-          this.handleFile(file, {itemType: item.type, positionIdx: referenceIdx++})
+          this.handleFile(file, {itemType: item.type})
         }
       }
       else {
@@ -201,8 +201,10 @@ Util.registerComponentSystem('file-upload', {
     {
       if (settings.data.addReferences)
       {
-        if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
-        addImageReference(file).then(reference => reference.setAttribute('position', `${positionIdx * 0.1} 0 ${positionIdx * -0.02}`))
+        addImageReference(file).then(reference => {
+          if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
+          reference.setAttribute('position', `${positionIdx * 0.1} 0 ${positionIdx * -0.02}`)
+        })
       }
       else
       {
