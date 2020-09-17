@@ -116,6 +116,9 @@ AFRAME.registerComponent('draw-canvas', {
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false
+        if (brush.endDrawing) {
+          brush.endDrawing(ctx)
+        }
         delete this.imageData
       }, {once: true})
       this.undoFrame = this.currentFrame

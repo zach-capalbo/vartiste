@@ -579,17 +579,40 @@ class LineBrush extends Brush
 {
   constructor(baseid, {
     tooltip=undefined,
+    previewSrc
   } = {}) {
     super(baseid)
     this.scale = 1
     this.opacity = 1.0
     this.tooltip = tooltip
 
+    if (previewSrc)
+    {
+      this.previewSrc = previewSrc
+    }
+    else
+    {
+      let canvas = document.createElement('canvas')
+      canvas.width = 32
+      canvas.height = 32
+      let ctx = canvas.getContext('2d')
+
+      ctx.strokeStyle = "#FFF"
+      ctx.beginPath()
+      ctx.moveTo(0, 16)
+      ctx.lineTo(32, 16)
+      ctx.lineWidth = 3
+      ctx.stroke()
+      this.previewSrc = canvas.toDataURL()
+    }
+
     this.unenumerable("color3")
     this.unenumerable("ccolor")
     this.unenumerable("brushdata")
 
     this.changeColor('#FFF')
+
+    this.lineData = {}
   }
 
   changeColor(color) {
@@ -606,8 +629,53 @@ class LineBrush extends Brush
     this.opacity = opacity
   }
   drawTo(ctx, x, y, opts = {}) {
+    this.lineData.endPoint = {x,y}
+  }
+  startDrawing(ctx, x, y) {
+    this.lineData.startPoint = {x,y}
+  }
+  endDrawing(ctx) {
+    console.log("Ending drawing", this.lineData)
+    if (!this.lineData.startPoint && this.lineData.endPoint) return
+    ctx.save()
+    ctx.beginPath()
+    ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
+    ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
+    ctx.strokeStyle = this.color
+    ctx.globalAlpha *= this.opacity
+    ctx.lineWidth = this.scale
+    ctx.stroke()
+    ctx.restore()
 
+    this.lineData = {}
+
+  }
+  drawOutline(ctx, x,y) {
+    ctx.beginPath()
+    if (!this.lineData.startPoint || !this.lineData.endPoint)
+    {
+      ctx.beginPath()
+      ctx.arc(x, y, this.scale, 0, 2 * Math.PI, false)
+      ctx.strokeStyle = '#FFFFFF'
+      ctx.stroke()
+      return
+    }
+
+    ctx.beginPath()
+    ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
+    ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
+    ctx.strokeStyle = '#FFFFFF'
+    ctx.lineWidth = this.scale
+    ctx.stroke()
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush};
+class StretchBrush extends LineBrush {
+  constructor(baseid, image, {
+    ...options
+  } = {}) {
+    super(baseid, ...options)
+  }
+}
+
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
