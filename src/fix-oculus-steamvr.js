@@ -5,6 +5,7 @@ var isWebXRAvailable = AFRAME.utils.device.isWebXRAvailable;
 
 var GAMEPAD_ID_STEAMVR = 'oculus-oculus-rift-s';
 var GAMEPAD_ID_WEBXR = 'oculus-touch';
+var GAMEPAD_ID_WEBVR = 'Oculus Touch';
 
 AFRAME.registerComponent('fix-oculus-steamvr', {
   dependencies: ['oculus-touch-controls'],
@@ -14,7 +15,7 @@ AFRAME.registerComponent('fix-oculus-steamvr', {
 
     let checkIfControllerPresent = function () {
       if (!isWebXRAvailable) {
-        checkControllerPresentAndSetup(this, GAMEPAD_ID_PREFIX, {
+        checkControllerPresentAndSetup(this, GAMEPAD_ID_WEBVR, {
           hand: this.data.hand
         });
         return;
