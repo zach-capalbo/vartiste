@@ -324,6 +324,6 @@ AFRAME.registerComponent('toolbox-shelf', {
   },
   downloadAllLayers() {
     let i = 0
-    Compositor.component.layers.forEach(l => $('a-scene').systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: i++}, l.id))
+    Compositor.component.layers.forEach(l => this.el.sceneEl.systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: i++}, l.id))
   },
 })
