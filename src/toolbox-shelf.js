@@ -300,8 +300,17 @@ AFRAME.registerComponent('toolbox-shelf', {
 
     Util.positionObject3DAtTarget(camera, offset, {scale: {x:1,y:1,z:1}})
 
+    let oldOverlay = Compositor.component.data.drawOverlay
+
+    Compositor.component.data.drawOverlay = false
+
+    Compositor.component.quickDraw()
+
     // Compositor.el.object3D.add(camera)
     let downloadUrl = this.el.sceneEl.systems['camera-capture'].captureToCanvas(camera).toDataURL()
+
+    Compositor.component.data.drawOverlay = oldOverlay
+
     let settings = this.el.sceneEl.systems['settings-system']
     settings.download(downloadUrl, `${settings.projectName}-${settings.formatFileDate()}-render.png`, "Rendered Canvas")
 
@@ -322,7 +331,7 @@ AFRAME.registerComponent('toolbox-shelf', {
     ctx.globalCompositeOperation = oldOperation
     layer.touch()
   },
-  downloadAllLayers() {
+  downloadAllLayersAction() {
     let i = 0
     Compositor.component.layers.forEach(l => this.el.sceneEl.systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: i++}, l.id))
   },
