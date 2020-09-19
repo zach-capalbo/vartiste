@@ -101,7 +101,7 @@ Intersector.prototype.getMesh = function () {
 
 /** @return {Intersector} */
 Intersector.prototype.show = function () {
-  if (this.arrowHelper) this.arrowHelper.visible = true;
+  if (this.arrowHelper) this.arrowHelper.visible = false;
   return this;
 };
 
@@ -174,7 +174,8 @@ const Component = AFRAME.registerComponent('leap-hand', {
     pinchPressureStart: {default: 0.75}, // [0, 1]
     debug:              {default: true},
 
-    emulateConfig:      {default: 'vive-controls'}
+    emulateConfig:      {default: 'vive-controls'},
+    pinchButton:        {default: 'trigger'}
   },
 
   init: function () {
@@ -233,6 +234,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
       this.palmDirection = this.palmDirection || new THREE.Vector3()
       this.handDirection = this.handDirection || new THREE.Vector3()
       this.cameraMatrix = this.cameraMatrix || new THREE.Matrix4()
+      this.originVector = this.originVector || new THREE.Vector3()
 
       this.el.object3D.position.fromArray(hand.palmPosition)
 
@@ -244,7 +246,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
 
       this.palmDirection.lerp(this.handDirection, 0.3)
 
-      this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
+      this.el.object3D.matrix.lookAt(this.palmDirection, this.originVector, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
 
       if (this.el.sceneEl.is('vr-mode'))
@@ -314,15 +316,13 @@ const Component = AFRAME.registerComponent('leap-hand', {
 
   pinch: function (hand) {
     if (this.isHolding) return
-    console.log("Pinch")
-    this.el.emit('triggerdown')
+    this.el.emit(`${this.data.pinchButton}down`)
     this.isPinching = true
   },
 
   unpinch: function(hand) {
     if (this.isHolding) return
-    console.log("unPinch")
-    this.el.emit('triggerup')
+    this.el.emit(`${this.data.pinchButton}up`)
     this.isPinching = false
   },
 

@@ -93,7 +93,6 @@ AFRAME.registerShader('matcap', {
     if (data.normalMap) { utils.material.updateDistortionMap('normal', this, data); }
     if (data.displacementMap) { utils.material.updateDistortionMap('displacement', this, data); }
     if (data.matcap) { updateMatcapMap(this, data); }
-    console.log("Matcap", data.matcap)
   },
 
   /**

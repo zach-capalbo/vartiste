@@ -10,10 +10,11 @@ Util.registerComponentSystem('hand-tracking', {
 
 AFRAME.registerComponent('hand-touch-button', {
   schema: {
-    outerSize: {default: 0.3},
+    outerSize: {default: 0.17},
     innerSize: {default: 0.1},
     color: {default: '#aea'},
-    throttle: {default: 50}
+    throttle: {default: 50},
+    icon: {type: 'selector'}
   },
   init() {
     let box = document.createElement('a-entity')
@@ -24,10 +25,15 @@ AFRAME.registerComponent('hand-touch-button', {
 
     let innerBox = document.createElement('a-entity')
     innerBox.setAttribute('geometry', 'primitive: box;')
-    innerBox.setAttribute('material', 'shader: matcap; wireframe: false; color: #aea')
+    innerBox.setAttribute('material', 'shader: matcap; wireframe: false')
     this.innerBox = innerBox
     this.el.append(innerBox)
     Pool.init(this)
+
+    if (this.el.hasAttribute('tooltip') && !this.el.hasAttribute('tooltip-style'))
+    {
+      Util.whenLoaded(this.el, () => this.el.setAttribute('tooltip-style', 'scale: 0.2 0.2 1.0; offset: 0 -0.3 0'))
+    }
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
@@ -36,11 +42,41 @@ AFRAME.registerComponent('hand-touch-button', {
     this.outerBox.setAttribute('geometry', 'height', this.data.outerSize)
     this.outerBox.setAttribute('geometry', 'depth', this.data.outerSize)
     this.outerBox.setAttribute('material', 'color', this.data.color)
+    Util.whenLoaded(this.outerBox, () => {
+      this.outerBox.getObject3D('mesh').geometry.computeBoundingBox()
+      this.outerBox.object3D.visible = false
+    })
 
     this.innerBox.setAttribute('geometry', 'width', this.data.innerSize)
     this.innerBox.setAttribute('geometry', 'height', this.data.innerSize)
     this.innerBox.setAttribute('geometry', 'depth', this.data.innerSize)
     this.innerBox.setAttribute('material', 'color', this.data.color)
+    Util.whenLoaded(this.innerBox, () => this.innerBox.getObject3D('mesh').geometry.computeBoundingBox())
+
+    if (this.data.icon && !this.iconBox)
+    {
+      this.iconBox = true
+      Util.whenLoaded(this.innerBox, () => {
+        this.iconBox = new THREE.Object3D()
+
+        let material = new THREE.MeshBasicMaterial({
+          transparent: true,
+          color: "#FFF"
+        })
+
+        this.iconBox.add(new THREE.Mesh(this.innerBox.getObject3D('mesh').geometry, material))
+        this.iconBox.scale.set(1.1, 1.1, 1.1)
+        this.iconBox.position.z += 0.01
+
+        material.map = new THREE.Texture()
+        material.map.image = this.data.icon
+        material.map.needsUpdate = true
+
+        this.innerBox.object3D.add(this.iconBox)
+        console.log("Added iconbox", this.iconBox)
+      })
+    }
+
   },
   checkIntersection(otherEl) {
     if (!this.el.object3D.visible) return
@@ -53,14 +89,13 @@ AFRAME.registerComponent('hand-touch-button', {
 
     this.el.object3D.worldToLocal(otherPos)
 
-    if (Math.abs(otherPos.x) < this.data.outerSize
-        && Math.abs(otherPos.y) < this.data.outerSize
-        && Math.abs(otherPos.z) < this.data.outerSize)
+    if (this.outerBox.getObject3D('mesh').geometry.boundingBox.containsPoint(otherPos))
     {
       if (!this.hovered)
       {
         this.el.emit('mouseenter')
         this.hovered = true
+        this.activeHand = otherEl
         this.el.addState('hovered')
       }
     }
@@ -68,15 +103,16 @@ AFRAME.registerComponent('hand-touch-button', {
     {
       if (this.hovered)
       {
+        console.log("leaving", otherPos, (Math.abs(otherPos.x) < this.data.outerSize
+            && Math.abs(otherPos.y) < this.data.outerSize
+            && Math.abs(otherPos.z) < this.data.outerSize))
         this.el.emit('mouseleave')
         this.hovered = false
         this.el.removeState('hovered')
       }
     }
 
-    if (Math.abs(otherPos.x) < this.data.innerSize
-        && Math.abs(otherPos.y) < this.data.innerSize
-        && Math.abs(otherPos.z) < this.data.innerSize)
+    if (this.innerBox.getObject3D('mesh').geometry.boundingBox.containsPoint(otherPos))
     {
       if (!this.clicked)
       {
@@ -89,6 +125,7 @@ AFRAME.registerComponent('hand-touch-button', {
     else
     {
       if (this.clicked) {
+        console.log("Remove click state")
         this.el.removeState('clicked')
         this.clicked = false
       }
@@ -96,7 +133,9 @@ AFRAME.registerComponent('hand-touch-button', {
 
   },
   tick(t,dt) {
-    this.checkIntersection(document.querySelector('#left-hand'))
+    if (this.el.handEl) {
+      this.checkIntersection(this.el.handEl)
+    }
   }
 })
 
@@ -116,6 +155,17 @@ AFRAME.registerComponent('hand-helper', {
       {
         this.otherHandHelper.hideGripMenu()
       }
+    },
+    pinchdown: function(e) {
+      this.otherHandHelper.showPinchMenu()
+    },
+    pinchup: function(e) {
+      this.otherHandHelper.hidePinchMenu()
+    },
+    click: function(e) {
+      if (!e.target.hasAttribute('click-action')) return
+      this[e.target.getAttribute('click-action')](e)
+
     }
   },
   init() {
@@ -129,15 +179,120 @@ AFRAME.registerComponent('hand-helper', {
     this.menu = menu
     Util.whenLoaded(menu, () => {
       menu.querySelectorAll('.menu').forEach(el => el.setAttribute('visible', false))
-      document.querySelector('#artist-root').object3D.add(menu.object3D)
+      menu.querySelectorAll('*[hand-touch-button]').forEach(el => {
+        el.handEl = this.el
+        el.otherHandEl = this.otherHandEl
+      })
+      document.querySelector('#camera-root').object3D.add(menu.object3D)
     })
+
+    let clicker = document.createElement('a-sphere')
+    clicker.setAttribute('radius', 0.01)
+    this.el.append(clicker)
+    Pool.init(this)
   },
-  showGripMenu() {
+  updateMenu() {
     Util.positionObject3DAtTarget(this.menu.object3D, this.el.object3D)
     this.menu.object3D.rotation.set(0,0,0)
-    this.menu.querySelector('.grip-menu').setAttribute('visible', true)
+    let cameraObject2 =  document.getElementById('camera').getObject3D('camera-matrix-helper')
+
+    let cameraForward = this.pool('cameraForward', THREE.Vector3)
+    cameraObject2.getWorldDirection(cameraForward)
+    cameraObject2.getWorldDirection(cameraForward)
+
+    cameraForward.y = 0
+    cameraForward.normalize()
+    this.menu.object3D.matrix.lookAt(cameraForward, this.pool('origin', THREE.Vector3), this.el.sceneEl.object3D.up)
+    this.menu.object3D.quaternion.setFromRotationMatrix(this.menu.object3D.matrix)
+
+    this.menu.querySelectorAll('.menu').forEach(el => el.setAttribute('visible', false))
+    if (this.gripMenu)
+    {
+      this.menu.querySelector('.grip-menu').setAttribute('visible', true)
+    }
+    else if (this.pinchMenu)
+    {
+      this.menu.querySelector('.pinch-menu').setAttribute('visible', true)
+    }
+  },
+  showGripMenu() {
+    this.gripMenu = true
+    this.updateMenu()
   },
   hideGripMenu() {
-    this.menu.querySelector('.grip-menu').setAttribute('visible', false)
+    this.gripMenu = false
+    this.updateMenu()
+  },
+  showPinchMenu() {
+    this.pinchMenu = true
+    this.updateMenu()
+  },
+  hidePinchMenu() {
+    this.pinchMenu = false
+    this.updateMenu()
+  },
+  hideMenu() {
+    this.gripMenu = false
+    this.pinchMenu = false
+    this.updateMenu()
+  },
+  click() {
+    this.otherHandEl.emit('triggerdown')
+    this.otherHandEl.emit('triggerup')
+  },
+  toggleRotation() {
+    if (this.otherHandEl.is('rotating'))
+    {
+      this.otherHandEl.removeState('rotating')
+    }
+    else
+    {
+      this.otherHandEl.addState('rotating')
+    }
+  }
+})
+
+AFRAME.registerComponent('zoom-touch-button', {
+  dependencies: ['hand-touch-button'],
+  schema: {
+    direction: {oneOf: ['out', 'in']}
+  },
+  init() {
+    // AFRAME.utils.throttleTick(this.tick, 45, this)
+  },
+  events: {
+    stateadded: function(e) {
+      console.log("stateadded", e.detail)
+      if (this.el.is('clicked')) {
+        console.log("Zoooming", e.detail)
+        let handEl = this.el.components['hand-touch-button'].activeHand
+        let otherHandEl = this.el.otherHandEl
+        if (!otherHandEl) otherHandEl = document.querySelector(`#${handEl.id === 'right-hand' ? 'left-hand' : 'right-hand'}`)
+
+        switch (this.data.direction)
+        {
+          case 'in': otherHandEl.components['manipulator'].zoomAmmount = 0.2; break;
+          case 'out': otherHandEl.components['manipulator'].zoomAmmount = -0.2; break;
+          case 'small': otherHandEl.components['manipulator'].scaleAmmount = 0.2; break;
+          case 'big': otherHandEl.components['manipulator'].scaleAmmount = -0.2; break;
+        }
+      }
+    },
+    stateremoved: function(e) {
+      if (!this.el.is('clicked')) {
+        console.log("unZoooming", e.detail)
+        let handEl = this.el.components['hand-touch-button'].activeHand
+        let otherHandEl = this.el.otherHandEl
+        if (!otherHandEl) otherHandEl = document.querySelector(`#${handEl.id === 'right-hand' ? 'left-hand' : 'right-hand'}`)
+
+        switch (this.data.direction)
+        {
+          case 'in': otherHandEl.components['manipulator'].zoomAmmount = 0; break;
+          case 'out': otherHandEl.components['manipulator'].zoomAmmount = 0; break;
+          case 'small': otherHandEl.components['manipulator'].scaleAmmount = 0; break;
+          case 'big': otherHandEl.components['manipulator'].scaleAmmount = 0; break;
+        }
+      }
+    }
   }
 })
