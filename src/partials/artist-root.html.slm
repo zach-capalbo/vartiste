@@ -22,5 +22,6 @@ a-entity#artist-root
             smooth-controller=""
             vartiste-rotation-button-mapping=""
             fix-oculus-steamvr=""
-            _leap-hand="hand: ${hand}"
+            leap-hand="hand: ${hand}"
+            hand-helper="hand: ${hand}"
           ]

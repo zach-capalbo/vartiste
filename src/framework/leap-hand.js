@@ -247,10 +247,13 @@ const Component = AFRAME.registerComponent('leap-hand', {
       this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
 
-      let cameraObject = document.getElementById('camera-root').object3D
-      this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
-      this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
-      this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
+      if (this.el.sceneEl.is('vr-mode'))
+      {
+        let cameraObject = document.getElementById('camera-root').object3D
+        this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
+        this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
+        this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
+      }
 
       if (this.el.hasAttribute('smooth-controller'))
       {
@@ -305,7 +308,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   hold: function (hand) {
-    this.el.emit('gripdown')
+    this.el.emit('gripdown', {type: 'hand'})
     this.isHolding = true;
   },
 
@@ -324,7 +327,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   release: function (hand) {
-    this.el.emit('gripup')
+    this.el.emit('gripup', {type: 'hand'})
     this.isHolding = false;
   },
 
