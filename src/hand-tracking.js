@@ -31,8 +31,20 @@ Util.registerComponentSystem('hand-tracking', {
 
     for (let hand of ['left', 'right'])
     {
-      document.querySelector(`#${hand}-hand`).setAttribute('leap-hand', `hand: ${hand}; pinchButton: pinch`)
-      document.querySelector(`#${hand}-hand`).setAttribute('hand-helper', `hand: ${hand}`)
+      let el = document.querySelector(`#${hand}-hand`)
+      Util.whenLoaded(el, () => {
+        el.setAttribute('leap-hand', `hand: ${hand}; pinchButton: pinch`)
+        el.setAttribute('hand-helper', `hand: ${hand}`)
+
+        for (let component of ['valve-index-controls', 'oculus-touch-controls', 'vive-controls', 'tracked-controls-webxr', 'tracked-controls-webvr', 'tracked-controls'])
+        {
+          if (!(component in el.components)) continue
+          if (el.components[component].isPlaying) el.components[component].pause()
+        }
+
+        el.object3D.position.set(0,0,0)
+        el.object3D.rotation.set(0,0,0)
+      })
     }
 
     this.usingLeapHands = true

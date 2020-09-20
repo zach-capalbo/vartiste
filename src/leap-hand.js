@@ -151,6 +151,7 @@ export const System = AFRAME.registerSystem('leap', {
     this.controller = Leap.loop({loopWhileDisconnected: false})
       .use('transform', this.data)
       .on('connect', () => {
+        this.hasConnected = true
         this.el.sceneEl.emit('leap-connect')
       })
   },
@@ -166,6 +167,7 @@ export const System = AFRAME.registerSystem('leap', {
 
 var nextID = 1;
 
+const COMPETING_COMPONENTS = ['valve-index-controls', 'oculus-touch-controls', 'vive-controls', 'tracked-controls-webxr', 'tracked-controls-webvr', 'tracked-controls'];
 
 // Laser-pointer hand component for [Leap
 // Motion](https://developer.leapmotion.com/) hand tracking. Intended to be used
@@ -206,7 +208,7 @@ AFRAME.registerComponent('leap-hand', {
 
     // Which button to emulate when pinched
     pinchButton:        {default: 'trigger'},
-    
+
     // Which button to emulate when grabbed
     grabButton:         {default: 'grip'},
   },
@@ -260,11 +262,19 @@ AFRAME.registerComponent('leap-hand', {
   },
 
   tick: function () {
+    if (!this.system.hasConnected) return
     if (!this.system.isConnected()) return
     var hand = this.getHand();
     this.hand = hand
 
     if (hand && hand.valid) {
+      for (let component of COMPETING_COMPONENTS)
+      {
+        if (!(component in this.el.components)) continue
+        this.el.components[component].pause()
+        this.el.removeAttribute('gltf-model')
+      }
+
       this.palmDirection = this.palmDirection || new THREE.Vector3()
       this.handDirection = this.handDirection || new THREE.Vector3()
       this.cameraMatrix = this.cameraMatrix || new THREE.Matrix4()
