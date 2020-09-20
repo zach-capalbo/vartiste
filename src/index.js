@@ -11,7 +11,7 @@ require('./framework/billboard.js')
 require('./framework/fix-lost-controllers.js')
 
 // window.Leap = require('leapjs')
-require('./framework/leap-hand.js')
+require('./leap-hand')
 require('./hand-tracking');
 
 // require('./framework/three-skip-invisible-update.js')

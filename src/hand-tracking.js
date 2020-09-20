@@ -2,18 +2,61 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {Sfx} from './sfx.js'
 
+// System to connect to hand tracking sources. Currently, only Leap Motion hands
+// are supported.
+//
+// Emits `hands-connected` event when hands are connected and initialized
 Util.registerComponentSystem('hand-tracking', {
+  schema: {
+    // Automatically connects to hand sources if true
+    autoConnect: {default: true}
+  },
   init() {
+    this.el.sceneEl.addEventListener('leap-connect', () => {
+      if (this.data.autoConnect)
+      {
+        this.initLeapHands()
+      }
+    })
 
+    if (this.data.autoConnect && this.el.sceneEl.systems['leap'].isConnected())
+    {
+      this.initLeapHands()
+    }
+  },
+  initLeapHands() {
+    if (this.usingLeapHands) return
+
+    console.log("Initializing Leap Motion Hands")
+
+    for (let hand of ['left', 'right'])
+    {
+      document.querySelector(`#${hand}-hand`).setAttribute('leap-hand', `hand: ${hand}; pinchButton: pinch`)
+      document.querySelector(`#${hand}-hand`).setAttribute('hand-helper', `hand: ${hand}`)
+    }
+
+    this.usingLeapHands = true
+    this.el.emit('hands-connected', {type: 'leap'})
   }
 })
 
+// Creates a button which is triggered by touching it with a hand.
+//
+// When the user brings a hand close to the button, it will emit a `mouseenter`
+// event, allowing it to be easily used with the `tooltip` component (and a
+// corresponding `mouseleave` event when the user brings their hand away). When
+// triggered, it will emit the `click` event.
 AFRAME.registerComponent('hand-touch-button', {
   schema: {
+    // Size of cube where `mouseenter` and `mouseleave` events occured
     outerSize: {default: 0.17},
+    // Size of cube where clicks occur
     innerSize: {default: 0.1},
-    color: {default: '#aea'},
+    // Color of button
+    color: {default: '#abe'},
+    // Throttle for checking hand location
     throttle: {default: 50},
+    // Icon to overlay
     icon: {type: 'selector'}
   },
   init() {
@@ -139,6 +182,8 @@ AFRAME.registerComponent('hand-touch-button', {
   }
 })
 
+// Creates a context-aware menu which floats above the opposite hand for
+// performing tasks such as scaling, pushing, and pulling.
 AFRAME.registerComponent('hand-helper', {
   schema: {
     hand: {oneOf: ['left', 'right']}

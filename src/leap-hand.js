@@ -26,9 +26,9 @@ Modified 2020 by Zach Capalbo
 
 import Leap from 'leapjs';
 window.Leap = Leap
-import { HandMesh } from './leap.hand-mesh.js';
-import { transform } from './leap.transform.js';
-import { HandHold } from './leap.hand-hold.js';
+import { HandMesh } from './framework/leap.hand-mesh.js';
+import { transform } from './framework/leap.transform.js';
+import { HandHold } from './framework/leap.hand-hold.js';
 
 function CircularArray (size) {
   this._index = 0;
@@ -148,34 +148,67 @@ export const System = AFRAME.registerSystem('leap', {
   },
 
   init: function () {
-    this.controller = Leap.loop()
-      .use('transform', this.data);
+    this.controller = Leap.loop({loopWhileDisconnected: false})
+      .use('transform', this.data)
+      .on('connect', () => {
+        this.el.sceneEl.emit('leap-connect')
+      })
   },
 
   getFrame: function () {
     return this.controller.frame();
+  },
+
+  isConnected: function() {
+    return this.controller.connected()
   }
 });
 
 var nextID = 1;
 
-/**
- * A-Frame component for a single Leap Motion hand.
- */
-const Component = AFRAME.registerComponent('leap-hand', {
-  schema: {
-    hand:               {default: '', oneOf: ['left', 'right'], required: true},
-    holdDistance:       {default: 0.2}, // m
-    holdDebounce:       {default: 100}, // ms
-    holdSelector:       {default: '[holdable]'},
-    holdSensitivity:    {default: 0.95}, // [0,1]
-    pinchSensitivity:    {default: 0.80}, // [0,1]
-    releaseSensitivity: {default: 0.75}, // [0,1]
-    pinchPressureStart: {default: 0.75}, // [0, 1]
-    debug:              {default: true},
 
+// Laser-pointer hand component for [Leap
+// Motion](https://developer.leapmotion.com/) hand tracking. Intended to be used
+// in VR/head mounted mode.
+//
+// Creates a hand and arm rig with a raycaster, which functions in a manner
+// similar to `laser-controls`. Pinching the index finger and thumb simulate
+// "click" events, and grabbing with the whole hand simulates "grip" events.
+//
+// Originally based on a component from Don McCurdy, but substantially modified.
+AFRAME.registerComponent('leap-hand', {
+  schema: {
+    // `left` or `right`
+    hand:               {default: '', oneOf: ['left', 'right'], required: true},
+
+    // m
+    holdDistance:       {default: 0.2},
+
+    // ms
+    holdDebounce:       {default: 100},
+
+    // [0,1]
+    holdSensitivity:    {default: 0.95},
+
+    // [0,1]
+    pinchSensitivity:    {default: 0.80},
+
+    // [0,1]
+    releaseSensitivity: {default: 0.75},
+
+    // [0, 1]
+    pinchPressureStart: {default: 0.75},
+
+    debug:              {default: false},
+
+    // Which controller configuration to emulate for `laser-controls` compatibility
     emulateConfig:      {default: 'vive-controls'},
-    pinchButton:        {default: 'trigger'}
+
+    // Which button to emulate when pinched
+    pinchButton:        {default: 'trigger'},
+    
+    // Which button to emulate when grabbed
+    grabButton:         {default: 'grip'},
   },
 
   init: function () {
@@ -227,6 +260,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   tick: function () {
+    if (!this.system.isConnected()) return
     var hand = this.getHand();
     this.hand = hand
 
@@ -310,7 +344,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   hold: function (hand) {
-    this.el.emit('gripdown', {type: 'hand'})
+    this.el.emit(`${this.data.grabButton}down`, {type: 'hand'})
     this.isHolding = true;
   },
 
@@ -327,7 +361,7 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   release: function (hand) {
-    this.el.emit('gripup', {type: 'hand'})
+    this.el.emit(`${this.data.grabButton}up`, {type: 'hand'})
     this.isHolding = false;
   },
 
@@ -349,4 +383,4 @@ function circularArrayAvg (array) {
   return avg / array.length;
 }
 
-export { Component };
+// export { Component };

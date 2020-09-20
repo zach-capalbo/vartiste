@@ -78,7 +78,7 @@ For Oculus Touch controllers:
   - Joystick Up: Add blank frame
   - Joystick Down: Duplicate current frame
 
-For Vive Wands (and currently Valve Index controllers, although that should change soon):
+For Vive Wands:
 
 - Right Hand:
  - Trigger: Draw, Click buttons
@@ -98,6 +98,18 @@ For Vive Wands (and currently Valve Index controllers, although that should chan
  - Trackpad Right/Left: Next/Previous frame
  - Trackpad Up: Add blank frame
  - Trackpad Down: Duplicate current frame
+
+Hand tracking (Currently only supports [Leap
+Motion](https://developer.leapmotion.com/)) takes a two-hand approach, where a
+floating menu appears around the opposite hand to provide more controls:
+
+- Pinch index finger and thumb together:
+  - Draw on canvas
+  - Click by moving opposite hand upwards
+- Make fist:
+  - Grab and move object
+  - Push / Pull / Scale object by moving opposite up / down/ left / right
+  - Move opposite hand forward to dismiss menu
 
 For Desktop Use: (Not the primary intended use, but it should still work)
 
