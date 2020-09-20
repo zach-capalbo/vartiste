@@ -1,4 +1,5 @@
 import {Pool} from './pool.js'
+import {Util} from './util.js'
 AFRAME.registerSystem('artist-root', {
   schema: {
     rotationAmount: {default: 3.14 / 4}
@@ -67,5 +68,19 @@ AFRAME.registerComponent('reset-transform-on-vr', {
       return
       this.el.object3D.updateMatrix();
     }).bind(this.el.components['look-controls'])
+  }
+})
+
+AFRAME.registerComponent('camera-matrix-helper', {
+  dependencies: ['camera'],
+  init() {
+    this.obj = new THREE.Object3D
+    this.el.object3D.add(this.obj)
+    this.el.setObject3D('camera-matrix-helper', this.obj)
+    Util.whenLoaded(document.getElementById('camera-root'), () => this.cameraObject = document.getElementById('camera-root').object3D)
+  },
+  tick() {
+    this.obj.matrix.compose(this.cameraObject.position, this.cameraObject.quaternion, this.cameraObject.scale)
+    this.obj.matrix.decompose(this.obj.position, this.obj.quaternion, this.obj.scale)
   }
 })

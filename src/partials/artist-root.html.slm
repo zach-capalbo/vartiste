@@ -3,7 +3,7 @@ a-entity#artist-root
     /a-sphere radius="0.1"
   a-entity#camera-offsetter between-target-positioner="root: #artist-root; target: #camera-root"
     a-entity#camera-root desktop-controls="" reset-transform-on-vr=""
-      a-entity#camera camera="active: true" _look-controls="hmdEnabled: true; enabled: false" _reset-transform-on-vr=""
+      a-entity#camera camera="active: true" _look-controls="hmdEnabled: true; enabled: false" _reset-transform-on-vr="" camera-matrix-helper=""
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
         a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator=""
 
@@ -22,5 +22,6 @@ a-entity#artist-root
             smooth-controller=""
             vartiste-rotation-button-mapping=""
             fix-oculus-steamvr=""
-            _leap-hand="hand: ${hand}"
+            _leap-hand="hand: ${hand}; pinchButton: pinch"
+            _hand-helper="hand: ${hand}"
           ]

@@ -166,7 +166,7 @@ module.exports.Component = registerComponent('valve-index-controls', {
    */
   onButtonChanged: function (evt) {
     var button = this.mapping.buttons[evt.detail.id];
-    console.log("button", evt.detail.id, button, evt.detail.state.value)
+    //console.log("button", evt.detail.id, button, evt.detail.state.value)
     var buttonMeshes = this.buttonMeshes;
     var analogValue;
 
@@ -189,7 +189,7 @@ module.exports.Component = registerComponent('valve-index-controls', {
     var controllerObject3D = evt.detail.model;
     var self = this;
 
-    console.log("Loaded model", this.data.model, controllerObject3D)
+    //console.log("Loaded model", this.data.model, controllerObject3D)
 
     if (!this.data.model) { return; }
 
@@ -221,7 +221,7 @@ module.exports.Component = registerComponent('valve-index-controls', {
   },
 
   onAxisMoved: function (evt) {
-    console.log("Axis moved", evt.detail.axis)
+    //console.log("Axis moved", evt.detail.axis)
     emitIfAxesChanged(this, this.mapping.axes, evt);
   },
 
@@ -245,7 +245,7 @@ module.exports.Component = registerComponent('valve-index-controls', {
     var rendererSystem = this.rendererSystem;
 
     if (!buttonMeshes) { return; }
-    console.log("Meshes", this.buttonMeshes)
+    //console.log("Meshes", this.buttonMeshes)
     return
 
     // Need to do both left and right sides for grip.

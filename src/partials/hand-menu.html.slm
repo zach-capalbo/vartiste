@@ -1,0 +1,9 @@
+a-entity.menu.grip-menu
+  a-entity hand-touch-button="icon: #asset-arrow-up-bold" position="0 0.2 0" zoom-touch-button="direction: out" tooltip="Push Out"
+  a-entity hand-touch-button="icon: #asset-arrow-down-bold" position="0 -0.2 0" zoom-touch-button="direction: in" tooltip="Pull In"
+  a-entity hand-touch-button="icon: #asset-arrow-collapse-vertical" position="-0.2 0 0" zoom-touch-button="direction: small" tooltip="Scale Down"
+  a-entity hand-touch-button="icon: #asset-arrow-all" position="0.2 0 0" zoom-touch-button="direction: big" tooltip="Scale Up"
+  a-entity hand-touch-button="icon: #asset-rotate-orbit" position="0.2 0.2 0" click-action="toggleRotation" tooltip="Toggle Grab Rotation Lock"
+  a-entity hand-touch-button="icon: #asset-close-circle-outline" position="0 0 -0.15" click-action="hideMenu" tooltip="Hide Menu"
+a-entity.menu.pinch-menu
+  a-entity hand-touch-button="icon: #asset-check-outline; color: #aea" position="0 0.1 0" click-action="click" tooltip="Click"

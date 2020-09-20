@@ -46,6 +46,8 @@ async function addDocumentation(src)
   require('./hand-draw-tool')
   require('./paint-system')
   require('./color-picker')
+  require('./leap-hand')
+  require('./hand-tracking')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

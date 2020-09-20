@@ -26,9 +26,9 @@ Modified 2020 by Zach Capalbo
 
 import Leap from 'leapjs';
 window.Leap = Leap
-import { HandMesh } from './leap.hand-mesh.js';
-import { transform } from './leap.transform.js';
-import { HandHold } from './leap.hand-hold.js';
+import { HandMesh } from './framework/leap.hand-mesh.js';
+import { transform } from './framework/leap.transform.js';
+import { HandHold } from './framework/leap.hand-hold.js';
 
 function CircularArray (size) {
   this._index = 0;
@@ -101,7 +101,7 @@ Intersector.prototype.getMesh = function () {
 
 /** @return {Intersector} */
 Intersector.prototype.show = function () {
-  if (this.arrowHelper) this.arrowHelper.visible = true;
+  if (this.arrowHelper) this.arrowHelper.visible = false;
   return this;
 };
 
@@ -148,33 +148,69 @@ export const System = AFRAME.registerSystem('leap', {
   },
 
   init: function () {
-    this.controller = Leap.loop()
-      .use('transform', this.data);
+    this.controller = Leap.loop({loopWhileDisconnected: false})
+      .use('transform', this.data)
+      .on('connect', () => {
+        this.hasConnected = true
+        this.el.sceneEl.emit('leap-connect')
+      })
   },
 
   getFrame: function () {
     return this.controller.frame();
+  },
+
+  isConnected: function() {
+    return this.controller.connected()
   }
 });
 
 var nextID = 1;
 
-/**
- * A-Frame component for a single Leap Motion hand.
- */
-const Component = AFRAME.registerComponent('leap-hand', {
-  schema: {
-    hand:               {default: '', oneOf: ['left', 'right'], required: true},
-    holdDistance:       {default: 0.2}, // m
-    holdDebounce:       {default: 100}, // ms
-    holdSelector:       {default: '[holdable]'},
-    holdSensitivity:    {default: 0.95}, // [0,1]
-    pinchSensitivity:    {default: 0.80}, // [0,1]
-    releaseSensitivity: {default: 0.75}, // [0,1]
-    pinchPressureStart: {default: 0.75}, // [0, 1]
-    debug:              {default: true},
+const COMPETING_COMPONENTS = ['valve-index-controls', 'oculus-touch-controls', 'vive-controls', 'tracked-controls-webxr', 'tracked-controls-webvr', 'tracked-controls'];
 
-    emulateConfig:      {default: 'vive-controls'}
+// Laser-pointer hand component for [Leap
+// Motion](https://developer.leapmotion.com/) hand tracking. Intended to be used
+// in VR/head mounted mode.
+//
+// Creates a hand and arm rig with a raycaster, which functions in a manner
+// similar to `laser-controls`. Pinching the index finger and thumb simulate
+// "click" events, and grabbing with the whole hand simulates "grip" events.
+//
+// Originally based on a component from Don McCurdy, but substantially modified.
+AFRAME.registerComponent('leap-hand', {
+  schema: {
+    // `left` or `right`
+    hand:               {default: '', oneOf: ['left', 'right'], required: true},
+
+    // m
+    holdDistance:       {default: 0.2},
+
+    // ms
+    holdDebounce:       {default: 100},
+
+    // [0,1]
+    holdSensitivity:    {default: 0.95},
+
+    // [0,1]
+    pinchSensitivity:    {default: 0.80},
+
+    // [0,1]
+    releaseSensitivity: {default: 0.75},
+
+    // [0, 1]
+    pinchPressureStart: {default: 0.75},
+
+    debug:              {default: false},
+
+    // Which controller configuration to emulate for `laser-controls` compatibility
+    emulateConfig:      {default: 'vive-controls'},
+
+    // Which button to emulate when pinched
+    pinchButton:        {default: 'trigger'},
+
+    // Which button to emulate when grabbed
+    grabButton:         {default: 'grip'},
   },
 
   init: function () {
@@ -226,13 +262,23 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   tick: function () {
+    if (!this.system.hasConnected) return
+    if (!this.system.isConnected()) return
     var hand = this.getHand();
     this.hand = hand
 
     if (hand && hand.valid) {
+      for (let component of COMPETING_COMPONENTS)
+      {
+        if (!(component in this.el.components)) continue
+        this.el.components[component].pause()
+        this.el.removeAttribute('gltf-model')
+      }
+
       this.palmDirection = this.palmDirection || new THREE.Vector3()
       this.handDirection = this.handDirection || new THREE.Vector3()
       this.cameraMatrix = this.cameraMatrix || new THREE.Matrix4()
+      this.originVector = this.originVector || new THREE.Vector3()
 
       this.el.object3D.position.fromArray(hand.palmPosition)
 
@@ -244,13 +290,16 @@ const Component = AFRAME.registerComponent('leap-hand', {
 
       this.palmDirection.lerp(this.handDirection, 0.3)
 
-      this.el.object3D.matrix.lookAt(this.palmDirection, new THREE.Vector3, this.el.sceneEl.object3D.up)
+      this.el.object3D.matrix.lookAt(this.palmDirection, this.originVector, this.el.sceneEl.object3D.up)
       this.el.object3D.quaternion.setFromRotationMatrix(this.el.object3D.matrix)
 
-      let cameraObject = document.getElementById('camera-root').object3D
-      this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
-      this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
-      this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
+      if (this.el.sceneEl.is('vr-mode'))
+      {
+        let cameraObject = document.getElementById('camera-root').object3D
+        this.cameraMatrix.compose(cameraObject.position, cameraObject.quaternion, cameraObject.scale)
+        this.cameraMatrix.decompose(this.el.parentEl.object3D.position, this.el.parentEl.object3D.quaternion, this.el.parentEl.object3D.scale)
+        this.el.parentEl.object3D.matrix.copy(this.cameraMatrix)
+      }
 
       if (this.el.hasAttribute('smooth-controller'))
       {
@@ -305,26 +354,24 @@ const Component = AFRAME.registerComponent('leap-hand', {
   },
 
   hold: function (hand) {
-    this.el.emit('gripdown')
+    this.el.emit(`${this.data.grabButton}down`, {type: 'hand'})
     this.isHolding = true;
   },
 
   pinch: function (hand) {
     if (this.isHolding) return
-    console.log("Pinch")
-    this.el.emit('triggerdown')
+    this.el.emit(`${this.data.pinchButton}down`)
     this.isPinching = true
   },
 
   unpinch: function(hand) {
     if (this.isHolding) return
-    console.log("unPinch")
-    this.el.emit('triggerup')
+    this.el.emit(`${this.data.pinchButton}up`)
     this.isPinching = false
   },
 
   release: function (hand) {
-    this.el.emit('gripup')
+    this.el.emit(`${this.data.grabButton}up`, {type: 'hand'})
     this.isHolding = false;
   },
 
@@ -346,4 +393,4 @@ function circularArrayAvg (array) {
   return avg / array.length;
 }
 
-export { Component };
+// export { Component };
