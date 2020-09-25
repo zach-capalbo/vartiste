@@ -324,8 +324,8 @@ AFRAME.registerComponent('draw-canvas', {
         if (e.detail === 'erasing')
         {
           this.wasErasing = false
+          sourceEl.removeEventListener('stateremoved', eraseListener)
         }
-        sourceEl.removeEventListener('stateremoved', eraseListener)
       }
       sourceEl.addEventListener('stateremoved', eraseListener)
       this.wasErasing = true

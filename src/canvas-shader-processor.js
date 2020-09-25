@@ -1,12 +1,15 @@
 let glBackingCanvas
 
+const FX_UV_PASSTHROUGH = require('./shaders/fx-uv-passthrough.vert')
+
 export class CanvasShaderProcessor {
-  constructor({source, canvas, fx}) {
+  constructor({source, canvas, fx, vertexShader = FX_UV_PASSTHROUGH}) {
       if (fx) {
         source = require(`./shaders/fx/${fx}.glsl`)
       }
 
     this.source = source
+    this.vertSource = vertexShader
 
     this.canvas = canvas
     if (!canvas)
@@ -43,7 +46,7 @@ export class CanvasShaderProcessor {
       gl.useProgram(this.program);
       return this.program
     }
-    let vertexShader = this.createShader(gl, gl.VERTEX_SHADER, require('./shaders/fx-uv-passthrough.vert'))
+    let vertexShader = this.createShader(gl, gl.VERTEX_SHADER, this.vertSource)
     let fragmentShader = this.createShader(gl, gl.FRAGMENT_SHADER, this.source)
 
     let program = gl.createProgram()
@@ -134,7 +137,7 @@ export class CanvasShaderProcessor {
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     let positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    var positions = [
+    var positions = this.vertexPositions || [
       -1, -1,
       1, -1,
       1, 1,
@@ -159,6 +162,25 @@ export class CanvasShaderProcessor {
         positionAttributeLocation, size, type, normalize, stride, offset)
 
     this.hasDoneInitialUpdate = true
+  }
+  createVertexBuffer({name, list, size, type, normalize = false, stride = 0, offset = 0}) {
+    let gl = this.getContext()
+    let program = this.getProgram(gl)
+    let attributeLocation = gl.getAttribLocation(program, name);
+
+    type = type === undefined ? gl.FLOAT : type
+
+    if (type !== gl.FLOAT)
+    {
+      throw new Error("TODO: Update to support other types")
+    }
+
+    let buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(list), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(attributeLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.vertexAttribPointer(attributeLocation, size, type, normalize, stride, offset)
   }
   update() {
     let canvas = this.canvas
@@ -205,6 +227,60 @@ export class CanvasShaderProcessor {
       0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.globalCompositeOperation = oldOp
   }
+}
+
+const FORWARD = new THREE.Vector3(0, 0, 1)
+
+export class UVStretcher extends CanvasShaderProcessor
+{
+  constructor(options) {
+    super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert')}, options))
+    this.vertexPositions = []
+    this.uvs = []
+  }
+  createMesh(points) {
+    console.log("Creating points", points)
+    let point1 = new THREE.Vector3
+    let point2 = new THREE.Vector3
+    let direction = new THREE.Vector3
+    this.vertexPositions.length = 0
+    this.uvs.length = 0
+    for (let i = 0; i < points.length - 1; ++i)
+    {
+      point1.set(points[i].x, points[i].y, 0)
+      point2.set(points[i + 1].x, points[i + 1].y, 0)
+
+      direction.subVectors(point2, point1)
+      direction.normalize()
+      direction.cross(FORWARD)
+      direction.multiplyScalar(0.1)
+
+      // Tri 1
+      this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y)
+      this.vertexPositions.push(point2.x - direction.x, point2.y - direction.y)
+      this.vertexPositions.push(point1.x - direction.x, point1.y - direction.y)
+
+      this.uvs.push(0, 1,
+                    1, 1,
+                    0, 0)
+
+      // Tri 2
+      this.vertexPositions.push(point2.x - direction.x, point2.y - direction.y)
+      this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y)
+      this.vertexPositions.push(point2.x + direction.x, point2.y + direction.y)
+
+      this.uvs.push(1, 1,
+                    0, 1,
+                    1, 0)
+    }
+
+    this.hasDoneInitialUpdate = false
+  }
+  initialUpdate() {
+    super.initialUpdate()
+    this.createVertexBuffer({name: "a_uv", list: this.uvs, size: 2})
+  }
+
 }
 
 window.CanvasShaderProcessor = CanvasShaderProcessor

@@ -1,6 +1,6 @@
 import Convolve from "convolve"
 import Color from "color"
-import {CanvasShaderProcessor} from './canvas-shader-processor.js'
+import {CanvasShaderProcessor, UVStretcher} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 
 class Brush {
@@ -674,7 +674,47 @@ class StretchBrush extends LineBrush {
   constructor(baseid, image, {
     ...options
   } = {}) {
-    super(baseid, ...options)
+    super(baseid, options)
+
+    this.uvStretcher = new UVStretcher({fx: 'show-uv'})
+  }
+  endDrawing(ctx) {
+    console.log("Ending drawing", this.lineData)
+    if (!this.lineData.startPoint && this.lineData.endPoint) return
+    // ctx.save()
+    // ctx.beginPath()
+    // ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
+    // ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
+    // ctx.strokeStyle = this.color
+    // ctx.globalAlpha *= this.opacity
+    // ctx.lineWidth = this.scale
+    // ctx.stroke()
+    // ctx.restore()
+
+    this.lineData.startPoint.x /= ctx.canvas.width
+    this.lineData.startPoint.y /= ctx.canvas.height
+    this.lineData.endPoint.x /= ctx.canvas.width
+    this.lineData.endPoint.y /= ctx.canvas.height
+
+    this.lineData.startPoint.x = this.lineData.startPoint.x * 2 - 1
+    this.lineData.startPoint.y = this.lineData.startPoint.y * - 2 + 1
+
+    this.lineData.endPoint.x = this.lineData.endPoint.x * 2 - 1
+    this.lineData.endPoint.y = this.lineData.endPoint.y * - 2 + 1
+
+
+    this.uvStretcher.createMesh([this.lineData.startPoint, this.lineData.endPoint])
+
+    this.uvStretcher.setInputCanvas(ctx.canvas)
+    this.uvStretcher.initialUpdate()
+    this.uvStretcher.update()
+
+    ctx.drawImage(this.uvStretcher.canvas,
+      0, 0, this.uvStretcher.canvas.width, this.uvStretcher.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    this.lineData = {}
+
   }
 }
 

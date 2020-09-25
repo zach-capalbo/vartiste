@@ -1,4 +1,4 @@
-import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush} from './brush.js'
+import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush} from './brush.js'
 const BrushList = [
   new ProceduralBrush('default', {connected: true, hqBlending: true, tooltip: "Default"}),
   new ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true}),
@@ -28,6 +28,7 @@ const BrushList = [
   new ProceduralBrush('charcoal1', {connected: true, hqBlending: 'always', minMovement: 1.3, invertScale: true, tooltip: "Charcoal Stick"}),
   new ProceduralBrush('charcoal2', {connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcoal Pencil"}),
   new LineBrush('straight', {tooltip: "Straight Line"}),
+  new StretchBrush('stretch',"line_grunge1", {tooltip: "StretchBrush Line"}),
 ]
 
 export { BrushList }

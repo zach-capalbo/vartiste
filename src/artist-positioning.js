@@ -75,8 +75,8 @@ AFRAME.registerComponent('camera-matrix-helper', {
   dependencies: ['camera'],
   init() {
     this.obj = new THREE.Object3D
-    this.el.object3D.add(this.obj)
     this.el.setObject3D('camera-matrix-helper', this.obj)
+    this.el.object3D.parent.add(this.obj)
     Util.whenLoaded(document.getElementById('camera-root'), () => this.cameraObject = document.getElementById('camera-root').object3D)
   },
   tick() {
