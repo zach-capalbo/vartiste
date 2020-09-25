@@ -28,7 +28,11 @@ const BrushList = [
   new ProceduralBrush('charcoal1', {connected: true, hqBlending: 'always', minMovement: 1.3, invertScale: true, tooltip: "Charcoal Stick"}),
   new ProceduralBrush('charcoal2', {connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcoal Pencil"}),
   new LineBrush('straight', {tooltip: "Straight Line"}),
-  new StretchBrush('stretch',"line_grunge1", {tooltip: "StretchBrush Line"}),
+  new StretchBrush('stretch_line_grunge1',"line_grunge1", {tooltip: "StretchBrush Line"}),
+  new StretchBrush('stretch_lines1',"silky_textured", {tooltip: "StretchBrush Line", textured: true}),
+  new StretchBrush('stretch_leaf',"stamp_leaf1", {tooltip: "StretchBrush Line", textured: true}),
+  new StretchBrush('stretch_ink',"ink", {tooltip: "StretchBrush Line", textured: false}),
+  new StretchBrush('stretch_thick',"thick_paint", {tooltip: "StretchBrush Line", textured: true}),
 ]
 
 export { BrushList }

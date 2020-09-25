@@ -624,7 +624,6 @@ class LineBrush extends Brush
   changeScale(scale) {
     this.scale = scale
   }
-
   changeOpacity(opacity) {
     this.opacity = opacity
   }
@@ -662,8 +661,19 @@ class LineBrush extends Brush
     }
 
     ctx.beginPath()
-    ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
-    ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
+    if (this.lineData.allPoints)
+    {
+      ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
+      for (let p of this.lineData.allPoints)
+      {
+        ctx.lineTo(p.x, p.y)
+      }
+    }
+    else
+    {
+      ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
+      ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
+    }
     ctx.strokeStyle = '#FFFFFF'
     ctx.lineWidth = this.scale
     ctx.stroke()
@@ -671,49 +681,79 @@ class LineBrush extends Brush
 }
 
 class StretchBrush extends LineBrush {
-  constructor(baseid, image, {
-    ...options
-  } = {}) {
+  constructor(baseid, name, options = {}) {
     super(baseid, options)
 
-    this.uvStretcher = new UVStretcher({fx: 'show-uv'})
+    let {textured} = options
+
+    let image
+
+    if ('width' in options && 'height' in options) {
+      image = new Image(options.width, options.height)
+    }
+    else
+    {
+      image = new Image()
+    }
+
+    image.decoding = 'sync'
+    image.loading = 'eager'
+    image.src = require(`./brushes/${name}.png`)
+
+    this.image = image
+    this.previewSrc = image
+    this.image.decode().then(() => this.updateBrush())
+
+    this.textured = textured
+
+    this.uvStretcher = new UVStretcher({fx: textured ? 'uv-stretch-textured' : 'uv-stretch'})
+
+    this.lineData.allPoints = []
+  }
+  updateBrush() {
+    console.log("Updating stretch brush", this.image)
+    this.uvStretcher.setInputCanvas(this.image, {resize: false})
+    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.toArray())
+  }
+  drawTo(ctx, x, y, {scale = 1.0, pressure = 1.0} = {}) {
+    if (!this.lineData.endPoint || (Math.abs(this.lineData.endPoint - x) > 1
+     || Math.abs(this.lineData.endPoint.y - y) > 1 ))
+    {
+      this.lineData.endPoint = {x,y}
+      this.lineData.allPoints.push({x,y, scale: this.scale * scale, pressure})
+    }
+  }
+  startDrawing(ctx, x, y) {
+    this.lineData.startPoint = {x,y}
+    this.lineData.allPoints.push({x,y, scale: this.scale})
   }
   endDrawing(ctx) {
-    console.log("Ending drawing", this.lineData)
     if (!this.lineData.startPoint && this.lineData.endPoint) return
-    // ctx.save()
-    // ctx.beginPath()
-    // ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
-    // ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
-    // ctx.strokeStyle = this.color
-    // ctx.globalAlpha *= this.opacity
-    // ctx.lineWidth = this.scale
-    // ctx.stroke()
-    // ctx.restore()
 
-    this.lineData.startPoint.x /= ctx.canvas.width
-    this.lineData.startPoint.y /= ctx.canvas.height
-    this.lineData.endPoint.x /= ctx.canvas.width
-    this.lineData.endPoint.y /= ctx.canvas.height
+    for (let p of this.lineData.allPoints)
+    {
+      p.x /= ctx.canvas.width
+      p.y /= ctx.canvas.height
 
-    this.lineData.startPoint.x = this.lineData.startPoint.x * 2 - 1
-    this.lineData.startPoint.y = this.lineData.startPoint.y * - 2 + 1
+      p.x = p.x * 2 - 1
+      p.y = p.y * - 2 + 1
+    }
 
-    this.lineData.endPoint.x = this.lineData.endPoint.x * 2 - 1
-    this.lineData.endPoint.y = this.lineData.endPoint.y * - 2 + 1
+    this.updateBrush()
 
+    this.uvStretcher.createMesh(this.lineData.allPoints)//[this.lineData.allPoints[0], this.lineData.allPoints[Math.round(this.lineData.allPoints.length / 2)], this.lineData.allPoints.slice(-1)[0]])
 
-    this.uvStretcher.createMesh([this.lineData.startPoint, this.lineData.endPoint])
-
-    this.uvStretcher.setInputCanvas(ctx.canvas)
     this.uvStretcher.initialUpdate()
     this.uvStretcher.update()
 
+    let oldAlpha = ctx.globalAlpha
+    ctx.globalAlpha = this.opacity
     ctx.drawImage(this.uvStretcher.canvas,
       0, 0, this.uvStretcher.canvas.width, this.uvStretcher.canvas.height,
       0, 0, ctx.canvas.width, ctx.canvas.height)
 
-    this.lineData = {}
+    this.lineData.allPoints.length = 0
+    ctx.globalAlpha = oldAlpha
 
   }
 }

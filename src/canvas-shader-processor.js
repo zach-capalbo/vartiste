@@ -64,8 +64,8 @@ export class CanvasShaderProcessor {
 
     return this.program
   }
-  setInputCanvas(canvas) {
-    if (this.canvas.width !== canvas.width || this.canvas.height !== canvas.height)
+  setInputCanvas(canvas, {resize = true} = {}) {
+    if (resize && (this.canvas.width !== canvas.width || this.canvas.height !== canvas.height))
     {
       this.canvas.width = canvas.width
       this.canvas.height = canvas.height
@@ -145,7 +145,10 @@ export class CanvasShaderProcessor {
       -1, 1,
       -1, -1
     ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    let typedArray = new Float32Array(positions)
+    this.positionLength = positions.length
+    console.log("typedArray", typedArray)
+    gl.bufferData(gl.ARRAY_BUFFER, typedArray, gl.STATIC_DRAW);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -192,7 +195,7 @@ export class CanvasShaderProcessor {
 
     var primitiveType = gl.TRIANGLES;
     var offset = 0;
-    var count = 6;
+    var count = this.positionLength / 2;
     gl.drawArrays(primitiveType, offset, count);
   }
   drawBrush(brush, ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, reupdate=true} = {})
@@ -239,39 +242,80 @@ export class UVStretcher extends CanvasShaderProcessor
     this.uvs = []
   }
   createMesh(points) {
-    console.log("Creating points", points)
     let point1 = new THREE.Vector3
     let point2 = new THREE.Vector3
+    let point3 = new THREE.Vector3
     let direction = new THREE.Vector3
+    let direction2 = new THREE.Vector3
     this.vertexPositions.length = 0
     this.uvs.length = 0
+    let distance = 0
+    let segDistance = 0
+    let accumDistance = 0
+    for (let i = 0; i < points.length - 1; ++i)
+    {
+      point1.set(points[i].x, points[i].y, 0)
+      point2.set(points[i + 1].x, points[i + 1].y, 0)
+      point2.sub(point1)
+      distance += point2.length()
+    }
+
     for (let i = 0; i < points.length - 1; ++i)
     {
       point1.set(points[i].x, points[i].y, 0)
       point2.set(points[i + 1].x, points[i + 1].y, 0)
 
       direction.subVectors(point2, point1)
-      direction.normalize()
-      direction.cross(FORWARD)
-      direction.multiplyScalar(0.1)
+      segDistance = direction.length()
+
+      if (i === 0)
+      {
+        direction.normalize()
+        direction.cross(FORWARD)
+        direction.multiplyScalar(points[i].scale * 0.01)
+      }
+      else
+      {
+        direction.copy(direction2)
+      }
+
+      if (i < points.length - 2)
+      {
+        point3.set(points[i + 2].x, points[i + 2].y, 0)
+        direction2.subVectors(point3, point2)
+        direction2.normalize()
+        direction2.cross(FORWARD)
+        direction2.multiplyScalar(points[i+1].scale * 0.01)
+        direction2.lerp(direction, 0.5)
+      }
+      else
+      {
+        direction2.copy(direction)
+      }
+
+      let uvStart = accumDistance
+      accumDistance += segDistance / distance
+      let uvEnd = accumDistance
 
       // Tri 1
       this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y)
-      this.vertexPositions.push(point2.x - direction.x, point2.y - direction.y)
+      this.vertexPositions.push(point2.x - direction2.x, point2.y - direction2.y)
       this.vertexPositions.push(point1.x - direction.x, point1.y - direction.y)
 
-      this.uvs.push(0, 1,
-                    1, 1,
-                    0, 0)
+      this.uvs.push(uvStart, 0,
+                    uvEnd, 1,
+                    uvStart, 1)
+
+
 
       // Tri 2
-      this.vertexPositions.push(point2.x - direction.x, point2.y - direction.y)
+      this.vertexPositions.push(point2.x - direction2.x, point2.y - direction2.y)
       this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y)
-      this.vertexPositions.push(point2.x + direction.x, point2.y + direction.y)
+      this.vertexPositions.push(point2.x + direction2.x, point2.y + direction2.y)
 
-      this.uvs.push(1, 1,
-                    0, 1,
-                    1, 0)
+      this.uvs.push(uvEnd, 1,
+                    uvStart, 0,
+                    uvEnd, 0)
     }
 
     this.hasDoneInitialUpdate = false
