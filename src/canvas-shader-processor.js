@@ -270,7 +270,7 @@ export class UVStretcher extends CanvasShaderProcessor
 
     this.createMesh(points)
   }
-  createMesh(points) {
+  createMesh(points, {maxDistance = 0.3} = {}) {
     let {point1, point2, point3, direction, direction2} = this
     this.vertexPositions.length = 0
     this.uvs.length = 0
@@ -278,6 +278,7 @@ export class UVStretcher extends CanvasShaderProcessor
     let distance = 0
     let segDistance = 0
     let accumDistance = 0
+    let discontinuity = false
     for (let i = 0; i < points.length - 1; ++i)
     {
       point1.set(points[i].x, points[i].y, 0)
@@ -296,7 +297,13 @@ export class UVStretcher extends CanvasShaderProcessor
 
       const directionScalar = 0.03
 
-      if (i === 0)
+      if (segDistance > maxDistance)
+      {
+        discontinuity = true;
+        continue
+      }
+
+      if (i === 0 || discontinuity)
       {
         direction.normalize()
         direction.cross(FORWARD)
@@ -320,6 +327,8 @@ export class UVStretcher extends CanvasShaderProcessor
       {
         direction2.copy(direction)
       }
+
+      discontinuity = false
 
       let uvStart = accumDistance
       accumDistance += segDistance / distance
