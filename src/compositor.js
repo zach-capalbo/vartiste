@@ -385,7 +385,11 @@ AFRAME.registerComponent('compositor', {
     overlayCtx.clearRect(0, 0, width, height)
     overlayCtx.globalCompositeOperation = 'source-over'
 
-    let {brush} = this.el.sceneEl.systems['paint-system']
+    let overlayObjs = Object.values(this.overlays)
+
+
+    let {brush} = overlayObjs.find(o => o.brush.solo) || this.el.sceneEl.systems['paint-system']
+
     if (brush.solo && !brush.direct)
     {
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
@@ -393,7 +397,7 @@ AFRAME.registerComponent('compositor', {
 
     if (!brush.solo)
     {
-      for (let overlay of Object.values(this.overlays))
+      for (let overlay of overlayObjs)
       {
         if (!overlay.el.id.endsWith('-hand')) continue
         let raycaster = overlay.el.components.raycaster
@@ -408,7 +412,7 @@ AFRAME.registerComponent('compositor', {
         this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
       }
     }
-    
+
     ctx.globalCompositeOperation = 'difference'
     ctx.globalAlpha = 1.0
     ctx.drawImage(this.overlayCanvas, 0, 0)
@@ -418,7 +422,7 @@ AFRAME.registerComponent('compositor', {
       ctx.globalCompositeOperation = 'source-over'
       overlayCtx.clearRect(0,0, width, height)
       overlayCtx.globalCompositeOperation = 'copy'
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas, brush})
       ctx.drawImage(this.overlayCanvas, 0, 0)
     }
 
