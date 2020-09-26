@@ -190,27 +190,28 @@ AFRAME.registerComponent('draw-canvas', {
     ctx.globalAlpha = 1.0
   },
 
-  drawOutlineUV(ctx, uv, {canvas = null, rotation = 0.0} = {}) {
+  drawOutlineUV(ctx, uv, {canvas = null, rotation = 0.0, brush} = {}) {
     if (canvas === null) canvas = this.data.canvas
     let {width, height} = canvas
     let {x,y} = this.uvToPoint(uv, canvas)
-    this.brush.drawOutline(ctx, x, y, {rotation})
+    if (!brush) brush = this.brush
+    brush.drawOutline(ctx, x, y, {rotation})
 
     let {wrapX, wrapY} = this.el.sceneEl.systems['paint-system'].data
     if (wrapX) {
-      this.brush.drawOutline(ctx, x + width, y)
-      this.brush.drawOutline(ctx, x - width, y)
+      brush.drawOutline(ctx, x + width, y)
+      brush.drawOutline(ctx, x - width, y)
     }
     if (wrapY)
     {
-      this.brush.drawOutline(ctx, x, y + height)
-      this.brush.drawOutline(ctx, x, y - height)
+      brush.drawOutline(ctx, x, y + height)
+      brush.drawOutline(ctx, x, y - height)
     }
     if (wrapY && wrapX) {
-      this.brush.drawOutline(ctx, x + width, y + height)
-      this.brush.drawOutline(ctx, x - width, y - height)
-      this.brush.drawOutline(ctx, x + width, y - height)
-      this.brush.drawOutline(ctx, x - width, y + height)
+      brush.drawOutline(ctx, x + width, y + height)
+      brush.drawOutline(ctx, x - width, y - height)
+      brush.drawOutline(ctx, x + width, y - height)
+      brush.drawOutline(ctx, x - width, y + height)
     }
   },
 

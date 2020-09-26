@@ -775,6 +775,8 @@ class StretchBrush extends LineBrush {
     this.lineData.endPoint = undefined
     ctx.globalAlpha = oldAlpha
 
+    if (ctx.canvas.touch) ctx.canvas.touch()
+
   }
   drawOutline(ctx, x,y) {
     if (!this.lineData.startPoint || !this.lineData.endPoint)

@@ -81,6 +81,11 @@ AFRAME.registerComponent('pencil-tool', {
     'stateadded': function(e) {
       if (e.detail === 'grabbed') {
         this.system.lastGrabbed = this
+
+        this.overlay = this.overlay || {el: this.el}
+        this.overlay.brush = this.el.components['hand-draw-tool'].system.brush
+
+        Compositor.component.overlays[this.el.components['hand-draw-tool'].id] = this.overlay
       }
     },
     activate: function() { this.activatePencil() }
