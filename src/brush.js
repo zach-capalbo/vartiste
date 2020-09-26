@@ -720,7 +720,7 @@ class StretchBrush extends LineBrush {
      || Math.abs(this.lineData.endPoint.y - y) > 1 ))
     {
       this.lineData.endPoint = {x,y}
-      this.lineData.allPoints.push({x,y, scale: this.scale * scale, pressure})
+      this.lineData.allPoints.push({x,y, scale: this.scale * scale, opacity: pressure})
     }
   }
   startDrawing(ctx, x, y) {

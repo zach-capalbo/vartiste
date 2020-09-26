@@ -240,15 +240,19 @@ export class UVStretcher extends CanvasShaderProcessor
     super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert')}, options))
     this.vertexPositions = []
     this.uvs = []
+    this.opacities = []
+
+    this.point1 = new THREE.Vector3
+    this.point2 = new THREE.Vector3
+    this.point3 = new THREE.Vector3
+    this.direction = new THREE.Vector3
+    this.direction2 = new THREE.Vector3
   }
   createMesh(points) {
-    let point1 = new THREE.Vector3
-    let point2 = new THREE.Vector3
-    let point3 = new THREE.Vector3
-    let direction = new THREE.Vector3
-    let direction2 = new THREE.Vector3
+    let {point1, point2, point3, direction, direction2} = this
     this.vertexPositions.length = 0
     this.uvs.length = 0
+    this.opacities.length = 0
     let distance = 0
     let segDistance = 0
     let accumDistance = 0
@@ -306,6 +310,11 @@ export class UVStretcher extends CanvasShaderProcessor
                     uvEnd, 1,
                     uvStart, 1)
 
+      this.opacities.push(
+        points[i].opacity,
+        points[i+1].opacity,
+        points[i].opacity,
+      )
 
 
       // Tri 2
@@ -316,13 +325,21 @@ export class UVStretcher extends CanvasShaderProcessor
       this.uvs.push(uvEnd, 1,
                     uvStart, 0,
                     uvEnd, 0)
+
+      this.opacities.push(
+        points[i + 1].opacity,
+        points[i].opacity,
+        points[i + 1].opacity,)
     }
 
+    this.startPoint = null
+    this.endPoint = null
     this.hasDoneInitialUpdate = false
   }
   initialUpdate() {
     super.initialUpdate()
     this.createVertexBuffer({name: "a_uv", list: this.uvs, size: 2})
+    this.createVertexBuffer({name: "a_opacity", list: this.opacities, size: 1})
   }
 
 }
