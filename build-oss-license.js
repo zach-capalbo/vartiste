@@ -19,7 +19,7 @@ function readLicenseFile({name, path}) {
 
 function brushesAndAssets(f) {
   f.write("\n\n")
-  f.write(fs.readFileSync('src/brushes/a-painter-license.txt'))
+  f.write(fs.readFileSync('src/brushes/brush-licenses.txt'))
   f.write("\n\n")
   f.write(fs.readFileSync('src/assets/.material-design-license.txt'))
 }

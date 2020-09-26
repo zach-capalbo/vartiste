@@ -147,7 +147,6 @@ export class CanvasShaderProcessor {
     ];
     let typedArray = new Float32Array(positions)
     this.positionLength = positions.length
-    console.log("typedArray", typedArray)
     gl.bufferData(gl.ARRAY_BUFFER, typedArray, gl.STATIC_DRAW);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -340,6 +339,10 @@ export class UVStretcher extends CanvasShaderProcessor
     super.initialUpdate()
     this.createVertexBuffer({name: "a_uv", list: this.uvs, size: 2})
     this.createVertexBuffer({name: "a_opacity", list: this.opacities, size: 1})
+
+    let gl = this.getContext()
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
   }
 
 }

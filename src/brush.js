@@ -631,10 +631,11 @@ class LineBrush extends Brush
     this.lineData.endPoint = {x,y}
   }
   startDrawing(ctx, x, y) {
+    this.solo = true
     this.lineData.startPoint = {x,y}
   }
   endDrawing(ctx) {
-    console.log("Ending drawing", this.lineData)
+    this.solo = false
     if (!this.lineData.startPoint && this.lineData.endPoint) return
     ctx.save()
     ctx.beginPath()
@@ -726,9 +727,16 @@ class StretchBrush extends LineBrush {
   startDrawing(ctx, x, y) {
     this.lineData.startPoint = {x,y}
     this.lineData.allPoints.push({x,y, scale: this.scale})
+    this.solo = true
   }
   endDrawing(ctx) {
-    if (!this.lineData.startPoint && this.lineData.endPoint) return
+    this.solo = false
+    if (this.lineData.allPoints.length < 2)
+    {
+      this.lineData.allPoints.length = 0
+      this.lineData.endPoint = undefined
+      return
+    }
 
     for (let p of this.lineData.allPoints)
     {
@@ -741,18 +749,19 @@ class StretchBrush extends LineBrush {
 
     this.updateBrush()
 
-    this.uvStretcher.createMesh(this.lineData.allPoints)//[this.lineData.allPoints[0], this.lineData.allPoints[Math.round(this.lineData.allPoints.length / 2)], this.lineData.allPoints.slice(-1)[0]])
+    this.uvStretcher.createMesh(this.lineData.allPoints)
 
     this.uvStretcher.initialUpdate()
     this.uvStretcher.update()
 
     let oldAlpha = ctx.globalAlpha
-    ctx.globalAlpha = this.opacity
+    ctx.globalAlpha = Math.sqrt(this.opacity)
     ctx.drawImage(this.uvStretcher.canvas,
       0, 0, this.uvStretcher.canvas.width, this.uvStretcher.canvas.height,
       0, 0, ctx.canvas.width, ctx.canvas.height)
 
     this.lineData.allPoints.length = 0
+    this.lineData.endPoint = undefined
     ctx.globalAlpha = oldAlpha
 
   }

@@ -33,6 +33,8 @@ const BrushList = [
   new StretchBrush('stretch_leaf',"stamp_leaf1", {tooltip: "StretchBrush Line", textured: true}),
   new StretchBrush('stretch_ink',"ink", {tooltip: "StretchBrush Line", textured: false}),
   new StretchBrush('stretch_thick',"thick_paint", {tooltip: "StretchBrush Line", textured: true}),
+  new StretchBrush('stretch_water2',"watercolor", {tooltip: "StretchBrush Line", textured: false}),
+  new StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "StretchBrush Line", textured: false}),
 ]
 
 export { BrushList }
