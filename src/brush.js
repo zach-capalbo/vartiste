@@ -585,6 +585,7 @@ class LineBrush extends Brush
     this.scale = 1
     this.opacity = 1.0
     this.tooltip = tooltip
+    this.outlineScale = 1
 
     if (previewSrc)
     {
@@ -655,7 +656,7 @@ class LineBrush extends Brush
     if (!this.lineData.startPoint || !this.lineData.endPoint)
     {
       ctx.beginPath()
-      ctx.arc(x, y, this.scale, 0, 2 * Math.PI, false)
+      ctx.arc(x, y, this.scale * this.outlineScale, 0, 2 * Math.PI, false)
       ctx.strokeStyle = '#FFFFFF'
       ctx.stroke()
       return
@@ -697,6 +698,10 @@ class StretchBrush extends LineBrush {
       image = new Image()
     }
 
+    this.width = 48
+    this.height = 48
+    this.outlineScale = 5
+
     image.decoding = 'sync'
     image.loading = 'eager'
     image.src = require(`./brushes/${name}.png`)
@@ -712,7 +717,6 @@ class StretchBrush extends LineBrush {
     this.lineData.allPoints = []
   }
   updateBrush() {
-    console.log("Updating stretch brush", this.image)
     this.uvStretcher.setInputCanvas(this.image, {resize: false})
     this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.toArray())
   }
@@ -728,9 +732,12 @@ class StretchBrush extends LineBrush {
     this.lineData.startPoint = {x,y}
     this.lineData.allPoints.push({x,y, scale: this.scale})
     this.solo = true
+    this.direct = true
+    this.updateBrush()
   }
   endDrawing(ctx) {
     this.solo = false
+    this.direct = false
     if (this.lineData.allPoints.length < 2)
     {
       this.lineData.allPoints.length = 0
@@ -747,8 +754,6 @@ class StretchBrush extends LineBrush {
       p.y = p.y * - 2 + 1
     }
 
-    this.updateBrush()
-
     this.uvStretcher.createMesh(this.lineData.allPoints)
 
     this.uvStretcher.initialUpdate()
@@ -764,6 +769,47 @@ class StretchBrush extends LineBrush {
     this.lineData.endPoint = undefined
     ctx.globalAlpha = oldAlpha
 
+  }
+  drawOutline(ctx, x,y) {
+    if (!this.lineData.startPoint || !this.lineData.endPoint)
+    {
+      ctx.beginPath()
+      ctx.arc(x, y, this.scale * this.outlineScale, 0, 2 * Math.PI, false)
+      ctx.strokeStyle = '#FFFFFF'
+      ctx.stroke()
+      return
+    }
+
+    for (let p of this.lineData.allPoints)
+    {
+      p.nx = p.x
+      p.ny = p.y
+      p.x /= ctx.canvas.width
+      p.y /= ctx.canvas.height
+
+      p.x = p.x * 2 - 1
+      p.y = p.y * - 2 + 1
+    }
+
+    this.uvStretcher.createMesh(this.lineData.allPoints)
+
+    this.uvStretcher.initialUpdate()
+    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.toArray())
+    this.uvStretcher.update()
+
+    let oldAlpha = ctx.globalAlpha
+    ctx.globalAlpha = Math.sqrt(this.opacity)
+    ctx.drawImage(this.uvStretcher.canvas,
+      0, 0, this.uvStretcher.canvas.width, this.uvStretcher.canvas.height,
+      0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    ctx.globalAlpha = oldAlpha
+
+    for (let p of this.lineData.allPoints)
+    {
+      p.x = p.nx
+      p.y = p.ny
+    }
   }
 }
 

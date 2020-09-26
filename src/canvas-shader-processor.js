@@ -246,6 +246,21 @@ export class UVStretcher extends CanvasShaderProcessor
     this.point3 = new THREE.Vector3
     this.direction = new THREE.Vector3
     this.direction2 = new THREE.Vector3
+
+  }
+  reset() {
+    this.vertexPositions.length = 0
+    this.uvs.length = 0
+    this.opacities.length = 0
+    this.accumDistance = 0
+  }
+  updatePoints(points) {
+    if (points.length === 0)
+    {
+      return
+    }
+
+    this.createMesh(points)
   }
   createMesh(points) {
     let {point1, point2, point3, direction, direction2} = this
@@ -271,11 +286,13 @@ export class UVStretcher extends CanvasShaderProcessor
       direction.subVectors(point2, point1)
       segDistance = direction.length()
 
+      const directionScalar = 0.03
+
       if (i === 0)
       {
         direction.normalize()
         direction.cross(FORWARD)
-        direction.multiplyScalar(points[i].scale * 0.01)
+        direction.multiplyScalar(points[i].scale * directionScalar)
       }
       else
       {
@@ -288,7 +305,7 @@ export class UVStretcher extends CanvasShaderProcessor
         direction2.subVectors(point3, point2)
         direction2.normalize()
         direction2.cross(FORWARD)
-        direction2.multiplyScalar(points[i+1].scale * 0.01)
+        direction2.multiplyScalar(points[i+1].scale * directionScalar)
         direction2.lerp(direction, 0.5)
       }
       else

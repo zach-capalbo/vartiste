@@ -385,24 +385,42 @@ AFRAME.registerComponent('compositor', {
     overlayCtx.clearRect(0, 0, width, height)
     overlayCtx.globalCompositeOperation = 'source-over'
 
-    for (let overlay of Object.values(this.overlays))
+    let {brush} = this.el.sceneEl.systems['paint-system']
+    if (brush.solo && !brush.direct)
     {
-      if (!overlay.el.id.endsWith('-hand')) continue
-      let raycaster = overlay.el.components.raycaster
-      if (!raycaster) continue
-      let intersection = raycaster.intersections
-                            .filter(i => i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
-                            .sort(i => - i.distance)
-                            [0]
-
-
-      if (!intersection) continue
-      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
     }
 
+    if (!brush.solo)
+    {
+      for (let overlay of Object.values(this.overlays))
+      {
+        if (!overlay.el.id.endsWith('-hand')) continue
+        let raycaster = overlay.el.components.raycaster
+        if (!raycaster) continue
+        let intersection = raycaster.intersections
+                              .filter(i => i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
+                              .sort(i => - i.distance)
+                              [0]
+
+
+        if (!intersection) continue
+        this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
+      }
+    }
+    
     ctx.globalCompositeOperation = 'difference'
     ctx.globalAlpha = 1.0
     ctx.drawImage(this.overlayCanvas, 0, 0)
+
+    if (brush.solo && brush.direct)
+    {
+      ctx.globalCompositeOperation = 'source-over'
+      overlayCtx.clearRect(0,0, width, height)
+      overlayCtx.globalCompositeOperation = 'copy'
+      this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
+      ctx.drawImage(this.overlayCanvas, 0, 0)
+    }
 
     ctx.restore()
   },
