@@ -233,10 +233,18 @@ export class CanvasShaderProcessor {
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 
+let stretchBackingCanvas
+
 export class UVStretcher extends CanvasShaderProcessor
 {
   constructor(options) {
-    super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert')}, options))
+    if (!stretchBackingCanvas)
+    {
+      stretchBackingCanvas = document.createElement('canvas')
+      stretchBackingCanvas.width = 2048
+      stretchBackingCanvas.height = 2048
+    }
+    super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert'), canvas: stretchBackingCanvas}, options))
     this.vertexPositions = []
     this.uvs = []
     this.opacities = []
@@ -361,7 +369,6 @@ export class UVStretcher extends CanvasShaderProcessor
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
   }
-
 }
 
 window.CanvasShaderProcessor = CanvasShaderProcessor

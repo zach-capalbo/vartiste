@@ -733,6 +733,12 @@ class StretchBrush extends LineBrush {
     this.lineData.allPoints.push({x,y, scale: this.scale})
     this.solo = true
     this.direct = true
+    if (this.uvStretcher.canvas.width !== ctx.canvas.width * 2 ||
+        this.uvStretcher.canvas.height !== ctx.canvas.height * 2)
+    {
+      this.uvStretcher.canvas.width = ctx.canvas.width * 2
+      this.uvStretcher.canvas.height = ctx.canvas.height * 2
+    }
     this.updateBrush()
   }
   endDrawing(ctx) {
