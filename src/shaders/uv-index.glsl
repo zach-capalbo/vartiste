@@ -19,7 +19,7 @@ void main() {
   gl_FragColor = vec4(
       floor(mod(u, 256.0)) / 256.0,
       floor(mod(v, 256.0)) / 256.0,
-      (floor(u / 256.0) * 16.0 + floor(v / 256.0)) / 256.0 + fudge / 256.0,
+      (floor(u / 256.0) * 16.0 + floor(v / 256.0)) / 256.0 + fudge / 255.0,
       1.0
     )
 

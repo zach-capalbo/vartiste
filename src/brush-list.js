@@ -1,4 +1,4 @@
-import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush} from './brush.js'
+import {ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush} from './brush.js'
 const BrushList = [
   new ProceduralBrush('default', {connected: true, hqBlending: true, tooltip: "Default"}),
   new ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true}),
@@ -28,6 +28,15 @@ const BrushList = [
   new ProceduralBrush('charcoal1', {connected: true, hqBlending: 'always', minMovement: 1.3, invertScale: true, tooltip: "Charcoal Stick"}),
   new ProceduralBrush('charcoal2', {connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcoal Pencil"}),
   new LineBrush('straight', {tooltip: "Straight Line"}),
+  new StretchBrush('stretch_line_grunge1',"line_grunge1", {tooltip: "Grunge"}),
+  new StretchBrush('stretch_lines1',"silky_textured", {tooltip: "Silky", textured: true}),
+  new StretchBrush('stretch_leaf',"stamp_leaf1", {tooltip: "Leaf", textured: true}),
+  new StretchBrush('stretch_ink',"ink", {tooltip: "Ink", textured: false}),
+  new StretchBrush('stretch_thick',"thick_paint", {tooltip: "Thick Paint", textured: true}),
+  new StretchBrush('stretch_water2',"watercolor", {tooltip: "Watercolor", textured: false}),
+  new StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "Pencil Stroke", textured: false}),
+  new StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false}),
+  new StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false}),
 ]
 
 export { BrushList }

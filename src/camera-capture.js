@@ -322,6 +322,7 @@ AFRAME.registerComponent('spray-can-tool', {
       if (!brush.overlayCanvas)
       {
         console.error("Cannot spray paint brush with no canvas")
+        delete this.savedBrush
         return false
       }
 
@@ -508,8 +509,8 @@ AFRAME.registerComponent('spray-can-tool', {
         v = ((b & 0x0F) * 256 + g) / 4096
         v = flipY ? 1.0 - v : v
 
-        xx = Math.round(u * targetCanvas.width + Math.random() - 0.5)
-        yy = Math.round(v * targetCanvas.height + Math.random() - 0.5)
+        xx = Math.round(u * targetCanvas.width) // + Math.random() - 0.5)
+        yy = Math.round(v * targetCanvas.height) // + Math.random() - 0.5)
 
         touchedPixels[((yy * targetCanvas.width) + xx) * 4] = true
 

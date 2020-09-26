@@ -1,11 +1,14 @@
 The following files are from the A-Painter project (https://github.com/aframevr/a-painter)
 
-- silky_textured.png
 - line_grunge1.png
 - line_grunge2.png
 - lines2.png
+- lines3.png
 - silky_textured.png
 - squared_textured.png
+- stamp_fur1.png
+- stamp_leaf1.png
+- line_gradient.png
 
 Distributed under the following license agreement:
 
@@ -30,3 +33,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+
+The following images are from Pixabay, and licensed under the [Pixabay License](https://pixabay.com/service/license/):
+
+- ink.png (by Clker-Free-Vector-Images, retrieved from https://pixabay.com/vectors/ink-blue-splatter-abstract-paint-303241/)
+- thick_paint.png (by AnnaliseArt, retrieved from https://pixabay.com/illustrations/thick-paint-strokes-paint-stoke-5262013/)
+- watercolor.png (by AnnaliseArt, https://pixabay.com/illustrations/paint-strokes-watercolor-brush-5293233/)
+- pencil-stroke.png (by Geralt, retreived from https://pixabay.com/illustrations/hatch-colored-pencil-scratches-3373325/)

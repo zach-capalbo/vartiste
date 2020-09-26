@@ -12,8 +12,15 @@ async function sh(cmd) {
 }
 
 async function changeLog() {
-  let gitlog = await sh(`git rev-list -n 3 --min-parents=2 --format="%B" HEAD`)
-  return gitlog.split(/^commit \w+$/m).slice(1)
+  try {
+    let gitlog = await sh(`git rev-list -n 3 --min-parents=2 --format="%B" HEAD`)
+    return gitlog.split(/^commit \w+$/m).slice(1)
+  }
+  catch (e)
+  {
+    console.error("Error fetching changeLog", e)
+    return ""
+  }
 }
 
 async function version() {
