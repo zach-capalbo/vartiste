@@ -136,6 +136,7 @@ AFRAME.registerComponent('compositor', {
 
   addLayer(position, {layer} = {}) {
     if (typeof(layer) === 'undefined') layer = new Layer(this.width, this.height)
+    if (typeof(position) === 'undefined') position = this.layers.length - 1
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     this.activateLayer(layer)
