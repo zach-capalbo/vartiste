@@ -231,42 +231,7 @@ AFRAME.registerComponent('toolbox-shelf', {
     document.querySelector('*[skeletonator-control-panel]').object3D.visible = true
     skeletonatorEl.components.skeletonator.play()
   },
-  bakeToVertexColorsAction() {
-    let mesh = Compositor.mesh
-    let vertexUvs = mesh.geometry.attributes.uv
-    let uv = new THREE.Vector2()
-    let colors = []
-    let {width, height} = Compositor.component
-    let flipY = Compositor.component.data.flipY
-    let threeColor = new THREE.Color()
-    let srgb = this.el.sceneEl.getAttribute('renderer').colorManagement
-    for (let vi = 0; vi < vertexUvs.count; vi ++ )
-    // let imageData = Compositor.component.preOverlayCanvas.getContext('2d').getImageData(0, 0, Compositor.component.width, Compositor.component.height)
-    {
-      let x = Math.round(uv.x * width)
-      let y = Math.round(uv.y * height)
-      if (flipY) y = Math.round((1.0 - uv.y) * height)
-      uv.fromBufferAttribute(vertexUvs, vi)
-      let color = Compositor.component.preOverlayCanvas.getContext('2d').getImageData(x, y, 1,1)
 
-      if (srgb)
-      {
-        threeColor.setRGB(color.data[0] / 256.0, color.data[1] / 256.0, color.data[2] / 256.0)
-        // threeColor.convertLinearToSRGB()
-        colors.push(threeColor.r)
-        colors.push(threeColor.g)
-        colors.push(threeColor.b)
-      }
-      else
-      {
-        colors.push(color.data[0] / 255.0)
-        colors.push(color.data[1] / 255.0)
-        colors.push(color.data[2] / 255.0)
-      }
-    }
-    mesh.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3, true) );
-    mesh.geometry.needsUpdate = true
-  },
   toggleLatheAction() {
     document.querySelectorAll('*[lathe]').forEach(e=>e.setAttribute('lathe', {enabled: !e.getAttribute('lathe').enabled}))
   },
