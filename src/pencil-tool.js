@@ -62,6 +62,7 @@ AFRAME.registerComponent('pencil-tool', {
     scaleTip: {type: 'boolean', default: true},
     pressureTip: {type: 'boolean', default: false},
     detailTip: {type: 'boolean', default: false},
+    drawThrough: {type: 'boolean', default: false},
 
     radius: {default: 0.03},
     tipRatio: {default: 0.2},
@@ -183,6 +184,7 @@ AFRAME.registerComponent('pencil-tool', {
       tip.setAttribute('segments-height', 1)
       tip.setAttribute('segments-width', 16)
     }
+
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 -${cylinderHeight / 2 + tipHeight / 2} 0`)
 
@@ -247,6 +249,11 @@ AFRAME.registerComponent('pencil-tool', {
   },
   update(oldData) {
     this.updateEnabled()
+
+    if (this.data.drawThrough)
+    {
+      this.tip.setAttribute('material', 'wireframe', true)
+    }
 
     if (this.el.hasAttribute('preactivate-tooltip') && !this.el.hasAttribute('tooltip-style'))
     {
@@ -688,10 +695,12 @@ AFRAME.registerComponent('drip-tool', {
 })
 
 AFRAME.registerComponent('vertex-tool', {
-  dependencies: ['pencil-tool'],
+  dependencies: ['six-dof-tool'],
   init() {
-
   },
+  activate() {
+    this.proc = new CanvasShaderProcessor({fx: 'uv-stretch', })
+  }
 })
 
 AFRAME.registerComponent('six-dof-tool', {

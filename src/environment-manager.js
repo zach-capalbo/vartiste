@@ -282,3 +282,40 @@ AFRAME.registerComponent('environment-manager', {
     this.system.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
   }
 })
+
+AFRAME.registerComponent('hdri-environment', {
+  dependencies: ['material'],
+  schema: {
+    src: {type: 'selector'},
+    exposure: {default: 0.724},
+    toneMapping: {default: 5}
+  },
+  loadRGBE(url) {
+    return new Promise((r, e) => {
+      new RGBELoader()
+  			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
+  			.load( url , function ( texture, textureData ) {
+          r({texture, textureData})
+  			} );
+      })
+  },
+  async setHDRI() {
+    let {texture} = await this.loadRGBE(this.data.src.src)
+    let renderer = this.el.sceneEl.renderer
+    renderer.toneMapping = this.data.toneMapping
+    renderer.toneMappingExposure = this.data.exposure
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+    var pmremGenerator = new PMREMGenerator( renderer );
+    pmremGenerator.compileEquirectangularShader();
+
+    let skyEl = this.el
+    let mesh = skyEl.getObject3D('mesh')
+    mesh.material.map = texture
+    mesh.material.color.set("#FFFFFF")
+    mesh.material.needsUpdate = true
+
+    mesh.scale.x = -1
+    mesh.scale.z = -1
+  }
+})

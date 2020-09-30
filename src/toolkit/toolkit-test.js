@@ -7,3 +7,9 @@ AFRAME.registerSystem('toolkit-demo', {
     window.open("https://vartiste.xyz/docs.html")
   }
 })
+
+AFRAME.registerSystem('load-hdri-from-webpack', {
+  init() {
+    document.querySelector('#hdr').src = require('../assets/colorful_studio_1k.hdr')
+  }
+})

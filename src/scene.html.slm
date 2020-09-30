@@ -59,7 +59,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
             a-entity preactivate-tooltip="Viewport Positioner" viewport-tool="" position="-1.3 0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""
+        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
     a-entity#canvas-root

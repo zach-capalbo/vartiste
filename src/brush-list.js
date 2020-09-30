@@ -37,6 +37,7 @@ const BrushList = [
   new StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "Pencil Stroke", textured: false}),
   new StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false}),
   new StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false}),
+//  new StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
 ]
 
 export { BrushList }
