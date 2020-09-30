@@ -18,6 +18,7 @@ AFRAME.registerSystem('environment-manager', {
   init() {
     this.state = STATE_COLOR
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
   },
   switchState(newState) {
     if (newState == this.state) return
@@ -232,13 +233,16 @@ AFRAME.registerSystem('environment-manager', {
   tick(t,dt) {
     if (this.state === STATE_HDRI)
     {
-      document.querySelectorAll('#world-root,#artist-root').forEach(r => { r.object3D.traverse(o => {
-        if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
-        {
-          o.material.envMap = this.envMap
-          o.material.needsUpdate = true
-        }
-      })})
+      for (let r of this.elementsToCheck)
+      {
+        r.object3D.traverse(o => {
+          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
+          {
+            o.material.envMap = this.envMap
+            o.material.needsUpdate = true
+          }
+        })
+      }
     }
   }
 })
@@ -280,42 +284,5 @@ AFRAME.registerComponent('environment-manager', {
   init() {},
   toneMapping() {
     this.system.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
-  }
-})
-
-AFRAME.registerComponent('hdri-environment', {
-  dependencies: ['material'],
-  schema: {
-    src: {type: 'selector'},
-    exposure: {default: 0.724},
-    toneMapping: {default: 5}
-  },
-  loadRGBE(url) {
-    return new Promise((r, e) => {
-      new RGBELoader()
-  			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
-  			.load( url , function ( texture, textureData ) {
-          r({texture, textureData})
-  			} );
-      })
-  },
-  async setHDRI() {
-    let {texture} = await this.loadRGBE(this.data.src.src)
-    let renderer = this.el.sceneEl.renderer
-    renderer.toneMapping = this.data.toneMapping
-    renderer.toneMappingExposure = this.data.exposure
-    let wasXREnabled = renderer.xr.enabled
-    renderer.xr.enabled = false
-    var pmremGenerator = new PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
-
-    let skyEl = this.el
-    let mesh = skyEl.getObject3D('mesh')
-    mesh.material.map = texture
-    mesh.material.color.set("#FFFFFF")
-    mesh.material.needsUpdate = true
-
-    mesh.scale.x = -1
-    mesh.scale.z = -1
   }
 })

@@ -150,6 +150,7 @@ AFRAME.registerComponent('manipulator', {
   },
   startGrab() {
     if (this.target.grabbingManipulator) {
+      this.target = undefined
       // stopGrab()
       return
     }

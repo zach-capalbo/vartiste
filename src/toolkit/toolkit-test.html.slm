@@ -60,4 +60,4 @@ html
       a-entity.clickable position="3.1 0 -2.4" draw-canvas="canvas:#draw-canvas-asset" geometry="primitive: plane; width: 2; height: 1.75" material="shader: flat; src: #draw-canvas-asset; npot: true" canvas-updater="throttle: 5" frame="" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"
       a-entity.clickable position="3.1 2 -2.4" geometry="primitive: circle; radius: 1; height: 1.75" color-picker=""
 
-      a-sphere.clickable radius="0.1" constrain-to-sphere=""
+      a-sphere.clickable radius="0.1" constrain-to-sphere="" material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4"
