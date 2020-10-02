@@ -249,7 +249,7 @@ AFRAME.registerComponent('manipulator', {
     this.grabber.object3D.scale.set(0.4, 0.4, 0.4)
   },
   stopGrab() {
-    if (this.data.printUpdates)
+    if (this.data.printUpdates && this.target)
     {
       console.log(this.target,
                   "\n\nposition=\"" + AFRAME.utils.coordinates.stringify(this.target.object3D.position) +"\"",
@@ -257,7 +257,8 @@ AFRAME.registerComponent('manipulator', {
                     x: THREE.Math.radToDeg(this.target.object3D.rotation.x),
                     y: THREE.Math.radToDeg(this.target.object3D.rotation.y),
                     z: THREE.Math.radToDeg(this.target.object3D.rotation.z),
-                  }) + "\"")
+                  }) + "\"",
+                `\n\nscale="${AFRAME.utils.coordinates.stringify(this.target.object3D.scale)}"`)
     }
 
     if (this.target)
@@ -569,5 +570,27 @@ AFRAME.registerComponent('constrain-to-sphere', {
   },
   constrainObject() {
     this.el.object3D.position.clampLength(0.3, 0.3)
+  }
+})
+
+
+AFRAME.registerComponent('constrain-track-to', {
+  schema: {
+    innerRadius: {default: 0.0},
+    outerRadius: {default: 1.0},
+    constrainOnLoad: {default: true}
+  },
+  init() {
+    this.el.manipulatorConstraint = this.constrainObject.bind(this)
+    Util.whenLoaded(this.el, () => {
+      if (this.data.constrainOnLoad)
+      {
+        this.constrainObject()
+      }
+    })
+  },
+  constrainObject() {
+
+    this.el.object3D.matrix.lookAt(this.el.object3D, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
   }
 })

@@ -171,6 +171,8 @@ AFRAME.registerComponent('icon-button', {
     this.el.addEventListener('object3dset', (e) => this.updateAspect())
 
     this.setColor(buttonStyle.color)
+
+    this.el.actionTooltips = {trigger: 'Click Button'}
   },
   update(oldData) {
     if (this.system.faceMaterials[this.data])

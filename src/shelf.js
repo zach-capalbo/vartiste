@@ -13,6 +13,8 @@ AFRAME.registerComponent('shelf', {
 
     //  Enables the [frame](#frame) component for the shelf when true
     frame: {default: true},
+    closeable: {default: false},
+    pinnable: {default: true},
 
     // Possible future use for documentation or adding a titlebar
     name: {type: 'string'}
@@ -51,8 +53,10 @@ AFRAME.registerComponent('shelf', {
         Util.whenLoaded(this.container.querySelector('.bg'), () => {
           this.el.setAttribute('frame', {
             outline: false,
-            closable: false,
-            geometryTarget: this.container.querySelector('.bg')
+            closable: this.data.closeable,
+            pinnable: this.data.pinnable,
+            geometryTarget: this.container.querySelector('.bg'),
+            name: this.data.name
           })
         })
       }

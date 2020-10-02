@@ -169,5 +169,133 @@ AFRAME.registerComponent('joystick-turn', {
 }
 );
 
+AFRAME.registerComponent('action-tooltips', {
+  schema: {
+    'updown': {type: 'string', default: null},
+    'leftright': {type: 'string', default: null},
+    'a': {type: 'string', default: null},
+    'b': {type: 'string', default: null},
+    'trigger': {type: 'string', default: null},
+    'grip': {type: 'string', default: null},
+  }
+})
+
+AFRAME.registerComponent('hand-action-tooltip', {
+  dependencies: ['raycaster'],
+  schema: {
+    throttle: {default: 50},
+    position: {type: 'vec3', default: `-0.006549004823841076 -0.11940164556557662 0.10084264804121343`}
+  },
+  init() {
+    let container = document.createElement('a-entity')
+    container.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
+    container.setAttribute('material', 'color: #26211c; shader: flat')
+    container.setAttribute('position', this.data.position)
+    container.setAttribute('rotation', "-47.22767925743924 -1.2047588819680946 -2.40270564492676")
+    container.setAttribute('scale', '0.15 0.15 0.15')
+    container.setAttribute('text', `color: #FFF; width: 1; align: left; value: ...; wrapCount: 20; baseline: top`)
+    this.container = container
+    this.el.append(container)
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+
+    this.buttons = [
+      'updown',
+      'leftright',
+      'a',
+      'b',
+      'trigger',
+      'grip',
+    ]
+
+    this.names = {
+      'updown': "Up/Down",
+      'leftright': "Left/Right",
+      'a': "A",
+      'b': "B",
+      'trigger': "Trigger",
+      'grip': "Grip"
+    }
+
+    this.message = {}
+
+    for (let b of this.buttons) this.message[b] = null
+
+    this.lastMessage = Object.assign({}, this.message)
+  },
+  setMessage()
+  {
+    for (let k in this.message) this.message[k] = null
+
+    if (this.el.components.raycaster.intersectedEls.length == 0)
+    {
+      return
+    }
+
+    let targetEl = this.el.components.raycaster.intersectedEls[0]
+
+    while (targetEl)
+    {
+      let targetActions = targetEl.getAttribute('action-tooltips') || targetEl.actionTooltips
+
+      if (targetActions)
+      {
+        for (let k in targetActions)
+        {
+          if (this.message[k] === null)
+          {
+            this.message[k] = targetActions[k]
+          }
+        }
+      }
+
+      targetEl = targetEl['redirect-grab']
+    }
+
+
+    if (this.el.is('grabbing'))
+    {
+      this.message.updown = "Push / Pull"
+      this.message.leftright = "Smaller / Bigger"
+      this.message.a = this.el.is("rotating") ? "Lock Rotation" : "Unlock Rotation"
+    }
+    else
+    {
+      this.message.grip = "Grab"
+    }
+  },
+  tick(t, dt)
+  {
+    this.setMessage()
+    let allSame = true
+    for (let k in this.message) {
+      if (this.message[k] !== this.lastMessage[k])
+      {
+        allSame = false
+        break
+      }
+    }
+
+    if (allSame) return
+
+    let messageString = []
+    for (let k of this.buttons)
+    {
+      if (this.message[k] !== null)
+      {
+        messageString.push(`${this.names[k]}: ${this.message[k]}`)
+      }
+    }
+
+    Object.assign(this.lastMessage, this.message)
+
+    this.container.getObject3D('mesh').visible = messageString.length > 0
+    this.container.setAttribute('geometry', 'width', 0)
+    this.container.setAttribute('geometry', 'height', 0)
+    this.container.setAttribute('text', 'value', messageString.join("\n"))
+    this.container.getObject3D('mesh').position.y = - this.container.getAttribute('geometry').height / 2
+  }
+})
+
+
 
 export { JoystickDirections, ButtonMaps, Axes }

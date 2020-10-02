@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 // Shows some text when hovered. Can be styled with
 // [tooltip-style](#tooltip-style). If [speech](#speech) is enabled, the tooltip
 // will be read with text-to-speech when hovered.

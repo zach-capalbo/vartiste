@@ -47,7 +47,10 @@ AFRAME.registerComponent("frame", {
     geometryTarget: {type: 'selector'},
 
     // If true, sets the element to be grabbable by [`manipulator`](#manipulator)
-    grabbable: {default: true}
+    grabbable: {default: true},
+
+    // Name to display as a title for the frame
+    name: {type: 'string'},
   },
   events: {
     click: function (e) {
@@ -74,11 +77,28 @@ AFRAME.registerComponent("frame", {
     {
       let closeButton = this.addButton('#asset-close-circle-outline')
       closeButton.setAttribute('frame-action', "closeFrame")
+      closeButton.setAttribute('tooltip', "Close")
+      closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
     }
 
     if (this.data.pinnable) {
       let closeButton = this.addButton('#asset-hand-right')
       closeButton.setAttribute('frame-action', "pinFrame")
+      closeButton.setAttribute('tooltip', "Pin / Unpin to opposite hand")
+      closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
+    }
+
+    if (this.data.name)
+    {
+      let {width, height} = this
+      let title = document.createElement('a-entity')
+      title.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
+      title.setAttribute('material', 'color: #26211c; shader: flat')
+      title.setAttribute('position', `${- width / 4 + 0.055} ${height / 2 + 0.055} 0`)
+      title.setAttribute('text', `color: #FFF; width: ${width / 2}; align: left; value: ${this.data.name}; wrapCount: 20`)
+      title.setAttribute('class', 'raycast-invisible')
+      this.el.append(title)
+      this.objects.push(title.object3D)
     }
   },
   remove() {
