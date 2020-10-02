@@ -32,6 +32,7 @@ AFRAME.registerComponent('brush-shelf', {
       button.setAttribute('icon-button', brush.previewSrc)
       button.setAttribute('brush-idx', idx)
       button.setAttribute('tooltip', brush.tooltip)
+      button.setAttribute('action-tooltips', 'trigger: Set Brush')
 
       this.brushButtons.push(button)
       brushRow.append(button)

@@ -5,7 +5,7 @@ a-entity#artist-root
     a-entity#camera-root desktop-controls="" reset-transform-on-vr=""
       a-entity#camera camera="active: true" _look-controls="hmdEnabled: true; enabled: false" _reset-transform-on-vr="" camera-matrix-helper=""
         a-entity position="0 0 0" light="type: point; castShadow: false; intensity: 0.3"
-        a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator="" hand-action-tooltip="position: 0 1 -2"
+        a-entity#mouse cursor="rayOrigin: mouse" raycaster="objects: .clickable,.canvas; far: 500" hand-draw-tool="" sound="" mouse-manipulator="" _hand-action-tooltip="position: 0 1 -2"
 
       - for hand of ["left", "right"]
         a-entity id="hand-root${hand}"

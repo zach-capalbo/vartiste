@@ -32,6 +32,8 @@ AFRAME.registerComponent('right-hand-controls', {
     buttonMap.install(this)
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
+
+    this.el.setAttribute('action-tooltips', 'leftright: Snap Turn')
   },
 
   tick(t, dt) {

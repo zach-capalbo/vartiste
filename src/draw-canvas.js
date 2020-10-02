@@ -21,7 +21,9 @@ AFRAME.registerComponent('draw-canvas', {
 
     if (!this.el.hasAttribute('action-tooltips'))
     {
-      this.el.setAttribute('action-tooltips', 'trigger: Draw')
+      this.el.setAttribute('action-tooltips__right-hand', 'trigger: Draw; updown: Scale Brush; a: Erase; b: Pick color')
+      this.el.setAttribute('action-tooltips__left-hand', 'trigger: Draw; updown: Scale Brush;')
+      this.el.setAttribute('action-tooltips__mouse', 'trigger: Draw')
     }
 
     this.sampleCanvas = document.createElement('canvas')

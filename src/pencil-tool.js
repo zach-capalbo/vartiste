@@ -262,6 +262,7 @@ AFRAME.registerComponent('pencil-tool', {
   },
   activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
+    this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
     if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
       if (!this.data.enabled) return
@@ -722,6 +723,9 @@ AFRAME.registerComponent('summonable', {
   events: {
     activate: function(e) {
       this.hasFlown = true
+      if (this.el.getAttribute('action-tooltips').trigger.startsWith('Summon')) {
+        this.el.setAttribute('action-tooltips', {trigger: null})
+      }
     },
     click: function(e) {
       if (this.data.once && this.hasFlown) return
@@ -729,6 +733,9 @@ AFRAME.registerComponent('summonable', {
 
       this.flyToUser()
     }
+  },
+  init() {
+    this.el.setAttribute('action-tooltips', {trigger: 'Summon ' + (this.el.hasAttribute('preactivate-tooltip') ? this.el.getAttribute('preactivate-tooltip') : "")})
   },
   flyToUser() {
     this.hasFlown = true

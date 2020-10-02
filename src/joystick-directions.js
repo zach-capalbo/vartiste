@@ -170,6 +170,7 @@ AFRAME.registerComponent('joystick-turn', {
 );
 
 AFRAME.registerComponent('action-tooltips', {
+  multiple: true,
   schema: {
     'updown': {type: 'string', default: null},
     'leftright': {type: 'string', default: null},
@@ -177,11 +178,12 @@ AFRAME.registerComponent('action-tooltips', {
     'b': {type: 'string', default: null},
     'trigger': {type: 'string', default: null},
     'grip': {type: 'string', default: null},
+    shelf: {type: 'string', default: null},
   }
 })
 
 AFRAME.registerComponent('hand-action-tooltip', {
-  dependencies: ['raycaster'],
+  dependencies: ['raycaster', 'action-tooltips'],
   schema: {
     throttle: {default: 50},
     position: {type: 'vec3', default: `-0.006549004823841076 -0.11940164556557662 0.10084264804121343`}
@@ -189,11 +191,11 @@ AFRAME.registerComponent('hand-action-tooltip', {
   init() {
     let container = document.createElement('a-entity')
     container.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
-    container.setAttribute('material', 'color: #26211c; shader: flat')
+    container.setAttribute('material', 'color: #abe; shader: flat')
     container.setAttribute('position', this.data.position)
     container.setAttribute('rotation', "-47.22767925743924 -1.2047588819680946 -2.40270564492676")
     container.setAttribute('scale', '0.15 0.15 0.15')
-    container.setAttribute('text', `color: #FFF; width: 1; align: left; value: ...; wrapCount: 20; baseline: top`)
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: ...; wrapCount: 20; baseline: top`)
     this.container = container
     this.el.append(container)
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
@@ -221,10 +223,12 @@ AFRAME.registerComponent('hand-action-tooltip', {
     for (let b of this.buttons) this.message[b] = null
 
     this.lastMessage = Object.assign({}, this.message)
+
+    this.thisTooltipAttr = "action-tooltips__" + this.el.id
   },
   setMessage()
   {
-    for (let k in this.message) this.message[k] = null
+    Object.assign(this.message, this.el.getAttribute('action-tooltips'))
 
     if (this.el.components.raycaster.intersectedEls.length == 0)
     {
@@ -235,7 +239,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
 
     while (targetEl)
     {
-      let targetActions = targetEl.getAttribute('action-tooltips') || targetEl.actionTooltips
+      let targetActions = targetEl.getAttribute(this.thisTooltipAttr) || targetEl.getAttribute('action-tooltips') || targetEl.actionTooltips
 
       if (targetActions)
       {
@@ -292,7 +296,8 @@ AFRAME.registerComponent('hand-action-tooltip', {
     this.container.setAttribute('geometry', 'width', 0)
     this.container.setAttribute('geometry', 'height', 0)
     this.container.setAttribute('text', 'value', messageString.join("\n"))
-    this.container.getObject3D('mesh').position.y = - this.container.getAttribute('geometry').height / 2
+    this.container.getObject3D('mesh').position.y = - this.container.getAttribute('geometry').height * 0.8 / 2
+    this.container.getObject3D('mesh').scale.set(1.2, 1.2, 1.2)
   }
 })
 
