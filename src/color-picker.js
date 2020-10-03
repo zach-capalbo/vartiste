@@ -46,6 +46,8 @@ AFRAME.registerComponent("color-picker", {
       var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
       this.handleColor(color)
     })
+
+    this.el.setAttribute('action-tooltips', 'trigger: Select Color')
   },
   handleColor(color) {
     this.system.selectColor(color)
@@ -74,6 +76,8 @@ AFRAME.registerComponent("brightness-picker", {
     this.mesh = this.el.getObject3D('mesh');
 
     this.mesh.material = material;
+
+    this.el.setAttribute('action-tooltips', 'trigger: Change Brightness')
 
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
@@ -127,6 +131,11 @@ AFRAME.registerComponent("opacity-picker", {
     let edgeSegments = new THREE.LineSegments( edges, edgeMaterial );
     this.el.object3D.add( edgeSegments );
 
+    if (!this.el.hasAttribute('action-tooltips'))
+    {
+      this.el.setAttribute('action-tooltips', 'trigger: Select Opacity')
+    }
+
     this.el.addEventListener("click", (e)=> {
       if (this.layer && !this.wasDrawing) {
         let oldOpacity = this.layer.oldOpacity
@@ -172,7 +181,6 @@ AFRAME.registerComponent("opacity-picker", {
 
     if (this.layer)
     {
-      console.log("Setting layer opacity", opacity)
       this.layer.opacity = opacity
       this.layer.touch()
     }

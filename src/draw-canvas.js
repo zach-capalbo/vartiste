@@ -19,6 +19,13 @@ AFRAME.registerComponent('draw-canvas', {
     let paintSystem = this.el.sceneEl.systems['paint-system']
     this.brush = paintSystem.brush
 
+    if (!this.el.hasAttribute('action-tooltips'))
+    {
+      this.el.setAttribute('action-tooltips__right-hand', 'trigger: Draw; updown: Scale Brush; a: Erase; b: Pick color')
+      this.el.setAttribute('action-tooltips__left-hand', 'trigger: Draw; updown: Scale Brush;')
+      this.el.setAttribute('action-tooltips__mouse', 'trigger: Draw')
+    }
+
     this.sampleCanvas = document.createElement('canvas')
     this.sampleCanvas.width = this.brush.width
     this.sampleCanvas.height = this.brush.height

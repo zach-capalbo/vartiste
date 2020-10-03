@@ -1,5 +1,7 @@
 import {Axes} from './joystick-directions.js'
 import {Undo} from './undo.js'
+import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 // Allows `laser-controls` to grab, rotate, and scale elements in 3D.
 //
@@ -148,6 +150,7 @@ AFRAME.registerComponent('manipulator', {
   },
   startGrab() {
     if (this.target.grabbingManipulator) {
+      this.target = undefined
       // stopGrab()
       return
     }
@@ -246,7 +249,7 @@ AFRAME.registerComponent('manipulator', {
     this.grabber.object3D.scale.set(0.4, 0.4, 0.4)
   },
   stopGrab() {
-    if (this.data.printUpdates)
+    if (this.data.printUpdates && this.target)
     {
       console.log(this.target,
                   "\n\nposition=\"" + AFRAME.utils.coordinates.stringify(this.target.object3D.position) +"\"",
@@ -254,7 +257,8 @@ AFRAME.registerComponent('manipulator', {
                     x: THREE.Math.radToDeg(this.target.object3D.rotation.x),
                     y: THREE.Math.radToDeg(this.target.object3D.rotation.y),
                     z: THREE.Math.radToDeg(this.target.object3D.rotation.z),
-                  }) + "\"")
+                  }) + "\"",
+                `\n\nscale="${AFRAME.utils.coordinates.stringify(this.target.object3D.scale)}"`)
     }
 
     if (this.target)
@@ -422,6 +426,8 @@ AFRAME.registerComponent('manipulator', {
         this.scaleAmmount = 0
         this.resetZoom = false
       }
+
+      if (this.target.manipulatorConstraint) this.target.manipulatorConstraint()
     }
   }
 })
@@ -505,23 +511,31 @@ AFRAME.registerComponent('grab-options', {
   }
 })
 
-// NOT CURRENTLY WORKING
-AFRAME.registerComponent('lock-axes', {
+// Locks the objects up direction, even when it is grabbed and rotated by the [Manipulator](#manipulator)
+AFRAME.registerComponent('lock-up', {
   schema: {
-    x: {type: 'float', default: NaN},
-    y: {type: 'float', default: NaN},
-    z: {type: 'float', default: NaN},
+    // x: {type: 'float', default: NaN},
+    // y: {type: 'float', default: NaN},
+    // z: {type: 'float', default: NaN},
   },
-  tick() {
-    return
-    for (let axis in this.data)
-    {
-      let val = this.data[axis];
-      if (Number.isFinite(val))
-      {
-        this.el.object3D.rotation[axis] = val * Math.PI / 180
-      }
-    }
+  init() {
+    this.el.manipulatorConstraint = this.constrainObject.bind(this)
+    Pool.init(this)
+  },
+  constrainObject() {
+    let forward = this.pool('forward', THREE.Vector3)
+    let obj = this.el.object3D
+
+    forward.set(0, 0, 1)
+    forward.applyQuaternion(obj.quaternion)
+    forward.y = 0
+    forward.normalize()
+
+    obj.matrix.lookAt(forward, this.pool('origin', THREE.Vector3), this.el.sceneEl.object3D.up)
+    obj.quaternion.setFromRotationMatrix(obj.matrix)
+
+    // obj.getWorldDirection(forward)
+
   }
 })
 
@@ -538,3 +552,46 @@ AFRAME.registerComponent('grab-activate', {
     this.el.addEventListener('stateadded', activate)
   }
 })
+
+// Constrains the objects movement when moved by the [manipulator](#manipulator)
+AFRAME.registerComponent('constrain-to-sphere', {
+  schema: {
+    innerRadius: {default: 0.0},
+    outerRadius: {default: 1.0},
+    constrainOnLoad: {default: true}
+  },
+  init() {
+    this.el.manipulatorConstraint = this.constrainObject.bind(this)
+    Util.whenLoaded(this.el, () => {
+      if (this.data.constrainOnLoad)
+      {
+        this.constrainObject()
+      }
+    })
+  },
+  constrainObject() {
+    this.el.object3D.position.clampLength(0.3, 0.3)
+  }
+})
+
+
+// AFRAME.registerComponent('constrain-track-to', {
+//   schema: {
+//     innerRadius: {default: 0.0},
+//     outerRadius: {default: 1.0},
+//     constrainOnLoad: {default: true}
+//   },
+//   init() {
+//     this.el.manipulatorConstraint = this.constrainObject.bind(this)
+//     Util.whenLoaded(this.el, () => {
+//       if (this.data.constrainOnLoad)
+//       {
+//         this.constrainObject()
+//       }
+//     })
+//   },
+//   constrainObject() {
+//
+//     this.el.object3D.matrix.lookAt(this.el.object3D, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
+//   }
+// })

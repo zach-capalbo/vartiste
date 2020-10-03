@@ -48,6 +48,7 @@ async function addDocumentation(src)
   require('./color-picker')
   require('./leap-hand')
   require('./hand-tracking')
+  require('./hdri-environment')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

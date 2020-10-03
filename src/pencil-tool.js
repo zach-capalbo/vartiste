@@ -62,6 +62,7 @@ AFRAME.registerComponent('pencil-tool', {
     scaleTip: {type: 'boolean', default: true},
     pressureTip: {type: 'boolean', default: false},
     detailTip: {type: 'boolean', default: false},
+    drawThrough: {type: 'boolean', default: false},
 
     radius: {default: 0.03},
     tipRatio: {default: 0.2},
@@ -183,6 +184,7 @@ AFRAME.registerComponent('pencil-tool', {
       tip.setAttribute('segments-height', 1)
       tip.setAttribute('segments-width', 16)
     }
+
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 -${cylinderHeight / 2 + tipHeight / 2} 0`)
 
@@ -248,6 +250,11 @@ AFRAME.registerComponent('pencil-tool', {
   update(oldData) {
     this.updateEnabled()
 
+    if (this.data.drawThrough)
+    {
+      this.tip.setAttribute('material', 'wireframe', true)
+    }
+
     if (this.el.hasAttribute('preactivate-tooltip') && !this.el.hasAttribute('tooltip-style'))
     {
       this.el.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.2 0")
@@ -255,6 +262,7 @@ AFRAME.registerComponent('pencil-tool', {
   },
   activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
+    this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
     if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
       if (!this.data.enabled) return
@@ -688,10 +696,12 @@ AFRAME.registerComponent('drip-tool', {
 })
 
 AFRAME.registerComponent('vertex-tool', {
-  dependencies: ['pencil-tool'],
+  dependencies: ['six-dof-tool'],
   init() {
-
   },
+  activate() {
+    this.proc = new CanvasShaderProcessor({fx: 'uv-stretch', })
+  }
 })
 
 AFRAME.registerComponent('six-dof-tool', {
@@ -713,6 +723,9 @@ AFRAME.registerComponent('summonable', {
   events: {
     activate: function(e) {
       this.hasFlown = true
+      if (this.el.getAttribute('action-tooltips').trigger.startsWith('Summon')) {
+        this.el.setAttribute('action-tooltips', {trigger: null})
+      }
     },
     click: function(e) {
       if (this.data.once && this.hasFlown) return
@@ -720,6 +733,9 @@ AFRAME.registerComponent('summonable', {
 
       this.flyToUser()
     }
+  },
+  init() {
+    this.el.setAttribute('action-tooltips', {trigger: 'Summon ' + (this.el.hasAttribute('preactivate-tooltip') ? this.el.getAttribute('preactivate-tooltip') : "")})
   },
   flyToUser() {
     this.hasFlown = true

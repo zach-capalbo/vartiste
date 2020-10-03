@@ -1,4 +1,4 @@
-a-entity.grab-root shelf="" scale="0.3 0.3 1"
+a-entity.grab-root shelf="name: 6DoF Tool Shelf" scale="0.3 0.3 1"
   a-entity position="-1.5 1.1 0" icon-row=""
     a-entity system-click-action="system: pencil-tool; action: toggleGrabRotation" icon-button="#asset-rotate-orbit" tooltip="Toggle Grab Rotation Lock"
     a-entity system-click-action="system: pencil-tool; action: toggleTriggerGrab" icon-button="#asset-hand-right" tooltip="Toggle Trigger As Grab" toggle-button=""

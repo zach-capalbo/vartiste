@@ -18,6 +18,7 @@ AFRAME.registerSystem('environment-manager', {
   init() {
     this.state = STATE_COLOR
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
   },
   switchState(newState) {
     if (newState == this.state) return
@@ -232,13 +233,16 @@ AFRAME.registerSystem('environment-manager', {
   tick(t,dt) {
     if (this.state === STATE_HDRI)
     {
-      document.querySelectorAll('#world-root,#artist-root').forEach(r => { r.object3D.traverse(o => {
-        if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
-        {
-          o.material.envMap = this.envMap
-          o.material.needsUpdate = true
-        }
-      })})
+      for (let r of this.elementsToCheck)
+      {
+        r.object3D.traverse(o => {
+          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
+          {
+            o.material.envMap = this.envMap
+            o.material.needsUpdate = true
+          }
+        })
+      }
     }
   }
 })

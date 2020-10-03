@@ -1,4 +1,4 @@
-a-entity shelf="height: 1.5" node-control-panel=""
+a-entity shelf="height: 1.5; name: Layer / Node Control Panel" node-control-panel=""
   a-entity position="-1.5 0 0" scale="1 1 ${1 / 0.3}"
     a-entity icon-row=""
       a-entity click-action="toggleNodes" icon-button="#asset-light-switch" tooltip="Switch Layer / Nodes Mode"

@@ -169,5 +169,160 @@ AFRAME.registerComponent('joystick-turn', {
 }
 );
 
+// Place on a component so that when it is hovered, it will display on the
+// approriate actions on the hovering hand (via the
+// [`hand-action-tooltip`](#hand-action-tooltip))
+//
+// If you set a single `action-tooltips` attribute, the same actions will
+// display on either hand. You can set individual `action-tooltips__right-hand`
+// and `action-tooltips__left-hand` to display different tooltips for different
+// hands.
+AFRAME.registerComponent('action-tooltips', {
+  multiple: true,
+  schema: {
+    // Tooltip for moving the joystick up and down
+    'updown': {type: 'string', default: null},
+
+    // Tooltip for moving the joystick left and right
+    'leftright': {type: 'string', default: null},
+
+    // Tooltip for pressing the "a" button or equivalent
+    'a': {type: 'string', default: null},
+
+    // Tooltip for pressing the "b" button or equivalent
+    'b': {type: 'string', default: null},
+
+    // Tooltip for pulling the trigger or equivalent
+    'trigger': {type: 'string', default: null},
+
+    // Tooltip for squeezing the grip or equivalent
+    'grip': {type: 'string', default: null},
+
+    // Shelf to refer to for more options
+    shelf: {type: 'string', default: null},
+  }
+})
+
+// Component attached to each hand which actually displays the [`action-tooltips`](#action-tooltips)
+AFRAME.registerComponent('hand-action-tooltip', {
+  dependencies: ['raycaster', 'action-tooltips'],
+  schema: {
+    throttle: {default: 50},
+    position: {type: 'vec3', default: `-0.006549004823841076 -0.11940164556557662 0.10084264804121343`}
+  },
+  init() {
+    let container = document.createElement('a-entity')
+    container.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
+    container.setAttribute('material', 'color: #abe; shader: flat')
+    container.setAttribute('position', this.data.position)
+    container.setAttribute('rotation', "-47.22767925743924 -1.2047588819680946 -2.40270564492676")
+    container.setAttribute('scale', '0.15 0.15 0.15')
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: ...; wrapCount: 20; baseline: top`)
+    this.container = container
+    this.el.append(container)
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+
+    this.buttons = [
+      'trigger',
+      'updown',
+      'leftright',
+      'a',
+      'b',
+      'grip',
+    ]
+
+    this.names = {
+      'updown': "Up/Down",
+      'leftright': "Left/Right",
+      'a': "A",
+      'b': "B",
+      'trigger': "Trigger",
+      'grip': "Grip"
+    }
+
+    this.message = {}
+
+    for (let b of this.buttons) this.message[b] = null
+
+    this.lastMessage = Object.assign({}, this.message)
+
+    this.thisTooltipAttr = "action-tooltips__" + this.el.id
+  },
+  setMessage()
+  {
+    Object.assign(this.message, this.el.getAttribute('action-tooltips'))
+
+    if (this.el.components.raycaster.intersectedEls.length == 0)
+    {
+      return
+    }
+
+    let targetEl = this.el.components.raycaster.intersectedEls[0]
+
+    while (targetEl)
+    {
+      let targetActions = targetEl.getAttribute(this.thisTooltipAttr) || targetEl.getAttribute('action-tooltips') || targetEl.actionTooltips
+
+      if (targetActions)
+      {
+        for (let k in targetActions)
+        {
+          if (this.message[k] === null)
+          {
+            this.message[k] = targetActions[k]
+          }
+        }
+      }
+
+      targetEl = targetEl['redirect-grab']
+    }
+
+
+    if (this.el.is('grabbing'))
+    {
+      this.message.updown = "Push / Pull"
+      this.message.leftright = "Smaller / Bigger"
+      this.message.a = this.el.is("rotating") ? "Lock Rotation" : "Unlock Rotation"
+    }
+    else
+    {
+      this.message.grip = "Grab"
+    }
+  },
+  tick(t, dt)
+  {
+    this.setMessage()
+    let allSame = true
+    for (let k in this.message) {
+      if (this.message[k] !== this.lastMessage[k])
+      {
+        allSame = false
+        break
+      }
+    }
+
+    if (allSame) return
+
+    let messageString = []
+    for (let k of this.buttons)
+    {
+      if (this.message[k] !== null)
+      {
+        messageString.push(`> ${this.names[k]}: ${this.message[k]}`)
+      }
+    }
+
+    Object.assign(this.lastMessage, this.message)
+
+    this.container.getObject3D('mesh').visible = messageString.length > 0
+    this.container.setAttribute('geometry', 'width', 0)
+    this.container.setAttribute('geometry', 'height', 0)
+    this.container.setAttribute('text', 'value', messageString.join("\n"))
+    this.container.getObject3D('mesh').position.y = - this.container.getAttribute('geometry').height * 0.8 / 2
+    this.container.getObject3D('mesh').scale.set(1.2, 1.2, 1.2)
+  }
+})
+
+
 
 export { JoystickDirections, ButtonMaps, Axes }

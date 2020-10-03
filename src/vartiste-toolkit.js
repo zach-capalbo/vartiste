@@ -59,6 +59,7 @@ AFRAME.registerSystem('vartiste-assets', {
   }
 })
 
+require('./framework/valve-index-controls')
 require('./shelf')
 require('./icon-button')
 require('./edit-field')
@@ -82,6 +83,7 @@ require('./paint-system')
 require('./color-picker')
 require('./leap-hand')
 require('./hand-tracking')
+require('./hdri-environment')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')
