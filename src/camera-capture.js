@@ -706,3 +706,10 @@ AFRAME.registerComponent('eye-drop-tool', {
     this.takePicture()
   }
 })
+
+AFRAME.registerComponent('spectator-camera', {
+  dependencies: ['camera'],
+  init() {
+    
+  },
+})

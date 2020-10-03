@@ -570,7 +570,7 @@ AFRAME.registerComponent('constrain-to-sphere', {
     })
   },
   constrainObject() {
-    this.el.object3D.position.clampLength(0.3, 0.3)
+    this.el.object3D.position.clampLength(this.data.innerRadius, this.data.outerRadius)
   }
 })
 

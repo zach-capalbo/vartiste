@@ -12,3 +12,16 @@ AFRAME.registerComponent('bypass-hidden-updates', {
     }
   }
 })
+
+// The audio listener really slows down chrome for some reason. Let's just get
+// rid of it
+AFRAME.registerComponent('remove-audio-listener', {
+  init() {
+    this.el.object3D.traverse(o => {
+      if (o.type === 'AudioListener')
+      {
+        o.parent.remove(o)
+      }
+    });
+  }
+})
