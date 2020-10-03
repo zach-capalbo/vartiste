@@ -169,19 +169,41 @@ AFRAME.registerComponent('joystick-turn', {
 }
 );
 
+// Place on a component so that when it is hovered, it will display on the
+// approriate actions on the hovering hand (via the
+// [`hand-action-tooltip`](#hand-action-tooltip))
+//
+// If you set a single `action-tooltips` attribute, the same actions will
+// display on either hand. You can set individual `action-tooltips__right-hand`
+// and `action-tooltips__left-hand` to display different tooltips for different
+// hands.
 AFRAME.registerComponent('action-tooltips', {
   multiple: true,
   schema: {
+    // Tooltip for moving the joystick up and down
     'updown': {type: 'string', default: null},
+
+    // Tooltip for moving the joystick left and right
     'leftright': {type: 'string', default: null},
+
+    // Tooltip for pressing the "a" button or equivalent
     'a': {type: 'string', default: null},
+
+    // Tooltip for pressing the "b" button or equivalent
     'b': {type: 'string', default: null},
+
+    // Tooltip for pulling the trigger or equivalent
     'trigger': {type: 'string', default: null},
+
+    // Tooltip for squeezing the grip or equivalent
     'grip': {type: 'string', default: null},
+
+    // Shelf to refer to for more options
     shelf: {type: 'string', default: null},
   }
 })
 
+// Component attached to each hand which actually displays the [`action-tooltips`](#action-tooltips)
 AFRAME.registerComponent('hand-action-tooltip', {
   dependencies: ['raycaster', 'action-tooltips'],
   schema: {

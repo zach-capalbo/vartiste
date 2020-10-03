@@ -48,7 +48,7 @@ AFRAME.registerComponent('hdri-environment', {
       })
   },
   async setHDRI() {
-    let {texture} = await this.loadRGBE(this.data.src.src)
+    let {texture} = await this.loadRGBE(this.data.src.getAttribute('src'))
     let renderer = this.el.sceneEl.renderer
     renderer.toneMapping = this.data.toneMapping
     renderer.toneMappingExposure = this.data.exposure

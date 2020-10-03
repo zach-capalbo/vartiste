@@ -59,6 +59,7 @@ AFRAME.registerSystem('vartiste-assets', {
   }
 })
 
+require('./framework/valve-index-controls')
 require('./shelf')
 require('./icon-button')
 require('./edit-field')

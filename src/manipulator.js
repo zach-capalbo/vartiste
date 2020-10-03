@@ -511,7 +511,7 @@ AFRAME.registerComponent('grab-options', {
   }
 })
 
-// NOT CURRENTLY WORKING
+// Locks the objects up direction, even when it is grabbed and rotated by the [Manipulator](#manipulator)
 AFRAME.registerComponent('lock-up', {
   schema: {
     // x: {type: 'float', default: NaN},
@@ -553,6 +553,7 @@ AFRAME.registerComponent('grab-activate', {
   }
 })
 
+// Constrains the objects movement when moved by the [manipulator](#manipulator)
 AFRAME.registerComponent('constrain-to-sphere', {
   schema: {
     innerRadius: {default: 0.0},
@@ -574,23 +575,23 @@ AFRAME.registerComponent('constrain-to-sphere', {
 })
 
 
-AFRAME.registerComponent('constrain-track-to', {
-  schema: {
-    innerRadius: {default: 0.0},
-    outerRadius: {default: 1.0},
-    constrainOnLoad: {default: true}
-  },
-  init() {
-    this.el.manipulatorConstraint = this.constrainObject.bind(this)
-    Util.whenLoaded(this.el, () => {
-      if (this.data.constrainOnLoad)
-      {
-        this.constrainObject()
-      }
-    })
-  },
-  constrainObject() {
-
-    this.el.object3D.matrix.lookAt(this.el.object3D, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
-  }
-})
+// AFRAME.registerComponent('constrain-track-to', {
+//   schema: {
+//     innerRadius: {default: 0.0},
+//     outerRadius: {default: 1.0},
+//     constrainOnLoad: {default: true}
+//   },
+//   init() {
+//     this.el.manipulatorConstraint = this.constrainObject.bind(this)
+//     Util.whenLoaded(this.el, () => {
+//       if (this.data.constrainOnLoad)
+//       {
+//         this.constrainObject()
+//       }
+//     })
+//   },
+//   constrainObject() {
+//
+//     this.el.object3D.matrix.lookAt(this.el.object3D, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
+//   }
+// })

@@ -11,7 +11,7 @@ html
     a-scene icon-button="shader: matcap" renderer="colorManagement: true"
       a-assets
         canvas#draw-canvas-asset width="1024" height="768"
-        a-asset#hdr
+        a-asset#hdr src="asset/studio.hdr"
         /! You can use all the default VARTISTE assets with the vartiste-asset meta-asset
         /! Otherwise, only the ones needed for other components are included
         a-asset vartiste-assets=""
@@ -60,4 +60,5 @@ html
       a-entity.clickable position="3.1 0 -2.4" draw-canvas="canvas:#draw-canvas-asset" geometry="primitive: plane; width: 2; height: 1.75" material="shader: flat; src: #draw-canvas-asset; npot: true" canvas-updater="throttle: 5" frame="" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"
       a-entity.clickable position="3.1 2 -2.4" geometry="primitive: circle; radius: 1; height: 1.75" color-picker=""
 
+      /! Experimental Manipulator constraints
       a-sphere.clickable radius="0.1" constrain-to-sphere="" material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4"
