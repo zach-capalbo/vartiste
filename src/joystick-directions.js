@@ -201,11 +201,11 @@ AFRAME.registerComponent('hand-action-tooltip', {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
     this.buttons = [
+      'trigger',
       'updown',
       'leftright',
       'a',
       'b',
-      'trigger',
       'grip',
     ]
 
@@ -286,7 +286,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
     {
       if (this.message[k] !== null)
       {
-        messageString.push(`${this.names[k]}: ${this.message[k]}`)
+        messageString.push(`> ${this.names[k]}: ${this.message[k]}`)
       }
     }
 

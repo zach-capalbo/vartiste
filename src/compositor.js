@@ -108,6 +108,8 @@ AFRAME.registerComponent('compositor', {
     defaultNode.connectInput(this.layers[1], {type: "source", index: 0})
     this.materialNode.connectInput(defaultNode, {type: "canvas"})
 
+    this.slowCount = 0
+
   },
 
   update(oldData) {
@@ -504,7 +506,13 @@ AFRAME.registerComponent('compositor', {
   },
   tick(t, dt) {
     if (dt > 25 && (t - this.drawnT) < 1000) {
+      this.slowCount = Math.min(this.slowCount + 1, 20)
       return
+    }
+
+    if (t - this.drawnT < 300)
+    {
+      this.slowCount = Math.max(this.slowCount - 1, 0)
     }
 
     if (this.isPlayingAnimation)

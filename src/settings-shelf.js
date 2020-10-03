@@ -200,3 +200,53 @@ AFRAME.registerComponent('load-shelf', {
     this.el.sceneEl.systems['file-upload'].handleURL(url)
   }
 })
+
+AFRAME.registerComponent('lag-tooltip', {
+  schema: {
+    color: {type: 'color', default: '#eaa'}
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 300, this)
+
+    let container = document.createElement('a-entity')
+    container.setAttribute('geometry', 'primitive: plane; height: 0.5; width: 0')
+    container.setAttribute('material', {color: this.data.color, shader: 'flat'})
+    container.setAttribute('position', '-1 0 0')
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Try Toggling UI off; wrapCount: 15`)
+    container.setAttribute('visible', false)
+    this.el.append(container)
+    this.container = container
+    // container.classList.add('clickable')
+    this.shownT = 0
+  },
+  tick(t, dt) {
+    if (this.container.object3D.visible)
+    {
+      if (Compositor.component.slowCount < 2)
+      {
+        if (t - this.shownT > 2000)
+        {
+          this.container.object3D.visible = false
+          this.el.setAttribute('button-style', 'color', '#abe')
+          this.el.components['icon-button'].setColor('#abe')
+        }
+      }
+      else
+      {
+        this.shownT = t
+      }
+    }
+    else
+    {
+      if (Compositor.component.slowCount > 4)
+      {
+        this.container.object3D.visible = true
+
+        this.el.setAttribute('button-style', 'color', this.data.color)
+        this.el.components['icon-button'].setColor(this.data.color)
+
+        this.shownT = t
+      }
+    }
+  }
+})
