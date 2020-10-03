@@ -723,7 +723,7 @@ AFRAME.registerComponent('summonable', {
   events: {
     activate: function(e) {
       this.hasFlown = true
-      if (this.el.getAttribute('action-tooltips').trigger.startsWith('Summon')) {
+      if ((this.el.getAttribute('action-tooltips').trigger || "").startsWith('Summon')) {
         this.el.setAttribute('action-tooltips', {trigger: null})
       }
     },
@@ -848,7 +848,7 @@ AFRAME.registerComponent('viewport-tool', {
 AFRAME.registerComponent('movement-tool', {
   dependencies: ['six-dof-tool', 'grab-activate', 'summonable'],
   schema: {
-    speed: {default: 1.5}
+    speed: {default: 2.5}
   },
   events: {
     activate: function() {
@@ -905,6 +905,7 @@ AFRAME.registerComponent('movement-tool', {
 
     this.artistRoot.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
     this.artistRoot.object3D.scale.copy(this.grip.object3D.scale)
-    this.el.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
+    this.artistRoot.object3D.scale.multiply(this.artistRoot.object3D.scale)
+    // this.el.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
   },
 })

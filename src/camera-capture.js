@@ -171,6 +171,11 @@ AFRAME.registerComponent('camera-tool', {
     this.helper = helper
     this.el.sceneEl.object3D.add( helper );
 
+    if ((this.el.getAttribute('action-tooltips').trigger || "Summon ").startsWith("Summon"))
+    {
+      this.el.setAttribute('action-tooltips', 'trigger: Take Picture')
+    }
+
     let wm = new THREE.Matrix4
     this.el.object3D.updateMatrixWorld()
     wm.copy(this.el.object3D.matrixWorld)
@@ -235,8 +240,9 @@ AFRAME.registerComponent('spray-can-tool', {
     this.el.setAttribute('camera-tool', {autoCamera: false})
     this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
     this.el.components['camera-tool'].takePicture = this.takePicture;
+    this.el.setAttribute('action-tooltips', 'trigger: Spray Paint');
 
-    (function(self) {
+    ;(function(self) {
       this.cameraCanvas = document.createElement('canvas')
       this.cameraCanvas.width = self.data.canvasSize.x
       this.cameraCanvas.height = self.data.canvasSize.y
@@ -710,6 +716,6 @@ AFRAME.registerComponent('eye-drop-tool', {
 AFRAME.registerComponent('spectator-camera', {
   dependencies: ['camera'],
   init() {
-    
+
   },
 })
