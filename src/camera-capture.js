@@ -714,8 +714,27 @@ AFRAME.registerComponent('eye-drop-tool', {
 })
 
 AFRAME.registerComponent('spectator-camera', {
-  dependencies: ['camera'],
+  dependencies: ['grab-activate'],
+  events: {
+    activate: function() { this.activate(); }
+  },
   init() {
+    
+  },
+  activate() {
+    let canvas = document.createElement('canvas')
+    canvas.classList.add("spectator-canvas")
+    document.body.append(canvas)
+    this.canvas = canvas
+
+    let camera = new THREE.PerspectiveCamera(45.0, 2.0, 0.1, 10000)
+    this.el.object3D.add(camera)
+    this.camera = camera
 
   },
+  tick(t, dt)
+  {
+    if (!this.camera) return
+    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.canvas)
+  }
 })
