@@ -37,6 +37,7 @@ AFRAME.registerComponent('node-output', {
     let radius = this.data.radius
     this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}`)
     this.el.setAttribute("material", "color: #34eb80")
+    this.el.setAttribute('action-tooltips', 'grip: Make Connection')
     this.el.classList.add("clickable")
 
     this.createGrabber()
@@ -71,6 +72,7 @@ AFRAME.registerComponent('node-output', {
     grabber.setAttribute('material', "color: #34eb80")
     grabber.setAttribute('radius', radius)
     grabber.setAttribute('node-grabber', "")
+    grabber.setAttribute('action-tooltips', 'grip: Change Connection')
     this.el.append(grabber)
     this.el['redirect-grab'] = grabber
 

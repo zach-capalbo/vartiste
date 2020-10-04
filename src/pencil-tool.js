@@ -723,7 +723,7 @@ AFRAME.registerComponent('summonable', {
   events: {
     activate: function(e) {
       this.hasFlown = true
-      if (this.el.getAttribute('action-tooltips').trigger.startsWith('Summon')) {
+      if ((this.el.getAttribute('action-tooltips').trigger || "").startsWith('Summon')) {
         this.el.setAttribute('action-tooltips', {trigger: null})
       }
     },
@@ -843,4 +843,69 @@ AFRAME.registerComponent('viewport-tool', {
     //
     // targetObj.rotateOnAxis(this.el.sceneEl.object3D.up, angle)
   }
+})
+
+AFRAME.registerComponent('movement-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate', 'summonable'],
+  schema: {
+    speed: {default: 2.5}
+  },
+  events: {
+    activate: function() {
+      // this.tick = AFRAME.utils.throttleTick(this._tick, 100, this)
+      this.tick = this._tick
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.grip.object3D.position.set(0,0,0)
+      }
+    }
+  },
+  init() {
+    Pool.init(this)
+    this.el.classList.add('grab-root')
+    let body = document.createElement('a-cylinder')
+    body.setAttribute('height', 0.3)
+    body.setAttribute('radius', 0.07)
+    body.setAttribute('segments-radial', 6)
+    body.setAttribute('segments-height', 1)
+    body.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    body.classList.add('clickable')
+    body.setAttribute('propogate-grab', "")
+    this.el.append(body)
+
+    let gripPositioner = document.createElement('a-entity')
+    gripPositioner.setAttribute('position', '0 0.25 0')
+    let grip = document.createElement('a-sphere')
+    grip.setAttribute('radius', 0.07)
+    grip.setAttribute('segments-radial', 6)
+    grip.setAttribute('segments-height', 4)
+    grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
+    grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
+    grip.setAttribute('action-tooltips', 'grip: Move around')
+    grip.classList.add('clickable')
+    gripPositioner.append(grip)
+    this.gripPositioner = gripPositioner
+    this.grip = grip
+    this.el.append(gripPositioner)
+    this.artistRoot = document.querySelector('#artist-root')
+  },
+  tick() {},
+  _tick(t,dt) {
+    if (!this.grip.is('grabbed')) return
+
+    let worldRoot = this.pool('worldThis', THREE.Vector3)
+    let worldGrip = this.pool('worldGrip', THREE.Vector3)
+
+    this.gripPositioner.object3D.getWorldPosition(worldRoot)
+    this.grip.object3D.getWorldPosition(worldGrip)
+
+    worldGrip.sub(worldRoot)
+
+    this.artistRoot.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
+    this.artistRoot.object3D.scale.copy(this.grip.object3D.scale)
+    this.artistRoot.object3D.scale.multiply(this.artistRoot.object3D.scale)
+    // this.el.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
+  },
 })
