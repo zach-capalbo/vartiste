@@ -53,7 +53,7 @@ AFRAME.registerComponent('hdri-environment', {
     {
       url = new URL(url, window.location).toString()
     }
-    let {texture} = await this.loadRGBE()
+    let {texture} = await this.loadRGBE(url)
     let renderer = this.el.sceneEl.renderer
     renderer.toneMapping = this.data.toneMapping
     renderer.toneMappingExposure = this.data.exposure
