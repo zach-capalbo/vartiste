@@ -715,14 +715,22 @@ AFRAME.registerComponent('eye-drop-tool', {
 
 AFRAME.registerComponent('spectator-camera', {
   dependencies: ['grab-activate'],
+  schema: {
+    fps: {default: 15},
+  },
   events: {
     activate: function() { this.activate(); }
   },
   init() {
-    
+    // this.activate()
+  },
+  update() {
+    this.tick = AFRAME.utils.throttleTick(this._tick, Math.round(1000.0 / this.data.fps), this)
   },
   activate() {
     let canvas = document.createElement('canvas')
+    canvas.width = 256
+    canvas.height = 256
     canvas.classList.add("spectator-canvas")
     document.body.append(canvas)
     this.canvas = canvas
@@ -731,10 +739,36 @@ AFRAME.registerComponent('spectator-camera', {
     this.el.object3D.add(camera)
     this.camera = camera
 
+    let renderTarget = new THREE.WebGLRenderTarget(canvas.width, canvas.height)
+    this.renderTarget = renderTarget
+
+    // let preview = document.createElement('a-plane')
+    // preview.setAttribute('material', 'shader: flat; color: #fff')
+    // preview.setAttribute('frame', '')
+    // this.el.append(preview)
+    // this.preview = preview
   },
-  tick(t, dt)
+  tick (t,dt) {},
+  _tick(t, dt)
   {
     if (!this.camera) return
+
+    // if (!this.preview.hasLoaded) return
+
     this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.canvas)
+
+    // let renderer = this.el.sceneEl.renderer
+    // let wasXREnabled = renderer.xr.enabled
+    // renderer.xr.enabled = false
+    //
+    // let oldTarget = renderer.getRenderTarget()
+    //
+    // renderer.setRenderTarget(this.renderTarget)
+    //
+    // renderer.render(this.el.sceneEl.object3D, this.camera);
+    //
+    // renderer.xr.enabled = wasXREnabled
+    //
+    // renderer.setRenderTarget(oldTarget)
   }
 })
