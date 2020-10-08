@@ -1,14 +1,18 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 Util.registerComponentSystem('volumetrics', {
+  schema: {
+    onion: {default: false},
+    bumpy: {default: true},
+  },
   init() {
 
   },
   activate() {
     let canvas = document.createElement('canvas')
-    canvas.width = Compositor.component.width
-    canvas.height = Compositor.component.height
-    let proc = new CanvasShaderProcessor({source: require('./shaders/shapes/sphere.glsl'), vertexShader: require('./shaders/vertex-distance.vert'), canvas})
+    canvas.width = Compositor.component.width * 2
+    canvas.height = Compositor.component.height * 2
+    let proc = new CanvasShaderProcessor({source: require('./shaders/shapes/volumetrics.glsl'), vertexShader: require('./shaders/vertex-distance.vert'), canvas})
     this.proc = proc
     this.initializeGeometry()
 
@@ -82,7 +86,7 @@ function registerVolumeTool(name, toolOpts) {
       let destinationCanvas = Compositor.drawableCanvas
       if (this.lastCanvas !== destinationCanvas)
       {
-        proc.setInputCanvas(destinationCanvas)
+        proc.setInputCanvas(destinationCanvas, {resize: false})
       }
       this.lastCanvas = destinationCanvas
 
@@ -118,6 +122,11 @@ function registerVolumeTool(name, toolOpts) {
       proc.setUniform('u_color', 'uniform4f', this.system.brush.color3.r, this.system.brush.color3.g, this.system.brush.color3.b, this.system.brush.opacity)
 
       proc.setUniform('u_shape', 'uniform1i', toolOpts.shape)
+
+      proc.setUniform('u_rand', 'uniform3f', Math.random(), Math.random(), Math.random())
+
+      proc.setUniform('u_onion', 'uniform1i', this.volumetrics.data.onion)
+      proc.setUniform('u_bumpy', 'uniform1i', this.volumetrics.data.bumpy)
 
       // proc.setInputCanvas(Compositor.drawableCanvas)
 
@@ -168,4 +177,14 @@ registerVolumeTool('cone', {
     return tip
   },
   shape: 3,
+})
+
+registerVolumeTool('brush', {
+  createTip() {
+    let tip = document.createElement('a-entity')
+    tip.setAttribute('gltf-model', '#asset-brush')
+    tip.setAttribute('apply-material-to-mesh', '')
+    return tip
+  },
+  shape: 4,
 })

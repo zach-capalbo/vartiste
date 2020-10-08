@@ -11,8 +11,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
     a-entity position="0 1.1 -0.5"
       /a-entity spectator-camera="" rotation="0 -90 0"
-      a-entity volume-sphere-tool=""
-      a-entity volume-cone-tool="" rotation="0 0 35"
+      a-entity volume-brush-tool=""
       /a-entity pencil-tool='locked: true; brush: {"baseid": "s2", "color": "#0e0", "opacity": 1.0, "scale": 1.0}'
 
     a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.6"
@@ -51,16 +50,19 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
             a-entity preactivate-tooltip="Pressure Brush" pencil-tool="pressureTip: true" position="-0.3 0 0"
             a-entity preactivate-tooltip="Pressure Eraser" pencil-tool="pressureTip: true; extraStates: erasing" position="-0.4 0 0"
             a-entity preactivate-tooltip="Detail Eraser" pencil-tool="tipRatio: 0.35; radius: 0.01; extraStates: erasing" position="-0.5 0 0"
-            a-entity preactivate-tooltip="Hammer" hammer-tool="" position="-0.6 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 0"
+            /a-entity preactivate-tooltip="Hammer" hammer-tool="" position="-0.6 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 0"
             a-entity preactivate-tooltip="Perspective Camera" camera-tool="" position="-0.8 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
             a-entity preactivate-tooltip="Ortho Camera" camera-tool="orthographic: true" position="-0.8 0.3 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
             a-entity preactivate-tooltip="Color Picker" eye-drop-tool="" position="-1.3 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 0"
             a-entity preactivate-tooltip="Spray Paint" spray-can-tool="" position="-0.8 -0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.35 -1.3"
             a-entity preactivate-tooltip="Spray Paint Projector" spray-can-tool="projector: true" position="-1.3 -0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.35 -1.3"
-            a-entity preactivate-tooltip="Pencil Broom" pencil-broom="" position="-0.55 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-            a-entity preactivate-tooltip="Pencil Spike Ball" spike-ball="" position="-0.1 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
+            /a-entity preactivate-tooltip="Pencil Broom" pencil-broom="" position="-0.55 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
+            /a-entity preactivate-tooltip="Pencil Spike Ball" spike-ball="" position="-0.1 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
             a-entity preactivate-tooltip="Viewport Positioner" viewport-tool="" position="-1.3 0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
             a-entity preactivate-tooltip="Movement Tool" movement-tool="" position="-1.0 -1.0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
+
+            a-entity position="-0.55 -0.45 -0.3"
+              == partial('./partials/volumetrics.html.slm')
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
         a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""

@@ -285,18 +285,6 @@ AFRAME.registerComponent('pencil-tool', {
       }
     })
 
-    // Move the pencil's parent to the world root, so it doesn't get
-    // accidentally hidden when the UI is hidden
-    if (!subPencil)
-    {
-      let wm = new THREE.Matrix4
-      this.el.object3D.updateMatrixWorld()
-      wm.copy(this.el.object3D.matrixWorld)
-      this.el.object3D.parent.remove(this.el.object3D)
-      document.querySelector('#world-root').object3D.add(this.el.object3D)
-      Util.applyMatrix(wm, this.el.object3D)
-    }
-
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
   },
@@ -698,7 +686,20 @@ AFRAME.registerComponent('drip-tool', {
 AFRAME.registerComponent('six-dof-tool', {
   schema: {
     lockedClone: {default: false},
-    lockedComponent: {type: 'string'}
+    lockedComponent: {type: 'string'},
+    reparentOnActivate: {default: true},
+  },
+  events: {
+    activate: function() {
+      // Move the tool's parent to the world root, so it doesn't get
+      // accidentally hidden when the UI is hidden
+      let wm = new THREE.Matrix4
+      this.el.object3D.updateMatrixWorld()
+      wm.copy(this.el.object3D.matrixWorld)
+      this.el.object3D.parent.remove(this.el.object3D)
+      document.querySelector('#world-root').object3D.add(this.el.object3D)
+      Util.applyMatrix(wm, this.el.object3D)
+    }
   },
   init() {
     this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
