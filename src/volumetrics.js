@@ -4,8 +4,8 @@ import {Undo} from './undo.js'
 Util.registerComponentSystem('volumetrics', {
   schema: {
     onion: {default: false},
-    bumpy: {default: true},
-    hard: {default: false},
+    bumpy: {default: false},
+    hard: {default: true},
   },
   init() {
 
@@ -86,10 +86,10 @@ function registerVolumeTool(name, toolOpts) {
     dependencies: ['six-dof-tool', 'grab-activate'],
     schema: {
       baseSize: {default: 0.07},
-      active: {default: true},
+      toolActive: {default: true},
     },
     events: {
-      activate: function() { this.activate(); window.setTimeout(() => this.hasActivated = true, 1)},
+      activate: function() { this.activate(); },
       stateremoved: function(e) {
         if (e.detail === 'grabbed')
         {
@@ -97,8 +97,10 @@ function registerVolumeTool(name, toolOpts) {
         }
       },
       click: function() {
-        if (!this.hasActivated) return
-        this.el.setAttribute(`volume-${name}-tool`, 'active', !this.data.active)
+        if (this.el.is('grabbed'))
+        {
+          this.el.setAttribute(`volume-${name}-tool`, 'toolActive', !this.data.toolActive)
+        }
       }
     },
     init() {
@@ -138,12 +140,12 @@ function registerVolumeTool(name, toolOpts) {
       }
     },
     update(oldData) {
-      if (this.data.active !== oldData.active)
+      if (this.data.toolActive !== oldData.toolActive)
       {
-        this.body.setAttribute('material', 'shader', this.data.active ? "standard" : "flat")
-        this.body.setAttribute('material', 'color', this.data.active ? "#fff" : "#9ff")
+        this.body.setAttribute('material', 'shader', this.data.toolActive ? "standard" : "flat")
+        this.body.setAttribute('material', 'color', this.data.toolActive ? "#fff" : "#9ff")
 
-        if (!this.data.active) this.wasDrawing = false
+        if (!this.data.toolActive) this.wasDrawing = false
       }
     },
     activate() {
@@ -152,7 +154,9 @@ function registerVolumeTool(name, toolOpts) {
     tick(t,dt) {
       if (!this.el.is('grabbed')) return
       if (!this.volumetrics.proc) return
-      if (!this.data.active) return
+      if (!this.data.toolActive) return
+
+      console.log("Drawing volume")
 
       let proc = this.volumetrics.proc
       let destinationCanvas = Compositor.drawableCanvas
