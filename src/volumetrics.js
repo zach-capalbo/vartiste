@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {Undo} from './undo.js'
 Util.registerComponentSystem('volumetrics', {
   schema: {
     onion: {default: false},
@@ -9,6 +10,8 @@ Util.registerComponentSystem('volumetrics', {
 
   },
   activate() {
+    if (this.proc) return;
+    
     let canvas = document.createElement('canvas')
     canvas.width = Compositor.component.width * 2
     canvas.height = Compositor.component.height * 2
@@ -18,6 +21,15 @@ Util.registerComponentSystem('volumetrics', {
 
     this.active = function() {};
     this.tick = AFRAME.utils.throttleTick(this._tick, 10, this)
+
+    let intersectionCanvas = document.createElement('canvas')
+    intersectionCanvas.width = canvas.width
+    intersectionCanvas.height = 1
+    this.intersectionCanvas = intersectionCanvas
+
+    let shaderSrc = require('./shaders/calc-max.glsl').replace('#define HEIGHT 1.0', `#define HEIGHT ${canvas.height}.0`)
+    let intersectionProc = new CanvasShaderProcessor({source: shaderSrc})
+    this.intersectionProc = intersectionProc
   },
   initializeGeometry() {
     let geometry = Compositor.mesh.geometry.toNonIndexed()
@@ -25,9 +37,41 @@ Util.registerComponentSystem('volumetrics', {
     proc.vertexPositions = geometry.attributes.uv.array
     proc.hasDoneInitialUpdate = false
     proc.createVertexBuffer({name: "a_vertexPosition", list: geometry.attributes.position.array, size: geometry.attributes.position.itemSize})
+
+    let vertexIndex = []
+    vertexIndex.length = geometry.attributes.position.count
+    for (let i = 0; i < geometry.attributes.position.count; i++)
+    {
+      vertexIndex[i] = i;
+    }
+    // proc.createVertexBuffer({name: "a_vertexIndex", list: vertexIndex, size: 1})
+
     proc.initialUpdate()
 
+    let gl = proc.getContext()
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+
     this.seenGeometry = Compositor.mesh.geometry
+  },
+  checkIntersection() {
+    let {proc, intersectionCanvas, intersectionProc} = this
+
+    intersectionProc.setInputCanvas(proc.canvas)
+    intersectionProc.update()
+
+    let gl = intersectionProc.getContext()
+
+    var pixels = this.intersectionPixels || new Uint8Array(intersectionCanvas.width * intersectionCanvas.height * 4);
+    gl.readPixels(0, 0, intersectionCanvas.width, intersectionCanvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+    let intersected = false
+    for (let i = 0; i < intersectionCanvas.width; ++i)
+    {
+      if (pixels[i * 4] > 0) return true
+    }
+
+    return false
   },
   tick(t,dt) {},
   _tick(t, dt) {
@@ -43,7 +87,13 @@ function registerVolumeTool(name, toolOpts) {
       baseSize: {default: 0.07}
     },
     events: {
-      activate: function() { this.activate(); }
+      activate: function() { this.activate(); },
+      stateremoved: function(e) {
+        if (e.detail === 'grabbed')
+        {
+          this.wasDrawing = false
+        }
+      }
     },
     init() {
       Pool.init(this)
@@ -132,6 +182,18 @@ function registerVolumeTool(name, toolOpts) {
 
       proc.update()
 
+      let intersecting = this.volumetrics.checkIntersection()
+
+      if (intersecting && !this.wasDrawing)
+      {
+        Undo.pushCanvas(destinationCanvas)
+        this.wasDrawing = true
+      }
+      else if (!intersecting)
+      {
+        this.wasDrawing = false
+      }
+
       let ctx = destinationCanvas.getContext("2d")
       // ctx.globalCompositeOperation = 'copy'
       ctx.globalAlpha = 1.0
@@ -140,7 +202,6 @@ function registerVolumeTool(name, toolOpts) {
                     0, 0, destinationCanvas.width, destinationCanvas.height)
 
       if (destinationCanvas.touch) destinationCanvas.touch()
-
     }
   })
 }

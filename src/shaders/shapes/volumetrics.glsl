@@ -130,7 +130,7 @@ void main() {
   /* d = d - 0.01; */
 
   d = d * u_color.a;
-  /* gl_FragColor = mix(base, vec4(u_color.xyz * d, d), d); */
+
   gl_FragColor = vec4(u_color.xyz * d, d);
-  /* gl_FragColor = vec4((vPosition.xyz + 40.0)/ 80.0, 1.0); */
+
 }
