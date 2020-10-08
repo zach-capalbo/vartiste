@@ -1,13 +1,14 @@
 a-entity.grab-root shelf="name: Volumetrics; height: 1; width: 2" scale="0.3 0.3 1" position="0.3 -0.4 0"
-  a-entity icon-row=""
+  a-entity icon-row="" position="-0.5 0 0"
     a-entity icon-button="#asset-transition" toggle-button="target:a-scene; component: volumetrics; property: onion" tooltip="Shell Only"
     a-entity icon-button="#asset-blur-linear" toggle-button="target:a-scene; component: volumetrics; property: bumpy" tooltip="Bumpy"
+    a-entity icon-button="#asset-blur-preview" toggle-button="target:a-scene; component: volumetrics; property: hard" tooltip="Hard"
 
   a-entity scale="${1.0 / 0.3} ${1.0 / 0.3} 1" position="-0.5 1 0"
     a-entity scale="0.5 0.5 0.5"
       - x = 0
       - spacing = 0.3
-      a-entity volume-sphere-tool="" position="${x++ * spacing} 0 0"
-      a-entity volume-cone-tool="" position="${x++ * spacing} 0 0"
-      a-entity volume-cube-tool="" position="${x++ * spacing} 0 0"
-      a-entity volume-brush-tool="" position="${x++ * spacing} 0 0"
+      a-entity volume-sphere-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Sphere Brush"
+      a-entity volume-cone-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Cone Brush"
+      a-entity volume-cube-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Cube Brush"
+      a-entity volume-brush-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Hairbrush"

@@ -5,13 +5,14 @@ Util.registerComponentSystem('volumetrics', {
   schema: {
     onion: {default: false},
     bumpy: {default: true},
+    hard: {default: false},
   },
   init() {
 
   },
   activate() {
     if (this.proc) return;
-    
+
     let canvas = document.createElement('canvas')
     canvas.width = Compositor.component.width * 2
     canvas.height = Compositor.component.height * 2
@@ -84,15 +85,20 @@ function registerVolumeTool(name, toolOpts) {
   AFRAME.registerComponent(`volume-${name}-tool`, {
     dependencies: ['six-dof-tool', 'grab-activate'],
     schema: {
-      baseSize: {default: 0.07}
+      baseSize: {default: 0.07},
+      active: {default: true},
     },
     events: {
-      activate: function() { this.activate(); },
+      activate: function() { this.activate(); window.setTimeout(() => this.hasActivated = true, 1)},
       stateremoved: function(e) {
         if (e.detail === 'grabbed')
         {
           this.wasDrawing = false
         }
+      },
+      click: function() {
+        if (!this.hasActivated) return
+        this.el.setAttribute(`volume-${name}-tool`, 'active', !this.data.active)
       }
     },
     init() {
@@ -110,6 +116,7 @@ function registerVolumeTool(name, toolOpts) {
       body.setAttribute('grab-options', 'showHand: false')
       body.classList.add('clickable')
       body.setAttribute('propogate-grab', "")
+      this.body = body
       this.el.append(body)
 
       let tip = toolOpts.createTip.call(this)
@@ -124,6 +131,20 @@ function registerVolumeTool(name, toolOpts) {
       this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
 
       this.system = this.el.sceneEl.systems['paint-system']
+
+      if (this.el.hasAttribute('preactivate-tooltip') && !this.el.hasAttribute('tooltip-style'))
+      {
+        this.el.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 0 0")
+      }
+    },
+    update(oldData) {
+      if (this.data.active !== oldData.active)
+      {
+        this.body.setAttribute('material', 'shader', this.data.active ? "standard" : "flat")
+        this.body.setAttribute('material', 'color', this.data.active ? "#fff" : "#9ff")
+
+        if (!this.data.active) this.wasDrawing = false
+      }
     },
     activate() {
       this.volumetrics.activate()
@@ -131,6 +152,7 @@ function registerVolumeTool(name, toolOpts) {
     tick(t,dt) {
       if (!this.el.is('grabbed')) return
       if (!this.volumetrics.proc) return
+      if (!this.data.active) return
 
       let proc = this.volumetrics.proc
       let destinationCanvas = Compositor.drawableCanvas
@@ -177,6 +199,7 @@ function registerVolumeTool(name, toolOpts) {
 
       proc.setUniform('u_onion', 'uniform1i', this.volumetrics.data.onion)
       proc.setUniform('u_bumpy', 'uniform1i', this.volumetrics.data.bumpy)
+      proc.setUniform('u_hard', 'uniform1i', this.volumetrics.data.hard)
 
       // proc.setInputCanvas(Compositor.drawableCanvas)
 
@@ -243,7 +266,7 @@ registerVolumeTool('cone', {
 registerVolumeTool('brush', {
   createTip() {
     let tip = document.createElement('a-entity')
-    tip.setAttribute('gltf-model', '#asset-brush')
+    tip.setAttribute('gltf-model', '#asset-volume-brush')
     tip.setAttribute('apply-material-to-mesh', '')
     return tip
   },

@@ -11,7 +11,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
     a-entity position="0 1.1 -0.5"
       /a-entity spectator-camera="" rotation="0 -90 0"
-      a-entity volume-brush-tool=""
+      /a-entity volume-brush-tool=""
       /a-entity pencil-tool='locked: true; brush: {"baseid": "s2", "color": "#0e0", "opacity": 1.0, "scale": 1.0}'
 
     a-entity light="type: hemisphere; color: #eee; groundColor: #333; intensity: 0.6"

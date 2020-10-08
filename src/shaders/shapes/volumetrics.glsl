@@ -17,6 +17,7 @@ uniform int u_shape;
 
 uniform bool u_onion;
 uniform bool u_bumpy;
+uniform bool u_hard;
 
 
 float opOnion( in float sdf, in float thickness )
@@ -125,7 +126,9 @@ void main() {
 
   d = u_bumpy ? opDisplace(d, p, 20.0) : d;
 
-  d = clamp(-d, 0.0, 1.0)
+  d = clamp(-d, 0.0, 1.0);
+
+  d = u_hard ? smoothstep(0.0, u_size * 0.2, d) : d;
 
   /* d = d - 0.01; */
 
