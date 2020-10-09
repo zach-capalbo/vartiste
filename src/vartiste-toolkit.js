@@ -84,13 +84,14 @@ require('./color-picker')
 require('./leap-hand')
 require('./hand-tracking')
 require('./hdri-environment')
+require('./fix-oculus-steamvr')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')
 const {Pool} = require('./pool')
 const materialTransformations = require('./material-transformations')
 window.VARTISTE = {}
-VARTISTE.Util = require('./util.js')
+VARTISTE.Util = require('./util.js').Util
 Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo})
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation

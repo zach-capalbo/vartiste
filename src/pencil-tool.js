@@ -285,18 +285,6 @@ AFRAME.registerComponent('pencil-tool', {
       }
     })
 
-    // Move the pencil's parent to the world root, so it doesn't get
-    // accidentally hidden when the UI is hidden
-    if (!subPencil)
-    {
-      let wm = new THREE.Matrix4
-      this.el.object3D.updateMatrixWorld()
-      wm.copy(this.el.object3D.matrixWorld)
-      this.el.object3D.parent.remove(this.el.object3D)
-      document.querySelector('#world-root').object3D.add(this.el.object3D)
-      Util.applyMatrix(wm, this.el.object3D)
-    }
-
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
   },
@@ -695,19 +683,23 @@ AFRAME.registerComponent('drip-tool', {
   },
 })
 
-AFRAME.registerComponent('vertex-tool', {
-  dependencies: ['six-dof-tool'],
-  init() {
-  },
-  activate() {
-    this.proc = new CanvasShaderProcessor({fx: 'uv-stretch', })
-  }
-})
-
 AFRAME.registerComponent('six-dof-tool', {
   schema: {
     lockedClone: {default: false},
-    lockedComponent: {type: 'string'}
+    lockedComponent: {type: 'string'},
+    reparentOnActivate: {default: true},
+  },
+  events: {
+    activate: function() {
+      // Move the tool's parent to the world root, so it doesn't get
+      // accidentally hidden when the UI is hidden
+      let wm = new THREE.Matrix4
+      this.el.object3D.updateMatrixWorld()
+      wm.copy(this.el.object3D.matrixWorld)
+      this.el.object3D.parent.remove(this.el.object3D)
+      document.querySelector('#world-root').object3D.add(this.el.object3D)
+      Util.applyMatrix(wm, this.el.object3D)
+    }
   },
   init() {
     this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
@@ -865,6 +857,7 @@ AFRAME.registerComponent('movement-tool', {
   init() {
     Pool.init(this)
     this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', 'showHand: false')
     let body = document.createElement('a-cylinder')
     body.setAttribute('height', 0.3)
     body.setAttribute('radius', 0.07)
@@ -882,7 +875,7 @@ AFRAME.registerComponent('movement-tool', {
     grip.setAttribute('segments-radial', 6)
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
-    grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
+    //grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
     grip.setAttribute('action-tooltips', 'grip: Move around')
     grip.classList.add('clickable')
     gripPositioner.append(grip)

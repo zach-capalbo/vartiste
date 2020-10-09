@@ -79,14 +79,14 @@ export class CanvasShaderProcessor {
     this.setUniform(`${name}_width`, "uniform1f", canvas.width)
     this.setUniform(`${name}_height`, "uniform1f", canvas.height)
   }
-  setUniform(name, type, value){
+  setUniform(name, type, value, ...vals){
     let gl = this.getContext()
     let program = this.getProgram(gl)
     let location = gl.getUniformLocation(program, name)
     if (location)
     {
       if (typeof value === 'function') { value = value() }
-      gl[type](location, value)
+      gl[type](location, value, ...vals)
     }
   }
   setUniforms(type, vals) {

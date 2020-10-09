@@ -65,6 +65,7 @@ require('./cable-connector')
 require('./mesh-tools')
 require('./artist-positioning')
 require('./fix-oculus-steamvr')
+require('./volumetrics')
 
 require('./app.styl')
 
