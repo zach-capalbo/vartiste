@@ -6,6 +6,7 @@ Util.registerComponentSystem('volumetrics', {
     onion: {default: false},
     bumpy: {default: false},
     hard: {default: true},
+    undoEnabled: {default: false},
   },
   init() {
 
@@ -56,6 +57,8 @@ Util.registerComponentSystem('volumetrics', {
     this.seenGeometry = Compositor.mesh.geometry
   },
   checkIntersection() {
+    if (!this.data.undoEnabled) return false
+    
     let {proc, intersectionCanvas, intersectionProc} = this
 
     intersectionProc.setInputCanvas(proc.canvas)
@@ -64,13 +67,13 @@ Util.registerComponentSystem('volumetrics', {
     let gl = intersectionProc.getContext()
 
     var pixels = this.intersectionPixels || new Uint8Array(intersectionCanvas.width * intersectionCanvas.height * 4);
-    gl.readPixels(0, 0, intersectionCanvas.width, intersectionCanvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-    let intersected = false
-    for (let i = 0; i < intersectionCanvas.width; ++i)
-    {
-      if (pixels[i * 4] > 0) return true
-    }
+    // gl.readPixels(0, 0, intersectionCanvas.width, intersectionCanvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    //
+    // let intersected = false
+    // for (let i = 0; i < intersectionCanvas.width; ++i)
+    // {
+    //   if (pixels[i * 4] > 0) return true
+    // }
 
     return false
   },
