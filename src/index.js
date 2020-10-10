@@ -66,6 +66,7 @@ require('./mesh-tools')
 require('./artist-positioning')
 require('./fix-oculus-steamvr')
 require('./volumetrics')
+require('./quick-menu')
 
 require('./app.styl')
 

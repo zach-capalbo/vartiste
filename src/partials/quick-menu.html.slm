@@ -1,0 +1,9 @@
+a-entity shelf="name: Quick Menu; width: 3; height: 1" scale="0.3 0.3 0.3" summoner-position="el: #quick-menu-positioner"
+  a-entity#quick-menu-positioner position="0 1.5 0" scale="0.15 0.15 0.15"
+  a-entity position="-1.0 0 0"
+    a-entity icon-button="#asset-floppy" tooltip="Save"
+    a-entity icon-button="#asset-light-switch" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
+    a-entity icon-button="#asset-image-filter-hdr" tooltip="Environment Options" shelf-summoner="name: Environment Shelf"
+
+    a-entity icon-button="#asset-brush" tooltip="Tools"
+    a-entity icon-button="#asset-arrow-down-bold" tooltip="More"

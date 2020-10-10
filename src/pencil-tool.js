@@ -731,16 +731,8 @@ AFRAME.registerComponent('summonable', {
   },
   flyToUser() {
     this.hasFlown = true
-    let target = this.el.sceneEl.is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
 
-    let flyingEl = this.el
-
-    while (flyingEl['redirect-grab'])
-    {
-      flyingEl = flyingEl['redirect-grab']
-    }
-
-    Util.positionObject3DAtTarget(flyingEl.object3D, target, {transformOffset: {x: 0, y: 0, z: -0.5}})
+    Util.flyToCamera(this.el)
 
     if (this.data.activateOnSummon)
     {

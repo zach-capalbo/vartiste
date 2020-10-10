@@ -234,7 +234,7 @@ AFRAME.registerComponent('popup-button', {
     {
       this.editButton.setAttribute('tooltip', this.data.tooltip)
     }
-    if (this.data.popup !== oldData.popup)
+    if (this.data.popup !== oldData.popup && !this.data.deferred)
     {
       this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
     }

@@ -3,6 +3,20 @@ import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
+AFRAME.registerSystem('manipulator', {
+  init() {
+    this.postManipulationCallbacks = []
+  },
+  postManipulation(el) {
+    if (!this.postManipulationCallbacks.length) return
+
+    for (let c of this.postManipulationCallbacks)
+    {
+      c(el)
+    }
+  },
+})
+
 // Allows `laser-controls` to grab, rotate, and scale elements in 3D.
 //
 // #### Grabbing
@@ -428,6 +442,7 @@ AFRAME.registerComponent('manipulator', {
       }
 
       if (this.target.manipulatorConstraint) this.target.manipulatorConstraint()
+      this.system.postManipulation(this.target)
     }
   }
 })
@@ -550,6 +565,30 @@ AFRAME.registerComponent('grab-activate', {
       }
     };
     this.el.addEventListener('stateadded', activate)
+  }
+})
+
+AFRAME.registerComponent('manipulator-info-text', {
+  dependencies: ['text'],
+  init() {
+    this.el.sceneEl.systems.manipulator.postManipulationCallbacks.push((el) => {
+      this.el.setAttribute('text', 'value', `position="${AFRAME.utils.coordinates.stringify(el.object3D.position)}"\nrotation="${AFRAME.utils.coordinates.stringify({
+        x: THREE.Math.radToDeg(el.object3D.rotation.x),
+        y: THREE.Math.radToDeg(el.object3D.rotation.y),
+        z: THREE.Math.radToDeg(el.object3D.rotation.z),
+      })}"\nscale="${AFRAME.utils.coordinates.stringify(el.object3D.scale)}"`)
+    })
+  }
+})
+
+AFRAME.registerComponent('copy-manipulator-info-text', {
+  events: {
+    click: function() {
+      let txt = document.querySelector('*[manipulator-info-text]').getAttribute('text').value
+      txt = txt.replace(/\n/mg, " ")
+      console.log("Manipulator info", txt)
+      this.el.sceneEl.systems['settings-system'].copyToClipboard(txt, "Manipulator Info")
+    }
   }
 })
 
