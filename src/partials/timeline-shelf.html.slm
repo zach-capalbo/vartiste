@@ -1,4 +1,4 @@
-a-entity.grab-root timeline-shelf="" shelf="name: Animation Shelf" position="-3.0 0.0 0" scale="0.3 0.3 1"
+a-entity.grab-root timeline-shelf="" shelf="name: Animation Shelf; closeable: true" position="-3.0 0.0 0" scale="0.3 0.3 1" visible="false"
   a-entity position="-1.5 1.1 0"
     a-entity icon-button="#asset-arrow-collapse-left" click-action="firstFrame" tooltip="Jump to First Frame"
     a-entity icon-button="#asset-plus-box-multiple" click-action="duplicateFrameBefore" tooltip="Duplicate Frame to Before"

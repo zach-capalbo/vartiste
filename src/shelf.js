@@ -4,6 +4,7 @@ const {Util} = require('./util.js')
 // A moveable container for other components, consisting of a handlebar and a
 // wood-like background
 AFRAME.registerComponent('shelf', {
+  dependencies: ['grab-activate', 'bypass-hidden-updates'],
   schema: {
     width: {default: 4},
     height: {default: 3},
@@ -14,6 +15,7 @@ AFRAME.registerComponent('shelf', {
     //  Enables the [frame](#frame) component for the shelf when true
     frame: {default: true},
     closeable: {default: false},
+    hideOnly: {default: true},
     pinnable: {default: true},
 
     // Possible future use for documentation or adding a titlebar
@@ -55,6 +57,7 @@ AFRAME.registerComponent('shelf', {
             outline: false,
             closable: this.data.closeable,
             pinnable: this.data.pinnable,
+            hideOnly: this.data.hideOnly,
             geometryTarget: this.container.querySelector('.bg'),
             name: this.data.name
           })

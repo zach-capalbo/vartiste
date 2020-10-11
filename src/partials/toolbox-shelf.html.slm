@@ -1,4 +1,4 @@
-a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality" position="-1.5 -1.5 0" scale="0.3 0.3 1"
+a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; closeable: true" position="-1.5 -1.5 0" scale="0.3 0.3 1" visible="false"
   a-entity position="-1.5 1.1 0"
     a-entity icon-button="#asset-horizontal-rotate-counterclockwise" click-action="mirrorAnimation" tooltip="Mirror Animation"
     a-entity icon-button="#asset-archive-arrow-down-outline" click-action="mergeFrames" tooltip="Merge All Frames"

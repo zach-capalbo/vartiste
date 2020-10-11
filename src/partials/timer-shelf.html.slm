@@ -1,4 +1,4 @@
-a-entity shelf="name: Reference Timer Shelf" scale="0.3 0.3 1"
+a-entity shelf="name: Reference Timer Shelf" scale="0.3 0.3 1" visible="false"
   a-entity position="-1.6 1.1 0"
     a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Switch References on Timer" toggle-button="target: a-scene; component: timer-system; property: switchReferences"
     a-entity icon-button="#asset-plus-box-multiple" tooltip="Fresh Layer on Timer" toggle-button="target: a-scene; component: timer-system; property: freshLayer"

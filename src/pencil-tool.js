@@ -693,12 +693,16 @@ AFRAME.registerComponent('six-dof-tool', {
     activate: function() {
       // Move the tool's parent to the world root, so it doesn't get
       // accidentally hidden when the UI is hidden
-      let wm = new THREE.Matrix4
-      this.el.object3D.updateMatrixWorld()
-      wm.copy(this.el.object3D.matrixWorld)
-      this.el.object3D.parent.remove(this.el.object3D)
-      document.querySelector('#world-root').object3D.add(this.el.object3D)
-      Util.applyMatrix(wm, this.el.object3D)
+      if (this.data.reparentOnActivate)
+      {
+        console.log("Reparenting", this.data)
+        let wm = new THREE.Matrix4
+        this.el.object3D.updateMatrixWorld()
+        wm.copy(this.el.object3D.matrixWorld)
+        this.el.object3D.parent.remove(this.el.object3D)
+        document.querySelector('#world-root').object3D.add(this.el.object3D)
+        Util.applyMatrix(wm, this.el.object3D)
+      }
     }
   },
   init() {

@@ -562,6 +562,7 @@ AFRAME.registerComponent('grab-activate', {
       if (e.detail === 'grabbed') {
         this.el.emit('activate')
         this.el.removeEventListener('stateadded', activate)
+        this.el.addState('grab-activated')
       }
     };
     this.el.addEventListener('stateadded', activate)

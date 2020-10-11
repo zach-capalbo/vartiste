@@ -1,4 +1,4 @@
-a-entity.grab-root shelf="name: Volumetrics; height: 1; width: 2" scale="0.3 0.3 1" position="0.3 -0.4 0"
+a-entity.grab-root shelf="name: Volumetrics; height: 1; width: 2; closeable: true" scale="0.3 0.3 1" position="0.3 -0.4 0" visible="false"
   a-entity icon-row="" position="-0.65 0 0"
     a-entity icon-button="#asset-undo" toggle-button="target:a-scene; component: volumetrics; property: undoEnabled" tooltip="Enable / Disable Undo"
     a-entity icon-button="#asset-transition" toggle-button="target:a-scene; component: volumetrics; property: onion" tooltip="Shell Only"
