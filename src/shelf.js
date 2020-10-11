@@ -21,6 +21,14 @@ AFRAME.registerComponent('shelf', {
     // Possible future use for documentation or adding a titlebar
     name: {type: 'string'}
   },
+  events: {
+    componentchanged: function(e) {
+      if (e.detail.name === 'visible')
+      {
+        this.el.sceneEl.emit('refreshobjects')
+      }
+    }
+  },
   init() {
     var container = document.createElement("a-entity")
     container.innerHTML = shelfHtml

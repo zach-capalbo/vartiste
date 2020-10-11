@@ -30,10 +30,11 @@ AFRAME.registerComponent('quick-menu', {
     else
     {
       this.el.setAttribute('shelf', 'height', 3)
-      this.el.setAttribute('shelf', 'offset', '0 -0.75 0')
+      this.el.setAttribute('shelf', 'offset', '0 -1.0 0')
       this.el.querySelectorAll('.quick-menu-more').forEach(el => el.setAttribute('visible', true))
       this.expanded = true
     }
+    this.el.sceneEl.emit('refreshobjects')
   },
   toggleNodes() {
     let compositor = Compositor.el
@@ -123,22 +124,31 @@ AFRAME.registerComponent('shelf-summoner', {
 
     this.shelfEl.removeState('grab-activated')
     this.system.lastSummoned[key] = this.shelfEl
-
+    this.el.sceneEl.emit('refreshobjects')
   }
 })
 
 AFRAME.registerComponent('quick-gallery', {
-  init() {
-    const QUICK_ITEMS = ["paper", "graffiti", "hubs_avatar"]
+  events: {
+    click: function(e) {
 
-    for (let name of QUICK_ITEMS)
+      let loadName = e.target.getAttribute('quick-load')
+      console.log("Quick Load Button", e.target, loadName)
+      if (!loadName) return
+
+      this.el.sceneEl.systems['file-upload'].handleURL(require(`./gallery/${loadName}.vartiste`))
+    }
+  },
+  init() {
+    for (let entry of GALLERY_ENTRIES.find(s => s.section === "Templates").entries)
     {
-      let img = require(`advanced-image-loader!./gallery/${name}.png?width=256`)
+      if (!entry.quickLoad) continue
+      let img = require(`advanced-image-loader!./gallery/${entry.name}.png?width=128`)
       console.log(img)
       let button = document.createElement('a-entity')
       button.setAttribute('icon-button', img.src)
-      button.setAttribute('tooltip', `Quick Start ${name}`)
-      button.setAttribute('quick-load', name)
+      button.setAttribute('tooltip', `Quick Start ${entry.displayName}`)
+      button.setAttribute('quick-load', entry.name)
       this.el.append(button)
     }
   }
