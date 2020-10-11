@@ -4,7 +4,11 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
     a-entity icon-button="#asset-blur-linear" click-action="toneMapping" tooltip="Change Tone Mapping"
     a-entity icon-button="#asset-brightness-4" click-action="usePresetHDRI" tooltip="Use Preset HDRI Environment"
     a-entity icon-button="#asset-image-filter-hdr" click-action="setBackgroundColor" tooltip="Set Background Color"
-    a-entity icon-button="#asset-cube-send" click-action="installMatcap" tooltip="Use Matcap Shading"
+
+    a-entity icon-button="" visible="false"
+    a-entity icon-button="#asset-record" click-action="useFlatShading" tooltip="Use Flat Shading"
+    a-entity icon-button="#asset-blur-preview" click-action="installMatcap" tooltip="Use Matcap Shading"
+    a-entity icon-button="#asset-brightness-4" click-action="use3DShading" tooltip="Use 3D Shading"
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
 

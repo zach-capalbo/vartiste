@@ -5,7 +5,7 @@ a-entity position="-1.6 1.1 0"
   a-entity click-action="export" icon-button="#asset-camera" tooltip="Export as PNG"
   a-entity click-action="export3d" icon-button="#asset-cube-send" tooltip="Export as GLB"
   a-entity.sketchfab-button click-action="exportSketchfab" icon-button="#asset-sketchfab" tooltip="Export to Sketchfab"
-  a-entity click-action="toggleShading" icon-button="#asset-brightness-4" tooltip="Toggle 3D Shading"
+
   a-entity.clickable click-action="help" icon-button="#asset-help-circle-outline" tooltip="Help"
 a-entity position="-1.6 0.6 0"
   a-entity click-action="noStabilization" icon-button="#asset-hand-two-lines" tooltip="No Stabilization" toggle-button=""

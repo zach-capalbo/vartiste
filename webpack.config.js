@@ -211,6 +211,10 @@ if (process.env.VARTISTE_TOOLKIT==="true")
 {
   module.exports = [toolkit, toolkitTest, toolkitDoc]
 }
+else if (process.env.VARTISTE_APP_ONLY==="true")
+{
+  module.exports = [app]
+}
 else
 {
   module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)

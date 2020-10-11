@@ -3,6 +3,7 @@ import {GALLERY_ENTRIES} from './static/gallery.js'
 
 AFRAME.registerSystem('quick-menu', {
   init() {
+    this.lastSummoned = {}
   }
 })
 
@@ -43,17 +44,18 @@ AFRAME.registerComponent('quick-menu', {
 
 AFRAME.registerComponent('summoner-position', {
   schema: {
-    el: {type: 'selector'}
+    el: {type: 'selector'},
+    key: {type: 'string'},
   }
 })
 
 AFRAME.registerComponent('shelf-summoner', {
   schema: {
     name: {type: 'string'},
-    selector: {type: 'selector'}
+    selector: {type: 'selector'},
   },
   events: {
-    click: function() {
+    click: function(e) {
       this.summon()
     }
   },
@@ -91,9 +93,18 @@ AFRAME.registerComponent('shelf-summoner', {
       return
     }
 
-    if (this.system.lastSummoned && !this.system.lastSummoned.is('grab-activated'))
+    let key = ""
+
+    if (this.summonerPositionEl)
     {
-      this.system.lastSummoned.setAttribute('visible', false)
+      key = this.summonerPositionEl.getAttribute('summoner-position').key
+    }
+
+    let lastSummoned = this.system.lastSummoned[key]
+
+    if (lastSummoned && !lastSummoned.is('grab-activated'))
+    {
+      lastSummoned.setAttribute('visible', false)
     }
 
     if (this.summonerPositionEl)
@@ -111,7 +122,7 @@ AFRAME.registerComponent('shelf-summoner', {
     this.shelfEl.setAttribute('visible', true)
 
     this.shelfEl.removeState('grab-activated')
-    this.system.lastSummoned = this.shelfEl
+    this.system.lastSummoned[key] = this.shelfEl
 
   }
 })
