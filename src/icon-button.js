@@ -33,6 +33,18 @@ AFRAME.registerComponent('button-style', {
   }
 })
 
+const [
+  STATE_NORMAL,
+  STATE_HOVERED,
+  STATE_PRESSED,
+  STATE_TOGGLED
+] = [
+  "BUTTON_STATE_NORMAL",
+  "BUTTON_STATE_HOVERED",
+  "BUTTON_STATE_PRESSED",
+  "BUTTON_STATE_TOGGLED"
+]
+
 // System to handle caching and sharing of materials for icon buttons. At the
 // moment, it is best not to change these values dynamically.
 AFRAME.registerSystem('icon-button', {
@@ -93,10 +105,19 @@ AFRAME.registerComponent('icon-button', {
   // Should be a selector for an image asset, or a texture map (anything that
   // can go into a `material` `map` property should work)
   schema: {type:'string', default: ""},
+  events: {
+    stateadded: function(e) { this.updateStateColor() },
+    stateremoved: function(e) { this.updateStateColor() },
+    componentchanged: function(e) { if (e.detail.name === 'button-style') this.updateStateColor() },
+    'raycaster-intersected': function(e) { this.el.addState(STATE_HOVERED)},
+    'raycaster-intersected-cleared': function(e) { this.el.removeState(STATE_HOVERED)},
+  },
   init() {
     let width = this.system.width
     let height = width
     let depth = this.system.depth
+
+    this.state = STATE_NORMAL
 
     let buttonStyle
     if (this.el.hasAttribute('button-style'))
@@ -154,23 +175,16 @@ AFRAME.registerComponent('icon-button', {
       {
         Sfx.click(e.detail.cursorEl)
       }
-      this.setColor(buttonStyle.clickColor)
+      this.addState(STATE_PRESSED)
+      //this.setColor(buttonStyle.clickColor)
     })
 
-    this.el.addEventListener('raycaster-intersected', (e) => {
-      if (!this.clickTime) {
-        this.setColor(buttonStyle.intersectedColor)
-      }
-    })
-    this.el.addEventListener('raycaster-intersected-cleared', (e) => {
-      if (!this.clickTime) {
-        this.setColor(buttonStyle.color)
-      }
+    this.el.addEventListener('object3dset', (e) => {
+      this.updateAspect()
+      this.updateStateColor()
     })
 
-    this.el.addEventListener('object3dset', (e) => this.updateAspect())
-
-    this.setColor(buttonStyle.color)
+    this.updateStateColor()
 
     this.el.actionTooltips = {trigger: 'Click Button'}
   },
@@ -196,6 +210,31 @@ AFRAME.registerComponent('icon-button', {
       }
     }
     this.updateAspect()
+  },
+  addState(state) {
+    this.el.addState(state)
+  },
+  removeState(state) {
+    this.el.removeState(state)
+  },
+  updateStateColor() {
+    if (this.el.is(STATE_PRESSED))
+    {
+      this.setColor(this.style.clickColor)
+      return
+    }
+    if (this.el.is(STATE_HOVERED))
+    {
+      this.setColor(this.style.intersectedColor)
+      return
+    }
+    if (this.el.is(STATE_TOGGLED))
+    {
+      this.setColor(this.style.toggleOnColor)
+      return
+    }
+
+    this.setColor(this.style.color)
   },
   setColor(color) {
     let threeColor = this.system.tmpColor
@@ -232,7 +271,7 @@ AFRAME.registerComponent('icon-button', {
     {
       if (t - this.clickTime > 300) {
         let buttonStyle = this.el.components['button-style'].data
-        this.setColor(buttonStyle.color)
+        this.removeState(STATE_PRESSED)
       }
     }
   }
@@ -241,6 +280,7 @@ AFRAME.registerComponent('icon-button', {
 // Turns an [`icon-button`](#icon-button) into a toggleable button. Can store
 // the toggle state internally, or set and track a property on a component.
 AFRAME.registerComponent('toggle-button', {
+  dependencies: ['icon-button'],
   schema: {
     // Which element contains the component to set the property on
     target: {type: 'selector'},
@@ -302,18 +342,16 @@ AFRAME.registerComponent('toggle-button', {
     }
   },
   setToggle(value) {
-    if (value && !this.alreadyOn)
-    {
-      this.originalColor = this.el.components['button-style'].data.color
-      this.el.setAttribute('button-style', {color: this.el.components['button-style'].data.toggleOnColor})
-      this.alreadyOn = true
-    }
-    else if (!value)
-    {
-      this.el.setAttribute('button-style', {color: this.originalColor})
-      this.alreadyOn = false
-    }
     this.data.toggled = value
+    if (value)
+    {
+      this.el.addState(STATE_TOGGLED)
+      this.el.components['icon-button'].updateStateColor()
+    }
+    else
+    {
+      this.el.removeState(STATE_TOGGLED)
+    }
   }
 })
 

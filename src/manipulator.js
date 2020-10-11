@@ -540,6 +540,7 @@ AFRAME.registerComponent('lock-up', {
   constrainObject() {
     let forward = this.pool('forward', THREE.Vector3)
     let obj = this.el.object3D
+    obj.updateMatrix()
 
     forward.set(0, 0, 1)
     forward.applyQuaternion(obj.quaternion)

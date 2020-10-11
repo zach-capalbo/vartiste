@@ -17,7 +17,11 @@ AFRAME.registerComponent('quick-menu', {
     }
   },
   init() {
-
+    this.el.querySelector('#quick-menu-project-name-edit').addEventListener('popupclosed', () => {
+      this.el.sceneEl.systems['settings-system'].setProjectName(this.el.querySelector('#quick-menu-project-name-edit').getAttribute('text').value)
+      this.el.querySelector('#quick-menu-project-name-edit').setAttribute('visible', false)
+      this.quickSave()
+    })
   },
   expandQuickMenu() {
     if (this.expanded)
@@ -40,6 +44,25 @@ AFRAME.registerComponent('quick-menu', {
     let compositor = Compositor.el
     compositor.setAttribute('compositor', {useNodes: !compositor.getAttribute('compositor').useNodes})
     document.querySelector('*[node-control-panel]').setAttribute('visible', true)
+  },
+  quickSave() {
+    let settings = this.el.sceneEl.systems['settings-system']
+    if (!settings.hasSetProjectName)
+    {
+      let editField = this.el.querySelector('#quick-menu-project-name-edit')
+      editField.setAttribute('visible', true)
+      editField.components['popup-button'].launchPopup()
+      return
+    }
+
+    if (this.el.sceneEl.isMobile)
+    {
+      settings.storeToBrowserAction()
+    }
+    else
+    {
+      settings.saveAction()
+    }
   }
 })
 

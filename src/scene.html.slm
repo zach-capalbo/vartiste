@@ -26,10 +26,10 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Show / Hide UI Shelves" speech-alias="Toggle UI"
     a-entity#ui bypass-hidden-updates=""
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
-          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"
+          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" long-doc="The color selection shelf contains controls for picking and selecting the color" position="-1.2237972376022719 1.1089245377853298 1.5950361276901273" rotation="8.414556064744165 -43.40889617288809 0" scale="0.059734986610044456 0.059734986610044456 0.19911662203348174"
             a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf; closeable: true" position="0 0 0" scale="0.3 0.3 1" visible="false"
-          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 3.5" position="-1.5 1.6 0" scale="0.3 0.3 1"
+          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 3.5" position="-1.2615992761846009 0.8821897808609439 1.637656040856965" rotation="-17.58675354205625 -41.5842248480332 0" scale="0.05397885688998725 0.05397885688998725 0.17992952296662423"
           == partial('./partials/about-shelf.html.slm')
           == partial('./partials/timeline-shelf.html.slm')
           == partial('./partials/toolbox-shelf.html.slm')
@@ -51,7 +51,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""
+        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
     a-entity#canvas-root
@@ -59,9 +59,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
         grab-options="undoable: true"
         material="shader: flat; transparent: true; npot: true"
         geometry="primitive: plane; width: 80; height: 35"
-        position="0 0.6 -3.14"
-        scale="0.1 0.1 0.1"
-        rotation="0 0 0"
+        position="0.05895326647149908 1.0545312767040833 0.11243601320796098" rotation="0 0 0" scale="0.007213648477991147 0.007213648477991131 0.0072136484779911315"
         compositor=""
       ]
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"

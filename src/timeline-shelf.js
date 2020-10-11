@@ -1,3 +1,88 @@
+import {CanvasRecorder} from './canvas-recorder.js'
+import {Util} from './util.js'
+import Gif from 'gif.js'
+import {Pool} from './pool.js'
+import {Undo} from './undo.js'
+
+Util.registerComponentSystem('timeline-system', {
+  schema: {
+    endFrameNumber: {default: 10},
+  },
+  exportFrames() {
+    let numberOfFrames = this.data.endFrameNumber
+    let compositor = Compositor.component
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      this.el.sceneEl.systems['settings-system'].exportAction({suffix: `frame-${frame}`})
+    }
+  },
+  async exportGif() {
+    let numberOfFrames = this.data.endFrameNumber
+    let compositor = Compositor.component
+    let gif = new Gif({
+      workers: 2,
+      quality: 10,
+      workerScript: require('file-loader!gif.js/dist/gif.worker.js')
+    })
+
+    for (let frame = 0; frame < numberOfFrames; frame++)
+    {
+      compositor.jumpToFrame(frame)
+      compositor.quickDraw()
+      gif.addFrame(Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
+    }
+
+    let url = await new Promise((r, e) => {
+      gif.on('finished', function(blob) {
+        r(URL.createObjectURL(blob))
+      });
+
+      try { gif.render(); } catch (ex)  { e(ex) }
+    })
+
+    this.el.sceneEl.systems['settings-system'].download(url, {extension: 'gif'}, "Gif animation")
+  },
+  async recordFrames() {
+    let numberOfFrames = this.data.endFrameNumber
+    let compositor = Compositor.component
+
+    compositor.isPlayingAnimation = false
+    compositor.jumpToFrame(0)
+
+    let settings = this.el.sceneEl.systems['settings-system']
+
+    if (settings.compositeRecorder)
+    {
+      throw new Error("Already recording!!")
+    }
+
+    await new Promise((resolve, error) => {
+      let onFrameChanged = e => {
+        if (e.detail.frame >= numberOfFrames)
+        {
+          compositor.el.removeEventListener('framechanged', onFrameChanged)
+          resolve()
+        }
+      }
+      compositor.el.addEventListener('framechanged', onFrameChanged)
+
+      settings.recordAction()
+      compositor.playPauseAnimation()
+    })
+
+    settings.recordAction()
+
+
+    // let compositeRecorder = new CanvasRecorder({canvas: compositor.compositeCanvas, frameRate: 25})
+    // compositor.data.drawOverlay = false
+    // compositeRecorder.recordFrames(numberOfFrames)
+    // await compositeRecorder.stop()
+    // this.el.sceneEl.systems['settings-system'].download(compositeRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
+  },
+})
+
 AFRAME.registerComponent('timeline-shelf', {
   init() {
     this.el.addEventListener('click', (e) => {

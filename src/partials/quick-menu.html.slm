@@ -1,7 +1,8 @@
-a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" scale="0.3 0.3 0.3" summoner-position="el: #quick-menu-positioner" quick-menu="" position="-0.011388983954344407 -0.21229887147762444 -0.0417649927395355" rotation="-25.412024201293608 0 0.0"
-  a-entity#quick-menu-positioner scale="0.15 0.15 0.15" _shelf="" position="-0.06572192790324391 1.4687909101322174 0.3699357575623226" rotation="27.343851198452143 0 0.0"
+a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summoner-position="el: #quick-menu-positioner" quick-menu="" position="0.02791199948583377 -0.31382646103619727 0.7253849781877566" rotation="-25 0 0" scale="0.1 0.1 0.1"
+  a-entity#quick-menu-positioner scale="0.065 0.065 0.065" _shelf="" position="-0.06572192790324391 1.6687909101322174 0.3699357575623226" rotation="27.343851198452143 0 0.0"
   a-entity icon-row="" position="-1.1 0 0"
-    a-entity icon-button="#asset-floppy" tooltip="Save"
+    a-entity icon-button="#asset-floppy" tooltip="Save" quick-menu-action="quickSave"
+      a-entity#quick-menu-project-name-edit edit-field="type: string; autoClear: true" visible="false"
     a-entity icon-button="#asset-undo" tooltip="Undo" system-click-action="system: settings-system; action: undoAction"
     a-entity icon-button="#asset-light-switch" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
     a-entity icon-button="#asset-image-filter-hdr" tooltip="Environment Options" shelf-summoner="name: Environment Shelf"
@@ -18,4 +19,4 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" scal
     a-entity scale="2 2 1" quick-gallery=""
   /a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"
 
-  a-entity preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="4.646341475873296 4.646341475873296 4.646341475873296" _six-dof-tool="reparentOnActivate: false"
+  a-entity preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="5.5 5.5 5.5" _six-dof-tool="reparentOnActivate: false"

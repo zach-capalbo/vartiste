@@ -252,6 +252,7 @@ Util.registerComponentSystem('settings-system', {
   },
   setProjectName(name) {
     this.projectName = name
+    this.hasSetProjectName = true
     this.el.emit('projectnamechanged', {name})
   },
   toggleUIAction() {

@@ -871,7 +871,7 @@ AFRAME.registerComponent('movement-tool', {
     grip.setAttribute('segments-radial', 6)
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
-    //grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
+    grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
     grip.setAttribute('action-tooltips', 'grip: Move around')
     grip.classList.add('clickable')
     gripPositioner.append(grip)
