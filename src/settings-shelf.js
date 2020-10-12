@@ -203,7 +203,8 @@ AFRAME.registerComponent('load-shelf', {
 
 AFRAME.registerComponent('lag-tooltip', {
   schema: {
-    color: {type: 'color', default: '#eaa'}
+    color: {type: 'color', default: '#eaa'},
+    initialTime: {default: 10 * 1000}
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, 300, this)
@@ -220,6 +221,7 @@ AFRAME.registerComponent('lag-tooltip', {
     this.shownT = 0
   },
   tick(t, dt) {
+    if (t < this.data.initialTime) return
     if (this.container.object3D.visible)
     {
       if (Compositor.component.slowCount < 2)

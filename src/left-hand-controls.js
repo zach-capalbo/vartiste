@@ -19,11 +19,11 @@ AFRAME.registerComponent('left-hand-controls', {
     buttonMap.install(this)
 
     this.el.addEventListener('thumbstickdown', () => {
-      this.el.sceneEl.systems['settings-system'].resetCameraAction()
+      this.el.sceneEl.systems['artist-root'].resetCameraLocation()
     })
 
     this.el.addEventListener('menudown', () => {
-      this.el.sceneEl.systems['settings-system'].resetCameraAction()
+      this.el.sceneEl.systems['artist-root'].resetCameraLocation()
     })
 
     this.el.addEventListener('xbuttondown', () => {
