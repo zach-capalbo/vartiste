@@ -94,8 +94,11 @@ const Util = {
 
     Util.applyMatrix(destMat, obj)
   },
+  cameraObject3D() {
+     return document.querySelector('a-scene').is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
+  },
   flyToCamera(initialEl, {propogate = true, ...opts} = {}) {
-    let target = initialEl.sceneEl.is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
+    let target = this.cameraObject3D()
 
     let flyingEl = initialEl
 

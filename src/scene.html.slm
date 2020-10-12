@@ -4,13 +4,14 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
   == partial('./partials/artist-root.html.slm')
 
+  a-box#reset-orientation-box width="500" height="500" depth="500" material="src: #asset-reset-orientation; side: back; shader: flat" visible="false"
+
   a-entity#world-root
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
-    a-entity position="0 1.1 -0.5"
-      == partial('./partials/quick-menu.html.slm')
+
       /a-entity spectator-camera="" rotation="0 -90 0"
       /a-entity volume-brush-tool=""
       /a-entity pencil-tool='locked: true; brush: {"baseid": "s2", "color": "#0e0", "opacity": 1.0, "scale": 1.0}'
@@ -25,6 +26,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
       a-entity scale="0.3 0.3 1" shelf="width: 1; height: 1; name: UI Toggle Shelf"
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Show / Hide UI Shelves" speech-alias="Toggle UI"
     a-entity#ui bypass-hidden-updates=""
+      a-entity position="0 1.1 -0.5"
+        == partial('./partials/quick-menu.html.slm')
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
           a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" long-doc="The color selection shelf contains controls for picking and selecting the color" position="-1.2237972376022719 1.1089245377853298 1.5950361276901273" rotation="8.414556064744165 -43.40889617288809 0" scale="0.059734986610044456 0.059734986610044456 0.19911662203348174"
             a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
@@ -62,6 +65,8 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
         position="0.05895326647149908 1.0545312767040833 0.11243601320796098" rotation="0 0 0" scale="0.007213648477991147 0.007213648477991131 0.0072136484779911315"
         compositor=""
       ]
+        /position="0.09054198417802356 0.7048865773264197 0.2444668512173652" rotation="-40.66462661636558 4.7810367846616595 1.2064391677368893" scale="0.01017476950911433 0.010174769509113717 0.010174769509113718"
+        /
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
