@@ -558,6 +558,14 @@ AFRAME.registerComponent('lock-up', {
 // The first time an element with this component is grabbed, it will emit the
 // `activate` event.
 AFRAME.registerComponent('grab-activate', {
+  events: {
+    stateremoved: function(e) {
+      if (e.detail === 'grab-activated')
+      {
+        this.init()
+      }
+    }
+  },
   init() {
     let activate = (e) => {
       if (e.detail === 'grabbed') {

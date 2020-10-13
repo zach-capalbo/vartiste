@@ -4,7 +4,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
   a-entity#quick-menu-positioner scale="0.065 0.065 0.065" _shelf="" position="-0.06572192790324391 1.6687909101322174 0.3699357575623226" rotation="27.343851198452143 0 0.0"
   a-entity icon-row="" position="-1.1 0 0"
     a-entity icon-button="#asset-floppy" tooltip="Save" quick-menu-action="quickSave"
-      a-entity#quick-menu-project-name-edit edit-field="type: string; autoClear: true" visible="false"
+      a-entity#quick-menu-project-name-edit edit-field="type: string; autoClear: true" _popup-button="scale: 0.3 0.3 0.3" visible="false"
     a-entity icon-button="#asset-undo" tooltip="Undo" system-click-action="system: settings-system; action: undoAction"
     a-entity icon-button="#asset-light-switch" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
     a-entity icon-button="#asset-image-filter-hdr" tooltip="Environment Options" shelf-summoner="name: Environment Shelf"
@@ -21,4 +21,4 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity scale="2 2 1" quick-gallery=""
   /a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"
 
-  a-entity preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="5.5 5.5 5.5" _six-dof-tool="reparentOnActivate: false"
+  a-entity#quick-menu-pencil preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="7.7 7.7 7.7" _six-dof-tool="reparentOnActivate: false"

@@ -55,7 +55,7 @@ AFRAME.registerComponent('quick-menu', {
       return
     }
 
-    if (this.el.sceneEl.isMobile)
+    if (AFRAME.utils.device.isMobile() || AFRAME.utils.device.isMobileVR())
     {
       settings.storeToBrowserAction()
     }
@@ -126,10 +126,18 @@ AFRAME.registerComponent('shelf-summoner', {
 
     let lastSummoned = this.system.lastSummoned[key]
 
+    if (lastSummoned === this.shelfEl && !lastSummoned.is('grab-activated') && lastSummoned.getAttribute('visible'))
+    {
+      lastSummoned.setAttribute('visible', false)
+      this.el.sceneEl.emit('refreshobjects')
+      return
+    }
+
     if (lastSummoned && !lastSummoned.is('grab-activated'))
     {
       lastSummoned.setAttribute('visible', false)
     }
+
 
     if (this.summonerPositionEl)
     {
@@ -144,6 +152,7 @@ AFRAME.registerComponent('shelf-summoner', {
       this.shelfEl.object3D.scale.set(0.3, 0.3, 0.3)
     }
     this.shelfEl.setAttribute('visible', true)
+    document.querySelector('#ui').setAttribute('visible', true)
 
     this.shelfEl.removeState('grab-activated')
     this.system.lastSummoned[key] = this.shelfEl

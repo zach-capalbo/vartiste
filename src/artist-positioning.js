@@ -11,7 +11,13 @@ Util.registerComponentSystem('artist-root', {
     Pool.init(this)
 
     document.querySelectorAll('*[laser-controls]').forEach(el => {
-      el.addEventListener('buttonchanged', () => this.acceptOrientationPrompt())
+      el.addEventListener('buttonchanged', e => {
+        if (this.acceptOrientationPrompt())
+        {
+          e.preventDefault()
+          e.stopPropagation()
+        }
+      })
     })
 
     document.querySelectorAll('*[cursor]').forEach(el => {
@@ -84,13 +90,15 @@ Util.registerComponentSystem('artist-root', {
     this.el.sceneEl.emit('refreshobjects')
   },
   acceptOrientationPrompt() {
-    if (!this.waitingForPrompt) return
+    if (!this.waitingForPrompt) return false
     this.waitingForPrompt = false
 
     this.resetCameraLocation()
     this.el.sceneEl.querySelector('#world-root').setAttribute('visible', true)
     this.el.sceneEl.querySelector('#reset-orientation-box').setAttribute('visible', false)
     this.el.sceneEl.emit('refreshobjects')
+
+    return true
   }
 })
 

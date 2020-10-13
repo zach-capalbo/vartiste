@@ -1,3 +1,3 @@
-a-entity shelf="name: Manipulator Info" scale="0.3 0.3 0.3"
+a-entity shelf="name: Manipulator Info; closeable: true" scale="0.05 0.05 0.05" six-dof-tool=""
   a-entity text="wrapCount: 80; value: Manipulator Element Info; width: 3" manipulator-info-text=""
   a-entity icon-button="#asset-palette-swatch-outline" tooltip="Copy" position="1.5 -1.0 0" copy-manipulator-info-text=""

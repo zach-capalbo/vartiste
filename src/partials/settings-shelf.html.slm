@@ -1,7 +1,7 @@
 a-entity position="-1.6 1.1 0"
   a-entity click-action="save" icon-button="#asset-floppy" tooltip="Download project"
   a-entity click-action="storeToBrowser" icon-button="#asset-save-to-browser" tooltip="Save Project to Browser"
-  a-entity icon-button="#asset-folder-open-outline" popup-button="popup: load-shelf; deferred: false; tooltip: Load Project; scale: 0.75 0.75 0.75"
+  a-entity icon-button="#asset-folder-open-outline" popup-button="popup: load-shelf; deferred: false; tooltip: Load Project;"
   a-entity click-action="export" icon-button="#asset-camera" tooltip="Export as PNG"
   a-entity click-action="export3d" icon-button="#asset-cube-send" tooltip="Export as GLB"
   a-entity.sketchfab-button click-action="exportSketchfab" icon-button="#asset-sketchfab" tooltip="Export to Sketchfab"

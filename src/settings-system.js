@@ -202,8 +202,11 @@ Util.registerComponentSystem('settings-system', {
     viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
 
     let mainCanvas = document.getElementById('canvas-view')
-    mainCanvas.setAttribute("position", "0 0.6 3.14")
-    mainCanvas.setAttribute("rotation", "0 180 0")
+    // mainCanvas.setAttribute("position", "0 0.6 3.14")
+    // mainCanvas.setAttribute("rotation", "0 180 0")
+    mainCanvas.setAttribute('position', "-0.33131340738157977 0.6952806276999972 0.33044786242701646")
+    mainCanvas.setAttribute('rotation', "-24.590389275038515 35.81312512886439 1.0193681034761404")
+    mainCanvas.setAttribute('scale', "0.002 0.002 0.002")
   },
   async load(text) {
     let loadObj = JSON.parse(text)
