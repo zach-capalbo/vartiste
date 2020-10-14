@@ -76,7 +76,9 @@ AFRAME.registerComponent('manipulator', {
     // Note: **Don't Use**
     useRay: {type:'boolean', default: true},
     // Logs debug messages to the console
-    printUpdates: {type: 'boolean', default: false}
+    printUpdates: {type: 'boolean', default: false},
+
+    rotateByDefault: {default: false},
   },
   pool(name, type) {
     if (this._pool[name]) return this._pool[name]
@@ -161,6 +163,8 @@ AFRAME.registerComponent('manipulator', {
 
     // Default grab-options
     this.el.setAttribute('grab-options', "")
+
+    if (this.data.rotateByDefault) this.el.addState('rotating')
   },
   startGrab() {
     if (this.target.grabbingManipulator) {
