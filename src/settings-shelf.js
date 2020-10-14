@@ -149,6 +149,12 @@ AFRAME.registerComponent('load-shelf', {
     let settings = this.el.sceneEl.systems['settings-system']
     let db = settings.openProjectsDB()
     let projects = await db.projects.orderBy('modified').primaryKeys()
+
+    if (location.host === "vartiste.xyz" && projects.length === 0)
+    {
+      this.el.querySelector('.old-domain').setAttribute('visible', true)
+    }
+
     projects = projects.reverse()
     for (let i in projects)
     {
@@ -198,6 +204,9 @@ AFRAME.registerComponent('load-shelf', {
     let url = this.el.querySelector('#load-url-field').getAttribute('text').value
     console.log("Handling url:", url)
     this.el.sceneEl.systems['file-upload'].handleURL(url)
+  },
+  openOldDomain() {
+    location.href = "https://zach-geek.gitlab.io/vartiste/?gitlabURL=true"
   }
 })
 
