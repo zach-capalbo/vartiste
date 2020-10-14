@@ -10,6 +10,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity icon-button="#asset-image-filter-hdr" tooltip="Environment Options" shelf-summoner="name: Environment Shelf"
     a-entity icon-button="#asset-brush" tooltip="Tools" shelf-summoner="name: 6DoF Tool Shelf"
     a-entity icon-button="#asset-arrow-down-bold" tooltip="More" quick-menu-action="expandQuickMenu"
+  a-entity.message text="width: 3; wrapCount: 54;" position="0.07 -0.34 0"
   a-entity.quick-menu-more icon-row="" position="-1.1 0 0" visible="false"
     a-entity icon-button="#asset-format-color-fill" tooltip="Experiments / Utils" shelf-summoner="name: Experimental Functionality"
     a-entity icon-button="#asset-video-vintage" tooltip="2D Animation" shelf-summoner="name: Animation Shelf"

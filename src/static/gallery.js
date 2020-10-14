@@ -9,7 +9,7 @@ const GALLERY_ENTRIES = [
   {section: 'Artwork', entries: [
     {name: "birdcup_c", displayName: "Flying Bird Cup", description: "Virtual Reality Animated Ceramics."},
     {name: "meredith", displayName: "Meredith", description: "Meredith the Moose" },
-    {name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
+    //{name: "painting", displayName: "Paint Brush Example", description: "A sample painting with VARTISTE's node composition system showing how to get a paint brush effect using the bump map."},
   ]}
 ]
 

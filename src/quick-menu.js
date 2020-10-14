@@ -8,6 +8,9 @@ AFRAME.registerSystem('quick-menu', {
 })
 
 AFRAME.registerComponent('quick-menu', {
+  schema: {
+    messageDuration: {default: 5000}
+  },
   events: {
     click: function(e) {
       if (e.target.hasAttribute('quick-menu-action'))
@@ -22,6 +25,19 @@ AFRAME.registerComponent('quick-menu', {
       this.el.querySelector('#quick-menu-project-name-edit').setAttribute('visible', false)
       this.quickSave()
     })
+    this.el.sceneEl.addEventListener('open-popup', e => {
+      this.el.querySelector('.message').setAttribute('visible', true)
+      this.el.querySelector('.message').setAttribute('text', 'value', `${e.detail}`)
+      this.messageT = this.el.sceneEl.time
+    })
+  },
+  tick(t,dt) {
+    if (!this.messageT) return
+    if (t > this.messageT + this.data.messageDuration) {
+      this.el.querySelector('.message').setAttribute('visible', false)
+      this.el.querySelector('.message').setAttribute('text', 'value', "")
+      this.messageT = 0
+    }
   },
   expandQuickMenu() {
     if (this.expanded)

@@ -57,6 +57,7 @@ AFRAME.registerComponent('edit-field', {
     this.el.addEventListener('popuplaunched', e => {
       numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
       numpad.setAttribute('visible', true)
+      numpad.querySelector('*[shelf]').setAttribute('shelf', 'name', this.data.tooltip)
       if (this.data.type === 'number' || this.data.autoClear)
       {
         this.setValue("")
