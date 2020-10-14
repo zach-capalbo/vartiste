@@ -7,9 +7,10 @@ Util.registerComponentSystem('volumetrics', {
     bumpy: {default: false},
     hard: {default: true},
     undoEnabled: {default: false},
+    undoThrottle: {default: 250},
   },
   init() {
-
+    this.lastUndoCheck = 0
   },
   activate() {
     if (this.proc) return;
@@ -32,6 +33,10 @@ Util.registerComponentSystem('volumetrics', {
     let shaderSrc = require('./shaders/calc-max.glsl').replace('#define HEIGHT 1.0', `#define HEIGHT ${canvas.height}.0`)
     let intersectionProc = new CanvasShaderProcessor({source: shaderSrc})
     this.intersectionProc = intersectionProc
+
+    let preUndoCanvas = document.createElement('canvas')
+    preUndoCanvas.width = Compositor.component.width
+    preUndoCanvas.height = Compositor.component.height
   },
   initializeGeometry() {
     let geometry = Compositor.mesh.geometry.toNonIndexed()
@@ -58,7 +63,7 @@ Util.registerComponentSystem('volumetrics', {
   },
   checkIntersection() {
     if (!this.data.undoEnabled) return false
-    
+
     let {proc, intersectionCanvas, intersectionProc} = this
 
     intersectionProc.setInputCanvas(proc.canvas)

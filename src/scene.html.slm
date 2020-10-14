@@ -4,12 +4,14 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
   == partial('./partials/artist-root.html.slm')
 
+  a-box#reset-orientation-box width="500" height="500" depth="500" material="src: #asset-reset-orientation; side: back; shader: flat" visible="false"
+
   a-entity#world-root
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
     /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
-    a-entity position="0 1.1 -0.5"
+
       /a-entity spectator-camera="" rotation="0 -90 0"
       /a-entity volume-brush-tool=""
       /a-entity pencil-tool='locked: true; brush: {"baseid": "s2", "color": "#0e0", "opacity": 1.0, "scale": 1.0}'
@@ -20,15 +22,18 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     a-entity light="type: directional; color: #fff; intensity: 1.26" position="0 -0.68 -0.45"
 
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
-    a-entity#unhide-ui bypass-hidden-updates="" position="-2 0 -1" rotation="0 90 0" visible="false"
-      a-entity scale="0.3 0.3 1" shelf="width: 1; height: 1; name: UI Toggle Shelf"
-        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Show / Hide UI Shelves" speech-alias="Toggle UI"
+
+    a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.11243601320796098"
+      a-entity scale="0.05 0.05 0.05" shelf="width: 1; height: 1; name: UI Toggle Shelf"
+        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" lag-tooltip="" scale="2 2 2"
     a-entity#ui bypass-hidden-updates=""
+      a-entity position="0 1.1 -0.5"
+        == partial('./partials/quick-menu.html.slm')
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
-          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" position="0 1.6 0" scale="0.3 0.3 1" long-doc="The color selection shelf contains controls for picking and selecting the color"
+          a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" long-doc="The color selection shelf contains controls for picking and selecting the color" position="-1.2237972376022719 1.1089245377853298 1.5950361276901273" rotation="8.414556064744165 -43.40889617288809 0" scale="0.059734986610044456 0.059734986610044456 0.19911662203348174"
             a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
-          a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf" position="0 0 0" scale="0.3 0.3 1"
-          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 3.5" position="-1.5 1.6 0" scale="0.3 0.3 1"
+          a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf; closeable: true" position="0 0 0" scale="0.3 0.3 1" visible="false"
+          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 3.5" position="-1.2615992761846009 0.8821897808609439 1.637656040856965" rotation="-17.58675354205625 -41.5842248480332 0" scale="0.05397885688998725 0.05397885688998725 0.17992952296662423"
           == partial('./partials/about-shelf.html.slm')
           == partial('./partials/timeline-shelf.html.slm')
           == partial('./partials/toolbox-shelf.html.slm')
@@ -37,35 +42,20 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
           a-entity position="-3.0 -1.5 0"
             == partial('./partials/timer-shelf.html.slm')
           a-entity position="-1.5 2.7 0"
-            == partial('./partials/pencil-control-shelf.html.slm')
+            == partial('./partials/six-dof-shelf.html.slm')
           a-entity position="-1.5 -3 0"
             == partial('./partials/mesh-tools-shelf.html.slm')
           a-entity#six-dof-root position="-2.2 1.9 0"
-            a-entity.clickable gltf-model="#asset-toolbox" material="shader:matcap; src: #asset-shelf" apply-material-to-mesh="" scale="0.3 0.3 0.3" position="-0.3 -1.3 0" redirect-grab="#six-dof-root" summonable="once: false" preactivate-tooltip="Summon 6DoF Tools" tooltip-style="offset:0 1 -1.3"
-            a-entity preactivate-tooltip="Pencil" pencil-tool=""
-              /a-entity cable-connector="target:#artist-root"
-            a-entity preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="-0.07 0 0"
-            a-entity preactivate-tooltip="Detail Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01" position="-0.12 0 0"
-            a-entity preactivate-tooltip="Marker" pencil-tool="scaleTip: false" position="-0.2 0 0"
-            a-entity preactivate-tooltip="Pressure Brush" pencil-tool="pressureTip: true" position="-0.3 0 0"
-            a-entity preactivate-tooltip="Pressure Eraser" pencil-tool="pressureTip: true; extraStates: erasing" position="-0.4 0 0"
-            a-entity preactivate-tooltip="Detail Eraser" pencil-tool="tipRatio: 0.35; radius: 0.01; extraStates: erasing" position="-0.5 0 0"
+            /a-entity.clickable gltf-model="#asset-toolbox" material="shader:matcap; src: #asset-shelf" apply-material-to-mesh="" scale="0.3 0.3 0.3" position="-0.3 -1.3 0" redirect-grab="#six-dof-root" summonable="once: false" preactivate-tooltip="Summon 6DoF Tools" tooltip-style="offset:0 1 -1.3"
+
             /a-entity preactivate-tooltip="Hammer" hammer-tool="" position="-0.6 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 0"
-            a-entity preactivate-tooltip="Perspective Camera" camera-tool="" position="-0.8 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-            a-entity preactivate-tooltip="Ortho Camera" camera-tool="orthographic: true" position="-0.8 0.3 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-            a-entity preactivate-tooltip="Color Picker" eye-drop-tool="" position="-1.3 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 0"
-            a-entity preactivate-tooltip="Spray Paint" spray-can-tool="" position="-0.8 -0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.35 -1.3"
-            a-entity preactivate-tooltip="Spray Paint Projector" spray-can-tool="projector: true" position="-1.3 -0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.35 -1.3"
+
             /a-entity preactivate-tooltip="Pencil Broom" pencil-broom="" position="-0.55 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
             /a-entity preactivate-tooltip="Pencil Spike Ball" spike-ball="" position="-0.1 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-            a-entity preactivate-tooltip="Viewport Positioner" viewport-tool="" position="-1.3 0.45 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
-            a-entity preactivate-tooltip="Movement Tool" movement-tool="" position="-1.0 -1.0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 -1.3"
 
-            a-entity position="-0.55 -0.45 -0.3"
-              == partial('./partials/volumetrics.html.slm')
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" position="0 -1.5 0" bypass-hidden-updates=""
+        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
     a-entity#canvas-root
@@ -73,11 +63,11 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
         grab-options="undoable: true"
         material="shader: flat; transparent: true; npot: true"
         geometry="primitive: plane; width: 80; height: 35"
-        position="0 0.6 -3.14"
-        scale="0.1 0.1 0.1"
-        rotation="0 0 0"
+        position="0.03 1.0545312767040833 0.11243601320796098" rotation="0 0 0" scale="0.0085 0.0085 0.0085"
         compositor=""
       ]
+        /position="0.09054198417802356 0.7048865773264197 0.2444668512173652" rotation="-40.66462661636558 4.7810367846616595 1.2064391677368893" scale="0.01017476950911433 0.010174769509113717 0.010174769509113718"
+        /
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
       a-entity position="0 0.6 -1.0"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"

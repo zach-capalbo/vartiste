@@ -3,6 +3,20 @@ import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
+AFRAME.registerSystem('manipulator', {
+  init() {
+    this.postManipulationCallbacks = []
+  },
+  postManipulation(el) {
+    if (!this.postManipulationCallbacks.length) return
+
+    for (let c of this.postManipulationCallbacks)
+    {
+      c(el)
+    }
+  },
+})
+
 // Allows `laser-controls` to grab, rotate, and scale elements in 3D.
 //
 // #### Grabbing
@@ -62,7 +76,9 @@ AFRAME.registerComponent('manipulator', {
     // Note: **Don't Use**
     useRay: {type:'boolean', default: true},
     // Logs debug messages to the console
-    printUpdates: {type: 'boolean', default: false}
+    printUpdates: {type: 'boolean', default: false},
+
+    rotateByDefault: {default: false},
   },
   pool(name, type) {
     if (this._pool[name]) return this._pool[name]
@@ -147,6 +163,8 @@ AFRAME.registerComponent('manipulator', {
 
     // Default grab-options
     this.el.setAttribute('grab-options', "")
+
+    if (this.data.rotateByDefault) this.el.addState('rotating')
   },
   startGrab() {
     if (this.target.grabbingManipulator) {
@@ -428,6 +446,7 @@ AFRAME.registerComponent('manipulator', {
       }
 
       if (this.target.manipulatorConstraint) this.target.manipulatorConstraint()
+      this.system.postManipulation(this.target)
     }
   }
 })
@@ -525,6 +544,7 @@ AFRAME.registerComponent('lock-up', {
   constrainObject() {
     let forward = this.pool('forward', THREE.Vector3)
     let obj = this.el.object3D
+    obj.updateMatrix()
 
     forward.set(0, 0, 1)
     forward.applyQuaternion(obj.quaternion)
@@ -542,14 +562,47 @@ AFRAME.registerComponent('lock-up', {
 // The first time an element with this component is grabbed, it will emit the
 // `activate` event.
 AFRAME.registerComponent('grab-activate', {
+  events: {
+    stateremoved: function(e) {
+      if (e.detail === 'grab-activated')
+      {
+        this.init()
+      }
+    }
+  },
   init() {
     let activate = (e) => {
       if (e.detail === 'grabbed') {
         this.el.emit('activate')
         this.el.removeEventListener('stateadded', activate)
+        this.el.addState('grab-activated')
       }
     };
     this.el.addEventListener('stateadded', activate)
+  }
+})
+
+AFRAME.registerComponent('manipulator-info-text', {
+  dependencies: ['text'],
+  init() {
+    this.el.sceneEl.systems.manipulator.postManipulationCallbacks.push((el) => {
+      this.el.setAttribute('text', 'value', `position="${AFRAME.utils.coordinates.stringify(el.object3D.position)}"\nrotation="${AFRAME.utils.coordinates.stringify({
+        x: THREE.Math.radToDeg(el.object3D.rotation.x),
+        y: THREE.Math.radToDeg(el.object3D.rotation.y),
+        z: THREE.Math.radToDeg(el.object3D.rotation.z),
+      })}"\nscale="${AFRAME.utils.coordinates.stringify(el.object3D.scale)}"`)
+    })
+  }
+})
+
+AFRAME.registerComponent('copy-manipulator-info-text', {
+  events: {
+    click: function() {
+      let txt = document.querySelector('*[manipulator-info-text]').getAttribute('text').value
+      txt = txt.replace(/\n/mg, " ")
+      console.log("Manipulator info", txt)
+      this.el.sceneEl.systems['settings-system'].copyToClipboard(txt, "Manipulator Info")
+    }
   }
 })
 

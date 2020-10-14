@@ -203,7 +203,8 @@ AFRAME.registerComponent('load-shelf', {
 
 AFRAME.registerComponent('lag-tooltip', {
   schema: {
-    color: {type: 'color', default: '#eaa'}
+    color: {type: 'color', default: '#eaa'},
+    initialTime: {default: 10 * 1000}
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, 300, this)
@@ -212,7 +213,7 @@ AFRAME.registerComponent('lag-tooltip', {
     container.setAttribute('geometry', 'primitive: plane; height: 0.5; width: 0')
     container.setAttribute('material', {color: this.data.color, shader: 'flat'})
     container.setAttribute('position', '-1 0 0')
-    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Try Toggling UI off; wrapCount: 15`)
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Click button to toggle UI; wrapCount: 15`)
     container.setAttribute('visible', false)
     this.el.append(container)
     this.container = container
@@ -220,6 +221,7 @@ AFRAME.registerComponent('lag-tooltip', {
     this.shownT = 0
   },
   tick(t, dt) {
+    if (t < this.data.initialTime) return
     if (this.container.object3D.visible)
     {
       if (Compositor.component.slowCount < 2)

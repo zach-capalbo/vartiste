@@ -1,6 +1,5 @@
 - const {FX} = require('./layer-modes.js')
-a-entity shelf="width: 1.5; height: 5.5" scale="0.3 0.3 0.3"
-  a-entity icon-button="#asset-close-circle-outline" popup-action="close" position="0.5 -1.2 0"
+a-entity shelf="width: 1.5; height: 5.5; closeable: true; hideOnly: false" scale="0.05 0.05 0.05"
   - var modeListIndex = 0
   a-entity position="0.3 2.25 0"
     - var i = 0

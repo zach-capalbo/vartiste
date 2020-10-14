@@ -94,6 +94,21 @@ const Util = {
 
     Util.applyMatrix(destMat, obj)
   },
+  cameraObject3D() {
+     return document.querySelector('a-scene').is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
+  },
+  flyToCamera(initialEl, {propogate = true, ...opts} = {}) {
+    let target = this.cameraObject3D()
+
+    let flyingEl = initialEl
+
+    while (propogate && flyingEl['redirect-grab'])
+    {
+      flyingEl = flyingEl['redirect-grab']
+    }
+
+    this.positionObject3DAtTarget(flyingEl.object3D, target, {transformOffset: {x: 0, y: 0, z: -0.5}, ...opts})
+  },
   registerComponentSystem(name, obj)
   {
     AFRAME.registerComponent(name, obj)
@@ -103,6 +118,15 @@ const Util = {
         this.el.sceneEl.systems[name] = this.el.sceneEl.components[name]
       }
     })
+  },
+  traverseAncestors(el, fn)
+  {
+    el = el.parentEl
+    while (el)
+    {
+      fn(el)
+      el = el.parentEl
+    }
   },
   titleCase(str) {
     return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))

@@ -202,8 +202,11 @@ Util.registerComponentSystem('settings-system', {
     viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
 
     let mainCanvas = document.getElementById('canvas-view')
-    mainCanvas.setAttribute("position", "0 0.6 3.14")
-    mainCanvas.setAttribute("rotation", "0 180 0")
+    // mainCanvas.setAttribute("position", "0 0.6 3.14")
+    // mainCanvas.setAttribute("rotation", "0 180 0")
+    mainCanvas.setAttribute('position', "-0.33131340738157977 0.6952806276999972 0.33044786242701646")
+    mainCanvas.setAttribute('rotation', "-24.590389275038515 35.81312512886439 1.0193681034761404")
+    mainCanvas.setAttribute('scale', "0.002 0.002 0.002")
   },
   async load(text) {
     let loadObj = JSON.parse(text)
@@ -218,16 +221,6 @@ Util.registerComponentSystem('settings-system', {
   formatFileDate() {
     let date = new Date()
     return date.toJSON().split(":")[0]
-  },
-  resetCameraAction() {
-    let cameraRoot = document.getElementById('camera-root').object3D
-    let camera = document.getElementById('camera').object3D
-
-    cameraRoot.position.x = -camera.position.x
-    cameraRoot.position.z = -camera.position.z
-    cameraRoot.position.y = -camera.position.y + 1.23
-
-    cameraRoot.rotation.y = -camera.rotation.y
   },
   setQuality(scale) {
     document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
@@ -252,12 +245,13 @@ Util.registerComponentSystem('settings-system', {
   },
   setProjectName(name) {
     this.projectName = name
+    this.hasSetProjectName = true
     this.el.emit('projectnamechanged', {name})
   },
   toggleUIAction() {
     let uiRoot = document.querySelector('#ui')
     uiRoot.setAttribute('visible', !uiRoot.getAttribute('visible'))
-    document.querySelector('#unhide-ui').setAttribute('visible', !uiRoot.getAttribute('visible'))
+    //document.querySelector('#unhide-ui').setAttribute('visible', !uiRoot.getAttribute('visible'))
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
       el.components.raycaster.refreshObjects()

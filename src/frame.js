@@ -38,6 +38,10 @@ AFRAME.registerComponent("frame", {
     closable: {default: true},
     // If true, there's a hand button to pin the entity to the user's hand
     pinnable: {default: true},
+
+    // If true, the close button hides the entity instead of removing it
+    hideOnly: {default: false},
+
     // If true, there's a visible border around the entity
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
@@ -152,7 +156,14 @@ AFRAME.registerComponent("frame", {
     return button
   },
   closeFrame() {
-    this.el.parentEl.removeChild(this.el)
+    if (this.data.hideOnly)
+    {
+      this.el.setAttribute('visible', false)
+    }
+    else
+    {
+      this.el.parentEl.removeChild(this.el)
+    }
   },
   pinFrame(e) {
     if (this.el.is('pinned'))

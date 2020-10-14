@@ -693,12 +693,16 @@ AFRAME.registerComponent('six-dof-tool', {
     activate: function() {
       // Move the tool's parent to the world root, so it doesn't get
       // accidentally hidden when the UI is hidden
-      let wm = new THREE.Matrix4
-      this.el.object3D.updateMatrixWorld()
-      wm.copy(this.el.object3D.matrixWorld)
-      this.el.object3D.parent.remove(this.el.object3D)
-      document.querySelector('#world-root').object3D.add(this.el.object3D)
-      Util.applyMatrix(wm, this.el.object3D)
+      if (this.data.reparentOnActivate)
+      {
+        console.log("Reparenting", this.data)
+        let wm = new THREE.Matrix4
+        this.el.object3D.updateMatrixWorld()
+        wm.copy(this.el.object3D.matrixWorld)
+        this.el.object3D.parent.remove(this.el.object3D)
+        document.querySelector('#world-root').object3D.add(this.el.object3D)
+        Util.applyMatrix(wm, this.el.object3D)
+      }
     }
   },
   init() {
@@ -731,16 +735,8 @@ AFRAME.registerComponent('summonable', {
   },
   flyToUser() {
     this.hasFlown = true
-    let target = this.el.sceneEl.is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
 
-    let flyingEl = this.el
-
-    while (flyingEl['redirect-grab'])
-    {
-      flyingEl = flyingEl['redirect-grab']
-    }
-
-    Util.positionObject3DAtTarget(flyingEl.object3D, target, {transformOffset: {x: 0, y: 0, z: -0.5}})
+    Util.flyToCamera(this.el)
 
     if (this.data.activateOnSummon)
     {
@@ -875,7 +871,7 @@ AFRAME.registerComponent('movement-tool', {
     grip.setAttribute('segments-radial', 6)
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
-    //grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
+    grip.setAttribute('constrain-to-sphere', 'innerRadius: 0; outerRadius: 0.14')
     grip.setAttribute('action-tooltips', 'grip: Move around')
     grip.classList.add('clickable')
     gripPositioner.append(grip)

@@ -1,4 +1,5 @@
-a-entity#artist-root
+a-entity#camera-reset-el position="0.0130435652091113 1.0412983252490486 0.6600262848245867" _geometry="primitive: sphere; radius: 0.01"
+a-entity#artist-root position="0 0 0"
   /a-entity geometry="primitive: plane; width: 1; height: 1" rotation="-90 0 0"
     /a-sphere radius="0.1"
   a-entity#camera-offsetter between-target-positioner="root: #artist-root; target: #camera-root"
@@ -18,7 +19,7 @@ a-entity#artist-root
             valve-index-controls="hand:${hand}"
             sound=""
             button-caster=""
-            manipulator="useRay: true"
+            manipulator="useRay: true; rotateByDefault: true"
             smooth-controller=""
             vartiste-rotation-button-mapping=""
             fix-oculus-steamvr=""

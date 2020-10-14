@@ -223,6 +223,12 @@ AFRAME.registerSystem('environment-manager', {
   installMatcap() {
     Compositor.el.setAttribute('material', 'shader', 'matcap')
   },
+  use3DShading() {
+    Compositor.el.setAttribute('material', 'shader', 'standard')
+  },
+  useFlatShading() {
+    Compositor.el.setAttribute('material', 'shader', 'flat')
+  },
 
   setBackgroundColor(color) {
     this.switchState(STATE_COLOR)

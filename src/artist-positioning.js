@@ -1,8 +1,28 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
-AFRAME.registerSystem('artist-root', {
+Util.registerComponentSystem('artist-root', {
   schema: {
     rotationAmount: {default: 3.14 / 4}
+  },
+  events: {
+    entervr: function() {}
+  },
+  init() {
+    Pool.init(this)
+
+    document.querySelectorAll('*[laser-controls]').forEach(el => {
+      el.addEventListener('buttonchanged', e => {
+        if (this.acceptOrientationPrompt())
+        {
+          e.preventDefault()
+          e.stopPropagation()
+        }
+      })
+    })
+
+    document.querySelectorAll('*[cursor]').forEach(el => {
+      el.addEventListener('mouseup', () => this.acceptOrientationPrompt())
+    })
   },
   rotateLeft() {
     document.querySelector('#camera-offsetter').components['between-target-positioner'].resetPosition()
@@ -14,6 +34,71 @@ AFRAME.registerSystem('artist-root', {
   },
   resetPosition() {
     document.querySelector('#camera-offsetter').components['between-target-positioner'].resetPosition()
+  },
+  resetCameraLocation() {
+    this.resetPosition()
+    let targetObj = document.querySelector('#artist-root').object3D
+    let positioner = document.querySelector('#camera-reset-el')
+    Util.positionObject3DAtTarget(targetObj, positioner.object3D)
+
+    let cameraWorld = this.pool('cameraWorld', THREE.Vector3)
+    let cameraObj = Util.cameraObject3D()
+    cameraObj.getWorldPosition(cameraWorld)
+    targetObj.position.y -= cameraWorld.y
+
+    this.resetPosition()
+
+    targetObj.rotation.set(0, 0, 0)
+    targetObj.updateMatrixWorld()
+
+    cameraObj.getWorldDirection(cameraWorld)
+    cameraWorld.y = 0
+    cameraWorld.normalize()
+
+    let rotationMatrix = this.pool('rotMat', THREE.Matrix4)
+
+
+    // rotationMatrix.getInverse(rotationMatrix)
+    // rotationMatrix.extractRotation(targetObj.matrixWorld)
+
+
+    // cameraWorld.applyMatrix4(rotationMatrix)
+
+
+    // targetObj.matrix.lookAt(cameraWorld, new THREE.Vector3, targetObj.up)
+    // rotationMatrix.extractRotation(targetObj.matrix)
+    // rotationMatrix.getInverse(rotationMatrix)
+    // // targetObj.matrix.multiply(rotationMatrix)
+    // rotationMatrix.decompose(cameraWorld, targetObj.quaternion, cameraWorld)
+    //
+    // // Util.applyMatrix(targetObj.matrix, targetObj)
+    // targetObj.rotation.x = 0
+    // targetObj.rotation.z = 0
+    // targetObj.rotation.y = - targetObj.rotation.y
+
+    let forward = this.pool('forward', THREE.Vector3)
+    forward.set(0, 0, 1)
+
+    console.log("wd", cameraWorld, cameraWorld.angleTo(forward))
+    targetObj.rotateY(cameraWorld.angleTo(forward))
+  },
+
+  showOrientationResetPrompt() {
+    this.waitingForPrompt = true
+    this.el.sceneEl.querySelector('#world-root').setAttribute('visible', false)
+    this.el.sceneEl.querySelector('#reset-orientation-box').setAttribute('visible', true)
+    this.el.sceneEl.emit('refreshobjects')
+  },
+  acceptOrientationPrompt() {
+    if (!this.waitingForPrompt) return false
+    this.waitingForPrompt = false
+
+    this.resetCameraLocation()
+    this.el.sceneEl.querySelector('#world-root').setAttribute('visible', true)
+    this.el.sceneEl.querySelector('#reset-orientation-box').setAttribute('visible', false)
+    this.el.sceneEl.emit('refreshobjects')
+
+    return true
   }
 })
 
@@ -60,13 +145,14 @@ AFRAME.registerComponent('reset-transform-on-vr', {
   dependencies: ["look-controls"],
   init() {
     this.el.components['look-controls'].onEnterVR = (function () {
-      console.log("New neter")
+
 
       // if (!this.el.sceneEl.checkHeadsetConnected()) { return; }
       this.saveCameraPose();
       this.el.object3D.position.set(0, 0, 0);
+      this.el.sceneEl.systems['artist-root'].showOrientationResetPrompt()
       return
-      this.el.object3D.updateMatrix();
+      // this.el.object3D.updateMatrix();
     }).bind(this.el.components['look-controls'])
   }
 })
