@@ -213,7 +213,7 @@ AFRAME.registerComponent('lag-tooltip', {
     container.setAttribute('geometry', 'primitive: plane; height: 0.5; width: 0')
     container.setAttribute('material', {color: this.data.color, shader: 'flat'})
     container.setAttribute('position', '-1 0 0')
-    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Try Toggling UI off; wrapCount: 15`)
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Click button to toggle UI; wrapCount: 15`)
     container.setAttribute('visible', false)
     this.el.append(container)
     this.container = container
