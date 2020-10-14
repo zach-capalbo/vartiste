@@ -10,7 +10,10 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
-    /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
+    a-entity position="1.1 0 -0.5" scale="0.3 0.3 0.3"
+      a-entity position="-3.58310806712082 3.300659561600941 2.1625126248120847" rotation="0 0 0" scale="1 1 1"
+        /a-entity#lever-text text="value: +++; width: 1; color: black; frustumCulled: false"
+        /a-entity lever="axis: y; initialPercent: 0.5; target: #lever-text; component: text; property: value; valueRange: 1 10"
 
       /a-entity spectator-camera="" rotation="0 -90 0"
       /a-entity volume-brush-tool=""

@@ -51,12 +51,18 @@ AFRAME.registerComponent('tooltip-style', {
   schema: {
     offset: {type: 'vec3', default: '0 0 0'},
     scale: {type: 'vec3', default: '1 1 1'},
+    rotation: {type: 'vec3', default: '0 0 0'},
   },
   update(oldData) {
+    Util.whenLoaded(this.el, () => {
     this.el.components.tooltip.targetY = this.data.offset.y + 0.4
     this.el.components.tooltip.tooltip.object3D.position.x = this.data.offset.x
     this.el.components.tooltip.tooltip.object3D.position.z = this.data.offset.z + 0.004
     this.el.components.tooltip.tooltip.object3D.scale.copy(this.data.scale)
+    this.el.components.tooltip.tooltip.object3D.rotation.set(this.data.rotation.x * Math.PI / 180,
+                                                             this.data.rotation.y * Math.PI / 180,
+                                                             this.data.rotation.z * Math.PI / 180,)
+                                                           })
   }
 })
 

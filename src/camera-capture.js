@@ -97,7 +97,9 @@ AFRAME.registerComponent('camera-tool', {
     orthographic: {default: false},
     fov: {default: 45.0},
     autoCamera: {default: true},
-    near: {default: 0.1}
+    near: {default: 0.1},
+    far: {default: 10},
+    aspectAdjust: {default: 1.0}
   },
   events: {
     click: function(e) {
@@ -134,7 +136,7 @@ AFRAME.registerComponent('camera-tool', {
       }
       else
       {
-        camera = new THREE.PerspectiveCamera(this.data.fov, width / height, this.data.near, 10)
+        camera = new THREE.PerspectiveCamera(this.data.fov, width / height * this.data.aspectAdjust, this.data.near, this.data.far)
       }
       this.el.object3D.add(camera)
 
@@ -150,8 +152,63 @@ AFRAME.registerComponent('camera-tool', {
       body.classList.add('clickable')
       this.el.append(body)
 
+      if (!this.data.orthographic)
+      {
+        let fovLever = document.createElement('a-entity')
+        fovLever.setAttribute('lever', `axis: x; valueRange: 0.1 180; initialValue: ${this.data.fov}`)
+        fovLever.addEventListener('anglechanged', e => {
+          this.data.fov = e.detail.value
+          this.camera.fov = e.detail.value
+          this.camera.updateProjectionMatrix()
+          this.helper.update()
+        })
+        fovLever.setAttribute('scale', '0.3 0.3 0.3')
+        fovLever.setAttribute('position', '0.14 0 -0.05')
+        fovLever.setAttribute('tooltip', 'Adjust Field of View')
+        fovLever.setAttribute('tooltip-style', 'rotation: 0 0 0; scale: 0.5 0.5 0.5')
+        this.el.append(fovLever)
+
+        let aspectLever = document.createElement('a-entity')
+        aspectLever.setAttribute('lever', `axis: x; valueRange: 0.1 3; initialValue: ${this.data.aspectAdjust}`)
+        aspectLever.addEventListener('anglechanged', e => {
+          this.data.aspectAdjust = e.detail.value
+          this.camera.aspect = Compositor.component.width / Compositor.component.height * e.detail.value
+          this.camera.updateProjectionMatrix()
+          this.helper.update()
+        })
+        aspectLever.setAttribute('scale', '0.3 0.3 0.3')
+        aspectLever.setAttribute('position', '-0.14 0 -0.05')
+        aspectLever.setAttribute('rotation', '0 180 0')
+        aspectLever.setAttribute('tooltip', 'Adjust Aspect Ratio')
+        aspectLever.setAttribute('tooltip-style', 'rotation: 0 180 0; scale: 0.5 0.5 0.5')
+        this.el.append(aspectLever)
+
+        let farLever = document.createElement('a-entity')
+        farLever.setAttribute('lever', `axis: z; valueRange: 10 0.1; initialValue: ${this.data.far}`)
+        farLever.addEventListener('anglechanged', e => {
+          let {value} = e.detail
+          if (e.detail.percent <= 0.1)
+          {
+            value = this.el.sceneEl.camera.far
+          }
+          this.data.far = value
+          this.camera.far = value
+          this.camera.updateProjectionMatrix()
+          this.helper.update()
+        })
+        farLever.setAttribute('scale', '0.3 0.3 0.3')
+        farLever.setAttribute('position', '0.1 0 -0.0')
+        farLever.setAttribute('tooltip', 'Adjust Far Plane')
+        farLever.setAttribute('tooltip-style', 'rotation: 0 0 0; scale: 0.5 0.5 0.5')
+        this.el.append(farLever)
+
+      }
+
       Compositor.el.addEventListener('resized', (e) => {
         let {width, height} = e.detail
+        this.camera.aspect = Compositor.component.width / Compositor.component.height * this.data.aspectAdjust
+        this.camera.updateProjectionMatrix()
+        this.helper.update()
       })
     })
   },
