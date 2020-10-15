@@ -99,7 +99,7 @@ AFRAME.registerComponent('hand-draw-tool', {
     let d
     for (let i of this.el.components.raycaster.intersections)
     {
-      d = (navigator.xr ? i.distance : - i.distance)
+      d = i.distance
       if (d < closestDistance)
       {
         intersection = i
