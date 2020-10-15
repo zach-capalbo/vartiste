@@ -44,7 +44,11 @@ AFRAME.registerComponent('draw-canvas', {
 
     this.wrappedDraw = this.wrappedDraw.bind(this)
   },
-
+  update(oldData) {
+    if (this.data.canvas !== oldData.canvas) {
+      this.ctx = this.data.canvas.getContext('2d')
+    }
+  },
   uvToPoint(uv, canvas = null, {useTransform = true} = {}) {
     let {width, height} = canvas || this.data.canvas
     let {translation, scale} = this.transform
@@ -95,14 +99,14 @@ AFRAME.registerComponent('draw-canvas', {
     brush.drawTo(ctx,  x, y, drawOptions)
   },
 
-  drawUV(uv, {pressure = 1.0, canvas = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined, brush = undefined}) {
+  drawUV(uv, {pressure = 1.0, canvas = null, ctx = null, rotation = 0.0, sourceEl = undefined, distance=0.0, scale=1.0, lastParams = undefined, brush = undefined}) {
     if (canvas === null) canvas = this.data.canvas
 
     if (canvas.touch) canvas.touch()
 
     if (!brush) brush = this.brush
 
-    let ctx = canvas.getContext('2d');
+    if (!ctx) ctx = (this.data.canvas === canvas ? this.ctx : canvas.getContext('2d'));
     let {width, height} = canvas
 
     let {x,y} = this.uvToPoint(uv, canvas)

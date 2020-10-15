@@ -205,10 +205,13 @@ AFRAME.registerComponent('camera-tool', {
       }
 
       Compositor.el.addEventListener('resized', (e) => {
+        if (!this.data.autoCamera) return
+
         let {width, height} = e.detail
         this.camera.aspect = Compositor.component.width / Compositor.component.height * this.data.aspectAdjust
         this.camera.updateProjectionMatrix()
-        this.helper.update()
+
+        if (this.helper) this.helper.update()
       })
     })
   },

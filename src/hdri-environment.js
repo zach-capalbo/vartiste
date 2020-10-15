@@ -85,7 +85,7 @@ AFRAME.registerComponent('hdri-environment', {
     if (!this.data.envMapSelector) return
     for (let r of this.data.envMapSelector)
     {
-      r.object3D.traverse(o => {
+      r.object3D.traverseVisible(o => {
         if (o.material && o.material.type === 'MeshStandardMaterial' && o.material.envMap !== this.envMap)
         {
           o.material.envMap = this.envMap

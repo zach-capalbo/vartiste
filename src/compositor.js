@@ -85,6 +85,7 @@ AFRAME.registerComponent('compositor', {
     overlayCanvas.height = this.height
     document.body.append(overlayCanvas)
     this.overlayCanvas = overlayCanvas;
+    this.overlayCtx = this.overlayCanvas.getContext('2d')
 
     this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas, compositor: this})
     this.activateLayer(this.activeLayer)
@@ -357,9 +358,9 @@ AFRAME.registerComponent('compositor', {
     ctx.save()
     const {width, height} = this
 
-    this.el.components['draw-canvas'].transform = Layer.EmptyTransform()
+    Layer.clearTransform(this.el.components['draw-canvas'].transform)
 
-    let overlayCtx = this.overlayCanvas.getContext('2d')
+    let overlayCtx = this.overlayCtx
 
     if (this.data.onionSkin && this.activeLayer.frames.length > 1)
     {
@@ -388,10 +389,21 @@ AFRAME.registerComponent('compositor', {
     overlayCtx.clearRect(0, 0, width, height)
     overlayCtx.globalCompositeOperation = 'source-over'
 
-    let overlayObjs = Object.values(this.overlays)
+    let overlay
+    let overlayKey
 
+    let brush = null
 
-    let {brush} = overlayObjs.find(o => o.brush.solo) || this.el.sceneEl.systems['paint-system']
+    for (overlayKey in this.overlays)
+    {
+      if (this.overlays[overlayKey].brush.solo)
+      {
+        brush = this.overlays[overlayKey].brush
+        break
+      }
+    }
+
+    if (!brush) { brush = this.el.sceneEl.systems['paint-system'].brush}
 
     if (brush.solo && !brush.direct)
     {
@@ -400,16 +412,26 @@ AFRAME.registerComponent('compositor', {
 
     if (!brush.solo)
     {
-      for (let overlay of overlayObjs)
+      for (overlayKey in this.overlays)
       {
+        overlay = this.overlays[overlayKey]
         if (!overlay.el.id.endsWith('-hand')) continue
         let raycaster = overlay.el.components.raycaster
         if (!raycaster) continue
-        let intersection = raycaster.intersections
-                              .filter(i => i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
-                              .sort(i => - i.distance)
-                              [0]
 
+        let intersection = null
+        let minDistance = 99999
+        for (let i of raycaster.intersections)
+        {
+           if (i.object.el === this.el || (i.object.el.hasAttribute('forward-draw')))
+           {
+             if (- i.distance < minDistance)
+             {
+               intersection = i
+               minDistance = - i.distance
+             }
+           }
+        }
 
         if (!intersection) continue
         this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
@@ -971,7 +993,8 @@ AFRAME.registerComponent('compositor', {
 
 class CompositorFinder {
   get el() {
-    return document.getElementById('canvas-view')
+    if (!this._el) this._el = document.getElementById('canvas-view')
+    return this._el
   }
 
   get component() {

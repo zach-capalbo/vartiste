@@ -241,7 +241,7 @@ AFRAME.registerSystem('environment-manager', {
     {
       for (let r of this.elementsToCheck)
       {
-        r.object3D.traverse(o => {
+        r.object3D.traverseVisible(o => {
           if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
           {
             o.material.envMap = this.envMap

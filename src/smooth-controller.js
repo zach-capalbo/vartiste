@@ -89,7 +89,7 @@ function updatePoseXR() {
   var object3D = this.el.object3D;
   var pose = this.pose;
   if (!pose) { return; }
-  object3D.matrix.elements = pose.transform.matrix;
+  object3D.matrix.fromArray(pose.transform.matrix);
   object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
 
   let orientationOffset = this.el.components['tracked-controls'].data.orientationOffset
