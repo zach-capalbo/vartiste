@@ -207,7 +207,7 @@ AFRAME.registerComponent('action-tooltips', {
 AFRAME.registerComponent('hand-action-tooltip', {
   dependencies: ['raycaster', 'action-tooltips'],
   schema: {
-    throttle: {default: 50},
+    throttle: {default: 150},
     position: {type: 'vec3', default: `-0.006549004823841076 -0.11940164556557662 0.10084264804121343`}
   },
   init() {
@@ -241,6 +241,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
     }
 
     this.message = {}
+    this.messageString = []
 
     for (let b of this.buttons) this.message[b] = null
 
@@ -303,14 +304,17 @@ AFRAME.registerComponent('hand-action-tooltip', {
 
     if (allSame) return
 
-    let messageString = []
+    let messageString = this.messageString
+    let i = 0
     for (let k of this.buttons)
     {
       if (this.message[k] !== null)
       {
-        messageString.push(`> ${this.names[k]}: ${this.message[k]}`)
+        messageString[i++]= `> ${this.names[k]}: ${this.message[k]}`
       }
     }
+
+    messageString.length = i
 
     Object.assign(this.lastMessage, this.message)
 

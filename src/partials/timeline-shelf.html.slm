@@ -15,7 +15,7 @@ a-entity.grab-root timeline-shelf="" shelf="name: Animation Shelf; closeable: tr
     a-entity icon-button="#asset-camera" system-click-action="system:timeline-system; action: exportFrames" tooltip="Export Number Of Frames"
     a-entity icon-button="#asset-record" system-click-action="system:timeline-system; action: recordFrames" tooltip="Record Number Of Frames"
     a-entity icon-button="#asset-gif" system-click-action="system:timeline-system; action: exportGif" tooltip="Export GIF of Number of Frames"
-    a-entity.number-of-frames edit-field="tooltip: End Frame Number"  text="value: 10; width: 0.56; wrapCount: 4; target: a-scene; component: timeline-system; property: endFrameNumber" position="1.5 0 0"
+    a-entity.number-of-frames edit-field="tooltip: End Frame Number; target: a-scene; component: timeline-system; property: endFrameNumber" text="value: 10; width: 0.56; wrapCount: 4;" position="1.5 0 0"
 
   a-entity position="-1.5 -1.1 0"
     a-entity icon-button="#asset-delete" click-action="deleteFrame" tooltip="Delete Frame"
