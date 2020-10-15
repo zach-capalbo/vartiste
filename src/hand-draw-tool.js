@@ -77,8 +77,9 @@ AFRAME.registerComponent('hand-draw-tool', {
 
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
-    this.params = {pressure: 0.0, rotation: 0.0, sourceEl: this.el, distance: 0.0, scale: 1.0, intersection: null, brush: this.system.brush}
+    this.params = {pressure: 0.0, rotation: 0.0, el: this.el, sourceEl: this.el, distance: 0.0, scale: 1.0, intersection: null, brush: this.system.brush}
     this.lastParams = Object.assign({}, this.params)
+    this.overlayParam = {uv: null, el: this.el, params: this.params}
   },
   startDraw() {
     //console.log("Start drawing")
@@ -209,7 +210,10 @@ AFRAME.registerComponent('hand-draw-tool', {
       let targetCompositor = (drawCanvas.target || drawCanvas).el
       if (targetCompositor.components.compositor)
       {
-        targetCompositor.components.compositor.overlays[this.id] = Object.assign({uv: intersection.uv, el: this.el}, params)
+        // this.overlayParam.uv = intersection.uv
+        // this.overlayParam
+        this.params.uv = intersection.uv
+        targetCompositor.components.compositor.overlays[this.id] = this.params
         this.lastCompositor = targetCompositor
       }
 
