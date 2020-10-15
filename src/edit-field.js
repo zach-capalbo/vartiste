@@ -1,5 +1,8 @@
 import {Util} from './util.js'
 AFRAME.registerSystem('edit-field', {
+  schema: {
+    popupScale: {type: 'vec3', default: '1 1 1'}
+  }
 })
 
 // Creates an edit button, which pops up a keyboard to edit the text in the
@@ -32,6 +35,7 @@ AFRAME.registerComponent('edit-field', {
     'popupclosed': function(e) { this.disconnectKeyboard()}
   },
   init() {
+    this.el.setAttribute('popup-button', 'scale', this.system.data.scale)
     this.numpad = this.el.components['popup-button'].popup
     let {numpad} = this
 

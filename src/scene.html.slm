@@ -1,4 +1,4 @@
-a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: standard" remove-audio-listener=""
+a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: standard" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
 

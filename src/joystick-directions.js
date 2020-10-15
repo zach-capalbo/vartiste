@@ -292,6 +292,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
   },
   tick(t, dt)
   {
+    if (!this.el.getObject3D('mesh')) return
     this.setMessage()
     let allSame = true
     for (let k in this.message) {
