@@ -748,6 +748,7 @@ AFRAME.registerComponent('lever', {
     {
       if (this.data.target)
       {
+        console.log(this.data.target, this.data.component, this.data.property, this.value)
         this.data.target.setAttribute(this.data.component, this.data.property ? this.data.property : this.value, this.data.property ? this.value : undefined)
       }
       else

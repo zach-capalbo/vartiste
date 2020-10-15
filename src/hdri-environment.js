@@ -16,7 +16,7 @@ AFRAME.registerComponent('hdri-environment', {
     toneMapping: {default: 5},
 
     // If set, will set the envMap for all selected elements and children with compatible materials
-    envMapSelector: {type: 'selectorAll', default: 'a-scene'},
+    envMapSelector: {type: 'string', default: 'a-scene'},
 
     // If > 0 will set the envMap for all objects with compatible material continuously
     updateEnvMapThrottle: {default: 100},
@@ -26,6 +26,13 @@ AFRAME.registerComponent('hdri-environment', {
     {
       this.setHDRI()
     }
+
+    if (oldData.envMapSelector !== this.data.envMapSelector)
+    {
+      this.envMapSelectorElements = Array.from(document.querySelectorAll(this.data.envMapSelector))
+    }
+
+    this.el.sceneEl.renderer.toneMappingExposure = this.data.exposure
 
     if (oldData.updateEnvMapThrottle !== this.data.updateEnvMapThrottle)
     {
@@ -82,8 +89,8 @@ AFRAME.registerComponent('hdri-environment', {
     this.setEnvMap()
   },
   setEnvMap() {
-    if (!this.data.envMapSelector) return
-    for (let r of this.data.envMapSelector)
+    if (!this.envMapSelectorElements) return
+    for (let r of this.envMapSelectorElements)
     {
       r.object3D.traverseVisible(o => {
         if (o.material && o.material.type === 'MeshStandardMaterial' && o.material.envMap !== this.envMap)
