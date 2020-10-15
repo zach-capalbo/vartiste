@@ -10,7 +10,10 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
-    /a-entity position="1.1 0 -2.5" scale="0.3 0.3 0.3"
+    a-entity position="1.1 0 -0.5" scale="0.3 0.3 0.3"
+      a-entity position="-3.58310806712082 3.300659561600941 2.1625126248120847" rotation="0 0 0" scale="1 1 1"
+        /a-entity#lever-text text="value: +++; width: 1; color: black; frustumCulled: false"
+        /a-entity lever="axis: y; initialPercent: 0.5; target: #lever-text; component: text; property: value; valueRange: 1 10"
 
       /a-entity spectator-camera="" rotation="0 -90 0"
       /a-entity volume-brush-tool=""
@@ -24,7 +27,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
 
     a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.11243601320796098"
-      a-entity scale="0.05 0.05 0.05" shelf="width: 1; height: 1; name: UI Toggle Shelf"
+      a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; name: UI Toggle Shelf"
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" lag-tooltip="" scale="2 2 2"
     a-entity#ui bypass-hidden-updates=""
       a-entity position="0 1.1 -0.5"

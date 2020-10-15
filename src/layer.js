@@ -106,6 +106,14 @@ export class Layer {
       rotation: 0.0
     }
   }
+
+  static clearTransform(transform) {
+    transform.translation.x = 0
+    transform.translation.y = 0
+    transform.scale.x = 1
+    transform.scale.y = 1
+    transform.rotation = 0.0
+  }
 }
 
 export class CanvasNode {

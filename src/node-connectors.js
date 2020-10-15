@@ -206,6 +206,7 @@ AFRAME.registerComponent('node-input', {
     }
   },
   tick() {
+    if (!Compositor.component.data.useNodes) return
     if (this.snappedTo && !this.snappedGrabber.is("grabbed"))
     {
       let {grabLine} = this.snappedGrabber

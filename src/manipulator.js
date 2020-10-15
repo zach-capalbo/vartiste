@@ -144,8 +144,9 @@ AFRAME.registerComponent('manipulator', {
       // this.objects = this.objects.filter(o => {
       for (let i = 0; i < this.objects.length; ++i) {
         let o = this.objects[i]
-        if (o.el.classList.contains("raycast-invisible")) continue
-        if (o.el.hasAttribute('visible') && !o.el.getAttribute('visible')) continue
+        if (o.el.className.includes("raycast-invisible")) continue
+        //if (o.el.classList.contains("raycast-invisible")) continue
+        //if (o.el.hasAttribute('visible') && !o.el.getAttribute('visible')) continue
         if (!o.visible) continue
 
         let parentVisible = true
@@ -624,6 +625,140 @@ AFRAME.registerComponent('constrain-to-sphere', {
   },
   constrainObject() {
     this.el.object3D.position.clampLength(this.data.innerRadius, this.data.outerRadius)
+  }
+})
+
+AFRAME.registerComponent('lever', {
+  schema: {
+    handleLength: {default: 0.35},
+    angleRange: {type: 'vec2', default: '30 150'},
+    throttle: {default: 10},
+    initialValue: {default: 0.0},
+    valueRange: {type: 'vec2', default: '0 1'},
+    axis: {type: 'string', oneOf: ['x', 'y', 'z'], default: 'z'},
+
+    target: {type: 'selector'},
+    component: {type: 'string'},
+    property: {type: 'string'},
+  },
+  init() {
+    Pool.init(this)
+    let angler = document.createElement('a-entity')
+    this.angler = angler
+    this.el.append(angler)
+    this.el.classList.add('grab-root')
+    this.el.setAttribute('grab-options', 'showHand: false')
+    let bodyPositioner = document.createElement('a-entity')
+    let body = document.createElement('a-cylinder')
+    body.setAttribute('rotation', '90 90 90')
+    body.setAttribute('height', this.data.handleLength)
+    body.setAttribute('position', `0 0 ${this.data.handleLength / 2}`)
+    body.setAttribute('radius', 0.035)
+    body.setAttribute('segments-radial', 6)
+    body.setAttribute('segments-height', 1)
+    body.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    body.classList.add('clickable')
+    body.setAttribute('propogate-grab', "")
+    this.body = body
+    this.bodyPositioner = bodyPositioner
+    bodyPositioner.append(body)
+    angler.append(bodyPositioner)
+
+    let gripPositioner = document.createElement('a-entity')
+    let grip = document.createElement('a-sphere')
+    grip.setAttribute('position', `0 ${this.data.handleLength} 0`)
+    grip.setAttribute('radius', 0.07)
+    grip.setAttribute('segments-radial', 6)
+    grip.setAttribute('segments-height', 4)
+    grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
+    grip.setAttribute('grab-options', 'showHand: false; scalable: false')
+    //grip.setAttribute('constrain-to-sphere', `innerRadius: ${this.data.handleLength}; outerRadius: ${this.data.handleLength}`)
+    grip.classList.add('clickable')
+    // gripPositioner.append(grip)
+    this.gripPositioner = gripPositioner
+    this.grip = grip
+    angler.append(grip)
+
+    grip.manipulatorConstraint = this.constrainObject.bind(this)
+    Util.whenLoaded([this.el, grip, body], () => this.setValue(this.data.initialValue))
+
+    this.el['redirect-grab'] = this.grip
+
+    this.spherical = new THREE.Spherical()
+
+    this.origin = new THREE.Vector3(0, 0, 0)
+    this.forward = new THREE.Vector3(1, 0, 0)
+
+    this.eventDetail = {angle: 0, percent: 0, value: this.data.initialValue}
+  },
+  update() {
+    this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
+
+    switch (this.data.axis)
+    {
+      case 'x':
+        this.angler.setAttribute('rotation', '0 0 0')
+      break
+      case 'y':
+        this.angler.setAttribute('rotation', '90 -90 0')
+      break
+      case 'z':
+      this.angler.setAttribute('rotation', '0 -90 0')
+      break
+    }
+  },
+  tick() {},
+  setValue(value) {
+    let {grip} = this
+    grip.object3D.position.z = 0
+    grip.object3D.position.x = Math.max(grip.object3D.position.x, 0.001)
+    this.spherical.setFromCartesianCoords(grip.object3D.position.x, grip.object3D.position.y, grip.object3D.position.z)
+    this.spherical.theta = Math.PI/ 2
+    this.spherical.radius = this.data.handleLength
+    this.spherical.phi = THREE.Math.mapLinear(value, this.data.valueRange.x, this.data.valueRange.y, this.data.angleRange.x * Math.PI / 180, this.data.angleRange.y * Math.PI / 180)
+    grip.object3D.position.setFromSpherical(this.spherical)
+
+    this.bodyPositioner.object3D.matrix.lookAt(this.grip.object3D.position, this.origin, this.forward)
+    Util.applyMatrix(this.bodyPositioner.object3D.matrix, this.bodyPositioner.object3D)
+  },
+  constrainObject() {
+    let {grip} = this
+    grip.object3D.position.z = 0
+    grip.object3D.position.x = Math.max(grip.object3D.position.x, 0.001)
+    // grip.object3D.position.clampLength(this.data.handleLength, this.data.handleLength)
+
+    this.spherical.setFromCartesianCoords(grip.object3D.position.x, grip.object3D.position.y, grip.object3D.position.z)
+    this.spherical.theta = Math.PI/ 2
+    this.spherical.radius = this.data.handleLength
+    this.spherical.phi = THREE.Math.clamp(this.spherical.phi, this.data.angleRange.x * Math.PI / 180, this.data.angleRange.y * Math.PI / 180)
+    grip.object3D.position.setFromSpherical(this.spherical)
+
+    this.bodyPositioner.object3D.matrix.lookAt(this.grip.object3D.position, this.origin, this.forward)
+    Util.applyMatrix(this.bodyPositioner.object3D.matrix, this.bodyPositioner.object3D)
+
+
+    this.angle = this.spherical.phi
+    this.percent = THREE.Math.mapLinear(this.angle, this.data.angleRange.x * Math.PI / 180, this.data.angleRange.y * Math.PI / 180, 0, 1)
+    if (this.percent > 0.99) this.percent = 1.0
+    if (this.percent < 0.01) this.percent = 0
+    this.value = THREE.Math.mapLinear(this.percent, 0, 1, this.data.valueRange.x, this.data.valueRange.y)
+  },
+  _tick(t,dt) {
+    if (this.lastAngle !== this.angle)
+    {
+      if (this.data.target)
+      {
+        this.data.target.setAttribute(this.data.component, this.data.property ? this.data.property : this.value, this.data.property ? this.value : undefined)
+      }
+      else
+      {
+        this.eventDetail.angle = this.angle * 180 / Math.PI
+        this.eventDetail.value = this.value
+        this.eventDetail.percent = this.percent
+        this.el.emit('anglechanged', this.eventDetail)
+        this.lastAngle = this.angle
+      }
+    }
   }
 })
 

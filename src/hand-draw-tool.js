@@ -77,21 +77,36 @@ AFRAME.registerComponent('hand-draw-tool', {
 
     this._tick = this.tick
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.params = {pressure: 0.0, rotation: 0.0, el: this.el, sourceEl: this.el, distance: 0.0, scale: 1.0, intersection: null, brush: this.system.brush}
+    this.lastParams = Object.assign({}, this.params)
+    this.overlayParam = {uv: null, el: this.el, params: this.params}
   },
   startDraw() {
-    console.log("Start drawing")
+    //console.log("Start drawing")
     this.el.emit('startdrawing')
   },
   endDraw() {
-    console.log("End drawing")
+    //console.log("End drawing")
     this.el.emit('enddrawing')
-    this.lastParams = undefined
+    this.lastParams.active = false
   },
   tick() {
     if (this.lastCompositor) delete this.lastCompositor.components.compositor.overlays[this.id]
     if (this.el.components.raycaster.intersections.length == 0) return
 
-    let intersection = this.el.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]
+    let intersection
+    let closestDistance = 9999
+    let d
+    for (let i of this.el.components.raycaster.intersections)
+    {
+      d = i.distance
+      if (d < closestDistance)
+      {
+        intersection = i
+        closestDistance = d
+      }
+    }
+    if (!intersection) return
     let el = intersection.object.el
 
     let isDrawable = false
@@ -146,7 +161,15 @@ AFRAME.registerComponent('hand-draw-tool', {
       }
     }
 
-    let params = {pressure: this.pressure, rotation: rotation, sourceEl: this.el, distance: intersection.distance, scale: this.distanceScale, intersection: intersection, brush: this.system.brush}
+    let params = this.params
+    params.pressure = this.pressure
+    params.rotation = rotation
+    params.sourceEl = this.el
+    params.distance = intersection.distance
+    params.scale = this.distanceScale
+    params.intersection = intersection
+    params.brush = this.system.brush
+    params.lastParams = null
 
     if (this.hasDrawn && this.singleShot) return
 
@@ -155,8 +178,10 @@ AFRAME.registerComponent('hand-draw-tool', {
       if (isDrawable)
       {
         Sfx.draw(this.el)
-        drawCanvas.drawUV(intersection.uv, Object.assign({lastParams: this.lastParams}, params))
-        this.lastParams = params
+        if (this.lastParams.active) params.lastParams = this.lastParams
+        drawCanvas.drawUV(intersection.uv, params)
+        Object.assign(this.lastParams, params)
+        this.lastParams.active = true
         this.lastParams.uv = intersection.uv
       }
       else
@@ -185,7 +210,10 @@ AFRAME.registerComponent('hand-draw-tool', {
       let targetCompositor = (drawCanvas.target || drawCanvas).el
       if (targetCompositor.components.compositor)
       {
-        targetCompositor.components.compositor.overlays[this.id] = Object.assign({uv: intersection.uv, el: this.el}, params)
+        // this.overlayParam.uv = intersection.uv
+        // this.overlayParam
+        this.params.uv = intersection.uv
+        targetCompositor.components.compositor.overlays[this.id] = this.params
         this.lastCompositor = targetCompositor
       }
 

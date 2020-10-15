@@ -187,6 +187,8 @@ AFRAME.registerComponent('icon-button', {
     this.updateStateColor()
 
     this.el.actionTooltips = {trigger: 'Click Button'}
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, 80, this)
   },
   update(oldData) {
     if (this.system.faceMaterials[this.data])
