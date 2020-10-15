@@ -144,8 +144,9 @@ AFRAME.registerComponent('manipulator', {
       // this.objects = this.objects.filter(o => {
       for (let i = 0; i < this.objects.length; ++i) {
         let o = this.objects[i]
-        if (o.el.classList.contains("raycast-invisible")) continue
-        if (o.el.hasAttribute('visible') && !o.el.getAttribute('visible')) continue
+        if (o.el.className.includes("raycast-invisible")) continue
+        //if (o.el.classList.contains("raycast-invisible")) continue
+        //if (o.el.hasAttribute('visible') && !o.el.getAttribute('visible')) continue
         if (!o.visible) continue
 
         let parentVisible = true

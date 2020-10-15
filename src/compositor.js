@@ -358,7 +358,8 @@ AFRAME.registerComponent('compositor', {
     ctx.save()
     const {width, height} = this
 
-    Layer.clearTransform(this.el.components['draw-canvas'].transform)
+    // this.el.components['draw-canvas'].transform = Layer.EmptyTransform()
+    // Layer.clearTransform(this.el.components['draw-canvas'].transform)
 
     let overlayCtx = this.overlayCtx
 
