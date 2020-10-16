@@ -1,6 +1,10 @@
 import {Util} from './util.js'
+
+// App-wide edit field properties
 AFRAME.registerSystem('edit-field', {
   schema: {
+    // Controls the global scaling of the edit field pop-ups. Applied on top of
+    // any individual edit-field popup scaling properties
     popupScale: {type: 'vec3', default: '1 1 1'}
   }
 })
