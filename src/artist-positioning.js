@@ -1,5 +1,7 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
+
+// Helper for positioning the user
 Util.registerComponentSystem('artist-root', {
   schema: {
     rotationAmount: {default: 3.14 / 4}
@@ -24,10 +26,14 @@ Util.registerComponentSystem('artist-root', {
       el.addEventListener('mouseup', () => this.acceptOrientationPrompt())
     })
   },
+
+  // Rotates the user's viewport left
   rotateLeft() {
     document.querySelector('#camera-offsetter').components['between-target-positioner'].resetPosition()
     document.querySelector('#artist-root').object3D.rotation.y += this.data.rotationAmount;
   },
+
+  // Rotates the user's viewport right
   rotateRight() {
     document.querySelector('#camera-offsetter').components['between-target-positioner'].resetPosition()
     document.querySelector('#artist-root').object3D.rotation.y -= this.data.rotationAmount;
@@ -35,6 +41,9 @@ Util.registerComponentSystem('artist-root', {
   resetPosition() {
     document.querySelector('#camera-offsetter').components['between-target-positioner'].resetPosition()
   },
+
+  // Forces the camera back to it's original spot, no matter how the user has
+  // moved around.
   resetCameraLocation() {
     this.resetPosition()
     let targetObj = document.querySelector('#artist-root').object3D
@@ -83,6 +92,7 @@ Util.registerComponentSystem('artist-root', {
     targetObj.rotateY(cameraWorld.angleTo(forward))
   },
 
+  // Shows the prompt
   showOrientationResetPrompt() {
     this.waitingForPrompt = true
     this.el.sceneEl.querySelector('#world-root').setAttribute('visible', false)
@@ -157,6 +167,7 @@ AFRAME.registerComponent('reset-transform-on-vr', {
   }
 })
 
+// Workaround for the `look-controls` not updating the matrix
 AFRAME.registerComponent('camera-matrix-helper', {
   dependencies: ['camera'],
   init() {

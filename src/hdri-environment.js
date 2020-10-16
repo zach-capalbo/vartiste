@@ -45,6 +45,8 @@ AFRAME.registerComponent('hdri-environment', {
       }
     }
   },
+
+  // Loads an RGBE (.hdr) image from URL, and returns a Promise resolving to a texture
   loadRGBE(url) {
     return new Promise((r, e) => {
       new RGBELoader()

@@ -19,18 +19,21 @@ AFRAME.registerSystem('paint-system', {
     this.brush.changeColor(this.data.color)
   },
 
+  // Sets the color of the current brush. Can be a hex string or a csv color name
   selectColor(color) {
     this.data.color = color
     this.brush.changeColor(color)
     this.el.emit('colorchanged', {color})
   },
 
+  // Sets the opacity for drawing
   selectOpacity(opacity) {
     this.data.opacity = opacity
     this.brush.changeOpacity(opacity)
     this.el.emit('opacitychanged', {opacity})
   },
 
+  // Scales the brush by `delta`
   scaleBrush(delta) {
     console.log("Scaling brush by", delta)
     this.linearBrushScale += delta / 1000
@@ -47,6 +50,8 @@ AFRAME.registerSystem('paint-system', {
   nextBrush() {
     this.selectBrush((this.data.brushIndex + 1) % BrushList.length)
   },
+
+  // Selects the brush at position `index` from [`BrushList`](https://gitlab.com/zach-geek/vartiste/-/blob/release/src/brush-list.js)
   selectBrush(index) {
     this.data.brushIndex = index
     this.brush = BrushList[this.data.brushIndex]
@@ -55,6 +60,8 @@ AFRAME.registerSystem('paint-system', {
     this.brush.changeOpacity(this.data.opacity)
     this.el.emit('brushchanged', {brush: this.brush})
   },
+
+  // Sets whether the brush should be able to rotate while drawing
   setRotateBrush(shouldRotate) {
     this.data.rotateBrush = shouldRotate
     this.el.emit('rotatebrushchanged', shouldRotate)

@@ -1,64 +1,14 @@
-# VARTISTE Toolkit
-
-The VARTISTE toolkit is a collection of components developed while creating
-[VARTISTE](https://vartiste.xyz). I've compiled them into a stand-alone module
-in the hopes that it might be useable to folks to jump start their own projects.
-
-# Installation / Use
-
-The easiest way to use it is to include the `.js` file from a CDN, such as
-unpkg:
-
-```html
-<html>
-<head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
-</head>
-...
-</html>
-```
-
-Including the javascript file automatically registers the components and
-systems.
-
-## Assets
-
-Assets required for some of the basic component use are automatically included
-by the javascript source file.
-
-If you want to include *all* VARTISTE assets in your project, you just need an
-`a-asset` with a `vartiste-assets` property, like this:
-
-```html
-<a-scene>
-  <a-assets>
-    <!-- Your assets ... -->
-    <a-asset vartiste-assets=""></a-asset>
-  </a-assets>
-  <!-- Rest of your scene, etc -->
-</a-scene>
-```
-
-# Component Reference
-
-The full API and component reference can be found at
-[https://vartiste.xyz/docs.html](https://vartiste.xyz/docs.html). Please note
-that it is still under construction. The source code is available as well at
-[https://gitlab.com/zach-geek/vartiste](https://gitlab.com/zach-geek/vartiste),
-and contributions, both code-wise and documentation-wise are welcome.
-
-# Example Scene
-
-```html
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>VARTISTE Toolkit Demo</title>
   <script src="https://aframe.io/releases/1.0.4/aframe.js"></script>
-
   <!--Just include the toolkit js file-->
   <script src="/vartiste-toolkit.js"></script>
+  <link rel="icon" href="/assets/favicon.png">
 </head>
+
 <body>
   <a-scene icon-button="shader: matcap" renderer="colorManagement: true">
     <a-assets>
@@ -119,7 +69,7 @@ and contributions, both code-wise and documentation-wise are welcome.
         </a-entity>
 
         <!-- You can make interactables, like this lever -->
-        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2"></a-entity>
+        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
       </a-entity>
     </a-entity>
 
@@ -142,18 +92,3 @@ and contributions, both code-wise and documentation-wise are welcome.
   </a-scene>
 </body>
 </html>
-```
-
-[View the demo on CodePen](https://codepen.io/zach-capalbo/pen/oNbKagV)
-
-<p class="codepen" data-height="330" data-theme-id="light" data-default-tab="html,result" data-user="zach-capalbo" data-slug-hash="oNbKagV" data-preview="true" style="height: 330px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="aframe-vartiste-toolkit-demo">
-  <span>See the Pen <a href="https://codepen.io/zach-capalbo/pen/oNbKagV">
-  aframe-vartiste-toolkit-demo</a> by Zachary Capalbo (<a href="https://codepen.io/zach-capalbo">@zach-capalbo</a>)
-  on <a href="https://codepen.io">CodePen</a>.</span>
-</p>
-<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
-
-
-For information, you can also read through the source code:
-
-[https://gitlab.com/zach-geek/vartiste/-/blob/release/src/vartiste-toolkit.js](https://gitlab.com/zach-geek/vartiste/-/blob/release/src/vartiste-toolkit.js)
