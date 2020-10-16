@@ -4,6 +4,14 @@
 <head>
   <title>VARTISTE Toolkit Demo</title>
   <script src="https://aframe.io/releases/1.0.4/aframe.js"></script>
+  <!-- You can specify components / systems, or files to exclude from being registered -->
+  <script>VARTISTE_TOOLKIT = {
+      /*excludeComponents: ["frame"], */ // Will exclude "frame" component
+      /*includeComponents: ["shelf", "hdri-environment"], */ // Will include *ONLY* the shelf component and hdri-environment system
+      /*excludeFiles: ['icon-button'], */ // Will exclude all components found in  aframe-vartiste-toolkit source file 'icon-button.js'
+      /*includeFiles: ['icon-button'], */ // Will include *only* the components found in  aframe-vartiste-toolkit source file 'icon-button.js'
+      /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
+    }</script>
   <!--Just include the toolkit js file-->
   <script src="/vartiste-toolkit.js"></script>
   <link rel="icon" href="/assets/favicon.png">

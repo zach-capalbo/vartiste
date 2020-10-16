@@ -50,6 +50,7 @@ async function addDocumentation(src)
   require('./leap-hand')
   require('./hand-tracking')
   require('./hdri-environment')
+  require('./fix-oculus-steamvr')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

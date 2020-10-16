@@ -7,6 +7,7 @@ var GAMEPAD_ID_STEAMVR = 'oculus-oculus-rift-s';
 var GAMEPAD_ID_WEBXR = 'oculus-touch';
 var GAMEPAD_ID_WEBVR = 'Oculus Touch';
 
+// Works around SteamVR not properly reporting oculus touch controllers to webXR
 AFRAME.registerComponent('fix-oculus-steamvr', {
   dependencies: ['oculus-touch-controls'],
   init() {
