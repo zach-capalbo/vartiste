@@ -2,6 +2,7 @@ import Convolve from "convolve"
 import Color from "color"
 import {CanvasShaderProcessor, UVStretcher} from './canvas-shader-processor.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 class Brush {
   constructor(baseid) {
@@ -731,6 +732,8 @@ class StretchBrush extends LineBrush {
     this.uvStretcher = new UVStretcher({fx: textured ? 'uv-stretch-textured' : 'uv-stretch'})
 
     this.lineData.allPoints = []
+
+    Pool.init(this)
   }
   updateBrush() {
     this.uvStretcher.setInputCanvas(this.image, {resize: false})
@@ -740,6 +743,25 @@ class StretchBrush extends LineBrush {
     if (!this.lineData.endPoint || (Math.abs(this.lineData.endPoint - x) > 1
      || Math.abs(this.lineData.endPoint.y - y) > 1 ))
     {
+      if (this.lineData.allPoints.length > 2)
+      {
+        let oldVec = this.pool('oldVec', THREE.Vector3)
+        let newVec = this.pool('newVec', THREE.Vector3)
+        let len = this.lineData.allPoints.length
+        oldVec.set(this.lineData.allPoints[len - 1].x - this.lineData.allPoints[len - 2].x,
+                   this.lineData.allPoints[len - 1].y - this.lineData.allPoints[len - 2].y, 0);
+        newVec.set(x - this.lineData.allPoints[len - 1].x,
+                   y - this.lineData.allPoints[len - 1].y, 0);
+        oldVec.normalize()
+        newVec.normalize()
+        let angle = oldVec.angleTo(newVec) * 180 / Math.PI;
+        if (angle > 140 || angle < - 140)
+        {
+          // console.log("Switchback", angle, oldVec, newVec)
+          this.endDrawing(ctx)
+          this.startDrawing(ctx, x, y)
+        }
+      }
       this.lineData.endPoint = {x,y}
       this.lineData.allPoints.push({x,y, scale: this.scale * scale, opacity: pressure})
     }

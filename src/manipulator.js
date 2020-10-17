@@ -817,6 +817,9 @@ AFRAME.registerComponent('manipulator-weight', {
     // catch up to the user's hand. In sticky mode, the user must move their
     // hand further and further in order to keep moving the object.
     type: {default: 'sticky', oneOf: ['sticky', 'slow']},
+
+    // How much weight to apply. Should be between 0.0 and 1.0. 0 is no weight
+    // applied, and 1 is entity won't ever move.
     weight: {default: 0.8}
   },
   events: {
