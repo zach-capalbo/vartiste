@@ -94,9 +94,77 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
       return lines.join("\n")
   }
 
+  function stringifyParam(p)
+  {
+    return txt.slice(p.start, p.end)
+  }
+
+  function functionsToTable(functions) {
+    if (functions.length === 0) return ""
+
+    headers = ["Signature", "Description"]
+
+    lines = ["|" + headers.map(h => ` ${h} `).join("|") + "|"]
+    lines.push("|" + headers.map(h => `---`).join("|") + "|")
+
+    for (let func of functions)
+    {
+      let comment = commentForLocation(func.loc)
+      if (!comment) continue
+
+      let row = []
+
+      comment = comment ? comment.replace(/\n/gm, " ") : ""
+
+      row.push(`${func.key.name} \`(${func.value.params.map(p => stringifyParam(p)).join(", ")})\``)
+
+      row.push(comment)
+
+      lines.push("| " + row.join(" | ") + " |")
+    }
+
+    if (lines.length === 2) return ""
+
+    return lines.join("\n")
+  }
+
+  function handleClassDeclaration(expression)
+  {
+    let comment = commentForLocation(expression.id.loc)
+    // if (!comment) continue
+    comment = comment ? comment.replace(/\n/gm, " ") : ""
+
+    let className = expression.id.name
+
+    let funcString = functionsToTable(expression.body.body.filter(p => p.value.type === 'FunctionExpression'))
+
+    let output = []
+    output.push(`
+## Class \`${className}\` [(${filename}:${expression.loc.start.line})](${sourceBaseURL}${filename}#L${expression.loc.start.line})
+
+${comment}
+`)
+
+    if (funcString)
+    {
+      output.push(`
+### ${className} Methods
+
+${funcString}
+`)
+    }
+
+    output.push("\n---\n")
+
+    return output.join("\n")
+  }
+
   function handleTopLevelExpression(expression)
   {
-      if (!expression || !expression.callee || !expression.callee.property) return
+      if (!expression) return ""
+      if (expression.type === 'ClassDeclaration') { return handleClassDeclaration(expression); }
+      if (expression.type === 'ExportNamedDeclaration' &&  expression.declaration && expression.declaration.type === 'ClassDeclaration') return handleClassDeclaration(expression.declaration)
+      if (!expression.callee || !expression.callee.property) return
       if (!/register(Component|System|ComponentSystem|Shader)/.test(expression.callee.property.name)) return
 
       let type = /register(Component|System|ComponentSystem|Shader)\b/.exec(expression.callee.property.name)[1]
@@ -110,6 +178,8 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
       let schemaTable = schemaToTable(schema)
 
       let docstring = commentForLocation(expression.loc) || ""
+
+      let funcString = functionsToTable(expression.arguments[1].properties.filter(p => p.value.type === 'FunctionExpression'))
 
       // console.log("It has", docstring)
 
@@ -130,6 +200,15 @@ ${schemaTable}
 `)
       }
 
+      if (funcString)
+      {
+        output.push(`
+### ${componentName} Methods
+
+${funcString}
+`)
+      }
+
       output.push("\n---\n")
 
       return output.join("\n")
@@ -139,7 +218,7 @@ ${schemaTable}
 <a name="${filename}"></a>
 # ${filename}
 
-` + p.body.map(e => handleTopLevelExpression(e.expression)).filter(e => !!e).join("\n\n")
+` + p.body.map(e => handleTopLevelExpression(e.expression || e)).filter(e => !!e).join("\n\n")
 }
 
 module.exports = {parseToMarkdown}

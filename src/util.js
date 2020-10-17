@@ -35,7 +35,9 @@ async function awaitLoadingAll(entities) {
   }
 }
 
-const Util = {
+// General Utilities, accessible via `window.VARTISTE.Util`
+class VARTISTEUtil {
+  // Returns `{width, height}` as integers greater than 0
   validateSize({width, height}) {
     width = parseInt(width)
     height = parseInt(height)
@@ -48,24 +50,41 @@ const Util = {
       throw new Error(`Invalid composition height ${height}`)
     }
     return {width, height}
-  },
+  }
+
+  // Executes function `fn` when `entity` has finished loading, or immediately
+  // if it has already loaded. `entity` may be a single `a-entity` element, or
+  // an array of `a-entity` elements. If `fn` is not provided, it will return a
+  // `Promise` that will resolve when `entity` is loaded (or immediately if
+  // `entity` is already loaded).
   whenLoaded(entity, fn) {
     if (Array.isArray(entity) && fn) return whenLoadedAll(entity, fn)
     if (Array.isArray(entity)) return awaitLoadingAll(entity)
     if (fn) return whenLoadedSingle(entity, fn)
     return awaitLoadingSingle(entity)
-  },
+  }
+
+  // Copies `matrix` into `obj`'s (a `THREE.Object3D`) `matrix`, and decomposes
+  // it to `obj`'s position, rotation, and scale
   applyMatrix(matrix, obj) {
     obj.matrix.copy(matrix)
     matrix.decompose(obj.position, obj.rotation, obj.scale)
-  },
-  cloneCanvas(canvas, destination) {
+  }
+
+  // If `destination` is provided, resizes `destination` to the same size as
+  // `canvas` and copies `canvas` contents to `destination`. If `destination` is
+  // not provided, it creates a new canvas with the same size and contents as
+  // `canvas`.
+  cloneCanvas(canvas, destination = undefined) {
     if (typeof destination === 'undefined') destination = document.createElement('canvas')
     destination.width = canvas.width
     destination.height = canvas.height
     destination.getContext('2d').drawImage(canvas, 0, 0)
     return destination
-  },
+  }
+
+  // Moves `obj` (`THREE.Object3D`) to the same spot as `target` (`THREE.Object3D`), accounting for the various matrix
+  // transformations and parentages to get it there.
   positionObject3DAtTarget(obj, target, {scale, transformOffset, transformRoot} = {}) {
     if (typeof transformRoot === 'undefined') transformRoot = obj.parent
 
@@ -93,10 +112,15 @@ const Util = {
     destMat.premultiply(invMat)
 
     Util.applyMatrix(destMat, obj)
-  },
+  }
+
+  // Returns the `THREE.Object3D` that contains the true world transformation
+  // matrix for the camera. Works both on desktop and in VR
   cameraObject3D() {
      return document.querySelector('a-scene').is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
-  },
+  }
+
+  // Brings `initialEl` right in front of the camera
   flyToCamera(initialEl, {propogate = true, ...opts} = {}) {
     let target = this.cameraObject3D()
 
@@ -108,7 +132,13 @@ const Util = {
     }
 
     this.positionObject3DAtTarget(flyingEl.object3D, target, {transformOffset: {x: 0, y: 0, z: -0.5}, ...opts})
-  },
+  }
+
+  // Registers a `ComponentSystem`. A `ComponentSystem` is a `Component` which
+  // is automatically added to the `a-scene`, just like a system. It can be
+  // accessed from both `sceneEl.systems` and `sceneEl.components`. The main
+  // purpose of this is to have auto-registering systems which also have the
+  // schema update events of components.
   registerComponentSystem(name, obj)
   {
     AFRAME.registerComponent(name, obj)
@@ -118,7 +148,9 @@ const Util = {
         this.el.sceneEl.systems[name] = this.el.sceneEl.components[name]
       }
     })
-  },
+  }
+
+  // Executes `fn` on all ancestors of `el`
   traverseAncestors(el, fn)
   {
     el = el.parentEl
@@ -127,10 +159,13 @@ const Util = {
       fn(el)
       el = el.parentEl
     }
-  },
+  }
+
+  // Uppercases the first letter of each word
   titleCase(str) {
     return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))
-  },
+  }
+
   unenumerable(obj, prop)
   {
     return
@@ -139,16 +174,17 @@ const Util = {
     Object.defineProperty(obj, prop, {enumerable: false, get: () => obj[pname], set: (v) => obj[pname] = v})
     obj[pname] = initVal
   }
-}
 
-Pool.init(Util)
-
-export {Util}
-
-class DebugUtils {
-  canvas(canvas) {
+  // Makes it easier to see what's going on with `canvas` (either downloads or displays it)
+  debugCanvas(canvas) {
     document.querySelector('a-scene').systems['settings-system'].download(canvas.toDataURL(), {extension: 'png', suffix: 'debug'}, "Debug Image")
   }
 }
 
-window.VDBG = new DebugUtils
+const Util = new VARTISTEUtil();
+
+Pool.init(Util)
+
+window.VARTISTE = {Util}
+
+export {Util}

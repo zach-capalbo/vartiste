@@ -99,6 +99,8 @@ Util.registerComponentSystem('speech', {
   update() {
     localStorage.speak = this.data.speak
   },
+
+  // Speaks the given `text` string if speech is enabled. Cancels any in-progress speech
   speak(text) {
     if (!this.data.speak) return
     window.speechSynthesis.cancel()
@@ -124,6 +126,8 @@ Util.registerComponentSystem('speech', {
 
     window.speechSynthesis.speak(utterance)
   },
+
+  // Cancels speeking if `text` is currently being spoken
   cancel(text) {
     if (!this.data.speak) return
 
@@ -162,6 +166,8 @@ Util.registerComponentSystem('speech', {
     speechRecognitionList.addFromString(grammar, 1);
     this.recognition.grammars = speechRecognitionList;
   },
+
+  // Listens for a voice command
   listen() {
     this.buildGrammar()
     this.recognition.start()

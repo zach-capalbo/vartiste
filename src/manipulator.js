@@ -3,6 +3,9 @@ import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
+// Utility for managing all manipulators.
+// Add a callback function to the `sceneEl.systems.manipulator.postManipulationCallbacks`
+// to be notified of any changes to manipulated objects anywhere.
 AFRAME.registerSystem('manipulator', {
   init() {
     this.postManipulationCallbacks = []
@@ -628,17 +631,36 @@ AFRAME.registerComponent('constrain-to-sphere', {
   }
 })
 
+// Creates a grabable lever that can be moved up and down to change a value
 AFRAME.registerComponent('lever', {
   schema: {
-    handleLength: {default: 0.35},
-    angleRange: {type: 'vec2', default: '30 150'},
-    throttle: {default: 10},
-    initialValue: {default: 0.0},
-    valueRange: {type: 'vec2', default: '0 1'},
+
+    // Direction for lever to move. Should be `'x'`, `'y'`, or `'z'`
     axis: {type: 'string', oneOf: ['x', 'y', 'z'], default: 'z'},
 
+    // Length of the lever handle
+    handleLength: {default: 0.35},
+
+    // [min, max] Range of motion in degrees for the handle. Min and max should be between 0 and 180
+    angleRange: {type: 'vec2', default: '30 150'},
+
+    // Tick throttle
+    throttle: {default: 10},
+
+    // Initial value, should be between min and max of `valueRange`
+    initialValue: {default: 0.0},
+
+    // Output range of the values. The lever angle will be mapped to this range
+    // when moved
+    valueRange: {type: 'vec2', default: '0 1'},
+
+    // [Optional] If specified, the lever will update the component property of `target` (as specified by the lever's `component` and `property` properties)
     target: {type: 'selector'},
+
+    // [Optional] The component of `target` to update
     component: {type: 'string'},
+
+    // [Optional] The property of `target` to update
     property: {type: 'string'},
   },
   init() {
@@ -708,6 +730,8 @@ AFRAME.registerComponent('lever', {
     }
   },
   tick() {},
+
+  // Set the lever to the position corresponding to `value`
   setValue(value) {
     let {grip} = this
     grip.object3D.position.z = 0
@@ -748,6 +772,7 @@ AFRAME.registerComponent('lever', {
     {
       if (this.data.target)
       {
+        // console.log(this.data.target, this.data.component, this.data.property, this.value)
         this.data.target.setAttribute(this.data.component, this.data.property ? this.data.property : this.value, this.data.property ? this.value : undefined)
       }
       else

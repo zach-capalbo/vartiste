@@ -2,6 +2,7 @@ let glBackingCanvas
 
 const FX_UV_PASSTHROUGH = require('./shaders/fx-uv-passthrough.vert')
 
+// Apply glsl shader effects directly to canvases
 export class CanvasShaderProcessor {
   constructor({source, canvas, fx, vertexShader = FX_UV_PASSTHROUGH}) {
       if (fx) {

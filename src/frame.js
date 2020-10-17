@@ -220,6 +220,8 @@ AFRAME.registerComponent("frame", {
 
     this.el.addState('pinned')
   },
+
+  // Hides the frame, but not the framed element
   hide() {
     for (let o of this.objects)
     {
@@ -227,6 +229,8 @@ AFRAME.registerComponent("frame", {
       o.visible = false
     }
   },
+
+  // Unhides a frame hidden by `hide`
   unhide() {
     for (let o of this.objects)
     {

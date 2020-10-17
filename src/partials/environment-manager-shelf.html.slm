@@ -12,5 +12,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
 
-  a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
-  a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"
+  a-entity.bg-exposure tooltip="Adjust Background Brightness" lever="valueRange: 2 0; initialValue: 1.0" position="-1.35 0.3 0" scale="2 2 2"
+  a-entity.renderer-exposure tooltip="Camera Exposure" lever="valueRange: 2 0; initialValue: 1.0 " position="-0.8 0.3 0" scale="2 2 2"
+  /a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
+  /a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"

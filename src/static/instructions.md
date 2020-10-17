@@ -5,9 +5,10 @@
 <a class="vartiste-url" href="https://vartiste.xyz">https://vartiste.xyz</a>
 
 Pronounced Vee-Ar-tEEst. VARTISTE is a virtual reality app for 2D drawing and
-image editing. A virtual reality headset with tracked motion controllers, such
-as the [Valve Index](https://store.steampowered.com/valveindex) or
-[Oculus Rift S](https://www.oculus.com/rift-s/) is required to use it.
+image editing, and 3D model texturing. A virtual reality headset with tracked
+motion controllers, such as the [Valve
+Index](https://store.steampowered.com/valveindex) or [Oculus Rift
+S](https://www.oculus.com/rift-s/) is required to use it.
 
 <a class="launch-button" href="index.html">LAUNCH VARTISTE</a>
 
@@ -20,7 +21,7 @@ you can move your canvas around to get the perfect vantage point for editing.
 No more being tethered to a monitor or drawing tablet! It's even got a really
 cool node & FX compositing system available. Become a VR-Artíste today!
 
-<img src="eg.JPG" class="screenshot">
+<img src="./images/fullscreen.jpg" class="screenshot">
 
 VARTISTE also takes advantage of being a VR image editor, by allowing you to
 draw textures right onto your model! You can still use all of the features like

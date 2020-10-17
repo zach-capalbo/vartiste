@@ -11,6 +11,13 @@ const Axes = {
   }
 }
 
+// A class for easily adding joystick direction handling as "clickable" buttons
+// Install on a component with `VARTISTE.JoystickDirections.install(this)` in
+// the component's `init` method, and then attach that component to an entity
+// with tracked controls. Then that component have it's `leftClick`,
+// `rightClick`, `upClick`, and `downClick` functions called when the user
+// clicks the joystick in those directions. Note that this is a discrete
+// "Click", not a continuous movement kind of thing.
 class JoystickDirectionHandler {
   constructor(where, {targetEl, whenGrabbing = false} = {}) {
     this.dirX = 0;
@@ -76,6 +83,8 @@ class JoystickDirectionHandler {
   }
 }
 
+// Allows easy setting of tracked controller entity states when buttons are
+// pressed.
 class ButtonMaps {
   constructor() {
     this.maps = {}
@@ -292,6 +301,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
   },
   tick(t, dt)
   {
+    if (!this.el.getObject3D('mesh')) return
     this.setMessage()
     let allSame = true
     for (let k in this.message) {

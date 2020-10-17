@@ -1,5 +1,12 @@
 import {Util} from './util.js'
+
+// App-wide edit field properties
 AFRAME.registerSystem('edit-field', {
+  schema: {
+    // Controls the global scaling of the edit field pop-ups. Applied on top of
+    // any individual edit-field popup scaling properties
+    popupScale: {type: 'vec3', default: '1 1 1'}
+  }
 })
 
 // Creates an edit button, which pops up a keyboard to edit the text in the
@@ -32,6 +39,7 @@ AFRAME.registerComponent('edit-field', {
     'popupclosed': function(e) { this.disconnectKeyboard()}
   },
   init() {
+    this.el.setAttribute('popup-button', 'scale', this.system.data.scale)
     this.numpad = this.el.components['popup-button'].popup
     let {numpad} = this
 
@@ -97,6 +105,8 @@ AFRAME.registerComponent('edit-field', {
   remove() {
     this.inputField.remove()
   },
+
+  // Directly sets the value of the edit field to `value`
   setValue(value, {update=true} = {}) {
     this.numpad.querySelector('.value').setAttribute('text', {value})
     this.el.setAttribute('text', {value})
@@ -126,16 +136,24 @@ AFRAME.registerComponent('edit-field', {
       this.setValue(existingValue + buttonValue)
     }
   },
+
+  // Backspaces the edited text
   backspace(e) {
     this.setValue(this.el.getAttribute('text').value.slice(0, -1))
   },
+
+  // Accepts the edit field popup
   ok(e) {
     this.el.components['popup-button'].closePopup()
     this.el.emit("editfinished", {value: this.el.getAttribute('text').value})
   },
+
+  // Clears the popup text
   clear(e) {
     this.setValue("")
   },
+
+  // Pastes to the edit field
   async paste(e) {
     this.inputField.focus()
     if (!navigator.clipboard) {
@@ -246,6 +264,8 @@ AFRAME.registerComponent('popup-button', {
       this.popupLoaded = true
     }
   },
+
+  // Launches the popup
   launchPopup() {
     let popup = this.popup
     if (!this.popupLoaded)
@@ -266,6 +286,8 @@ AFRAME.registerComponent('popup-button', {
     this.el.emit('popuplaunched')
     popup.emit('popupshown')
   },
+
+  // Closes the popup
   closePopup() {
     this.popup.setAttribute('visible', false)
     this.popup.setAttribute('position', '0 -999999 0.1')

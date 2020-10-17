@@ -24,6 +24,7 @@ async function addDocumentation(src)
 }
 
 (require => {
+  require('./util')
   require('./shelf')
   require('./icon-button')
   require('./edit-field')
@@ -37,10 +38,10 @@ async function addDocumentation(src)
   require('./manipulator')
   require('./canvas-shader-processor')
   require('./canvas-updater')
-  require('./demo-overlay')
-  require('./joystick-directions')
-  require('./popup-shelf')
-  require('./smooth-controller')
+  require('./demo-overlay');
+  require('./joystick-directions');
+  require('./popup-shelf');
+  require('./smooth-controller');
   require('./vartiste-toolkit')
   require('./draw-canvas')
   require('./hand-draw-tool')
@@ -49,6 +50,7 @@ async function addDocumentation(src)
   require('./leap-hand')
   require('./hand-tracking')
   require('./hdri-environment')
+  require('./fix-oculus-steamvr')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

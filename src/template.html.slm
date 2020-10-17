@@ -2,6 +2,23 @@ doctype html
 html
   head
     title VARTISTE
+    meta name="title" content="VARTISTE - WebXR Drawing, Texturing, and more!"
+    - let title = "VARTISTE - WebXR Drawing, Texturing, and more!"
+    - let desc = `VARTISTE is an open source virtual reality app for 2D drawing, image editing, 3D model texturing, and much more, right from the browser!`;
+    meta name="description" content=desc
+
+    meta property="og:type" content="website"
+    meta property="og:url" content="https://vartiste.xyz/"
+    meta property="og:title" content= title
+    meta property="og:description" content=desc
+    meta property="og:image" content="https://vartiste.xyz/preview.jpg"
+
+    meta property="twitter:card" content="summary_large_image"
+    meta property="twitter:url" content="https://vartiste.xyz/"
+    meta property="twitter:title" content=title
+    meta property="twitter:description" content=desc
+    meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
+
     script src="https://aframe.io/releases/1.0.4/aframe.js"
   body
     header#need-help-notification

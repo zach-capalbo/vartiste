@@ -254,9 +254,13 @@ AFRAME.registerSystem('environment-manager', {
 })
 
 AFRAME.registerComponent('environment-manager', {
+  schema: {
+    rendererExposure: {default: 0.724},
+    bgExposure: {default: 1.0},
+  },
   events: {
-    brightnesschanged: function (e) {
-      let exposure = e.detail.brightness
+    anglechanged: function (e) {
+      let exposure = e.detail.value
 
       if (e.target.classList.contains("bg-exposure"))
       {

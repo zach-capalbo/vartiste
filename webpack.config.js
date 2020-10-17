@@ -24,6 +24,7 @@ let config = {
           {loader: path.resolve('./slm-loader.js'), options: {useCache: false, cache: false} }
         ]
       },
+      { test: /\.html$/, loader: 'html-loader' },
       { test: /oss-licenses-used/,loader: 'raw-loader'},
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
@@ -141,7 +142,7 @@ let toolkitTest = Object.assign({
       // new CleanWebpackPlugin(),
       new FaviconsWebpackPlugin(faviconPath),
       new HtmlWebpackPlugin({
-        template: `./src/toolkit/toolkit-test.html.slm`,
+        template: `./src/toolkit/toolkit-test.html`,
         filename: `toolkit-test.html`,
         // inject: false
       }),

@@ -25,3 +25,20 @@ AFRAME.registerComponent('remove-audio-listener', {
     });
   }
 })
+
+// Forces a light component to update its shadow after 2 sceonds. Works around
+// situations where setting the shadow camera properties don't stick for some
+// reason
+AFRAME.registerComponent('fix-light-shadow', {
+  init() {
+    VARTISTE.Util.whenLoaded(this.el, () => {
+      // this.el.components['light'].updateShadow()
+    })
+  },
+  tick(t, dt) {
+    if (t > 2000) {
+      this.el.components['light'].updateShadow();
+      this.tick = function() {};
+    }
+  }
+})
