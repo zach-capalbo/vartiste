@@ -99,10 +99,11 @@ AFRAME.registerComponent('hdri-environment', {
     for (let r of this.envMapSelectorElements)
     {
       r.object3D.traverseVisible(o => {
-        if (o.material && o.material.type === 'MeshStandardMaterial' && (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity))
+        if (o.material && o.material.type === 'MeshStandardMaterial' &&
+          (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity))
         {
           o.material.envMap = this.envMap
-          o.material.envMapIntensity = this.data.envMapIntensity
+          o.material.envMapIntensity = this.data.intensity
           o.material.needsUpdate = true
         }
       })
