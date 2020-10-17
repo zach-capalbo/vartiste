@@ -135,6 +135,7 @@ class ProceduralBrush extends Brush {
   }
 
   createBrush() {
+    if (this.invalid) return;
     let ctx = this.overlayCanvas.getContext("2d")
 
     let width = this.width
@@ -163,6 +164,7 @@ class ProceduralBrush extends Brush {
   }
 
   updateBrush() {
+    if (this.invalid) return;
     this.createBrush()
     let ctx = this.overlayCanvas.getContext("2d")
     let {width, height} = this
@@ -235,6 +237,7 @@ class ProceduralBrush extends Brush {
   }
 
   drawTo(ctx, x, y, opts = {}) {
+    if (this.invalid) return;
     let {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, hqBlending = false} = opts
 
     if (this.invertScale) {
@@ -275,6 +278,7 @@ class ProceduralBrush extends Brush {
 
   drawOutline(ctx, x, y, {distance=0, rotation=0} = {})
   {
+    if (this.invalid) return;
     const width = this.width
     const height = this.height
     let oldAlpha = ctx.globalAlpha
@@ -323,26 +327,38 @@ class ImageBrush extends ProceduralBrush{
     {
       image = new Image()
     }
-    image.decoding = 'sync'
-    image.loading = 'eager'
-    image.src = require(`./brushes/${name}.png`)
-    let {width, height} = image
 
-    super(baseid, Object.assign({drawEdges: true}, options, {width, height}))
+    try {
+      image.decoding = 'sync'
+      image.loading = 'eager'
+      image.src = require(`./brushes/${name}.png`)
+      let {width, height} = image
 
-    if (!options.tooltip)
-    {
-      this.tooltip = Util.titleCase(name.replace(/[\_\-\.]/g, " "))
+      super(baseid, Object.assign({drawEdges: true}, options, {width, height}))
+
+      if (!options.tooltip)
+      {
+        this.tooltip = Util.titleCase(name.replace(/[\_\-\.]/g, " "))
+      }
+
+      this.image = image
+      this.previewSrc = image
+      this.image.decode().then(() => this.updateBrush()).catch(e => {
+        console.warn("Couldn't decode brush image", e)
+        this.invalid = true
+      })
     }
-
-    this.image = image
-    this.previewSrc = image
-    this.image.decode().then(() => this.updateBrush())
+    catch (e)
+    {
+      console.warn("Couldn't load brush", e)
+      this.invalid = true
+    }
   }
 
   createBrush() {
     if (!this.image) return;
     if (!this.image.complete) return
+    if (this.invalid) return;
 
     let ctx = this.overlayCanvas.getContext("2d")
 

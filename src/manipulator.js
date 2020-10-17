@@ -449,7 +449,7 @@ AFRAME.registerComponent('manipulator', {
         this.resetZoom = false
       }
 
-      if (this.target.manipulatorConstraint) this.target.manipulatorConstraint()
+      if (this.target.manipulatorConstraint) this.target.manipulatorConstraint(t, dt)
       this.system.postManipulation(this.target)
     }
   }
@@ -808,3 +808,40 @@ AFRAME.registerComponent('lever', {
 //     this.el.object3D.matrix.lookAt(this.el.object3D, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
 //   }
 // })
+
+// Makes the entity slow to move with the manipulator, making it feel like it
+// has weight.
+AFRAME.registerComponent('manipulator-weight', {
+  schema: {
+    // Either `'sticky'` or `'slow'`. In 'slow' mode, the entity will eventually
+    // catch up to the user's hand. In sticky mode, the user must move their
+    // hand further and further in order to keep moving the object.
+    type: {default: 'sticky', oneOf: ['sticky', 'slow']},
+    weight: {default: 0.8}
+  },
+  events: {
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        this.lastPos.copy(this.el.object3D.position)
+        this.lastRot.copy(this.el.object3D.quaternion)
+      }
+    }
+  },
+  init() {
+    this.lastPos = new THREE.Vector3()
+    this.lastRot = new THREE.Quaternion()
+    var weight
+    this.el.manipulatorConstraint = (t, dt) => {
+      weight = this.data.weight
+      if (this.data.type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 30, 0, 1)
+
+      this.el.object3D.position.lerp(this.lastPos, weight)
+      this.el.object3D.quaternion.slerp(this.lastRot, weight)
+
+      if (this.data.type === 'slow') {
+        this.lastPos.copy(this.el.object3D.position)
+        this.lastRot.copy(this.el.object3D.quaternion)
+      }
+    }
+  }
+})
