@@ -39,6 +39,30 @@ If you want to include *all* VARTISTE assets in your project, you just need an
 </a-scene>
 ```
 
+## Customization
+
+You can optionally customize which components and systems are registered by the
+aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefined` (default) or be an object having any of the following properties:
+
+- `excludeComponents`: Array of strings specifying which components, systems, or
+  systemComponents specifically to exclude from being registered
+- `includeComponents`: Array of strings specifying which components, systems, or
+  systemComponents to be registered. All other components, systems, and
+  systemComponents will be excluded.
+- `excludeFiles`: Array of strings specifying all aframe-vartiste-toolkit source
+  code files (from [the component reference](https://vartiste.xyz/docs.html)) to
+  exclude entirely from registration. All components, systems, and
+  systemComponents in those files will *not* be registered. Any classes in those
+  files will not be defined.
+- `includeFiles`: Array of strings specifying which aframe-vartiste-toolkit
+  source code files (from [the component
+  reference](https://vartiste.xyz/docs.html)) to include in registration. All
+  components, systems, and systemComponents, and classes in other files will be
+  excluded.
+- `assetUrl`: VARTISTE Toolkit assets will be fetched from
+  `assetUrl/assets/####.###`. Use this option if you want to use webpack and
+  have a custom public-facing URL
+
 # Component Reference
 
 The full API and component reference can be found at
@@ -56,8 +80,17 @@ and contributions, both code-wise and documentation-wise are welcome.
   <title>VARTISTE Toolkit Demo</title>
   <script src="https://aframe.io/releases/1.0.4/aframe.js"></script>
 
-  <!--Just include the toolkit js file-->
-  <script src="/vartiste-toolkit.js"></script>
+  <!-- You can specify components / systems, or files to exclude from being registered -->
+  <script>VARTISTE_TOOLKIT = {
+      /*excludeComponents: ["frame"], */ // Will exclude "frame" component
+      /*includeComponents: ["shelf", "hdri-environment"], */ // Will include *ONLY* the shelf component and hdri-environment system
+      /*excludeFiles: ['icon-button'], */ // Will exclude all components found in  aframe-vartiste-toolkit source file 'icon-button.js'
+      /*includeFiles: ['icon-button'], */ // Will include *only* the components found in  aframe-vartiste-toolkit source file 'icon-button.js'
+      /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
+    }</script>
+
+  <!--Just include the toolkit js file from a CDN-->
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
 </head>
 <body>
   <a-scene icon-button="shader: matcap" renderer="colorManagement: true">
