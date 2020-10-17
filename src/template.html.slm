@@ -2,6 +2,21 @@ doctype html
 html
   head
     title VARTISTE
+    meta name="title" content="VARTISTE - WebXR Drawing, Texturing, and more!"
+    meta name="description" content="VARTISTE is a virtual reality web app for 2D drawing and image editing, and 3D model texturing."
+
+    meta property="og:type" content="website"
+    meta property="og:url" content="https://vartiste.xyz/"
+    meta property="og:title" content="VARTISTE - WebXR Drawing, Texturing, and more!"
+    meta property="og:description" content="VARTISTE is a virtual reality web app for 2D drawing and image editing, and 3D model texturing."
+    meta property="og:image" content="https://vartiste.xyz/preview.jpg"
+
+    meta property="twitter:card" content="summary_large_image"
+    meta property="twitter:url" content="https://vartiste.xyz/"
+    meta property="twitter:title" content="VARTISTE - WebXR Drawing, Texturing, and more!"
+    meta property="twitter:description" content="VARTISTE is a virtual reality web app for 2D drawing and image editing, and 3D model texturing."
+    meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
+
     script src="https://aframe.io/releases/1.0.4/aframe.js"
   body
     header#need-help-notification
