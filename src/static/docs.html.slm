@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title VARTISTE Toolkit Reference
+    title aframe-vatiste-toolkit Documentation and Reference
   body
     header
       img src="../assets/vartiste.png" class="logo"
