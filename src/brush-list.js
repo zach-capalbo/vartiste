@@ -38,6 +38,6 @@ const BrushList = [
   new StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false}),
   new StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false}),
 //  new StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
-]
+].filter(b => !b.invalid)
 
 export { BrushList }

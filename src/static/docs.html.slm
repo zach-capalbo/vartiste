@@ -2,6 +2,22 @@ doctype html
 html
   head
     title aframe-vatiste-toolkit Documentation and Reference
+    - let title = "aframe-vatiste-toolkit Documentation and Reference"
+    - let desc = `The VARTISTE toolkit is a collection of components developed while creating VARTISTE. I've compiled them into a stand-alone module in the hopes that it might be useable to folks to jump start their own projects.`;
+    meta name="title" content=title
+    meta name="description" content=desc
+
+    meta property="og:type" content="website"
+    meta property="og:url" content="https://vartiste.xyz/"
+    meta property="og:title" content= title
+    meta property="og:description" content=desc
+    meta property="og:image" content="https://vartiste.xyz/preview.jpg"
+
+    meta property="twitter:card" content="summary_large_image"
+    meta property="twitter:url" content="https://vartiste.xyz/"
+    meta property="twitter:title" content=title
+    meta property="twitter:description" content=desc
+    meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
   body
     header
       img src="../assets/vartiste.png" class="logo"
