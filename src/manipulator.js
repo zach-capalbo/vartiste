@@ -568,7 +568,7 @@ AFRAME.registerComponent('lock-up', {
 AFRAME.registerComponent('grab-activate', {
   events: {
     stateremoved: function(e) {
-      if (e.detail === 'grab-activated')
+      if (e.detail === 'grab-activated' && e.target === this.el)
       {
         this.init()
       }
@@ -576,7 +576,7 @@ AFRAME.registerComponent('grab-activate', {
   },
   init() {
     let activate = (e) => {
-      if (e.detail === 'grabbed') {
+      if (e.detail === 'grabbed' && e.target === this.el) {
         this.el.emit('activate')
         this.el.removeEventListener('stateadded', activate)
         this.el.addState('grab-activated')

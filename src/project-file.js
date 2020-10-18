@@ -146,6 +146,13 @@ class ProjectFile {
       {
         el.setAttribute('preactivate-tooltip', tool.tooltip)
       }
+      if ('componentDependencies' in tool)
+      {
+        for (let dependency in tool.componentDependencies)
+        {
+          el.setAttribute(dependency, tool.componentDependencies[dependency])
+        }
+      }
       let matrix = new THREE.Matrix4()
       matrix.fromArray(tool.matrix)
       Util.whenLoaded(el, () => {
@@ -232,10 +239,18 @@ class ProjectFile {
       let lockedComponent = el.components[data.lockedComponent]
       el.object3D.updateMatrixWorld()
 
+      let dependencies = {}
+      for (let dependency of data.lockedComponentDependencies)
+      {
+        if (!el.hasAttribute(dependency)) continue
+        dependencies[dependency] = el.getAttribute(dependency)
+      }
+
       obj.tools.push({
         component: data.lockedComponent,
         componentData: lockedComponent.stringify(lockedComponent.data),
-        matrix: el.object3D.matrixWorld.elements
+        matrix: el.object3D.matrixWorld.elements,
+        componentDependencies: dependencies,
       })
     })
 

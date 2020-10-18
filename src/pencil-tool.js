@@ -94,6 +94,8 @@ AFRAME.registerComponent('pencil-tool', {
   init() {
     this.el.classList.add('grab-root')
 
+    this.el.setAttribute('six-dof-tool', 'lockedComponentDependencies', ['manipulator-weight'])
+
     this.el.sceneEl.systems['button-caster'].install(['bbutton'])
 
     for (let s of this.data.extraStates)
@@ -367,6 +369,12 @@ AFRAME.registerComponent('pencil-tool', {
       lockedColor: Color(`hsl(${Math.random() * 360}, 100%, 80%)`).rgb().hex(),
     }))
     clone.setAttribute('six-dof-tool', {lockedClone: true, lockedComponent: 'pencil-tool'})
+
+    for (let dependency of this.el.components['six-dof-tool'].data.lockedComponentDependencies)
+    {
+      if (!this.el.hasAttribute(dependency)) continue
+      clone.setAttribute(dependency, this.el.getAttribute(dependency))
+    }
 
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
@@ -687,6 +695,7 @@ AFRAME.registerComponent('six-dof-tool', {
   schema: {
     lockedClone: {default: false},
     lockedComponent: {type: 'string'},
+    lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
   },
   events: {
