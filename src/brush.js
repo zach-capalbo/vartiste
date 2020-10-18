@@ -700,10 +700,15 @@ class LineBrush extends Brush
 }
 
 class StretchBrush extends LineBrush {
-  constructor(baseid, name, options = {}) {
+  constructor(baseid, name, {
+    switchbackAngle = 140,
+    ...options} = {})
+  {
     super(baseid, options)
 
     let {textured} = options
+
+    this.switchbackAngle = switchbackAngle
 
     let image
 
@@ -755,7 +760,7 @@ class StretchBrush extends LineBrush {
         oldVec.normalize()
         newVec.normalize()
         let angle = oldVec.angleTo(newVec) * 180 / Math.PI;
-        if (angle > 140 || angle < - 140)
+        if (angle > this.switchbackAngle || angle < - this.switchbackAngle)
         {
           // console.log("Switchback", angle, oldVec, newVec)
           this.endDrawing(ctx)
