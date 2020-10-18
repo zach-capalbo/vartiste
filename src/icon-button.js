@@ -159,13 +159,14 @@ AFRAME.registerComponent('icon-button', {
     if (buttonStyle.buttonType === 'plane')
     {
       bg = new THREE.Mesh(this.system.frontGeometry, this.system.bgMaterial)
+      bg.position.set(0,0,- 0.01)
     }
     else
     {
       bg = new THREE.Mesh(this.system.geometry, this.system.bgMaterial)
+      bg.position.set(0,0,- depth / 2)
     }
 
-    bg.position.set(0,0,- depth / 2)
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg
 
