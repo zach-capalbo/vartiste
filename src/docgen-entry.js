@@ -51,6 +51,7 @@ async function addDocumentation(src)
   require('./hand-tracking')
   require('./hdri-environment')
   require('./fix-oculus-steamvr')
+  require('./artist-positioning')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

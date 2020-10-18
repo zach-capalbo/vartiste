@@ -67,3 +67,18 @@ AFRAME.registerSystem('paint-system', {
     this.el.emit('rotatebrushchanged', shouldRotate)
   }
 })
+
+AFRAME.registerComponent('brush-loader', {
+  schema: {
+    type: {type: 'string'}
+  },
+  init() {
+
+  },
+  update(oldData) {
+    if (this.data.type !== oldData.data.type)
+    {
+      
+    }
+  }
+})
