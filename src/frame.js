@@ -99,7 +99,7 @@ AFRAME.registerComponent("frame", {
       title.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
       title.setAttribute('material', 'color: #26211c; shader: flat')
       title.setAttribute('position', `${- width / 4 + 0.055} ${height / 2 + 0.055} 0`)
-      title.setAttribute('text', `color: #FFF; width: ${width / 2}; align: left; value: ${this.data.name}; wrapCount: 20`)
+      title.setAttribute('text', `color: #FFF; width: ${width / 2}; align: left; value: ${this.data.name}; wrapCount: 20; zOffset: 0.005`)
       title.setAttribute('class', 'raycast-invisible')
       this.el.append(title)
       this.objects.push(title.object3D)
@@ -150,7 +150,7 @@ AFRAME.registerComponent("frame", {
     button.setAttribute('icon-button', icon)
     button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
     button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
-    button.setAttribute('scale', `0.3 0.3 1`)
+    button.setAttribute('scale', `0.3 0.3 0.3`)
     this.buttonRow.append(button)
     this.objects.push(button)
     return button
