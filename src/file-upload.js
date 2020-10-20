@@ -83,6 +83,8 @@ async function addGlbViewer(file) {
     document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
   }
 
+  let startingLayer = compositor.activeLayer
+
   let loader = new THREE.GLTFLoader()
 
   let buffer = await file.arrayBuffer()
@@ -119,17 +121,27 @@ async function addGlbViewer(file) {
 
     for (let mode of ["map"].concat(THREED_MODES))
     {
-      if (material[mode])
+      if (material[mode] || mode === 'map')
       {
         if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
-        let image = material[mode].image
+        let image = material[mode] ? material[mode].image : undefined
         let {width, height} = compositor
         let layer = new Layer(width, height)
         let layerCtx = layer.canvas.getContext('2d')
         layerCtx.save()
-        layerCtx.translate(width / 2, height / 2)
+
         //layerCtx.scale(1, -1)
-        layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+        if (!image && material.color)
+        {
+          console.log("coloring", material.color)
+          layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+          layerCtx.fillRect(0, 0, width, height)
+        }
+        else
+        {
+          layerCtx.translate(width / 2, height / 2)
+          layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+        }
         layerCtx.restore()
         if (mode !== "map")
         {
@@ -139,7 +151,7 @@ async function addGlbViewer(file) {
         layer.transform.scale.y = currentBox.max.y - currentBox.min.y
         layer.transform.translation.x = width * ((currentBox.min.x + currentBox.max.x) / 2 - 0.5)
         layer.transform.translation.y = height * ((currentBox.min.y + currentBox.max.y) / 2 - 0.5)
-        compositor.addLayer(compositor.layers.length - 1, {layer})
+        compositor.addLayer(0, {layer})
       }
     }
   }
@@ -147,21 +159,36 @@ async function addGlbViewer(file) {
   if (combineMaterials)
   {
     model.scene.traverse(o => {
-      if (o.material)
+
+      if (o.material && o.geometry.attributes.uv)
       {
+        let attr = o.geometry.attributes.uv
         let geometry = o.geometry
         let currentBox = materialBoxes[o.material.uuid]
-        geometry = geometry.toNonIndexed()
-        for (let i in geometry.attributes.uv.array) {
-          if (i %2 == 0) {
-            geometry.attributes.uv.array[i] = THREE.Math.mapLinear(geometry.attributes.uv.array[i], 0, 1, currentBox.min.x, currentBox.max.x)
-          }
-          else
+        //geometry = geometry.toNonIndexed()
+
+        if (attr.data)
+        {
+          for (let i = 0; i < attr.count; ++i)
           {
-            geometry.attributes.uv.array[i] = THREE.Math.mapLinear(geometry.attributes.uv.array[i], 0, 1, currentBox.min.y, currentBox.max.y)
+            attr.setXY(i,
+              THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
+              THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
           }
         }
-        o.geometry = geometry
+        else
+        {
+          for (let i in geometry.attributes.uv.array) {
+            if (i %2 == 0) {
+              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
+            }
+            else
+            {
+              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
+            }
+          }
+        }
+        //o.geometry = geometry
         geometry.attributes.uv.needsUpdate = true
       }
     })
@@ -183,8 +210,9 @@ async function addGlbViewer(file) {
         deleteLayers.push(layer)
       }
       if (deleteLayers.length === 0) continue
-      compositor.addLayer(compositor.layers.length - 1, {layer: saveLayer})
+      compositor.addLayer(0, {layer: saveLayer})
       for (let layer of deleteLayers) {
+        if (layer !== startingLayer)
         compositor.deleteLayer(layer)
       }
     }
@@ -194,6 +222,8 @@ async function addGlbViewer(file) {
   {
     Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
+
+  compositor.activateLayer(startingLayer)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
 }

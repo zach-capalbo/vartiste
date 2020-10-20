@@ -212,6 +212,13 @@ class VARTISTEUtil {
 
     return boxes
   }
+
+  uvWrapClamp(val) {
+    val = val % 1.0
+    //v = (v === 0 && val > 0) ? 1.0 : v
+    //v = (v < 0) ?  1.0 - v : v
+    return val
+  }
 }
 
 const Util = new VARTISTEUtil();
