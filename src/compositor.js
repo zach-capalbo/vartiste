@@ -1020,6 +1020,24 @@ class CompositorFinder {
     return document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
   }
 
+  get meshes() {
+    if (this.mesh === this._cachedMeshesMesh) return this._meshes
+
+    let traverseObjects = [document.getElementById('composition-view').getObject3D('mesh'), this.el.getObject3D('mesh')]
+
+    this._meshes = []
+
+    for (let obj of traverseObjects)
+    {
+      if (!obj) continue
+      obj.traverse(o => {
+        if (o.material === this.material) this._meshes.push(o)
+      })
+    }
+
+    return this._meshes
+  }
+
   get object3D() {
     let compositionView = document.querySelector('#composition-view')
     if (compositionView.getObject3D('mesh')) return compositionView.object3D

@@ -39,19 +39,39 @@ Util.registerComponentSystem('volumetrics', {
     preUndoCanvas.height = Compositor.component.height
   },
   initializeGeometry() {
-    let geometry = Compositor.mesh.geometry.toNonIndexed()
     let proc = this.proc
-    proc.vertexPositions = geometry.attributes.uv.array
-    proc.hasDoneInitialUpdate = false
-    proc.createVertexBuffer({name: "a_vertexPosition", list: geometry.attributes.position.array, size: geometry.attributes.position.itemSize})
 
-    let vertexIndex = []
-    vertexIndex.length = geometry.attributes.position.count
-    for (let i = 0; i < geometry.attributes.position.count; i++)
+    let totalUVLength = 0
+    let totalVertexLength = 0
+    let allUvArrays = []
+    let vertexPositions = []
+    for (let mesh of Compositor.meshes)
     {
-      vertexIndex[i] = i;
+      let geometry = mesh.geometry.toNonIndexed()
+      allUvArrays.push(geometry.attributes.uv.array)
+      totalUVLength += geometry.attributes.uv.array.length
+      vertexPositions.push(geometry.attributes.position.array)
+      totalVertexLength += geometry.attributes.position.array.length
     }
-    // proc.createVertexBuffer({name: "a_vertexIndex", list: vertexIndex, size: 1})
+
+    proc.vertexPositions = new Float32Array(totalUVLength)
+    let arrayIdx = 0;
+    for (let array of allUvArrays)
+    {
+      proc.vertexPositions.set(array, arrayIdx)
+      arrayIdx += array.length
+    }
+
+    proc.hasDoneInitialUpdate = false
+
+    let vertexFloats = new Float32Array(totalVertexLength)
+    arrayIdx = 0;
+    for (let array of vertexPositions)
+    {
+      vertexFloats.set(array, arrayIdx)
+      arrayIdx += array.length
+    }
+    proc.createVertexBuffer({name: "a_vertexPosition", list: vertexFloats, size: 3})
 
     proc.initialUpdate()
 
