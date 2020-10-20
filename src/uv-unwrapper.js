@@ -107,42 +107,10 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     this.shapes.push(sphere)
   },
-  divideCanvasRegions() {
-    // There's a math way to do this. I can't figure it out right now...
-    let numberOfRegions = this.shapes.length
-    let numberOfHorizontalCuts = 1
-    let numberOfVerticalCuts = 1
 
-    while (numberOfHorizontalCuts * numberOfVerticalCuts < numberOfRegions)
-    {
-      if (numberOfVerticalCuts > numberOfHorizontalCuts)
-      {
-        numberOfHorizontalCuts++
-      }
-      else
-      {
-        numberOfVerticalCuts++
-      }
-    }
-
-    let boxes = []
-    for (let y = 0; y < numberOfHorizontalCuts; ++y)
-    {
-      for (let x = 0; x < numberOfVerticalCuts; ++x)
-      {
-        let newBox = new THREE.Box2(new THREE.Vector2(x / numberOfVerticalCuts, y / numberOfHorizontalCuts),
-                                  new THREE.Vector2((x + 1) / numberOfVerticalCuts, (y + 1) / numberOfHorizontalCuts))
-
-        newBox.expandByScalar(- this.data.margin)
-        boxes.push(newBox)
-      }
-    }
-
-    return boxes
-  },
   unwrap()
   {
-    let divisions = this.divideCanvasRegions()
+    let divisions = Util.divideCanvasRegions(this.shapes.length, {margin: this.data.margin})
     let geometry = Compositor.mesh.geometry
     let divisionIdx = 0
 

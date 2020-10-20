@@ -93,6 +93,10 @@ AFRAME.registerSystem('vartiste-assets', {
       assets.append(loadAsset('./close-circle-outline.png'))
     }
 
+    if (!assets.querySelector('#asset-reset-orientation'))
+    {
+      assets.append(loadAsset('./reset-orientation.jpg'))
+    }
   }
 })
 
@@ -122,6 +126,7 @@ if (checkFile('./leap-hand')) require('./leap-hand')
 if (checkFile('./hand-tracking')) require('./hand-tracking')
 if (checkFile('./hdri-environment')) require('./hdri-environment')
 if (checkFile('./fix-oculus-steamvr')) require('./fix-oculus-steamvr')
+if (checkFile('./artist-positioning')) require('./artist-positioning')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')

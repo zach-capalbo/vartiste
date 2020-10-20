@@ -5,6 +5,15 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 
 class Brush {
+  static schema() {
+    return {
+      baseid: {type: 'string'},
+      color: {type: 'color'},
+      opacity: {default: 1.0},
+      scale: {default: 1.0},
+      tooltip: {type: 'string'},
+    }
+  }
   constructor(baseid) {
     this.ignoredAttributes = []
     this.baseid = baseid
@@ -48,6 +57,21 @@ class Brush {
 }
 
 class ProceduralBrush extends Brush {
+  static schema() {
+    return Object.assign({
+      width: {default: 20},
+      height: {default: 20},
+      distanceBased: {default: false},
+      maxDistance: {default: 1.5},
+      connected: {default: false},
+      autoRotate: {default: false},
+      dragRotate: {default: false},
+      hqBlending: {default: false},
+      drawEdges: {default: false},
+      invertScale: {default: false},
+      minMovement: {type: 'float', default: undefined},
+    }, super.schema())
+  }
   constructor(baseid, {
     width=20,
     height=20,
@@ -318,6 +342,11 @@ class ProceduralBrush extends Brush {
 }
 
 class ImageBrush extends ProceduralBrush{
+  static schema() {
+    return Object.assign({
+      src: {type: 'map'}
+    }, super.schema())
+  }
   constructor(baseid, name, options = {}) {
     let image;
 
@@ -352,6 +381,7 @@ class ImageBrush extends ProceduralBrush{
     catch (e)
     {
       console.warn("Couldn't load brush", e)
+      super(baseid, {})
       this.invalid = true
     }
   }
@@ -700,10 +730,15 @@ class LineBrush extends Brush
 }
 
 class StretchBrush extends LineBrush {
-  constructor(baseid, name, options = {}) {
+  constructor(baseid, name, {
+    switchbackAngle = 140,
+    ...options} = {})
+  {
     super(baseid, options)
 
     let {textured} = options
+
+    this.switchbackAngle = switchbackAngle
 
     let image
 
@@ -755,7 +790,7 @@ class StretchBrush extends LineBrush {
         oldVec.normalize()
         newVec.normalize()
         let angle = oldVec.angleTo(newVec) * 180 / Math.PI;
-        if (angle > 140 || angle < - 140)
+        if (angle > this.switchbackAngle || angle < - this.switchbackAngle)
         {
           // console.log("Switchback", angle, oldVec, newVec)
           this.endDrawing(ctx)

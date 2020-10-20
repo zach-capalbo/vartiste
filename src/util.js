@@ -179,6 +179,46 @@ class VARTISTEUtil {
   debugCanvas(canvas) {
     document.querySelector('a-scene').systems['settings-system'].download(canvas.toDataURL(), {extension: 'png', suffix: 'debug'}, "Debug Image")
   }
+
+  divideCanvasRegions(numberOfRegions, {margin = 0} = {}) {
+    // There's a math way to do this. I can't figure it out right now...
+    let numberOfHorizontalCuts = 1
+    let numberOfVerticalCuts = 1
+
+    while (numberOfHorizontalCuts * numberOfVerticalCuts < numberOfRegions)
+    {
+      if (numberOfVerticalCuts > numberOfHorizontalCuts)
+      {
+        numberOfHorizontalCuts++
+      }
+      else
+      {
+        numberOfVerticalCuts++
+      }
+    }
+
+    let boxes = []
+    for (let y = 0; y < numberOfHorizontalCuts; ++y)
+    {
+      for (let x = 0; x < numberOfVerticalCuts; ++x)
+      {
+        let newBox = new THREE.Box2(new THREE.Vector2(x / numberOfVerticalCuts, y / numberOfHorizontalCuts),
+                                  new THREE.Vector2((x + 1) / numberOfVerticalCuts, (y + 1) / numberOfHorizontalCuts))
+
+        newBox.expandByScalar(- margin)
+        boxes.push(newBox)
+      }
+    }
+
+    return boxes
+  }
+
+  uvWrapClamp(val) {
+    val = val % 1.0
+    //v = (v === 0 && val > 0) ? 1.0 : v
+    //v = (v < 0) ?  1.0 - v : v
+    return val
+  }
 }
 
 const Util = new VARTISTEUtil();

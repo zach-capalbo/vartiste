@@ -134,7 +134,7 @@ class ButtonMaps {
           }
         }
 
-        where.el.addState(this.maps[""][button])
+        if (this.maps[""] && this.maps[""][button]) where.el.addState(this.maps[""][button])
       })
 
       where.el.addEventListener(button + 'up', e => {

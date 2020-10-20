@@ -6,6 +6,9 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
   a-box#reset-orientation-box width="500" height="500" depth="500" material="src: #asset-reset-orientation; side: back; shader: flat" visible="false"
 
+  /a-entity#brush-list
+    /a-entity brush-loader="brushType: ImageBrush"
+
   a-entity#world-root
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"

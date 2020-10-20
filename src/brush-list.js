@@ -32,11 +32,11 @@ const BrushList = [
   new StretchBrush('stretch_lines1',"silky_textured", {tooltip: "Silky", textured: true}),
   new StretchBrush('stretch_leaf',"stamp_leaf1", {tooltip: "Leaf", textured: true}),
   new StretchBrush('stretch_ink',"ink", {tooltip: "Ink", textured: false}),
-  new StretchBrush('stretch_thick',"thick_paint", {tooltip: "Thick Paint", textured: true}),
-  new StretchBrush('stretch_water2',"watercolor", {tooltip: "Watercolor", textured: false}),
+  new StretchBrush('stretch_thick',"thick_paint", {tooltip: "Thick Paint", textured: true, switchbackAngle: 100}),
+  new StretchBrush('stretch_water2',"watercolor", {tooltip: "Watercolor", textured: false, switchbackAngle: 90}),
   new StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "Pencil Stroke", textured: false}),
-  new StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false}),
-  new StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false}),
+  new StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false, switchbackAngle: 90}),
+  new StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
 //  new StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
 ].filter(b => !b.invalid)
 

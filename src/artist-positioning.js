@@ -25,6 +25,17 @@ Util.registerComponentSystem('artist-root', {
     document.querySelectorAll('*[cursor]').forEach(el => {
       el.addEventListener('mouseup', () => this.acceptOrientationPrompt())
     })
+
+    let resetBox = this.el.sceneEl.querySelector('#reset-orientation-box')
+    if (!resetBox)
+    {
+      resetBox = document.createElement('a-box')
+      resetBox.setAttribute('width', '500')
+      resetBox.setAttribute('depth', '500')
+      resetBox.setAttribute('material', "src: #asset-reset-orientation; side: back; shader: flat")
+      this.el.sceneEl.append(resetBox)
+    }
+    this.resetBox = resetBox
   },
 
   // Rotates the user's viewport left
@@ -66,25 +77,6 @@ Util.registerComponentSystem('artist-root', {
 
     let rotationMatrix = this.pool('rotMat', THREE.Matrix4)
 
-
-    // rotationMatrix.getInverse(rotationMatrix)
-    // rotationMatrix.extractRotation(targetObj.matrixWorld)
-
-
-    // cameraWorld.applyMatrix4(rotationMatrix)
-
-
-    // targetObj.matrix.lookAt(cameraWorld, new THREE.Vector3, targetObj.up)
-    // rotationMatrix.extractRotation(targetObj.matrix)
-    // rotationMatrix.getInverse(rotationMatrix)
-    // // targetObj.matrix.multiply(rotationMatrix)
-    // rotationMatrix.decompose(cameraWorld, targetObj.quaternion, cameraWorld)
-    //
-    // // Util.applyMatrix(targetObj.matrix, targetObj)
-    // targetObj.rotation.x = 0
-    // targetObj.rotation.z = 0
-    // targetObj.rotation.y = - targetObj.rotation.y
-
     let forward = this.pool('forward', THREE.Vector3)
     forward.set(0, 0, 1)
 
@@ -95,8 +87,9 @@ Util.registerComponentSystem('artist-root', {
   // Shows the prompt
   showOrientationResetPrompt() {
     this.waitingForPrompt = true
-    this.el.sceneEl.querySelector('#world-root').setAttribute('visible', false)
-    this.el.sceneEl.querySelector('#reset-orientation-box').setAttribute('visible', true)
+    let worldRoot = this.el.sceneEl.querySelector('#world-root')
+    if (worldRoot) worldRoot.setAttribute('visible', false)
+    this.resetBox.setAttribute('visible', true)
     this.el.sceneEl.emit('refreshobjects')
   },
   acceptOrientationPrompt() {
@@ -104,8 +97,9 @@ Util.registerComponentSystem('artist-root', {
     this.waitingForPrompt = false
 
     this.resetCameraLocation()
-    this.el.sceneEl.querySelector('#world-root').setAttribute('visible', true)
-    this.el.sceneEl.querySelector('#reset-orientation-box').setAttribute('visible', false)
+    let worldRoot = this.el.sceneEl.querySelector('#world-root')
+    if (worldRoot) worldRoot.setAttribute('visible', true)
+    this.resetBox.setAttribute('visible', false)
     this.el.sceneEl.emit('refreshobjects')
 
     return true

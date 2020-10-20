@@ -75,10 +75,15 @@ async function addGlbViewer(file) {
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
+  let compositor = Compositor.component
+  let {combineMaterials} = compositor.el.sceneEl.components['file-upload'].data
+
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
     document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
   }
+
+  let startingLayer = compositor.activeLayer
 
   let loader = new THREE.GLTFLoader()
 
@@ -94,33 +99,131 @@ async function addGlbViewer(file) {
     }
   })
 
-  let compositor = document.getElementById('canvas-view').components.compositor
-
   compositor.el.setAttribute('compositor', {wrapTexture: true})
 
+  let boxes
+  if (combineMaterials)
+  {
+    boxes = Util.divideCanvasRegions(Object.keys(materials).length)
+  }
+
+  let currentBoxId = 0
+  let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
+  let materialBoxes = {}
+  let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
   for (let material of Object.values(materials))
   {
+    if (combineMaterials)
+    {
+      currentBox = boxes[currentBoxId++]
+      materialBoxes[material.uuid] = currentBox
+    }
+
     for (let mode of ["map"].concat(THREED_MODES))
     {
-      if (material[mode])
+      if (material[mode] || mode === 'map')
       {
-        let image = material[mode].image
+        if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
+        let image = material[mode] ? material[mode].image : undefined
         let {width, height} = compositor
         let layer = new Layer(width, height)
         let layerCtx = layer.canvas.getContext('2d')
         layerCtx.save()
-        layerCtx.translate(width / 2, height / 2)
+
         //layerCtx.scale(1, -1)
-        layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+        if (!image && material.color)
+        {
+          console.log("coloring", material.color)
+          layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+          layerCtx.fillRect(0, 0, width, height)
+        }
+        else
+        {
+          layerCtx.translate(width / 2, height / 2)
+          layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+        }
         layerCtx.restore()
         if (mode !== "map")
         {
           layer.mode = mode
         }
-        compositor.addLayer(compositor.layers.length - 1, {layer})
+        layer.transform.scale.x = currentBox.max.x - currentBox.min.x
+        layer.transform.scale.y = currentBox.max.y - currentBox.min.y
+        layer.transform.translation.x = width * ((currentBox.min.x + currentBox.max.x) / 2 - 0.5)
+        layer.transform.translation.y = height * ((currentBox.min.y + currentBox.max.y) / 2 - 0.5)
+        compositor.addLayer(0, {layer})
       }
     }
   }
+
+  if (combineMaterials)
+  {
+    model.scene.traverse(o => {
+
+      if (o.material && o.geometry.attributes.uv)
+      {
+        let attr = o.geometry.attributes.uv
+        let geometry = o.geometry
+        let currentBox = materialBoxes[o.material.uuid]
+        //geometry = geometry.toNonIndexed()
+
+        if (attr.data)
+        {
+          for (let i = 0; i < attr.count; ++i)
+          {
+            attr.setXY(i,
+              THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
+              THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
+          }
+        }
+        else
+        {
+          for (let i in geometry.attributes.uv.array) {
+            if (i %2 == 0) {
+              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
+            }
+            else
+            {
+              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
+            }
+          }
+        }
+        //o.geometry = geometry
+        geometry.attributes.uv.needsUpdate = true
+      }
+    })
+
+    for (let mode of THREED_MODES)
+    {
+      let {width, height} = compositor
+      let saveLayer = new Layer(width, height)
+      saveLayer.mode = mode
+      let deleteLayers = []
+      for (let layer of compositor.layers)
+      {
+        if (layer.mode !== mode) continue
+        if (!saveLayer) {
+          saveLayer = layer
+          continue
+        }
+        compositor.mergeLayers(layer, saveLayer)
+        deleteLayers.push(layer)
+      }
+      if (deleteLayers.length === 0) continue
+      compositor.addLayer(0, {layer: saveLayer})
+      for (let layer of deleteLayers) {
+        if (layer !== startingLayer)
+        compositor.deleteLayer(layer)
+      }
+    }
+  }
+
+  if (Compositor.el.getAttribute('material').shader === 'flat')
+  {
+    Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
+  }
+
+  compositor.activateLayer(startingLayer)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
 }
@@ -162,7 +265,8 @@ async function addGlbReference(file) {
 
 Util.registerComponentSystem('file-upload', {
   schema: {
-
+    importSingleMaterial: {default: true},
+    combineMaterials: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {
