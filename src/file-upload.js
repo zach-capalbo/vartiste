@@ -75,6 +75,9 @@ async function addGlbViewer(file) {
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
+  let compositor = Compositor.component
+  let {combineMaterials} = compositor.el.sceneEl.components['file-upload'].data
+
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
     document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
@@ -94,12 +97,25 @@ async function addGlbViewer(file) {
     }
   })
 
-  let compositor = document.getElementById('canvas-view').components.compositor
-
   compositor.el.setAttribute('compositor', {wrapTexture: true})
 
+  let boxes
+  if (combineMaterials)
+  {
+    boxes = Util.divideCanvasRegions(Object.keys(materials).length)
+  }
+
+  let currentBoxId = 0
+  let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
+  let materialBoxes = {}
   for (let material of Object.values(materials))
   {
+    if (combineMaterials)
+    {
+      currentBox = boxes[currentBoxId++]
+      materialBoxes[material.uuid] = currentBox
+    }
+
     for (let mode of ["map"].concat(THREED_MODES))
     {
       if (material[mode])
@@ -117,7 +133,57 @@ async function addGlbViewer(file) {
         {
           layer.mode = mode
         }
+        layer.transform.scale.x = currentBox.max.x - currentBox.min.x
+        layer.transform.scale.y = currentBox.max.y - currentBox.min.y
+        layer.transform.translation.x = width * ((currentBox.min.x + currentBox.max.x) / 2 - 0.5)
+        layer.transform.translation.y = height * ((currentBox.min.y + currentBox.max.y) / 2 - 0.5)
         compositor.addLayer(compositor.layers.length - 1, {layer})
+      }
+    }
+  }
+
+  if (combineMaterials)
+  {
+    model.scene.traverse(o => {
+      if (o.material)
+      {
+        let geometry = o.geometry
+        let currentBox = materialBoxes[o.material.uuid]
+        geometry = geometry.toNonIndexed()
+        for (let i in geometry.attributes.uv.array) {
+          if (i %2 == 0) {
+            geometry.attributes.uv.array[i] = THREE.Math.mapLinear(geometry.attributes.uv.array[i], 0, 1, currentBox.min.x, currentBox.max.x)
+          }
+          else
+          {
+            geometry.attributes.uv.array[i] = THREE.Math.mapLinear(geometry.attributes.uv.array[i], 0, 1, currentBox.min.y, currentBox.max.y)
+          }
+        }
+        o.geometry = geometry
+        geometry.attributes.uv.needsUpdate = true
+      }
+    })
+
+    for (let mode of THREED_MODES)
+    {
+      let {width, height} = compositor
+      let saveLayer = new Layer(width, height)
+      saveLayer.mode = mode
+      let deleteLayers = []
+      for (let layer of compositor.layers)
+      {
+        if (layer.mode !== mode) continue
+        if (!saveLayer) {
+          saveLayer = layer
+          continue
+        }
+        compositor.mergeLayers(layer, saveLayer)
+        deleteLayers.push(layer)
+      }
+      if (deleteLayers.length === 0) continue
+      compositor.addLayer(compositor.layers.length - 1, {layer: saveLayer})
+      for (let layer of deleteLayers) {
+        compositor.deleteLayer(layer)
       }
     }
   }
@@ -162,7 +228,8 @@ async function addGlbReference(file) {
 
 Util.registerComponentSystem('file-upload', {
   schema: {
-
+    importSingleMaterial: {default: true},
+    combineMaterials: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {

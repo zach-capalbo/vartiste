@@ -1,4 +1,5 @@
 import {BrushList} from './brush-list.js'
+import * as Brush from './brush.js'
 
 // Manages drawing options such as paint brush and color
 AFRAME.registerSystem('paint-system', {
@@ -68,17 +69,27 @@ AFRAME.registerSystem('paint-system', {
   }
 })
 
+const DEFAULT_BRUSH_LOADER_SCHEMA = {
+  brushType: {type: 'string'}
+}
+
 AFRAME.registerComponent('brush-loader', {
-  schema: {
-    type: {type: 'string'}
-  },
+  schema: DEFAULT_BRUSH_LOADER_SCHEMA,
   init() {
 
   },
-  update(oldData) {
-    if (this.data.type !== oldData.data.type)
+  updateSchema(newData) {
+    console.log("Brush schema", this.data, newData)
+    if (!this.data || newData.brushType !== this.data.brushType)
     {
-      
+      this.extendSchema(DEFAULT_BRUSH_LOADER_SCHEMA)
+    }
+  },
+  update(oldData) {
+    console.log("Brush update", this.data, oldData)
+    if (!oldData || this.data.brushType !== oldData.brushType)
+    {
+        this.brush = new Brush[this.data.brushType]("","", this.data)
     }
   }
 })
