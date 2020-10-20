@@ -48,6 +48,7 @@ Util.registerComponentSystem('volumetrics', {
     for (let mesh of Compositor.meshes)
     {
       let geometry = mesh.geometry.toNonIndexed()
+      if (!geometry.attributes.uv) continue
       allUvArrays.push(geometry.attributes.uv.array)
       totalUVLength += geometry.attributes.uv.array.length
       vertexPositions.push(geometry.attributes.position.array)
