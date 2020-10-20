@@ -108,6 +108,7 @@ async function addGlbViewer(file) {
   let currentBoxId = 0
   let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
   let materialBoxes = {}
+  let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
   for (let material of Object.values(materials))
   {
     if (combineMaterials)
@@ -120,6 +121,7 @@ async function addGlbViewer(file) {
     {
       if (material[mode])
       {
+        if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
         let image = material[mode].image
         let {width, height} = compositor
         let layer = new Layer(width, height)
@@ -186,6 +188,11 @@ async function addGlbViewer(file) {
         compositor.deleteLayer(layer)
       }
     }
+  }
+
+  if (Compositor.el.getAttribute('material').shader === 'flat')
+  {
+    Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
