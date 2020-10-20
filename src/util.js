@@ -117,7 +117,7 @@ class VARTISTEUtil {
   // Returns the `THREE.Object3D` that contains the true world transformation
   // matrix for the camera. Works both on desktop and in VR
   cameraObject3D() {
-     return document.querySelector('a-scene').is('vr-mode') ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
+     return document.querySelector('a-scene').is('vr-mode') && document.querySelector('a-scene').hasWebXR ? document.querySelector('#camera').getObject3D('camera-matrix-helper') : document.querySelector('#camera').object3D
   }
 
   // Brings `initialEl` right in front of the camera

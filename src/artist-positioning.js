@@ -36,6 +36,13 @@ Util.registerComponentSystem('artist-root', {
       this.el.sceneEl.append(resetBox)
     }
     this.resetBox = resetBox
+
+    Util.whenLoaded(this.el.sceneEl, () => {
+      if (this.el.sceneEl.is('vr-mode'))
+      {
+        this.resetCameraLocation()
+      }
+    })
   },
 
   // Rotates the user's viewport left
@@ -56,7 +63,27 @@ Util.registerComponentSystem('artist-root', {
   // Forces the camera back to it's original spot, no matter how the user has
   // moved around.
   resetCameraLocation() {
+  //   document.querySelector('#camera-offsetter').object3D.position.set(0, 0, 0);
+  //   document.querySelector('#camera-offsetter').object3D.rotation.set(0, 0, 0);
+  //
+  //   document.querySelector('#artist-root').object3D.rotation.set(0, 0, 0)
+  //   document.querySelector('#artist-root').object3D.position.set(0, 0, 0)
+  //
+  //   let positioner = document.querySelector('#camera-reset-el').object3D;
+  //   let cameraObj = Util.cameraObject3D()
+  //
+  //   document.querySelector('#artist-root').object3D.position.set(
+  //     positioner.position.x - cameraObj.position.x,
+  //     positioner.position.y - cameraObj.position.y,
+  //     positioner.position.z - cameraObj.position.z
+  //   )
+  //
+  //   console.log(document.querySelector('#artist-root').object3D.position,
+  // positioner.position, cameraObj.position)
+  //
+  //   return
     this.resetPosition()
+
     let targetObj = document.querySelector('#artist-root').object3D
     let positioner = document.querySelector('#camera-reset-el')
     Util.positionObject3DAtTarget(targetObj, positioner.object3D)
