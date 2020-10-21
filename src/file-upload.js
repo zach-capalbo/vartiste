@@ -92,10 +92,12 @@ async function addGlbViewer(file) {
 
   let materials = {}
 
+  let materialId = (material) => material.map ? material.map.uuid : material.uuid;
+
   model.scene.traverse(o => {
     if (o.material)
     {
-      materials[o.material.uuid] = o.material
+      materials[materialId(o.material)] = o.material
     }
   })
 
@@ -116,7 +118,7 @@ async function addGlbViewer(file) {
     if (combineMaterials)
     {
       currentBox = boxes[currentBoxId++]
-      materialBoxes[material.uuid] = currentBox
+      materialBoxes[materialId(material)] = currentBox
     }
 
     for (let mode of ["map"].concat(THREED_MODES))
@@ -164,7 +166,7 @@ async function addGlbViewer(file) {
       {
         let attr = o.geometry.attributes.uv
         let geometry = o.geometry
-        let currentBox = materialBoxes[o.material.uuid]
+        let currentBox = materialBoxes[materialId(o.material)]
         //geometry = geometry.toNonIndexed()
 
         if (attr.data)
