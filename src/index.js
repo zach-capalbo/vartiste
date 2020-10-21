@@ -1,8 +1,6 @@
 // require('./framework/aframe.js')
 // require('aframe-environment-component')
-
 // require('aframe-leap-hands');
-
 
 require('./framework/GLTFExporter.js')
 require('./framework/valve-index-controls.js')
@@ -67,6 +65,7 @@ require('./artist-positioning')
 require('./fix-oculus-steamvr')
 require('./volumetrics')
 require('./quick-menu')
+// require('./text')
 
 require('./app.styl')
 

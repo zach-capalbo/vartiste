@@ -1,4 +1,4 @@
-a-entity.grab-root shelf="name: Mesh Tools Shelf" scale="0.3 0.3 1" visible="false"
+a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.3 1" visible="false"
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-delete" tooltip="Clear Existing UVs when unwrapping" toggle-button="target: a-scene; component: uv-unwrapper; property: autoClear"
     a-entity icon-button="#asset-web" tooltip="Add UV Unwrap Sphere" system-click-action="system: uv-unwrapper; action: createSphere"
