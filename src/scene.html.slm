@@ -4,8 +4,6 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
   == partial('./partials/artist-root.html.slm')
 
-  a-box#reset-orientation-box width="500" height="500" depth="500" material="src: #asset-reset-orientation; side: back; shader: flat" visible="false"
-
   /a-entity#brush-list
     /a-entity brush-loader="brushType: ImageBrush"
 

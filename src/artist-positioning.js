@@ -32,7 +32,9 @@ Util.registerComponentSystem('artist-root', {
       resetBox = document.createElement('a-box')
       resetBox.setAttribute('width', '500')
       resetBox.setAttribute('depth', '500')
+      resetBox.setAttribute('height', '500')
       resetBox.setAttribute('material', "src: #asset-reset-orientation; side: back; shader: flat")
+      resetBox.setAttribute('visible', false)
       this.el.sceneEl.append(resetBox)
     }
     this.resetBox = resetBox
