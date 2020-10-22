@@ -4,8 +4,6 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
 
   == partial('./partials/artist-root.html.slm')
 
-  a-box#reset-orientation-box width="500" height="500" depth="500" material="src: #asset-reset-orientation; side: back; shader: flat" visible="false"
-
   /a-entity#brush-list
     /a-entity brush-loader="brushType: ImageBrush"
 
@@ -30,7 +28,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
 
     a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.11243601320796098"
-      a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; name: UI Toggle Shelf"
+      a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; _name: UI Toggle Shelf"
         a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" lag-tooltip="" scale="2 2 2"
     a-entity#ui bypass-hidden-updates=""
       a-entity position="0 1.1 -0.5"
@@ -75,7 +73,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
         /position="0.09054198417802356 0.7048865773264197 0.2444668512173652" rotation="-40.66462661636558 4.7810367846616595 1.2064391677368893" scale="0.01017476950911433 0.010174769509113717 0.010174769509113718"
         /
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
-      a-entity position="0 0.6 -1.0"
+      a-entity position="0.03 1.0545312767040833 0.11243601320796098"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
       a-entity#reference-spawn position="0 1.6 -0.7"
   a-entity test-load-confirmation=""

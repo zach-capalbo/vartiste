@@ -46,12 +46,14 @@ AFRAME.registerComponent('quick-menu', {
       this.el.setAttribute('shelf', 'offset', '0 0 0')
       this.expanded = false
       this.el.querySelectorAll('.quick-menu-more').forEach(el => el.setAttribute('visible', false))
+      this.el.querySelector('.message').setAttribute('position', '0.07 -0.34 0')
     }
     else
     {
       this.el.setAttribute('shelf', 'height', 3)
       this.el.setAttribute('shelf', 'offset', '0 -1.0 0')
       this.el.querySelectorAll('.quick-menu-more').forEach(el => el.setAttribute('visible', true))
+      this.el.querySelector('.message').setAttribute('position', '0.07 -0.847 0')
       this.expanded = true
     }
     this.el.sceneEl.emit('refreshobjects')

@@ -922,7 +922,7 @@ AFRAME.registerComponent('compositor', {
 
     console.log("Fully loaded")
   },
-  resize(newWidth, newHeight, {resample = false} = {})
+  resize(newWidth, newHeight, {resample = false, resizeGeometry = true} = {})
   {
     Undo.clearAndResize(newWidth, newHeight)
     let oldWidth = this.width
@@ -957,14 +957,20 @@ AFRAME.registerComponent('compositor', {
     {
       if (resample)
       {
-        resampleCtx.drawImage(layer.canvas, 0, 0, width, height)
+        for (let canvas of layer.frames)
+        {
+
+          resampleCtx.drawImage(canvas, 0, 0, width, height)
+
+          canvas.width = width
+          canvas.height = height
+
+          canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+        }
       }
-
-      layer.resize(width, height)
-
-      if (resample)
+      else
       {
-        layer.canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+        layer.resize(width, height)
       }
     }
 
@@ -978,7 +984,10 @@ AFRAME.registerComponent('compositor', {
     {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
       let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
-      this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+      if (resizeGeometry)
+      {
+        this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+      }
       this.flipUVY()
     }
 

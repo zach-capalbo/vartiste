@@ -211,12 +211,12 @@ AFRAME.registerComponent('toolbox-shelf', {
   },
   applyFXAction(fx = "invert") {
     let layer = Compositor.component.activeLayer
-    let canvas = layer.canvas
+    let canvas = Compositor.drawableCanvas
     Undo.pushCanvas(canvas)
     let processor = new CanvasShaderProcessor({fx})
     processor.setInputCanvas(canvas)
     processor.update()
-    let ctx = Compositor.component.activeLayer.canvas.getContext('2d')
+    let ctx = canvas.getContext('2d')
     let oldOperation = ctx.globalCompositeOperation
     ctx.globalCompositeOperation = 'copy'
     ctx.drawImage(processor.canvas, 0, 0)

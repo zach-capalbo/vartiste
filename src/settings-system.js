@@ -4,6 +4,7 @@ import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transf
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
@@ -18,6 +19,7 @@ Util.registerComponentSystem('settings-system', {
     this.el.emit('projectnamechanged')
     this.mediumStabilizationAction()
     this.fullQualityAction()
+    Pool.init(this)
 
     this.clipboardInput = document.createElement('input')
     document.body.append(this.clipboardInput)
@@ -155,7 +157,7 @@ Util.registerComponentSystem('settings-system', {
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || []})
+      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
     })
 
     material.map.image = originalImage
@@ -198,6 +200,40 @@ Util.registerComponentSystem('settings-system', {
   },
   addModelView(model) {
     let viewer = document.getElementById('composition-view')
+
+    let rootObj = model.scene || model.scenes[0]
+
+    if (this.el.sceneEl.components['file-upload'].data.autoscaleModel)
+    {
+      let boundingBox = this.pool('boundingBox', THREE.Box3)
+      let tmpBox = this.pool('tmpBox', THREE.Box3)
+      let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
+      rootObj.updateMatrixWorld()
+
+      firstModel.geometry.computeBoundingBox()
+      boundingBox.copy(firstModel.geometry.boundingBox)
+      firstModel.updateMatrixWorld()
+      boundingBox.applyMatrix4(firstModel.matrixWorld)
+
+      rootObj.traverse(m => {
+        if (!m.geometry) return
+        m.geometry.computeBoundingBox()
+        m.updateMatrixWorld()
+        tmpBox.copy(m.geometry.boundingBox)
+        tmpBox.applyMatrix4(m.matrixWorld)
+        boundingBox.union(tmpBox)
+      })
+      let maxDimension = Math.max(boundingBox.max.x - boundingBox.min.x,
+                                  boundingBox.max.y - boundingBox.min.y,
+                                  boundingBox.max.z - boundingBox.min.z)
+      let targetScale = 0.5 / maxDimension
+      viewer.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
+      boundingBox.getCenter(viewer.object3D.position)
+      viewer.object3D.position.multiplyScalar(- targetScale)
+      viewer.object3D.position.z = boundingBox.min.z * targetScale
+
+    }
+
     viewer.setObject3D('mesh', model.scene || model.scenes[0])
     viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
 

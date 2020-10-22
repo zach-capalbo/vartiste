@@ -69,12 +69,10 @@ AFRAME.registerSystem('paint-system', {
   }
 })
 
-const DEFAULT_BRUSH_LOADER_SCHEMA = {
-  brushType: {type: 'string'}
-}
-
 AFRAME.registerComponent('brush-loader', {
-  schema: DEFAULT_BRUSH_LOADER_SCHEMA,
+  schema: {
+    brushType: {type: 'string'}
+  },
   init() {
 
   },
@@ -82,7 +80,7 @@ AFRAME.registerComponent('brush-loader', {
     console.log("Brush schema", this.data, newData)
     if (!this.data || newData.brushType !== this.data.brushType)
     {
-      this.extendSchema(DEFAULT_BRUSH_LOADER_SCHEMA)
+      this.extendSchema(AFRAME.components['brush-loader'].schema)
     }
   },
   update(oldData) {

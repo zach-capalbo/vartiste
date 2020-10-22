@@ -3,6 +3,8 @@ import {Util} from './util.js'
 import Gif from 'gif.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
+import {THREED_MODES} from './layer-modes.js'
+import {Layer} from './layer.js'
 
 Util.registerComponentSystem('timeline-system', {
   schema: {
@@ -43,6 +45,115 @@ Util.registerComponentSystem('timeline-system', {
     })
 
     this.el.sceneEl.systems['settings-system'].download(url, {extension: 'gif'}, "Gif animation")
+  },
+  makeUVScrollable({direction} = {}) {
+    let numberOfFrames = this.data.endFrameNumber
+    let compositor = Compositor.component
+    let {width, height} = compositor
+
+    compositor.data.wrapTexture = true
+
+    let isDrawingOnly = Compositor.mesh === Compositor.el.getObject3D('mesh')
+
+    if (typeof direction === 'undefined') direction = width > height ? 'y' : 'x'
+
+    let fullWidth = direction === 'x' ? width * numberOfFrames : width
+    let fullHeight = direction === 'y' ? height * numberOfFrames : height
+
+    let createCanvas = () => {
+      let layer = new Layer(fullWidth, fullHeight)
+      return {layer, canvas: layer.canvas, ctx: layer.canvas.getContext('2d')}
+    }
+
+    compositor.data.usePreOverlayCanvas = true
+
+    let canvases = {"map": createCanvas()}
+    for (let frameIdx = 0; frameIdx < numberOfFrames; frameIdx++)
+    {
+      compositor.jumpToFrame(frameIdx)
+      compositor.quickDraw()
+      canvases.map.ctx.drawImage(compositor.preOverlayCanvas, 0,0, width, height,
+                                                              direction === 'x' ? width * frameIdx : 0,
+                                                              direction === 'y' ? height * frameIdx : 0,
+                                                              width, height)
+
+      for (let mode of THREED_MODES)
+      {
+        if (!(Compositor.material[mode] && Compositor.material[mode].image)) continue
+        if (mode === 'envMap') continue
+        if (!canvases[mode]) {
+          canvases[mode] = createCanvas()
+          canvases[mode].layer.mode = mode
+        }
+
+        if (mode === 'bumpMap') canvases[mode].layer.opacity = Math.pow(Compositor.material.bumpScale, 1.0 / 2.2)
+
+        canvases[mode].ctx.drawImage(Compositor.material[mode].image, 0,0, width, height,
+                                                                direction === 'x' ? width * frameIdx : 0,
+                                                                direction === 'y' ? height * frameIdx : 0,
+                                                                width, height)
+      }
+    }
+
+    for (let layer of compositor.layers)
+    {
+      layer.visible = false
+    }
+
+    compositor.resize(fullWidth, fullHeight, {resizeGeometry: !isDrawingOnly})
+    for (let m of Object.values(canvases))
+    {
+      compositor.addLayer(compositor.layers.length - 1, {layer: m.layer})
+    }
+
+    let uv = new THREE.Vector2()
+    for (let o of Compositor.meshes)
+    {
+      if (!o.geometry || !o.geometry.attributes.uv) continue
+      if (!isDrawingOnly && o === Compositor.el.getObject3D('mesh')) continue
+      let attr = o.geometry.attributes.uv
+      let geometry = o.geometry
+      //geometry = geometry.toNonIndexed()
+
+      if (attr.data)
+      {
+        for (let i = 0; i < attr.count; ++i)
+        {
+          attr.setXY(i,
+            direction === 'x' ? attr.getX(i) / numberOfFrames : attr.getX(i) ,
+            direction === 'y' ? attr.getY(i) / numberOfFrames : attr.getY(i))
+        }
+      }
+      else
+      {
+        for (let i in geometry.attributes.uv.array) {
+          if (i %2 == 0) {
+            attr.array[i] = direction === 'x' ? attr.array[i] / numberOfFrames : attr.array[i]
+          }
+          else
+          {
+            attr.array[i] = direction === 'y' ? attr.array[i] / numberOfFrames : attr.array[i]
+          }
+        }
+      }
+      //o.geometry = geometry
+      geometry.attributes.uv.needsUpdate = true
+
+      let speed = 1 / (numberOfFrames / compositor.data.frameRate)
+      if (!o.userData.gltfExtensions) o.userData.gltfExtensions = {}
+      o.userData.gltfExtensions.MOZ_hubs_components = {
+        "uv-scroll": {
+          speed: {
+            x: direction === 'x' ? speed : 0,
+            y: direction === 'y' ? speed : 0,
+          },
+          increment: {
+            x: direction === 'x' ? 1.0 / numberOfFrames : 0,
+            y: direction === 'y' ? 1.0 / numberOfFrames : 0,
+          }
+        }
+      }
+    }
   },
   async recordFrames() {
     let numberOfFrames = this.data.endFrameNumber
