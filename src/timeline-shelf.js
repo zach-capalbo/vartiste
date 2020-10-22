@@ -92,6 +92,11 @@ Util.registerComponentSystem('timeline-system', {
       }
     }
 
+    for (let layer of compositor.layers)
+    {
+      layer.visible = false
+    }
+
     compositor.resize(fullWidth, fullHeight, {resizeGeometry: !isDrawingOnly})
     for (let m of Object.values(canvases))
     {
@@ -102,6 +107,7 @@ Util.registerComponentSystem('timeline-system', {
     for (let o of Compositor.meshes)
     {
       if (!o.geometry || !o.geometry.attributes.uv) continue
+      if (isDrawingOnly && o === Compositor.el.getObject3D('mesh')) continue
       let attr = o.geometry.attributes.uv
       let geometry = o.geometry
       //geometry = geometry.toNonIndexed()

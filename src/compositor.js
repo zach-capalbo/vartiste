@@ -957,14 +957,20 @@ AFRAME.registerComponent('compositor', {
     {
       if (resample)
       {
-        resampleCtx.drawImage(layer.canvas, 0, 0, width, height)
+        for (let canvas of layer.frames)
+        {
+
+          resampleCtx.drawImage(canvas, 0, 0, width, height)
+
+          canvas.width = width
+          canvas.height = height
+
+          canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+        }
       }
-
-      layer.resize(width, height)
-
-      if (resample)
+      else
       {
-        layer.canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
+        layer.resize(width, height)
       }
     }
 

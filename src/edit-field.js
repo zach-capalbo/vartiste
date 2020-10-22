@@ -133,17 +133,18 @@ AFRAME.registerComponent('edit-field', {
     {
       let buttonValue = e.target.getAttribute('text').value
       let existingValue = this.el.getAttribute('text').value
-      this.setValue(existingValue + buttonValue)
+      this.setValue(existingValue + buttonValue, {update: false})
     }
   },
 
   // Backspaces the edited text
   backspace(e) {
-    this.setValue(this.el.getAttribute('text').value.slice(0, -1))
+    this.setValue(this.el.getAttribute('text').value.slice(0, -1), {update: false})
   },
 
   // Accepts the edit field popup
   ok(e) {
+    this.setValue(this.el.getAttribute('text').value)
     this.el.components['popup-button'].closePopup()
     this.el.emit("editfinished", {value: this.el.getAttribute('text').value})
   },
