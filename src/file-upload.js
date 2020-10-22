@@ -21,7 +21,17 @@ function toSrcString(file) {
   return file
 }
 
-async function addImageLayer(file) {
+const MAP_FROM_FILENAME = {
+  'multiply': [/AmbientOcclusion/i, /(\b|_)AO(map)?(\b|_)/i],
+  'displacementMap': [/(\b|_)Disp(lacement)?(\b|_)/i],
+  'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
+  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
+  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
+  'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
+  'matcap': [/(\b|_)matcap(\b|_)/i]
+}
+
+async function addImageLayer(file, {setMapFromFilename = false} = {}) {
   let image = new Image()
   image.src = toSrcString(file)
   image.id = "img"
@@ -31,6 +41,18 @@ async function addImageLayer(file) {
 
   let layer = new Layer(image.width, image.height)
   layer.canvas.getContext('2d').drawImage(image, 0, 0)
+
+  if (file.name && setMapFromFilename)
+  {
+    for (let map in MAP_FROM_FILENAME)
+    {
+      if (MAP_FROM_FILENAME[map].some(exp => exp.test(file.name)))
+      {
+        layer.mode = map
+        break;
+      }
+    }
+  }
 
   let compositor = document.getElementById('canvas-view').components.compositor
   compositor.addLayer(compositor.layers.length - 1, {layer})
@@ -270,6 +292,7 @@ Util.registerComponentSystem('file-upload', {
     importSingleMaterial: {default: true},
     combineMaterials: {default: true},
     autoscaleModel: {default: true},
+    setMapFromFilename: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {
@@ -315,7 +338,7 @@ Util.registerComponentSystem('file-upload', {
       }
       else
       {
-        addImageLayer(file)
+        addImageLayer(file, {setMapFromFilename: this.data.setMapFromFilename})
       }
       return
     }

@@ -215,8 +215,6 @@ Util.registerComponentSystem('settings-system', {
       firstModel.updateMatrixWorld()
       boundingBox.applyMatrix4(firstModel.matrixWorld)
 
-      let center = this.pool('center', THREE.Vector3)
-
       rootObj.traverse(m => {
         if (!m.geometry) return
         m.geometry.computeBoundingBox()
@@ -224,19 +222,14 @@ Util.registerComponentSystem('settings-system', {
         tmpBox.copy(m.geometry.boundingBox)
         tmpBox.applyMatrix4(m.matrixWorld)
         boundingBox.union(tmpBox)
-        console.log("bounding", boundingBox.max, boundingBox.min)
       })
       let maxDimension = Math.max(boundingBox.max.x - boundingBox.min.x,
                                   boundingBox.max.y - boundingBox.min.y,
                                   boundingBox.max.z - boundingBox.min.z)
       let targetScale = 0.5 / maxDimension
-      console.log("Target Scale", targetScale, maxDimension)
       viewer.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
       boundingBox.getCenter(viewer.object3D.position)
-      // viewer.object3D.position.copy(center)
       viewer.object3D.position.multiplyScalar(- targetScale)
-      // viewer.object3D.position.x += 0.03
-      // viewer.object3D.position.y += 1.05
       viewer.object3D.position.z = boundingBox.min.z * targetScale
 
     }
