@@ -269,6 +269,7 @@ Util.registerComponentSystem('file-upload', {
   schema: {
     importSingleMaterial: {default: true},
     combineMaterials: {default: true},
+    autoscaleModel: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {
