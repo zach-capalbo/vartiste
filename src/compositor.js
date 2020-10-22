@@ -922,7 +922,7 @@ AFRAME.registerComponent('compositor', {
 
     console.log("Fully loaded")
   },
-  resize(newWidth, newHeight, {resample = false} = {})
+  resize(newWidth, newHeight, {resample = false, resizeGeometry = true} = {})
   {
     Undo.clearAndResize(newWidth, newHeight)
     let oldWidth = this.width
@@ -978,7 +978,10 @@ AFRAME.registerComponent('compositor', {
     {
       let gWidth = this.width / this.data.baseWidth * this.data.geometryWidth
       let gHeight = this.height / this.data.baseWidth * this.data.geometryWidth
-      this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+      if (resizeGeometry)
+      {
+        this.el.setAttribute('geometry', {primitive: 'plane', width: gWidth, height: gHeight})
+      }
       this.flipUVY()
     }
 
