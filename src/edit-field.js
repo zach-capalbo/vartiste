@@ -68,7 +68,7 @@ AFRAME.registerComponent('edit-field', {
       numpad.querySelector('*[shelf]').setAttribute('shelf', 'name', this.data.tooltip)
       if (this.data.type === 'number' || this.data.autoClear)
       {
-        this.setValue("")
+        this.setValue("", {update: false})
       }
     })
   },

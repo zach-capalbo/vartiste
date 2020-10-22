@@ -80,10 +80,13 @@ Util.registerComponentSystem('timeline-system', {
       for (let mode of THREED_MODES)
       {
         if (!(Compositor.material[mode] && Compositor.material[mode].image)) continue
+        if (mode === 'envMap') continue
         if (!canvases[mode]) {
           canvases[mode] = createCanvas()
           canvases[mode].layer.mode = mode
         }
+
+        if (mode === 'bumpMap') canvases[mode].layer.opacity = Math.pow(Compositor.material.bumpScale, 1.0 / 2.2)
 
         canvases[mode].ctx.drawImage(Compositor.material[mode].image, 0,0, width, height,
                                                                 direction === 'x' ? width * frameIdx : 0,
@@ -107,7 +110,7 @@ Util.registerComponentSystem('timeline-system', {
     for (let o of Compositor.meshes)
     {
       if (!o.geometry || !o.geometry.attributes.uv) continue
-      if (isDrawingOnly && o === Compositor.el.getObject3D('mesh')) continue
+      if (!isDrawingOnly && o === Compositor.el.getObject3D('mesh')) continue
       let attr = o.geometry.attributes.uv
       let geometry = o.geometry
       //geometry = geometry.toNonIndexed()
@@ -135,6 +138,21 @@ Util.registerComponentSystem('timeline-system', {
       }
       //o.geometry = geometry
       geometry.attributes.uv.needsUpdate = true
+
+      let speed = 1 / (numberOfFrames / compositor.data.frameRate)
+      if (!o.userData.gltfExtensions) o.userData.gltfExtensions = {}
+      o.userData.gltfExtensions.MOZ_hubs_components = {
+        "uv-scroll": {
+          speed: {
+            x: direction === 'x' ? speed : 0,
+            y: direction === 'y' ? speed : 0,
+          },
+          increment: {
+            x: direction === 'x' ? 1.0 / numberOfFrames : 0,
+            y: direction === 'y' ? 1.0 / numberOfFrames : 0,
+          }
+        }
+      }
     }
   },
   async recordFrames() {
