@@ -907,3 +907,10 @@ AFRAME.registerComponent('movement-tool', {
     // this.el.object3D.position.addScaledVector(worldGrip, dt / 1000.0 * this.data.speed)
   },
 })
+
+AFRAME.registerComponent('selection-box-tool', {
+  dependencies: ['six-dof-tool'],
+  init() {
+
+  }
+})

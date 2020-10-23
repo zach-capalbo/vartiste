@@ -120,11 +120,18 @@ function prepareModelForExport(model, material) {
     material.normalMap = new THREE.Texture()
     material.normalMap.flipY = material.bumpMap.flipY
     material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
+    material.normalMap.wrapS = material.bumpMap.wrapS
+    material.normalMap.wrapT = material.bumpMap.wrapT
   }
 
   if (material.roughnessMap) {
     console.log("Combining roughness into metalness")
-    if (!material.metalnessMap) material.metalnessMap = new THREE.Texture()
+    if (!material.metalnessMap)
+    {
+      material.metalnessMap = new THREE.Texture()
+      material.metalnessMap.wrapS = material.roughnessMap.wrapS
+      material.metalnessMap.wrapT = material.roughnessMap.wrapT
+    }
     material.metalnessMap.image = putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
     material.metalnessMap.needsUpdate = true
     material.roughnessMap = material.metalnessMap

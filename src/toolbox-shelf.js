@@ -51,7 +51,7 @@ AFRAME.registerComponent('toolbox-shelf', {
     compositor.activeLayer.frames = compositor.activeLayer.frames.concat(compositor.activeLayer.frames.slice(1,-1).reverse)
     compositor.el.emit('layerupdated', {layer: compositor.activeLayer})
   },
-  mergeFramesAction(source, target) {
+  mergeFramesAction(source, target, {deleteLayer = true} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor
     source = (typeof source === 'undefined') ? compositor.activeLayer : source
     let activeLayerIdx = compositor.layers.indexOf(source)
@@ -84,8 +84,8 @@ AFRAME.registerComponent('toolbox-shelf', {
     }
 
     compositor.el.emit('layerupdated', {layer: target})
-    compositor.deleteLayer(source)
-    compositor.activeLayer(target)
+    if (deleteLayer) compositor.deleteLayer(source)
+    //compositor.activeLayer(target)
   },
   collapseLayersAction() {
     let compositor = document.getElementById('canvas-view').components.compositor
@@ -124,7 +124,7 @@ AFRAME.registerComponent('toolbox-shelf', {
         startIdxs[frames] = compositor.layers[compositor.layers.length - 1]
       }
 
-      this.mergeFramesAction(compositor.layers[i], startIdxs[frames])
+      this.mergeFramesAction(compositor.layers[i], startIdxs[frames], {deleteLayer: false})
       layersToDelete.push(compositor.layers[i])
     }
 
