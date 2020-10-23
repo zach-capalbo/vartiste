@@ -795,6 +795,11 @@ AFRAME.registerComponent('compositor', {
           material[mode] = null
           material.needsUpdate = true
         }
+        else if (material[mode])
+        {
+          material[mode].wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+          material[mode].wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+        }
       }
   },
   // clear() {

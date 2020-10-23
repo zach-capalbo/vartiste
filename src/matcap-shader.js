@@ -174,3 +174,16 @@ AFRAME.registerComponent('apply-material-to-mesh', {
     })
   }
 })
+
+AFRAME.registerComponent('uv-scroll', {
+  schema: {
+    useGltfExtensionData: {default: true},
+    speed: {type: 'vec2'},
+    increment: {type: 'vec2'},
+  },
+  events: {
+    object3dset: function(e) {
+
+    }
+  }
+})
