@@ -282,6 +282,9 @@ async function addGlbReference(file) {
       }
     })
   }
+
+  entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
+
   entity.emit('model-loaded', {format: 'gltf', model: model});
 
 }

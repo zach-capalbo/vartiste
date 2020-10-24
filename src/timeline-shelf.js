@@ -5,10 +5,14 @@ import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import {THREED_MODES} from './layer-modes.js'
 import {Layer} from './layer.js'
+import {bumpCanvasToNormalCanvas} from './material-transformations.js'
 
 Util.registerComponentSystem('timeline-system', {
   schema: {
     endFrameNumber: {default: 10},
+  },
+  init() {
+    Pool.init(this)
   },
   exportFrames() {
     let numberOfFrames = this.data.endFrameNumber
@@ -67,6 +71,8 @@ Util.registerComponentSystem('timeline-system', {
 
     compositor.data.usePreOverlayCanvas = true
 
+    let tmpBumpCanvas = document.createElement('canvas')
+
     let canvases = {"map": createCanvas()}
     for (let frameIdx = 0; frameIdx < numberOfFrames; frameIdx++)
     {
@@ -86,7 +92,15 @@ Util.registerComponentSystem('timeline-system', {
           canvases[mode].layer.mode = mode
         }
 
-        if (mode === 'bumpMap') canvases[mode].layer.opacity = Math.pow(Compositor.material.bumpScale, 1.0 / 2.2)
+        if (mode === 'bumpMap') {
+          // let layer = canvases[mode]
+          // delete canvases.bumpMap
+          // mode = "normalMap"
+          // layer.mode = "normalMap"
+          // bumpCanvasToNormalCanvas(Compositor.material.bumpMap.image, {bumpScale: Compositor.material.bumpScale})
+          canvases[mode].layer.opacity = Math.pow(Compositor.material.bumpScale, 1.0 / 2.2)
+
+        }
 
         canvases[mode].ctx.drawImage(Compositor.material[mode].image, 0,0, width, height,
                                                                 direction === 'x' ? width * frameIdx : 0,

@@ -1,8 +1,8 @@
-function bumpCanvasToNormalCanvas(bumpCanvas, normalCanvas) {
+function bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale = 1.0} = {}) {
   let bumpCtx = bumpCanvas.getContext('2d')
   let bumpData = bumpCtx.getImageData(0, 0, bumpCanvas.width, bumpCanvas.height)
 
-  let sampleBump = (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
+  let sampleBump = (i,j) => bumpScale * bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
 
   if (typeof normalCanvas === 'undefined') {
     normalCanvas = document.createElement('canvas')
@@ -45,6 +45,7 @@ function bumpCanvasToNormalCanvas(bumpCanvas, normalCanvas) {
       vec.set(du, dv, scale).normalize()
       vec.x += 0.5
       vec.y += 0.5
+      vec.clampScalar(0.0, 1.0)
       setNormal(x,y,vec)
     }
   }

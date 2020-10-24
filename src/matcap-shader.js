@@ -1,5 +1,6 @@
 const utils = AFRAME.utils
 const {Util} = require('./util.js')
+const {THREED_MODES} = require('./layer-modes.js')
 
 updateMatcapMap = function (shader, data) {
   var longType = 'matcap';
@@ -175,15 +176,63 @@ AFRAME.registerComponent('apply-material-to-mesh', {
   }
 })
 
+const textureModes = ["map"].concat(THREED_MODES)
 AFRAME.registerComponent('uv-scroll', {
   schema: {
     useGltfExtensionData: {default: true},
+    requireGltfExtension: {default: false},
     speed: {type: 'vec2'},
     increment: {type: 'vec2'},
   },
   events: {
     object3dset: function(e) {
+      if (e.detail === 'mesh')
+      {
+        this.resetObjectList()
+      }
+    }
+  },
+  init() {
+    this.offset = new THREE.Vector2()
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+    this.objs = []
 
+    if (this.el.getObject3D('mesh')) this.resetObjectList()
+  },
+  resetObjectList() {
+    this.objs = []
+    this.el.getObject3D('mesh').traverse(o => {
+      if (o.material) {
+        if (this.data.useGltfExtensionData && o.userData && o.userData.gltfExtensions && o.userData.gltfExtensions.MOZ_hubs_components && o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'])
+        {
+          this.objs.push(o)
+          this.data.speed.x = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].speed.x
+          this.data.speed.y = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].speed.y
+          this.data.increment.x = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].increment.x
+          this.data.increment.y = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].increment.y
+        }
+        else if (!this.data.requireGltfExtension)
+        {
+          this.objs.push(o)
+        }
+      }
+    })
+  },
+  tick(t, dt) {
+    if (this.objs.length === 0) return
+    this.offset.addScaledVector(this.data.speed, dt / 1000);
+
+    this.offset.x = this.offset.x % 1.0;
+    this.offset.y = this.offset.y % 1.0;
+
+    for (let o of this.objs)
+    {
+      for (let map of textureModes)
+      {
+        if (!o.material[map]) return
+        o.material[map].offset.x = this.data.increment.x ? this.offset.x - (this.offset.x % this.data.increment.x) : this.offset.x;
+        o.material[map].offset.y = this.data.increment.y ? this.offset.y - (this.offset.y % this.data.increment.y) : this.offset.y;
+      }
     }
   }
 })
