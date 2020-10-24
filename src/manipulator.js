@@ -450,6 +450,12 @@ AFRAME.registerComponent('manipulator', {
       }
 
       if (this.target.manipulatorConstraint) this.target.manipulatorConstraint(t, dt)
+      if (this.target.manipulatorConstraints) {
+        for (let c of this.target.manipulatorConstraints)
+        {
+          c(t,dt)
+        }
+      }
       this.system.postManipulation(this.target)
     }
   }
@@ -641,7 +647,7 @@ AFRAME.registerComponent('lever', {
     // Length of the lever handle
     handleLength: {default: 0.35},
 
-    // [min, max] Range of motion in degrees for the handle. Min and max should be between 0 and 180
+    // **[min, max]** Range of motion in degrees for the handle. Min and max should be between 0 and 180
     angleRange: {type: 'vec2', default: '30 150'},
 
     // Tick throttle
@@ -650,7 +656,7 @@ AFRAME.registerComponent('lever', {
     // Initial value, should be between min and max of `valueRange`
     initialValue: {default: 0.0},
 
-    // Output range of the values. The lever angle will be mapped to this range
+    // **[top, bottom]** Output range of the values. The lever angle will be mapped to this range
     // when moved
     valueRange: {type: 'vec2', default: '0 1'},
 

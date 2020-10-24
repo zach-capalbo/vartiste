@@ -177,11 +177,27 @@ AFRAME.registerComponent('apply-material-to-mesh', {
 })
 
 const textureModes = ["map"].concat(THREED_MODES)
+
+// Allows scrolling of a mesh's UV coordinates. Can be used to create animated
+// materials. Based on the Mozilla Hubs [uv-scroll](https://github.com/mozilla/hubs/blob/master/src/components/uv-scroll.js)
+// component.
 AFRAME.registerComponent('uv-scroll', {
   schema: {
+    // If true, any data found in `MOZ_hubs_components` GLTF extension
+    // `uv-scroll` data will overide parameters set in this component
     useGltfExtensionData: {default: true},
+
+    // If true, this will only apply the uv scrolling effect to models which
+    // have been loaded with the `MOZ_hubs_components` GLTF extension with
+    // `uv-scroll` data. (i.e., the
+    // `mesh.userData.gltfExtensions.MOZ_hubs_components` is set)
     requireGltfExtension: {default: false},
+
+    // Speed at which to scroll in each direction
     speed: {type: 'vec2'},
+
+    // Increment to scroll in each direction. If greater than zero, uv steps
+    // will be quantized to this amount.
     increment: {type: 'vec2'},
   },
   events: {
@@ -219,6 +235,8 @@ AFRAME.registerComponent('uv-scroll', {
     })
   },
   tick(t, dt) {
+    //Based on the Mozilla Hubs [uv-scroll](https://github.com/mozilla/hubs/blob/master/src/components/uv-scroll.js)
+    // component.
     if (this.objs.length === 0) return
     this.offset.addScaledVector(this.data.speed, dt / 1000);
 
