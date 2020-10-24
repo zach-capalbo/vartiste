@@ -18,6 +18,17 @@ AFRAME.registerSystem('manipulator', {
       c(el)
     }
   },
+  // Installs a constraint for the manipulating the given entity.  Multiple
+  // constraints may be installed, however you should only install each
+  // constraint once per entity.
+  installConstraint(el, constraintFn) {
+    if (!el.manipulatorConstraints) el.manipulatorConstraints = []
+    el.manipulatorConstraints.push(constraintFn)
+  },
+  // Removes the constraint for manipulating the given entity
+  removeConstraint(el, constraintFn) {
+    el.manipulatorConstraints.splice(this.el.manipulatorConstraints.indexOf(this.constrainObject), 1)
+  }
 })
 
 // Allows `laser-controls` to grab, rotate, and scale elements in 3D.
@@ -513,10 +524,10 @@ AFRAME.registerComponent('propogate-grab', {
   }
 })
 
-// Redirects a grab from the [`manipulator`](#manipulator) to the closest to the
+// Redirects a grab from the [`manipulator`](#manipulator) to the
 // selector target
 AFRAME.registerComponent('redirect-grab', {
-  // Element that will
+  // Element that will receive any grab and movement activity instead
   schema: {type: 'selector'},
   update() {
     this.el['redirect-grab'] = this.data
@@ -542,14 +553,15 @@ AFRAME.registerComponent('grab-options', {
 
 // Locks the objects up direction, even when it is grabbed and rotated by the [Manipulator](#manipulator)
 AFRAME.registerComponent('lock-up', {
-  schema: {
-    // x: {type: 'float', default: NaN},
-    // y: {type: 'float', default: NaN},
-    // z: {type: 'float', default: NaN},
-  },
   init() {
-    this.el.manipulatorConstraint = this.constrainObject.bind(this)
     Pool.init(this)
+    this.constrainObject = this.constrainObject.bind(this)
+  },
+  play() {
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+  },
+  pause() {
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
   },
   constrainObject() {
     let forward = this.pool('forward', THREE.Vector3)
@@ -561,8 +573,13 @@ AFRAME.registerComponent('lock-up', {
     forward.y = 0
     forward.normalize()
 
+    let originalScale = this.pool('originalScale', THREE.Vector3)
+    originalScale.copy(obj.scale)
+
     obj.matrix.lookAt(forward, this.pool('origin', THREE.Vector3), this.el.sceneEl.object3D.up)
-    obj.quaternion.setFromRotationMatrix(obj.matrix)
+    Util.applyMatrix(obj.matrix, obj)
+    obj.scale.copy(originalScale)
+    // obj.quaternion.setFromRotationMatrix(obj.matrix)
 
     // obj.getWorldDirection(forward)
 
@@ -624,13 +641,19 @@ AFRAME.registerComponent('constrain-to-sphere', {
     constrainOnLoad: {default: true}
   },
   init() {
-    this.el.manipulatorConstraint = this.constrainObject.bind(this)
+    this.constrainObject = this.constrainObject.bind(this)
     Util.whenLoaded(this.el, () => {
       if (this.data.constrainOnLoad)
       {
         this.constrainObject()
       }
     })
+  },
+  play() {
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+  },
+  pause() {
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
   },
   constrainObject() {
     this.el.object3D.position.clampLength(this.data.innerRadius, this.data.outerRadius)
@@ -839,18 +862,24 @@ AFRAME.registerComponent('manipulator-weight', {
   init() {
     this.lastPos = new THREE.Vector3()
     this.lastRot = new THREE.Quaternion()
-    var weight
-    this.el.manipulatorConstraint = (t, dt) => {
-      weight = this.data.weight
-      if (this.data.type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 30, 0, 1)
+    this.constrainObject = this.constrainObject.bind(this)
+  },
+  play() {
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+  },
+  pause() {
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+  },
+  constrainObject(t, dt) {
+    var weight = this.data.weight
+    if (this.data.type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 30, 0, 1)
 
-      this.el.object3D.position.lerp(this.lastPos, weight)
-      this.el.object3D.quaternion.slerp(this.lastRot, weight)
+    this.el.object3D.position.lerp(this.lastPos, weight)
+    this.el.object3D.quaternion.slerp(this.lastRot, weight)
 
-      if (this.data.type === 'slow') {
-        this.lastPos.copy(this.el.object3D.position)
-        this.lastRot.copy(this.el.object3D.quaternion)
-      }
+    if (this.data.type === 'slow') {
+      this.lastPos.copy(this.el.object3D.position)
+      this.lastRot.copy(this.el.object3D.quaternion)
     }
   }
 })

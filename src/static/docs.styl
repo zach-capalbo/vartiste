@@ -1,8 +1,11 @@
 @import 'style.styl'
 @import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@500&display=swap');
 
+html, body
+  width: 100%
+  margin: 0
 header
-  max-width 80em
+  //max-width 80em
   margin: auto
   text-align: center
 .logo, .screenshot
@@ -10,8 +13,13 @@ header
   margin auto
 #content, #readme
   max-width: 80em//calc(100% - 2em)
-  width: 100%
+  min-width: 40em
+  // width: 100%
+  width: auto
+  // margin: auto
+  //max-width: none
   margin: auto
+  padding: 2em
 
 code, pre
   text-align: left
