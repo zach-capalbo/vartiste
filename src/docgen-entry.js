@@ -53,6 +53,7 @@ async function addDocumentation(src)
   require('./fix-oculus-steamvr')
   require('./artist-positioning')
   require('./material-transformations')
+  require('./canvas-fx')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))
