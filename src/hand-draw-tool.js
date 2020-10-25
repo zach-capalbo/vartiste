@@ -233,12 +233,12 @@ AFRAME.registerSystem('button-caster', {
     for (let button of this.installedButtons)
     {
       el.addEventListener(button + 'down', e => {
-        console.log("Button Down", button)
+        // console.log("Button Down", button)
         this.forwardDownEvent(el, button, e)
       })
 
       el.addEventListener(button + 'up', e => {
-        console.log("Button Up", button)
+        // console.log("Button Up", button)
         this.forwardUpEvent(el, button, e)
       })
     }
@@ -250,12 +250,12 @@ AFRAME.registerSystem('button-caster', {
 
       for (let caster of this.casters) {
         caster.addEventListener(button + 'down', e => {
-          console.log("Button Caster Down", button, caster)
+          // console.log("Button Caster Down", button, caster)
           this.forwardDownEvent(caster, button, e)
         })
 
         caster.addEventListener(button + 'up', e => {
-          console.log("Button Caster Up", button, caster)
+          // console.log("Button Caster Up", button, caster)
           this.forwardUpEvent(caster, button, e)
         })
       }
