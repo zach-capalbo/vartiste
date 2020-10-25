@@ -127,14 +127,15 @@ if (checkFile('./hand-tracking')) require('./hand-tracking')
 if (checkFile('./hdri-environment')) require('./hdri-environment')
 if (checkFile('./fix-oculus-steamvr')) require('./fix-oculus-steamvr')
 if (checkFile('./artist-positioning')) require('./artist-positioning')
+if (checkFile('./canvas-fx')) require('./canvas-fx')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo} = require('./undo')
 const {Pool} = require('./pool')
-const materialTransformations = require('./material-transformations')
+const {MaterialTransformations} = require('./material-transformations')
 window.VARTISTE = {}
 VARTISTE.Util = require('./util.js').Util
-Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo})
+Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, MaterialTransformations})
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {

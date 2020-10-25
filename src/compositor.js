@@ -35,6 +35,7 @@ AFRAME.registerComponent('compositor', {
     flipY: {default: false},
     skipDrawing: {default: false},
     wrapTexture: {default: false},
+    doubleSided: {default: false},
   },
 
   init() {
@@ -134,6 +135,10 @@ AFRAME.registerComponent('compositor', {
     if (this.data.shader !== oldData.shader)
     {
       this.materialNode.touch()
+    }
+    if (this.data.doubleSided !== oldData.doubleSided)
+    {
+      this.el.getObject3D('mesh').material.side = this.data.doubleSided ? THREE.DoubleSide : THREE.FrontSide
     }
   },
 
@@ -251,8 +256,9 @@ AFRAME.registerComponent('compositor', {
       Undo.push(() => this.setLayerBlendMode(layer, oldMode))
       layer.mode = mode
 
-      if (mode === 'normalMap')
+      if (mode === 'normalMap' && layer.updateTime === 0)
       {
+        console.log("Clearing brand new normal map")
         Undo.pushCanvas(layer.canvas)
         let ctx = layer.canvas.getContext('2d')
         ctx.globalCompositeOperation = 'destination-over'

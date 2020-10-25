@@ -15,6 +15,11 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
       sourceType: 'module',
   });
 
+  function formatCommentForTable(comment)
+  {
+    return comment ? comment.replace(/\n\n/gm, "<br><br>").replace(/\n/gm, " ") : "";
+  }
+
   function commentForLocation(loc)
   {
       let comment = []
@@ -83,8 +88,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
           row.push(entry.type ? entry.type.value : inferType(entry))
           row.push(entry.default ? entry.default.value : "")
 
-          let comment = commentForLocation(prop.loc)
-          comment = comment ? comment.replace(/\n/gm, " ") : ""
+          let comment = formatCommentForTable(commentForLocation(prop.loc))
 
           row.push(comment)
 
@@ -114,7 +118,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
       let row = []
 
-      comment = comment ? comment.replace(/\n/gm, " ") : ""
+      comment = formatCommentForTable(comment)
 
       row.push(`${func.key.name} \`(${func.value.params.map(p => stringifyParam(p)).join(", ")})\``)
 
@@ -132,7 +136,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   {
     let comment = commentForLocation(expression.id.loc)
     // if (!comment) continue
-    comment = comment ? comment.replace(/\n/gm, " ") : ""
+    comment = formatCommentForTable(comment)
 
     let className = expression.id.name
 

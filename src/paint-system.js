@@ -69,6 +69,7 @@ AFRAME.registerSystem('paint-system', {
   }
 })
 
+// NOT YET WORKING
 AFRAME.registerComponent('brush-loader', {
   schema: {
     brushType: {type: 'string'}

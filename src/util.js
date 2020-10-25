@@ -25,7 +25,7 @@ function whenLoadedAll(entities, fn) {
 }
 
 function awaitLoadingSingle(entity) {
-  return new Promise((e,r) => whenLoadedSingle(entity, r))
+  return new Promise((r, e) => whenLoadedSingle(entity, r))
 }
 
 async function awaitLoadingAll(entities) {
@@ -159,6 +159,37 @@ class VARTISTEUtil {
       fn(el)
       el = el.parentEl
     }
+  }
+
+  // Uses THREE.Object3D.traverse to find the first object where `fn` returns
+  // `true`
+  traverseFind(obj3D, fn, {visibleOnly = false} = {})
+  {
+    if (fn(obj3D)) return obj3D;
+
+    for (let c of obj3D.children)
+    {
+      if (visibleOnly && !c.visible) continue
+      let res = this.traverseFind(c, fn, {visibleOnly})
+      if (res) return res
+    }
+
+    return;
+  }
+
+  // Uses THREE.Object3D.traverse to find all objects where `fn` returns
+  // `true`
+  traverseFindAll(obj3D, fn, {outputArray = [], visibleOnly = false} = {})
+  {
+    if (fn(obj3D)) outputArray.push(obj3D)
+
+    for (let c of obj3D.children)
+    {
+      if (visibleOnly && !c.visible) continue
+      this.traverseFindAll(c, fn, {outputArray, visibleOnly})
+    }
+
+    return outputArray;
   }
 
   // Uppercases the first letter of each word

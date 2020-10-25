@@ -1,5 +1,6 @@
 const utils = AFRAME.utils
 const {Util} = require('./util.js')
+const {THREED_MODES} = require('./layer-modes.js')
 
 updateMatcapMap = function (shader, data) {
   var longType = 'matcap';
@@ -175,15 +176,81 @@ AFRAME.registerComponent('apply-material-to-mesh', {
   }
 })
 
+const textureModes = ["map"].concat(THREED_MODES)
+
+// Allows scrolling of a mesh's UV coordinates. Can be used to create animated
+// materials. Based on the Mozilla Hubs [uv-scroll](https://github.com/mozilla/hubs/blob/master/src/components/uv-scroll.js)
+// component.
 AFRAME.registerComponent('uv-scroll', {
   schema: {
+    // If true, any data found in `MOZ_hubs_components` GLTF extension
+    // `uv-scroll` data will overide parameters set in this component
     useGltfExtensionData: {default: true},
+
+    // If true, this will only apply the uv scrolling effect to models which
+    // have been loaded with the `MOZ_hubs_components` GLTF extension with
+    // `uv-scroll` data. (i.e., the
+    // `mesh.userData.gltfExtensions.MOZ_hubs_components` is set)
+    requireGltfExtension: {default: false},
+
+    // Speed at which to scroll in each direction
     speed: {type: 'vec2'},
+
+    // Increment to scroll in each direction. If greater than zero, uv steps
+    // will be quantized to this amount.
     increment: {type: 'vec2'},
   },
   events: {
     object3dset: function(e) {
+      if (e.detail === 'mesh')
+      {
+        this.resetObjectList()
+      }
+    }
+  },
+  init() {
+    this.offset = new THREE.Vector2()
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+    this.objs = []
 
+    if (this.el.getObject3D('mesh')) this.resetObjectList()
+  },
+  resetObjectList() {
+    this.objs = []
+    this.el.getObject3D('mesh').traverse(o => {
+      if (o.material) {
+        if (this.data.useGltfExtensionData && o.userData && o.userData.gltfExtensions && o.userData.gltfExtensions.MOZ_hubs_components && o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'])
+        {
+          this.objs.push(o)
+          this.data.speed.x = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].speed.x
+          this.data.speed.y = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].speed.y
+          this.data.increment.x = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].increment.x
+          this.data.increment.y = o.userData.gltfExtensions.MOZ_hubs_components['uv-scroll'].increment.y
+        }
+        else if (!this.data.requireGltfExtension)
+        {
+          this.objs.push(o)
+        }
+      }
+    })
+  },
+  tick(t, dt) {
+    //Based on the Mozilla Hubs [uv-scroll](https://github.com/mozilla/hubs/blob/master/src/components/uv-scroll.js)
+    // component.
+    if (this.objs.length === 0) return
+    this.offset.addScaledVector(this.data.speed, dt / 1000);
+
+    this.offset.x = this.offset.x % 1.0;
+    this.offset.y = this.offset.y % 1.0;
+
+    for (let o of this.objs)
+    {
+      for (let map of textureModes)
+      {
+        if (!o.material[map]) return
+        o.material[map].offset.x = this.data.increment.x ? this.offset.x - (this.offset.x % this.data.increment.x) : this.offset.x;
+        o.material[map].offset.y = this.data.increment.y ? this.offset.y - (this.offset.y % this.data.increment.y) : this.offset.y;
+      }
     }
   }
 })

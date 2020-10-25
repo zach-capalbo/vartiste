@@ -92,7 +92,7 @@ async function addHDRImage(file) {
   })
 }
 
-async function addGlbViewer(file) {
+async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
@@ -102,15 +102,46 @@ async function addGlbViewer(file) {
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
-    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
+    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj)$/i, ""))
   }
 
   let startingLayer = compositor.activeLayer
 
-  let loader = new THREE.GLTFLoader()
+  let format = 'glb'
 
-  let buffer = await file.arrayBuffer()
-  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  switch (file.name.slice(-4))
+  {
+    case '.obj': format = 'obj'; break
+    case '.fbx': format = 'fbx'; break
+  }
+
+  let model
+
+  if (format === 'obj')
+  {
+    let loader = new THREE.OBJLoader()
+    model = new THREE.Object3D()
+    let buffer = await file.text()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+  }
+  else if (format === 'fbx')
+  {
+    const { FBXLoader } = await import('./framework/FBXLoader.js')
+    let loader = new FBXLoader()
+    let buffer = await file.arrayBuffer()
+    model = new THREE.Object3D()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+  }
+  else
+  {
+    let loader = new THREE.GLTFLoader()
+    let buffer = await file.arrayBuffer()
+    model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  }
+
+  console.log("loaded", model)
 
   let materials = {}
 
@@ -155,16 +186,24 @@ async function addGlbViewer(file) {
         layerCtx.save()
 
         //layerCtx.scale(1, -1)
-        if (!image && material.color)
+        if (!image && postProcessMesh)
         {
-          console.log("coloring", material.color)
-          layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
-          layerCtx.fillRect(0, 0, width, height)
+          if (mode === 'map'  && material.color)
+          {
+            console.log("coloring", material.color)
+            layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+            layerCtx.fillRect(0, 0, width, height)
+          }
         }
         else
         {
           layerCtx.translate(width / 2, height / 2)
-          layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+          try {
+            layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+          } catch (e)
+          {
+            console.log("Could not draw image for texture", mode, material)
+          }
         }
         layerCtx.restore()
         if (mode !== "map")
@@ -242,14 +281,33 @@ async function addGlbViewer(file) {
     }
   }
 
+  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+
   if (Compositor.el.getAttribute('material').shader === 'flat')
   {
     Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
 
-  compositor.activateLayer(startingLayer)
+  compositor.activateLayer(startingLayer);
 
-  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+  if (!postProcessMesh) return;
+
+  (async () => {
+    if (!Util.traverseFind(model.scene, o => o.geometry && o.geometry.attributes.uv))
+    {
+      await compositor.el.sceneEl.systems['uv-unwrapper'].quickBoundingBoxUnwrap()
+    }
+
+    if (Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
+    {
+      try {
+        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+      }
+      catch (e) {
+        console.error("Could not bake vertex colors", e)
+      }
+    }
+  })()
 }
 
 async function addGlbReference(file) {
@@ -282,6 +340,9 @@ async function addGlbReference(file) {
       }
     })
   }
+
+  entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
+
   entity.emit('model-loaded', {format: 'gltf', model: model});
 
 }
@@ -293,6 +354,7 @@ Util.registerComponentSystem('file-upload', {
     combineMaterials: {default: true},
     autoscaleModel: {default: true},
     setMapFromFilename: {default: true},
+    postProcessMesh: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {
@@ -349,7 +411,7 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.(glb)|(gltf)$/i.test(file.name))
+    if (/\.(glb)|(gltf)|(obj)|(fbx)$/i.test(file.name))
     {
       if (settings.data.addReferences)
       {
@@ -357,8 +419,13 @@ Util.registerComponentSystem('file-upload', {
       }
       else
       {
-        addGlbViewer(file)
+        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh})
       }
+      return
+    }
+
+    if (/\.(mtl)$/i.test(file.name))
+    {
       return
     }
 

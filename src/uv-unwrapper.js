@@ -46,6 +46,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     cube.setAttribute('width', size.x)
     cube.setAttribute('height', size.y)
     cube.setAttribute('depth', size.z)
+    cube.setAttribute('geometry', `width: ${size.x}; height: ${size.y}; depth: ${size.z}`)
     cube.classList.add('clickable')
 
     this.el.append(cube)
@@ -498,6 +499,12 @@ Util.registerComponentSystem('uv-unwrapper', {
     if (canvas.touch) canvas.touch()
 
     // ctx.restoreState()
+  },
+  async quickBoundingBoxUnwrap() {
+    this.createBoundingBox()
+    await Util.whenLoaded(this.shapes[0])
+    this.unwrap()
+    this.clearShapes()
   },
 })
 

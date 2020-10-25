@@ -1,6 +1,6 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
-import {prepareModelForExport, bumpCanvasToNormalCanvas} from './material-transformations.js'
+import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Util} from './util.js'

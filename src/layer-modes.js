@@ -47,6 +47,8 @@ const FX = [
   'blur',
   'noise',
   "dither",
+  "dilate",
+  "erode",
   'flip-x',
   'flip-y',
   'grayscale-to-alpha',

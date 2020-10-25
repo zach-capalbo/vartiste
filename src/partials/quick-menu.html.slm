@@ -15,7 +15,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity icon-button="#asset-format-color-fill" tooltip="Experiments / Utils" shelf-summoner="name: Experimental Functionality"
     a-entity icon-button="#asset-video-vintage" tooltip="2D Animation" shelf-summoner="name: Animation Shelf"
     a-entity icon-button="#asset-cylinder" tooltip="Mesh Tools" shelf-summoner="name: Mesh Tools Shelf"
-    a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Image Refernece Timer" shelf-summoner="name: Reference Timer Shelf"
+    a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Reference Photos" shelf-summoner="name: Reference Timer Shelf"
     a-entity icon-button="#asset-nudge-brush" tooltip="Node Compositing System" quick-menu-action="toggleNodes"
     a-entity icon-button="#asset-help-circle-outline" tooltip="Help" system-click-action="system: settings-system; action: helpAction"
   a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"

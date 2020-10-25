@@ -58,7 +58,7 @@ Util.registerComponentSystem('mesh-tools', {
       mesh.geometry.needsUpdate = true
     }
   },
-  bakeVertexColorsToTexture() {
+  bakeVertexColorsToTexture({autoDilate = true} = {}) {
     Compositor.component.addLayer()
     let destinationCanvas = Compositor.drawableCanvas
     let proc = new CanvasShaderProcessor({source: require('./shaders/vertex-baker.glsl'), vertexShader: require('./shaders/vertex-baker.vert')})
@@ -67,6 +67,7 @@ Util.registerComponentSystem('mesh-tools', {
     for (let mesh of Compositor.meshes)
     {
       if (mesh === Compositor.el.getObject3D('mesh')) continue
+      if (!mesh.geometry.attributes.uv || !mesh.geometry.attributes.color) continue
       let geometry = mesh.geometry.toNonIndexed()
 
       proc.vertexPositions = geometry.attributes.uv.array
@@ -82,6 +83,11 @@ Util.registerComponentSystem('mesh-tools', {
       ctx.drawImage(proc.canvas,
                     0, 0, proc.canvas.width, proc.canvas.height,
                     0, 0, destinationCanvas.width, destinationCanvas.height)
+    }
+
+    if (autoDilate)
+    {
+      this.el.sceneEl.systems['canvas-fx'].applyFX("dilate", destinationCanvas)
     }
 
     if (destinationCanvas.touch) destinationCanvas.touch()

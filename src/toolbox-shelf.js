@@ -3,6 +3,7 @@ import {Util} from './util.js'
 import Gif from 'gif.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
+import {bumpCanvasToNormalCanvas} from './material-transformations.js'
 
 import './framework/SubdivisionModifier.js'
 import './framework/SimplifyModifier.js'
@@ -227,4 +228,17 @@ AFRAME.registerComponent('toolbox-shelf', {
     let i = 0
     Compositor.component.layers.forEach(l => this.el.sceneEl.systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: i++}, l.id))
   },
+  bumpCanvasToNormalCanvasAction() {
+    Undo.collect(() => {
+      Undo.pushCanvas(Compositor.drawableCanvas)
+      bumpCanvasToNormalCanvas(Compositor.drawableCanvas, {normalCanvas: Compositor.drawableCanvas, bumpScale: Math.pow(Compositor.component.activeLayer.opacity, 2.2)})
+      Compositor.drawableCanvas.touch()
+      if (Compositor.component.activeLayer.mode === 'bumpMap')
+      {
+        Compositor.component.activeLayer.opacity = 1.0
+        Compositor.component.setLayerBlendMode(Compositor.component.activeLayer, 'normalMap')
+        Compositor.drawableCanvas.touch()
+      }
+    })
+  }
 })

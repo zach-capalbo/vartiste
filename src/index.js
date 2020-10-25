@@ -65,6 +65,7 @@ require('./artist-positioning')
 require('./fix-oculus-steamvr')
 require('./volumetrics')
 require('./quick-menu')
+require('./canvas-fx')
 // require('./text')
 
 require('./app.styl')
