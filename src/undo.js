@@ -1,7 +1,7 @@
 class UndoStack {
-  constructor() {
+  constructor({maxSize = 10} = {}) {
     this.stack = []
-    this.maxSize = 10
+    this.maxSize = maxSize
     this.pushAllowed = true
     this._enabled = true
 
@@ -12,6 +12,11 @@ class UndoStack {
       this.canvas[i] = document.createElement('canvas')
       this.canvas[i].width = 2048
       this.canvas[i].height = 2048
+    }
+
+    if (this.maxSize < 0)
+    {
+      this.maxSize = 99999
     }
   }
   set enabled(value) {
@@ -39,6 +44,10 @@ class UndoStack {
     let idx = this.canvasIndex
     this.canvasIndex = (this.canvasIndex + 1) % this.maxSize
     let undoCanvas = this.canvas[idx]
+    if (!undoCanvas) {
+      this.canvas[idx] = document.createElement('canvas')
+      undoCanvas = this.canvas[idx]
+    }
     if (undoCanvas.width !== canvas.width || undoCanvas.height !== canvas.height)
     {
       console.log("Need to resize undo canvas")
@@ -112,4 +121,4 @@ class UndoStack {
 
 const Undo = new UndoStack
 
-export {Undo}
+export {Undo, UndoStack}

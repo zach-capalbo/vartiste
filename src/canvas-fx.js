@@ -24,6 +24,7 @@ AFRAME.registerSystem('canvas-fx', {
   // be one of the preset effects listed in `availableFX`
   applyFX(fx, canvas) {
     if (!canvas) canvas = Compositor.drawableCanvas
+    if (canvas instanceof AFRAME.AEntity) canvas = canvas.getObject3D('mesh').material.map.image
     Undo.pushCanvas(canvas)
     let processor = this.processorFor(fx)
     processor.setInputCanvas(canvas)

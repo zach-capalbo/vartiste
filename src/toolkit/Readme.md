@@ -96,6 +96,8 @@ and contributions, both code-wise and documentation-wise are welcome.
   <a-scene icon-button="shader: matcap" renderer="colorManagement: true">
     <a-assets>
       <canvas height="768" id="draw-canvas-asset" width="1024"></canvas>
+
+      <!-- You can easily load your own HDRI if you want! -->
       <a-asset id="hdr" src="asset/studio.hdr"></a-asset>
 
       <!--You can use all the default VARTISTE assets with the vartiste-asset
@@ -131,12 +133,16 @@ and contributions, both code-wise and documentation-wise are welcome.
           component-->
           <a-entity icon-button="#asset-oven" toggle-button="" tooltip="Toggle Me"></a-entity>
           <!--You can style it, too-->
-          <a-entity button-style="color: #ed8607; clickColor: #8607ed; intersectedColor: #07ed86" icon-button="" tooltip="Look at the colors! Woah!"></a-entity>
+          <a-entity button-style="color: #ed8607; clickColor: #8607ed; intersectedColor: #07ed86" icon-button="" tooltip="Look at the colors! Woah!" onclick="this.sceneEl.systems['canvas-fx'].applyFX('invert', document.getElementById('draw-canvas-asset'))"></a-entity>
           <!--Add the system-click-action to easily call methods of systems-->
           <a-entity icon-button="#asset-account-voice" system-click-action="system: toolkit-demo; action: speak" tooltip="Speak entered text if enabled"></a-entity>
           <!--Or add component properties directly for the toggle buttons to
           toggle-->
           <a-entity icon-button="#asset-check-outline" toggle-button="target: a-scene; component: speech; property: speak" tooltip="Toggle Speaking Enabled"></a-entity>
+
+          <!-- Easily export entities or even the entire scene to a GLB file -->
+          <a-entity icon-button="#asset-floppy" tooltip="Download this scene as GLB" system-click-action="system: glb-exporter; action: downloadGLB"></a-entity>
+
           <a-entity icon-button="#asset-help-circle-outline" system-click-action="system: toolkit-demo; action: help" tooltip="VARTISTE Toolkit Documentation"></a-entity>
         </a-entity>
         <a-entity position="0 0.5 0" text="width: 3.4; wrapCount: 35; value: Welcome to the VARTISTE toolkit demo"></a-entity>
@@ -152,7 +158,7 @@ and contributions, both code-wise and documentation-wise are welcome.
         </a-entity>
 
         <!-- You can make interactables, like this lever -->
-        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2"></a-entity>
+        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
       </a-entity>
     </a-entity>
 
@@ -163,7 +169,8 @@ and contributions, both code-wise and documentation-wise are welcome.
     <a-entity class="clickable" position="-3.0 0 -2.5" text="width: 2.4; wrapCount: 25; value: Desktop Controls:\n-Left Click: Click buttons\n-Right Mouse Buton Drag: Look around\n-Shift+Left Mouse Button Drag: Move things\n-WASD: Move around"></a-entity>
 
     <!--You can use some of the VARTISTE drawing tools, too!-->
-    <a-entity canvas-updater="throttle: 5" class="clickable"
+    <a-entity id="draw-canvas-demo" class="clickable"
+              canvas-updater="throttle: 5"
               draw-canvas="canvas:#draw-canvas-asset" frame=""
               geometry="primitive: plane; width: 2; height: 1.75"
               material="shader: flat; src: #draw-canvas-asset; npot: true"
@@ -171,7 +178,10 @@ and contributions, both code-wise and documentation-wise are welcome.
     <a-entity class="clickable" color-picker="" geometry="primitive: circle; radius: 1; height: 1.75" position="3.1 2 -2.4"></a-entity>
 
     <!-- There's a few handy default constraints to restrict how things can be grabbed -->
-    <a-sphere class="clickable" constrain-to-sphere="" material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
+    <a-sphere class="clickable"
+              constrain-to-sphere=""
+              manipulator-weight="type: slow; weight: 0.9"
+              material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
   </a-scene>
 </body>
 </html>

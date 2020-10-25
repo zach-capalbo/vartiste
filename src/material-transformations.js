@@ -1,5 +1,7 @@
 import {Util} from './util.js'
+import {UndoStack} from './undo.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+import './framework/GLTFExporter.js'
 
 // Contains utilities for transforming materials and textures. Singleton
 // accessible via VARTISTE.MaterialTransformations.
@@ -142,15 +144,24 @@ class MaterialTransformations {
   }
 
   // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
-  static prepareModelForExport(model, material) {
+  static prepareModelForExport(model, material, {undoStack} = {}) {
     if (!material) material = model.material
     console.log("Preparing", model, material)
 
     if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
     {
+      if (undoStack) undoStack.push(() => model.visible = true)
       model.visible = false
       // MaterialTransformations.vec2toVec3Attribute(model)
     }
+
+    if (model.geometry && !model.geometry.getAttribute)
+    {
+      if (undoStack) undoStack.push(() => model.visible = true)
+      model.visible = false
+      // MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
 
     if (material.bumpMap && material.bumpMap.image) {
       console.log("Bumping into normal")
@@ -159,8 +170,13 @@ class MaterialTransformations {
       material.normalMap.flipY = material.bumpMap.flipY
       if (material.bumpMap.image.nodeName !== "CANVAS")
       {
+        if (undoStack) {
+          let originalImage = material.bumpMap.image
+          undoStack.push(() => material.bumpMap.image = originalImage)
+        }
         material.bumpMap.image = Util.cloneCanvas(material.bumpMap.image)
       }
+      else if (undoStack) { undoStack.pushCanvas(material.bumpMap.image)}
       material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
       material.normalMap.wrapS = material.bumpMap.wrapS
       material.normalMap.wrapT = material.bumpMap.wrapT
@@ -176,8 +192,12 @@ class MaterialTransformations {
       }
       if (material.roughnessMap.image.nodeName !== "CANVAS")
       {
+        if (undoStack) {
+          let originalImage = material.roughnessMap.image
+          undoStack.push(() => material.roughnessMap.image = originalImage)
+        }
         material.roughnessMap.image = Util.cloneCanvas(material.roughnessMap.image)
-      }
+      } else if (undoStack) { undoStack.pushCanvas(material.roughnessMap.image)}
       material.metalnessMap.image = putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
       material.metalnessMap.needsUpdate = true
       material.roughnessMap = material.metalnessMap
@@ -193,8 +213,12 @@ class MaterialTransformations {
       roughCtx.fillRect(0,0,roughCanvas.width,roughCanvas.height)
       if (material.metalnessMap.image.nodeName !== "CANVAS")
       {
+        if (undoStack) {
+          let originalImage = material.metalnessMap.image
+          undoStack.push(() => material.metalnessMap.image = originalImage)
+        }
         material.metalnessMap.image = Util.cloneCanvas(material.metalnessMap.image)
-      }
+      } else if (undoStack) { undoStack.pushCanvas(material.metalnessMap.image)}
       putRoughnessInMetal(roughCanvas, material.metalnessMap.image)
       material.roughnessMap = material.metalnessMap
       material.needsUpdate = true
@@ -204,7 +228,23 @@ class MaterialTransformations {
     {
       if (material.map.image.nodeName !== "CANVAS")
       {
-        material.map.image = Util.cloneCanvas(material.map.image)
+        if (undoStack) {
+          let originalImage = material.map.image
+          undoStack.push(() => material.map.image = originalImage)
+        }
+
+        try {
+          material.map.image = Util.cloneCanvas(material.map.image)
+        } catch (e) {
+          if (undoStack)
+          {
+            let originalMap = material.map
+            undoStack.push(() => material.map = originalMap)
+          }
+          material.map = null
+          console.warn("Can't use texture, skipping: ", model, material.map, e)
+          return
+        }
       }
       checkTransparency(material)
     }
@@ -215,19 +255,37 @@ const {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency} = Mat
 
 export {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, MaterialTransformations}
 
-AFRAME.registerSystem('glb-exporter', {
+// System to allow easy exporting of entities and objects as GLB files. Can also
+// be used as a component on an entity.
+//
+// ### Current Limitations:
+//
+//  - Can't handle text
+//  - No custom shaders
+//  - May mess up some objects or materials (though `restoreAfterExport` should
+//    fix most of it)
+Util.registerComponentSystem('glb-exporter', {
   init() {},
-  async getExportableGLB(object3D = undefined)
+
+  // Returns a promise which resolves to an array buffer containing the GLB file
+  // contents.  `object3D` may be an `a-entity` or a `THREE.Object3D`, or
+  // `undefined`, in which case it will be set to the component's element (or
+  // the scene for the system). `object3D` and all of its visible descendents
+  // will be stored.
+  //
+  // **Note:** if `restoreAfterExport` is true, this method will make an attempt
+  // to restore the object to its original state, but this is not yet thoroughly
+  // vetted, so be careful when using.
+  async getExportableGLB(object3D = undefined, {restoreAfterExport = true} = {})
   {
     if (!object3D) object3D = this.el.object3D
     if (object3D instanceof AFRAME.AEntity) object3D = object3D.el
 
-    object3D = object3D.clone(true)
+    let undoStack = restoreAfterExport ? new UndoStack({maxSize: -1}) : null
 
-    // let newScene = new THREE.Scene()
     object3D.traverse(o => {
       if (o.material) {
-        prepareModelForExport(o)
+        prepareModelForExport(o, o.material, {undoStack})
       }
     })
     let exporter = new THREE.GLTFExporter()
@@ -235,11 +293,29 @@ AFRAME.registerSystem('glb-exporter', {
       exporter.parse(object3D, r, {binary: true, animations: object3D.animations || [], includeCustomExtensions: true, onlyVisible: true})
     })
 
+    while (undoStack && undoStack.stack.length)
+    {
+      undoStack.undo()
+    }
+
     return glb
   },
-  async downloadGLB(object3D = undefined, {fileName = undefined} = {})
+
+  // Asynchronously initiates a download of a GLB file containing `object3D` and
+  // all of its descendents. `object3D` may be an `a-entity` or a
+  // `THREE.Object3D`, or `undefined`, in which case it will be set to the
+  // component's element (or the scene for the system). The file will be named
+  // `fileName` (if given) or have an autogenerated file name. Additional named
+  // options may be passed through to `getExportableGLB`
+  //
+  // **Note:** if `restoreAfterExport` is true, this method will make an attempt
+  // to restore the object to its original state, but this is not yet thoroughly
+  // vetted, so be careful when using. Additional, `restoreAfterExport` may
+  // require quite a bit of memory to work properly, so find what works best for
+  // your application.
+  async downloadGLB(object3D = undefined, {fileName = undefined, ...opts} = {})
   {
-    let glb = await this.getExportableGLB(object3D)
+    let glb = await this.getExportableGLB(object3D, opts)
 
     if (!fileName) fileName = `vartiste-toolkit-export.glb`
 
@@ -249,6 +325,5 @@ AFRAME.registerSystem('glb-exporter', {
     desktopLink.innerHTML = "Open GLB";
     desktopLink.download = fileName;
     desktopLink.click()
-
   }
 })
