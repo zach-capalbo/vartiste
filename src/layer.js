@@ -6,6 +6,7 @@ export class Layer {
   constructor(width, height) {
     this.width = width
     this.height = height
+    this.sceneEl = document.getElementsByTagName('a-scene')
 
     if (!(Number.isInteger(width) && width > 0)) throw new Error(`Invalid layer width ${width}`)
     if (!(Number.isInteger(height) && height > 0)) throw new Error(`Invalid layer width ${height}`)
@@ -33,7 +34,7 @@ export class Layer {
     this.clear()
   }
   touch() {
-    this.updateTime = document.querySelector('a-scene').time
+    this.updateTime = this.sceneEl.time
   }
   draw(ctx, frame=0, {mode} = {}) {
     if (typeof mode === 'undefined') mode = this.mode

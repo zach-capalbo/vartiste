@@ -17,3 +17,4 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-blur-preview" tooltip="Simplify Mesh" system-click-action="system: mesh-tools; action: simplify"
     a-entity icon-button="#asset-oven" system-click-action="system: mesh-tools; action: bakeToVertexColors" tooltip="Bake to vertex colors"
     a-entity icon-button="#asset-spray" system-click-action="system: mesh-tools; action: bakeVertexColorsToTexture" tooltip="Layer from vertex colors"
+    a-entity icon-button="#asset-palette-swatch-outline" toggle-button="target: #canvas-view; component: compositor; property: doubleSided" tooltip="Double Sided"

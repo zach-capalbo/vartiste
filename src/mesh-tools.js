@@ -67,6 +67,7 @@ Util.registerComponentSystem('mesh-tools', {
     for (let mesh of Compositor.meshes)
     {
       if (mesh === Compositor.el.getObject3D('mesh')) continue
+      if (!mesh.geometry.attributes.uv || !mesh.geometry.attributes.color) continue
       let geometry = mesh.geometry.toNonIndexed()
 
       proc.vertexPositions = geometry.attributes.uv.array

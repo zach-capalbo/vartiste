@@ -35,6 +35,7 @@ AFRAME.registerComponent('compositor', {
     flipY: {default: false},
     skipDrawing: {default: false},
     wrapTexture: {default: false},
+    doubleSided: {default: false},
   },
 
   init() {
@@ -134,6 +135,10 @@ AFRAME.registerComponent('compositor', {
     if (this.data.shader !== oldData.shader)
     {
       this.materialNode.touch()
+    }
+    if (this.data.doubleSided !== oldData.doubleSided)
+    {
+      this.el.getObject3D('mesh').material.side = this.data.doubleSided ? THREE.DoubleSide : THREE.FrontSide
     }
   },
 

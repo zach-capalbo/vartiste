@@ -52,6 +52,7 @@ async function addDocumentation(src)
   require('./hdri-environment')
   require('./fix-oculus-steamvr')
   require('./artist-positioning')
+  require('./material-transformations')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))

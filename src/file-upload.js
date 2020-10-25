@@ -115,8 +115,6 @@ async function addGlbViewer(file) {
     case '.fbx': format = 'fbx'; break
   }
 
-
-
   let model
 
   if (format === 'obj')
@@ -283,14 +281,31 @@ async function addGlbViewer(file) {
     }
   }
 
+  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+
   if (Compositor.el.getAttribute('material').shader === 'flat')
   {
     Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
 
-  compositor.activateLayer(startingLayer)
+  compositor.activateLayer(startingLayer);
 
-  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+  (async () => {
+    if (!Util.traverseFind(model.scene, o => o.geometry && o.geometry.attributes.uv))
+    {
+      await compositor.el.sceneEl.systems['uv-unwrapper'].quickBoundingBoxUnwrap()
+    }
+
+    if (Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
+    {
+      try {
+        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+      }
+      catch (e) {
+        console.error("Could not bake vertex colors", e)
+      }
+    }
+  })()
 }
 
 async function addGlbReference(file) {
