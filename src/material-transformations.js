@@ -177,12 +177,12 @@ class MaterialTransformations {
         material.bumpMap.image = Util.cloneCanvas(material.bumpMap.image)
       }
       else if (undoStack) { undoStack.pushCanvas(material.bumpMap.image)}
-      material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
+      material.normalMap.image = MaterialTransformations.bumpCanvasToNormalCanvas(material.bumpMap.image)
       material.normalMap.wrapS = material.bumpMap.wrapS
       material.normalMap.wrapT = material.bumpMap.wrapT
     }
 
-    if (material.roughnessMap && materail.roughnessMap.image) {
+    if (material.roughnessMap && material.roughnessMap.image) {
       console.log("Combining roughness into metalness")
       if (!material.metalnessMap)
       {
@@ -198,7 +198,7 @@ class MaterialTransformations {
         }
         material.roughnessMap.image = Util.cloneCanvas(material.roughnessMap.image)
       } else if (undoStack) { undoStack.pushCanvas(material.roughnessMap.image)}
-      material.metalnessMap.image = putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
+      material.metalnessMap.image = MaterialTransformations.putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
       material.metalnessMap.needsUpdate = true
       material.roughnessMap = material.metalnessMap
       material.needsUpdate = true
@@ -219,7 +219,7 @@ class MaterialTransformations {
         }
         material.metalnessMap.image = Util.cloneCanvas(material.metalnessMap.image)
       } else if (undoStack) { undoStack.pushCanvas(material.metalnessMap.image)}
-      putRoughnessInMetal(roughCanvas, material.metalnessMap.image)
+      MaterialTransformations.putRoughnessInMetal(roughCanvas, material.metalnessMap.image)
       material.roughnessMap = material.metalnessMap
       material.needsUpdate = true
     }
@@ -246,7 +246,7 @@ class MaterialTransformations {
           return
         }
       }
-      checkTransparency(material)
+      MaterialTransformations.checkTransparency(material)
     }
   }
 }
