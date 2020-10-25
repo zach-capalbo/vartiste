@@ -1,3 +1,6 @@
+import {Util} from './util.js'
+import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+
 // Contains utilities for transforming materials and textures. Singleton
 // accessible via VARTISTE.MaterialTransformations.
 class MaterialTransformations {
@@ -122,26 +125,57 @@ class MaterialTransformations {
     material.transparent = false
   }
 
+  // Converts a vec2 geometry bufferAttribute to a vec3
+  static vec2toVec3Attribute(model)
+  {
+    let position = model.geometry.attributes.position
+    let newPositions = []
+    newPositions.length = Math.floor(position.array.length / 2.0 * 3)
+    let newI = 0;
+    for (let i = 0; i < position.array.length; ++i)
+    {
+      newPositions[newI++] = position.array[i]
+      if (i % 2 == 0) newPositions[newI++] = 0.0;
+    }
+    model.geometry.removeAttribute('position')
+    model.geometry.addAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3))
+  }
+
   // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
   static prepareModelForExport(model, material) {
+    if (!material) material = model.material
     console.log("Preparing", model, material)
-    if (material.bumpMap) {
+
+    if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
+    {
+      MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
+    if (material.bumpMap && material.bumpMap.image) {
       console.log("Bumping into normal")
       if (material.normalMap) console.warn("Ignoring existing normal map")
       material.normalMap = new THREE.Texture()
       material.normalMap.flipY = material.bumpMap.flipY
+      if (material.bumpMap.image.nodeName !== "CANVAS")
+      {
+        material.bumpMap.image = Util.cloneCanvas(material.bumpMap.image)
+      }
       material.normalMap.image = bumpCanvasToNormalCanvas(material.bumpMap.image)
       material.normalMap.wrapS = material.bumpMap.wrapS
       material.normalMap.wrapT = material.bumpMap.wrapT
     }
 
-    if (material.roughnessMap) {
+    if (material.roughnessMap && materail.roughnessMap.image) {
       console.log("Combining roughness into metalness")
       if (!material.metalnessMap)
       {
         material.metalnessMap = new THREE.Texture()
         material.metalnessMap.wrapS = material.roughnessMap.wrapS
         material.metalnessMap.wrapT = material.roughnessMap.wrapT
+      }
+      if (material.roughnessMap.image.nodeName !== "CANVAS")
+      {
+        material.roughnessMap.image = Util.cloneCanvas(material.roughnessMap.image)
       }
       material.metalnessMap.image = putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
       material.metalnessMap.needsUpdate = true
@@ -156,14 +190,60 @@ class MaterialTransformations {
       let roughCtx = roughCanvas.getContext('2d')
       roughCtx.fillStyle = "#000"
       roughCtx.fillRect(0,0,roughCanvas.width,roughCanvas.height)
+      if (material.metalnessMap.image.nodeName !== "CANVAS")
+      {
+        material.metalnessMap.image = Util.cloneCanvas(material.metalnessMap.image)
+      }
       putRoughnessInMetal(roughCanvas, material.metalnessMap.image)
       material.roughnessMap = material.metalnessMap
       material.needsUpdate = true
     }
-    checkTransparency(material)
+
+    if (material.map && material.map.image)
+    {
+      if (material.map.image.nodeName !== "CANVAS")
+      {
+        material.map.image = Util.cloneCanvas(material.map.image)
+      }
+      checkTransparency(material)
+    }
   }
 }
 
 const {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency} = MaterialTransformations
 
 export {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, MaterialTransformations}
+
+AFRAME.registerSystem('glb-exporter', {
+  init() {},
+  async getExportableGLB(object3D = undefined)
+  {
+    if (!object3D) object3D = this.el.object3D
+    // let newScene = new THREE.Scene()
+    object3D.traverse(o => {
+      if (o.material) {
+        prepareModelForExport(o)
+      }
+    })
+    let exporter = new THREE.GLTFExporter()
+    let glb = await new Promise((r, e) => {
+      exporter.parse(object3D, r, {binary: true, animations: object3D.animations || [], includeCustomExtensions: true, onlyVisible: true})
+    })
+
+    return glb
+  },
+  async downloadGLB(object3D = undefined, {fileName = undefined} = {})
+  {
+    let glb = await this.getExportableGLB(object3D)
+
+    if (!fileName) fileName = `vartiste-toolkit-export.glb`
+
+    let desktopLink = document.createElement('a');
+    desktopLink.href = "data:application:/x-binary;base64," + base64ArrayBuffer(glb);
+    desktopLink.style = "z-index: 10000; position: absolute; top: 50%; left: 50%; padding: 5px; background-color: #eee; transform: translate(-50%,-50%)"
+    desktopLink.innerHTML = "Open GLB";
+    desktopLink.download = fileName;
+    desktopLink.click()
+
+  }
+})

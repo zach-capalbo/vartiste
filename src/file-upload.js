@@ -92,7 +92,7 @@ async function addHDRImage(file) {
   })
 }
 
-async function addGlbViewer(file) {
+async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
@@ -186,7 +186,7 @@ async function addGlbViewer(file) {
         layerCtx.save()
 
         //layerCtx.scale(1, -1)
-        if (!image)
+        if (!image && postProcessMesh)
         {
           if (mode === 'map'  && material.color)
           {
@@ -290,6 +290,8 @@ async function addGlbViewer(file) {
 
   compositor.activateLayer(startingLayer);
 
+  if (!postProcessMesh) return;
+
   (async () => {
     if (!Util.traverseFind(model.scene, o => o.geometry && o.geometry.attributes.uv))
     {
@@ -352,6 +354,7 @@ Util.registerComponentSystem('file-upload', {
     combineMaterials: {default: true},
     autoscaleModel: {default: true},
     setMapFromFilename: {default: true},
+    postProcessMesh: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {
@@ -416,7 +419,7 @@ Util.registerComponentSystem('file-upload', {
       }
       else
       {
-        addGlbViewer(file)
+        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh})
       }
       return
     }
