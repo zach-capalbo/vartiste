@@ -102,15 +102,48 @@ async function addGlbViewer(file) {
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
-    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.glb$/i, ""))
+    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj)$/i, ""))
   }
 
   let startingLayer = compositor.activeLayer
 
-  let loader = new THREE.GLTFLoader()
+  let format = 'glb'
 
-  let buffer = await file.arrayBuffer()
-  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  switch (file.name.slice(-4))
+  {
+    case '.obj': format = 'obj'; break
+    case '.fbx': format = 'fbx'; break
+  }
+
+
+
+  let model
+
+  if (format === 'obj')
+  {
+    let loader = new THREE.OBJLoader()
+    model = new THREE.Object3D()
+    let buffer = await file.text()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+  }
+  else if (format === 'fbx')
+  {
+    const { FBXLoader } = await import('./framework/FBXLoader.js')
+    let loader = new FBXLoader()
+    let buffer = await file.arrayBuffer()
+    model = new THREE.Object3D()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+  }
+  else
+  {
+    let loader = new THREE.GLTFLoader()
+    let buffer = await file.arrayBuffer()
+    model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  }
+
+  console.log("loaded", model)
 
   let materials = {}
 
@@ -155,16 +188,24 @@ async function addGlbViewer(file) {
         layerCtx.save()
 
         //layerCtx.scale(1, -1)
-        if (!image && material.color)
+        if (!image)
         {
-          console.log("coloring", material.color)
-          layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
-          layerCtx.fillRect(0, 0, width, height)
+          if (mode === 'map'  && material.color)
+          {
+            console.log("coloring", material.color)
+            layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+            layerCtx.fillRect(0, 0, width, height)
+          }
         }
         else
         {
           layerCtx.translate(width / 2, height / 2)
-          layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+          try {
+            layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+          } catch (e)
+          {
+            console.log("Could not draw image for texture", mode, material)
+          }
         }
         layerCtx.restore()
         if (mode !== "map")
@@ -352,7 +393,7 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.(glb)|(gltf)$/i.test(file.name))
+    if (/\.(glb)|(gltf)|(obj)|(fbx)$/i.test(file.name))
     {
       if (settings.data.addReferences)
       {
@@ -362,6 +403,11 @@ Util.registerComponentSystem('file-upload', {
       {
         addGlbViewer(file)
       }
+      return
+    }
+
+    if (/\.(mtl)$/i.test(file.name))
+    {
       return
     }
 

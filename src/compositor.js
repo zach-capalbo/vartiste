@@ -251,8 +251,9 @@ AFRAME.registerComponent('compositor', {
       Undo.push(() => this.setLayerBlendMode(layer, oldMode))
       layer.mode = mode
 
-      if (mode === 'normalMap')
+      if (mode === 'normalMap' && layer.updateTime === 0)
       {
+        console.log("Clearing brand new normal map")
         Undo.pushCanvas(layer.canvas)
         let ctx = layer.canvas.getContext('2d')
         ctx.globalCompositeOperation = 'destination-over'

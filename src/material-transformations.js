@@ -1,8 +1,8 @@
-function bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale = 1.0} = {}) {
+function bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale} = {}) {
   let bumpCtx = bumpCanvas.getContext('2d')
   let bumpData = bumpCtx.getImageData(0, 0, bumpCanvas.width, bumpCanvas.height)
 
-  let sampleBump = (i,j) => bumpScale * bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
+  let sampleBump = (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
 
   if (typeof normalCanvas === 'undefined') {
     normalCanvas = document.createElement('canvas')
@@ -24,7 +24,10 @@ function bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale = 1.0} = 
 
   let vec = new THREE.Vector3()
 
-  let scale = 1.0/10.0
+  let scale = bumpScale ? (1.5 - bumpScale) : 1.0 / 10.0
+  // let scale = 1.0 / 10.0
+
+  console.log("Using bump scale", scale)
 
   for (let x = 0; x < bumpCanvas.width; ++x)
   {
