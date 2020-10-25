@@ -148,7 +148,8 @@ class MaterialTransformations {
 
     if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
     {
-      MaterialTransformations.vec2toVec3Attribute(model)
+      model.visible = false
+      // MaterialTransformations.vec2toVec3Attribute(model)
     }
 
     if (material.bumpMap && material.bumpMap.image) {
@@ -219,6 +220,10 @@ AFRAME.registerSystem('glb-exporter', {
   async getExportableGLB(object3D = undefined)
   {
     if (!object3D) object3D = this.el.object3D
+    if (object3D instanceof AFRAME.AEntity) object3D = object3D.el
+
+    object3D = object3D.clone(true)
+
     // let newScene = new THREE.Scene()
     object3D.traverse(o => {
       if (o.material) {
