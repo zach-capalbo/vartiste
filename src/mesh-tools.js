@@ -93,3 +93,17 @@ Util.registerComponentSystem('mesh-tools', {
     if (destinationCanvas.touch) destinationCanvas.touch()
   },
 })
+
+AFRAME.registerComponent('hide-mesh-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  evens: {
+    activate: function() {this.activate()}
+  },
+  init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3})
+    this.el.append(this.handle)
+
+    this.el.setAttribute('raycaster', `objects: .canvas; showLine: true; direction: 0 1 0; origin: 0 0 0; far: 0.6`)
+  },
+})

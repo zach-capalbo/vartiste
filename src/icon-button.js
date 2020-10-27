@@ -299,7 +299,14 @@ AFRAME.registerComponent('toggle-button', {
     click: function() {
       if (this.data.target)
       {
-        this.data.target.setAttribute(this.data.component, {[this.data.property]: !this.data.target.getAttribute(this.data.component)[this.data.property]})
+        if (this.data.property)
+        {
+          this.data.target.setAttribute(this.data.component, {[this.data.property]: !this.data.target.getAttribute(this.data.component)[this.data.property]})
+        }
+        else
+        {
+          this.data.target.setAttribute(this.data.component, !this.data.target.getAttribute(this.data.component))
+        }
       }
       else if (this.data.system)
       {

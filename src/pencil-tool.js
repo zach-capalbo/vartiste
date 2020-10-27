@@ -53,6 +53,18 @@ AFRAME.registerSystem('pencil-tool', {
       }
     })
   },
+  createHandle({radius, height}) {
+    let cylinder = document.createElement('a-cylinder')
+    cylinder.setAttribute('radius', radius)
+    cylinder.setAttribute('height', height)
+    cylinder.setAttribute('segments-radial', 10)
+    cylinder.setAttribute('segments-height', 1)
+    cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
+    cylinder.setAttribute('position', `0 ${-height / 2} 0`)
+    cylinder.classList.add('clickable')
+    cylinder.setAttribute('propogate-grab', "")
+    return cylinder
+  }
 })
 
 AFRAME.registerComponent('pencil-tool', {
