@@ -179,7 +179,7 @@ AFRAME.registerComponent('reset-transform-on-vr', {
   dependencies: ["look-controls"],
   init() {
     this.el.components['look-controls'].onEnterVR = (function () {
-
+      if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR()) return
 
       // if (!this.el.sceneEl.checkHeadsetConnected()) { return; }
       this.saveCameraPose();

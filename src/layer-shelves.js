@@ -2,8 +2,9 @@ const layerShelfHTML = require('./partials/layer-view.html.slm')
 const modeSelectionHTML = require('./partials/mode-shelf.html.slm')
 
 const {LAYER_MODES, FX} = require('./layer-modes.js')
-const {MaterialNode, CanvasNode} = require('./layer.js')
+const {MaterialNode, CanvasNode, Layer} = require('./layer.js')
 const {Util} = require('./util.js')
+const {Pool} = require('./pool.js')
 
 AFRAME.registerComponent("layer-shelves", {
   schema: {compositor: {type: 'selector'}},
@@ -15,6 +16,7 @@ AFRAME.registerComponent("layer-shelves", {
     {
       this['compositor_' + e] = this['compositor_' + e].bind(this)
     }
+    Pool.init(this)
   },
   update(oldData) {
     if (oldData.compositor)
@@ -378,6 +380,18 @@ AFRAME.registerComponent("layer-shelves", {
   },
   soloNode(node) {
     node.solo = !node.solo
+  },
+  convertToLayerNode(node) {
+    let layer = new Layer(this.compositor.width, this.compositor.height)
+    node.draw(layer.canvas.getContext('2d'), this.compositor.currentFrame, {mode: 'copy'})
+    layer.shelfMatrix.copy(node.shelfMatrix)
+    layer.mode = 'source-over'
+
+    let offsetMatrix = this.pool('offset', THREE.Matrix4)
+    offsetMatrix.makeTranslation(0, 0, 0.1)
+    layer.shelfMatrix.multiply(offsetMatrix)
+
+    this.compositor.addLayer(this.compositor.layers.length - 1, {layer})
   },
   compositor_componentchanged(e) {
     if (!this.compositor) return

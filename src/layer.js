@@ -8,7 +8,7 @@ export class Layer {
   constructor(width, height) {
     this.width = width
     this.height = height
-    sceneEl = document.getElementsByTagName('a-scene')
+    sceneEl = Compositor.el.sceneEl
 
     if (!(Number.isInteger(width) && width > 0)) throw new Error(`Invalid layer width ${width}`)
     if (!(Number.isInteger(height) && height > 0)) throw new Error(`Invalid layer width ${height}`)
@@ -244,6 +244,8 @@ export class CanvasNode {
   draw(ctx, frame, {mode} = {}) {
     if (typeof mode === 'undefined') mode = 'source-over'
     this.updateCanvas(frame)
+    let originalMode = ctx.globalCompositeOperation
+    let originalAlpha = ctx.globalAlpha
     ctx.globalCompositeOperation = mode
     ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
@@ -254,6 +256,8 @@ export class CanvasNode {
       translation.y- height / 2 * scale.y + height / 2,
       width * scale.x, height * scale.y,
     )
+    ctx.globalCompositeOperation = originalMode
+    ctx.globalAlpha = originalAlpha
   }
 }
 

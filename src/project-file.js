@@ -232,6 +232,10 @@ class ProjectFile {
         }
       }
     }
+    else
+    {
+      obj.environment = {state: 'reset'}
+    }
     obj.environment.showFloor = document.querySelector('#environment-place').getAttribute('visible')
     obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
 

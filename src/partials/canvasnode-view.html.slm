@@ -5,7 +5,7 @@ a-entity.node-shelf.grab-root shelf=""
   a-entity position="0.2 -1.3 0"
     a-entity.mode-popup popup-button="popup: mode-shelf; icon: #asset-blur-linear; deferred: true; tooltip: Change blend mode; scale: 0.3 0.3 0.3" position="-2.0 0.1 0"
     a-entity.mode-text text="value: Mode: source-over; color: #f83; width: 4; font: roboto" position="0.5 0.05 0"
-  /a-entity position="1.6 -1.2 0" icon-button="#asset-archive-arrow-down-outline" click-action="mergeDown" tooltip="Convert to layer"
+  a-entity position="1.6 -1.2 0" icon-button="#asset-archive-arrow-down-outline" click-action="convertToLayer" tooltip="Convert to layer"
   a-entity node-output="" position="2.1 1.2 0.01"
 
   a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
