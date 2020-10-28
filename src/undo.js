@@ -1,3 +1,4 @@
+// Eases the creation of undo functionality
 class UndoStack {
   constructor({maxSize = 10} = {}) {
     this.stack = []
@@ -66,12 +67,17 @@ class UndoStack {
       if (canvas.touch) canvas.touch()
     })
   }
-  push(f) {
+  push(f, {whenSafe} = {}) {
     if (!this.pushAllowed) return
     this.stack.push(f)
+    if (whenSafe) f.whenSafe = whenSafe
     if (this.stack.length > this.maxSize)
     {
-      this.stack.splice(0, 1)
+      let oldFn = this.stack.splice(0, 1)
+      if (oldFn.length && oldFn[0].whenSafe)
+      {
+        this.block(oldFn[0].whenSafe)
+      }
     }
   }
   collect(f) {
