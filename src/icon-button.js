@@ -50,7 +50,8 @@ const [
 AFRAME.registerSystem('icon-button', {
   schema: {
     shader: {default: 'matcap'},
-    matcap: {default: '#asset-matcap'},
+    iconShader: {default: 'flat'},
+    matcap: {default: '#asset-matcap', type: 'map'},
     metalness: {default: 0.3},
     roughness: {default: 1.0}
   },
@@ -74,7 +75,8 @@ AFRAME.registerSystem('icon-button', {
     {
       this.bgMaterial = new THREE.MeshMatcapMaterial()
       this.bgMaterial.matcap = new THREE.Texture()
-      this.bgMaterial.matcap.image = document.querySelector('#asset-matcap')
+      this.bgMaterial.matcap.image = this.data.matcap
+      this.bgMaterial.matcap.encoding = THREE.LinearEncoding
       this.bgMaterial.matcap.needsUpdate = true
     }
     else if (this.data.shader === 'standard')
@@ -204,6 +206,7 @@ AFRAME.registerComponent('icon-button', {
         fog: false,
         src: this.data,
         transparent: true,
+        shader: this.system.data.iconShader,
         opacity: this.data === "" ? 0.0 : 1.0
       })
 

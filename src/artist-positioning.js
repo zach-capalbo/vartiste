@@ -42,6 +42,7 @@ Util.registerComponentSystem('artist-root', {
     Util.whenLoaded(this.el.sceneEl, () => {
       if (this.el.sceneEl.is('vr-mode'))
       {
+        if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR()) return
         this.resetCameraLocation()
       }
     })
@@ -202,5 +203,12 @@ AFRAME.registerComponent('camera-matrix-helper', {
   tick() {
     this.obj.matrix.compose(this.cameraObject.position, this.cameraObject.quaternion, this.cameraObject.scale)
     this.obj.matrix.decompose(this.obj.position, this.obj.quaternion, this.obj.scale)
+  }
+})
+
+AFRAME.registerComponent('artist-shadow', {
+  tick() {
+    Util.cameraObject3D().getWorldPosition(this.el.object3D.position)
+    this.el.object3D.position.y = 0.01
   }
 })

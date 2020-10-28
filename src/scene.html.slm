@@ -1,4 +1,4 @@
-a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: standard" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05"
+a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05"
   a-assets#assets
   a-sky color="#333" hide-in-ar-mode=""
 
@@ -12,10 +12,11 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
     a-entity#environment-place gltf-model="#asset-place" visible="false"
+      /a-plane material="src: #asset-shadow; transparent: true" rotation="-90 0 0" position="0 0.01 0" artist-shadow="" scale="2 2 2"
 
     a-entity position="1.1 0 -0.5" scale="0.3 0.3 0.3"
       a-entity position="-3.58310806712082 3.300659561600941 2.1625126248120847" rotation="0 0 0" scale="1 1 1"
-        a-entity hide-mesh-tool="" rotation="-25 0 0"
+
         /a-entity#lever-text text="value: +++; width: 1; color: black; frustumCulled: false"
         /a-entity lever="axis: y; initialPercent: 0.5; target: #lever-text; component: text; property: value; valueRange: 1 10"
 

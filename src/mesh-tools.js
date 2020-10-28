@@ -94,16 +94,97 @@ Util.registerComponentSystem('mesh-tools', {
   },
 })
 
+AFRAME.registerSystem('hide-mesh-tool', {
+  init() {
+    this.hiddenObjects = []
+  },
+  unhideAll() {
+    for (let object of this.hiddenObjects)
+    {
+      object.visible = true
+    }
+  }
+})
+
 AFRAME.registerComponent('hide-mesh-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
-  evens: {
-    activate: function() {this.activate()}
+  schema: {
+    mode: {oneOf: ["delete", "hide"], default: "hide"},
+    far: {default: 0.6}
+  },
+  events: {
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        if (!this.el.hasAttribute('raycaster'))
+        {
+          this.el.setAttribute('raycaster', `objects: .canvas, .reference-glb; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${this.data.far}`)
+          this.el.setAttribute('line', `color: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
+          this.fixRayLine()
+        }
+        this.el.components.raycaster.play()
+      }
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed') this.el.components.raycaster.pause()
+    },
+    click: function(e) {
+      for (let intersection of this.el.components.raycaster.intersections)
+      {
+        if (this.data.mode === 'delete')
+        {
+          if (intersection.object.el.classList.contains("reference-glb"))
+          {
+            let originalParent = intersection.object.el.parent
+            let originalEl = intersection.object.el
+            Undo.push(() => originalParent.append(el), {whenSafe: () => originalEl.destroy()})
+            intersection.object.el.remove()
+          }
+          else
+          {
+            let originalParent = intersection.object.parent
+            let originalObject = intersection.object
+            Undo.push(() => originalParent.add(originalObject))
+            intersection.object.parent.remove(intersection.object)
+          }
+        }
+        else
+        {
+          Undo.push(() => intersection.object.visible = true)
+          intersection.object.visible = false
+          this.system.hiddenObjects.push(intersection.object)
+        }
+
+        break
+      }
+    }
   },
   init() {
     this.el.classList.add('grab-root')
-    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3})
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.04, height: 0.3})
     this.el.append(this.handle)
 
-    this.el.setAttribute('raycaster', `objects: .canvas; showLine: true; direction: 0 1 0; origin: 0 0 0; far: 0.6`)
+    this.el.sceneEl.systems.manipulator.installConstraint(() => {
+      this.el.components.raycaster.data.far = this.calcFar()
+      this.updateRaycaster.call(this.el.components.raycaster)
+    })
   },
+  fixRayLine() {
+    let worldScale = new THREE.Vector3
+    this.el.components.raycaster.updateLine = AFRAME.utils.bind(function () {
+      var el = this.el;
+      var intersections = this.intersections;
+      var lineLength;
+
+      if (intersections.length) {
+        this.el.object3D.getWorldScale(worldScale);
+        let worldScaleFactor = Math.abs(worldScale.dot(this.data.direction));
+        if (intersections[0].object.el === el && intersections[1]) {
+          lineLength = intersections[1].distance / worldScaleFactor;
+        } else {
+          lineLength = intersections[0].distance / worldScaleFactor;
+        }
+      }
+      this.drawLine(lineLength);
+    }, this.el.components.raycaster);
+  }
 })

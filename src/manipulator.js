@@ -279,7 +279,12 @@ AFRAME.registerComponent('manipulator', {
     this.endPoint.attach(this.grabber.object3D)
     this.grabber.object3D.position.set(0,0,0)
     this.grabber.object3D.rotation.set(0,0,0)
-    this.grabber.object3D.scale.set(0.4, 0.4, 0.4)
+    this.grabber.object3D.updateMatrixWorld()
+
+    let worldScale = this.pool('worldScale', THREE.Vector3)
+    this.grabber.object3D.parent.getWorldScale(worldScale)
+    this.grabber.object3D.scale.set(0.04 / worldScale.x, 0.04 / worldScale.y, 0.04 / worldScale.z)
+    //this.grabber.object3D.scale.set(0.4, 0.4, 0.4)
   },
   stopGrab() {
     if (this.data.printUpdates && this.target)
@@ -464,7 +469,7 @@ AFRAME.registerComponent('manipulator', {
       if (this.target.manipulatorConstraints) {
         for (let c of this.target.manipulatorConstraints)
         {
-          c(t,dt)
+          c(t,dt, localOffset)
         }
       }
       this.system.postManipulation(this.target)
@@ -556,6 +561,16 @@ AFRAME.registerComponent('lock-up', {
   init() {
     Pool.init(this)
     this.constrainObject = this.constrainObject.bind(this)
+    this.startQuartenion = new THREE.Quaternion
+    this.startUp = new THREE.Vector3
+  },
+  events: {
+    stateadded: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.startQuartenion.copy(this.el.object3D.quaternion)
+      }
+    }
   },
   play() {
     this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
@@ -563,10 +578,36 @@ AFRAME.registerComponent('lock-up', {
   pause() {
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
   },
-  constrainObject() {
+  constrainObject(t, dt, localOffset) {
     let forward = this.pool('forward', THREE.Vector3)
+    let up = this.pool('up', THREE.Vector3)
     let obj = this.el.object3D
     obj.updateMatrix()
+
+
+    up.set(0, 1, 0)
+    up.applyQuaternion(obj.quaternion)
+
+    let quart = this.pool('quart', THREE.Quaternion)
+    quart.setFromUnitVectors(up, this.el.sceneEl.object3D.up)
+
+    obj.quaternion.premultiply(quart)
+
+    let manipulator = this.el.grabbingManipulator
+
+    manipulator.endPoint.getWorldPosition(obj.position)
+    if (obj.parent) obj.parent.worldToLocal(obj.position)
+
+    localOffset.copy(manipulator.offset)
+
+    let pws = this.pool('pws', THREE.Vector3)
+
+    localOffset.applyQuaternion(obj.quaternion)
+
+    obj.position.sub(localOffset)
+
+
+    return
 
     forward.set(0, 0, 1)
     forward.applyQuaternion(obj.quaternion)
@@ -576,9 +617,19 @@ AFRAME.registerComponent('lock-up', {
     let originalScale = this.pool('originalScale', THREE.Vector3)
     originalScale.copy(obj.scale)
 
-    obj.matrix.lookAt(forward, this.pool('origin', THREE.Vector3), this.el.sceneEl.object3D.up)
+    let originalPosition = this.pool('originalPosition', THREE.Vector3)
+    originalPosition.copy(obj.position)
+
+    let origin = this.pool('origin', THREE.Vector3)
+    // origin.copy(localOffset)
+    origin.copy(this.el.grabbingManipulator.offset)
+    origin.multiplyScalar(-1)
+    forward.add(origin)
+    obj.matrix.lookAt(forward, origin, this.el.sceneEl.object3D.up)
     Util.applyMatrix(obj.matrix, obj)
     obj.scale.copy(originalScale)
+    obj.position.copy(originalPosition)
+    obj.position.sub(origin)
     // obj.quaternion.setFromRotationMatrix(obj.matrix)
 
     // obj.getWorldDirection(forward)
