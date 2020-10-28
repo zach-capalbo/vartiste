@@ -22,6 +22,8 @@ class ProjectFile {
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
     if (!('tools' in obj)) obj.tools = []
 
+    if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
+
     if ('skeletonator' in obj)
     {
       if (!('frameCount' in obj.skeletonator)) obj.skeletonator.frameCount = 50
@@ -100,6 +102,8 @@ class ProjectFile {
       hdriTexture.needsUpdate = true
       environmentManager.installHDREnvironment(hdriTexture)
     }
+
+    document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
 
     await compositor.load(obj)
     compositor.el.setAttribute('material', {shader: obj.shader})
@@ -228,6 +232,7 @@ class ProjectFile {
         }
       }
     }
+    obj.environment.showFloor = document.querySelector('#environment-place').getAttribute('visible')
     obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
 
     obj.tools = []
