@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Undo} from './undo.js'
 
 Util.registerComponentSystem('mesh-tools', {
   subdivide() {
@@ -134,9 +135,9 @@ AFRAME.registerComponent('hide-mesh-tool', {
         {
           if (intersection.object.el.classList.contains("reference-glb"))
           {
-            let originalParent = intersection.object.el.parent
+            let originalParent = intersection.object.el.parentEl
             let originalEl = intersection.object.el
-            Undo.push(() => originalParent.append(el), {whenSafe: () => originalEl.destroy()})
+            Undo.push(() => originalParent.append(originalEl), {whenSafe: () => originalEl.destroy()})
             intersection.object.el.remove()
           }
           else
