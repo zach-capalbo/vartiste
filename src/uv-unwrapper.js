@@ -5,7 +5,7 @@ import {Undo} from './undo.js'
 Util.registerComponentSystem('uv-unwrapper', {
   schema: {
     autoClear: {default: false},
-    margin: {default: 0.002},
+    margin: {default: 0.00},
     autoDraw: {default: false},
   },
   init() {
