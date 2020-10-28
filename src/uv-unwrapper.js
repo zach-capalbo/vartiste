@@ -5,7 +5,7 @@ import {Undo} from './undo.js'
 Util.registerComponentSystem('uv-unwrapper', {
   schema: {
     autoClear: {default: false},
-    margin: {default: 0.002},
+    margin: {default: 0.00},
     autoDraw: {default: false},
   },
   init() {
@@ -26,9 +26,8 @@ Util.registerComponentSystem('uv-unwrapper', {
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
-    for (let mesh of Compositor.meshes)
+    for (let mesh of Compositor.nonCanvasMeshes)
     {
-      if (mesh === Compositor.el.getObject3D('mesh')) continue
       mesh.geometry.computeBoundingBox()
       tmpBox.copy(mesh.geometry.boundingBox)
       tmpBox.applyMatrix4(mesh.matrixWorld)
@@ -59,9 +58,8 @@ Util.registerComponentSystem('uv-unwrapper', {
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
-    for (let mesh of Compositor.meshes)
+    for (let mesh of Compositor.nonCanvasMeshes)
     {
-      if (mesh === Compositor.el.getObject3D('mesh')) continue
       mesh.geometry.computeBoundingBox()
       tmpBox.copy(mesh.geometry.boundingBox)
       tmpBox.applyMatrix4(mesh.matrixWorld)
@@ -171,7 +169,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     mesh.geometry.attributes.uv.needsUpdate = true
   },
   unwrap() {
-    for (let mesh of Compositor.meshes)
+    for (let mesh of Compositor.nonCanvasMeshes)
     {
       this.unwrapMesh(mesh)
     }
@@ -457,9 +455,8 @@ Util.registerComponentSystem('uv-unwrapper', {
     let ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    for (let mesh of Compositor.meshes)
+    for (let mesh of Compositor.nonCanvasMeshes)
     {
-      if (mesh === Compositor.el.getObject3D('mesh')) continue
       let geometry = mesh.geometry
       geometry = geometry.toNonIndexed()
 
