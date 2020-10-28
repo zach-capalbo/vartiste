@@ -1046,6 +1046,7 @@ class CompositorFinder {
     let traverseObjects = [document.getElementById('composition-view').getObject3D('mesh'), this.el.getObject3D('mesh')]
 
     this._meshes = []
+    this._nonCanvasMeshes = []
 
     for (let obj of traverseObjects)
     {
@@ -1055,7 +1056,18 @@ class CompositorFinder {
       })
     }
 
+    for (let mesh of this._meshes)
+    {
+      if (mesh !== this.el.getObject3D('mesh')) this._nonCanvasMeshes.push(mesh)
+    }
+
     return this._meshes
+  }
+
+  get nonCanvasMeshes() {
+    if (this.mesh === this._cachedMeshesMesh) return this._nonCanvasMeshes
+    let m = this.meshes
+    return this._nonCanvasMeshes
   }
 
   get object3D() {
