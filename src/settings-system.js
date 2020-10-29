@@ -245,8 +245,11 @@ Util.registerComponentSystem('settings-system', {
     mainCanvas.setAttribute('scale', "0.002 0.002 0.002")
   },
   async load(text) {
+    window.isLoadingProject = true
     let loadObj = JSON.parse(text)
     await ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
+    window.isLoadingProject = false
+    window.loadedSuccessfully = true
   },
   helpAction() {
     this.popup("landing.html", "Instructions")

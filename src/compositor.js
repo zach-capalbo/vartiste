@@ -970,7 +970,7 @@ AFRAME.registerComponent('compositor', {
       {
         for (let canvas of layer.frames)
         {
-
+          console.log("Resampleing", layer.id)
           resampleCtx.drawImage(canvas, 0, 0, width, height)
 
           canvas.width = width
@@ -978,6 +978,8 @@ AFRAME.registerComponent('compositor', {
 
           canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
         }
+        layer.width = width
+        layer.height = height
       }
       else
       {
@@ -1031,7 +1033,7 @@ class CompositorFinder {
   }
 
   get mesh() {
-    let compositionView = document.querySelector('#composition-view')
+    let compositionView = document.getElementById('composition-view')
     if (compositionView.getObject3D('mesh')) return compositionView.getObject3D('mesh').getObjectByProperty("type", "Mesh") || compositionView.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh") || this.el.getObject3D('mesh')
     return this.el.getObject3D('mesh')
   }

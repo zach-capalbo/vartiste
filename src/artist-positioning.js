@@ -179,11 +179,16 @@ AFRAME.registerComponent('reset-transform-on-vr', {
   dependencies: ["look-controls"],
   init() {
     this.el.components['look-controls'].onEnterVR = (function () {
-      if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR()) return
-
       // if (!this.el.sceneEl.checkHeadsetConnected()) { return; }
       this.saveCameraPose();
       this.el.object3D.position.set(0, 0, 0);
+
+      if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR())
+      {
+        this.el.sceneEl.systems['artist-root'].resetCameraLocation()
+        return
+      }
+
       this.el.sceneEl.systems['artist-root'].showOrientationResetPrompt()
       return
       // this.el.object3D.updateMatrix();
