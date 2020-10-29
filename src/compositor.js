@@ -970,7 +970,7 @@ AFRAME.registerComponent('compositor', {
       {
         for (let canvas of layer.frames)
         {
-
+          console.log("Resampleing", layer.id)
           resampleCtx.drawImage(canvas, 0, 0, width, height)
 
           canvas.width = width
@@ -978,6 +978,8 @@ AFRAME.registerComponent('compositor', {
 
           canvas.getContext('2d').drawImage(resampleCanvas, 0, 0, width, height)
         }
+        layer.width = width
+        layer.height = height
       }
       else
       {
