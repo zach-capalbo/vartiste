@@ -186,6 +186,7 @@ AFRAME.registerComponent('reset-transform-on-vr', {
       if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR())
       {
         this.el.sceneEl.systems['artist-root'].resetCameraLocation()
+        return
       }
 
       this.el.sceneEl.systems['artist-root'].showOrientationResetPrompt()
