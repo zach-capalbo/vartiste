@@ -37,6 +37,8 @@ exports.config = {
           "--no-sandbox"
         ]
       }
+    },
+    FileSystem: {
     }
   },
   include: {

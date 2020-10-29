@@ -1033,7 +1033,7 @@ class CompositorFinder {
   }
 
   get mesh() {
-    let compositionView = document.querySelector('#composition-view')
+    let compositionView = document.getElementById('composition-view')
     if (compositionView.getObject3D('mesh')) return compositionView.getObject3D('mesh').getObjectByProperty("type", "Mesh") || compositionView.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh") || this.el.getObject3D('mesh')
     return this.el.getObject3D('mesh')
   }

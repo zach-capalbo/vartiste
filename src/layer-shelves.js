@@ -11,6 +11,7 @@ AFRAME.registerComponent("layer-shelves", {
   init() {
     this.built = false
     this.shelves = {}
+    this.compositor = Compositor.component
     this.compositorEvents = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(k => k.startsWith("compositor_")).map(k => k.slice("compositor_".length))
     for (let e of this.compositorEvents)
     {
@@ -33,7 +34,7 @@ AFRAME.registerComponent("layer-shelves", {
     }
   },
   addLayerShelf(layer) {
-    let layerIdx = this.compositor.layers.indexOf(layer)
+    let layerIdx = Compositor.component.layers.indexOf(layer)
     console.log("Adding shelf for", layer, layerIdx)
     var container = document.createElement('a-entity')
     container.layer = layer
@@ -196,7 +197,7 @@ AFRAME.registerComponent("layer-shelves", {
       })
     }
 
-    if (!this.compositor.data.useNodes)
+    if (!Compositor.component.data.useNodes)
     {
       container.setAttribute('visible', false)
     }
