@@ -93,6 +93,31 @@ Util.registerComponentSystem('mesh-tools', {
 
     if (destinationCanvas.touch) destinationCanvas.touch()
   },
+  applyTransformation() {
+    let obj = Compositor.meshRoot
+    obj.matrix.multiply(obj.parent.matrix)
+    obj.parent.matrix.identity()
+    Util.applyMatrix(obj.parent.matrix, obj.parent)
+    Util.applyMatrix(obj.matrix, obj)
+  },
+  applyRotation() {
+    let mat = this.pool('mat', THREE.Matrix4)
+    let obj = Compositor.meshRoot
+    mat.extractRotation(obj.parent.rotation)
+    obj.matrix.multiply(mat)
+    obj.parent.rotation.set(0, 0, 0)
+    Util.applyMatrix(obj.parent.matrix, obj.parent)
+    Util.applyMatrix(obj.matrix, obj)
+  },
+  applyScale() {
+    let mat = this.pool('mat', THREE.Matrix4)
+    let obj = Compositor.meshRoot
+    mat.extractScale(obj.parent.rotation)
+    obj.matrix.multiply(mat)
+    obj.parent.scale.set(1, 1, 1)
+    Util.applyMatrix(obj.parent.matrix, obj.parent)
+    Util.applyMatrix(obj.matrix, obj)
+  }
 })
 
 AFRAME.registerSystem('hide-mesh-tool', {

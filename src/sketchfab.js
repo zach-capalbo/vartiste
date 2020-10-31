@@ -38,7 +38,7 @@ AFRAME.registerSystem('sketchfab', {
       isInspectable: true,
       tags: ["vartiste"],
       isPublished: false,
-      description: "Created in vartiste!",
+      description: "Created in VARTISTE!",
       source: 'vartiste',
       // options: {
       //   shading: 'lit'

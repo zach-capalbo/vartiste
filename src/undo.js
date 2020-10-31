@@ -1,5 +1,34 @@
-// Eases the creation of undo functionality
+// Eases the creation of undo functionality. You can either use a singleton Undo
+// stack by calling methods of `VARTISTE.Undo`, or create a new `UndoStack` for
+// individual needs.
+//
+// This works by pushing a function which undoes an action to the stack. Then
+// if needed, `undo()`` can be called to call this undo function. E.g.
+//
+//    Undo.pushCanvas(myCanvas); // Save the state of the canvas before doing anything
+//    myCanvas.getContext('2d').fillRect(0, 0, myCanvas.width, myCanvas.height);
+//    displayCanvasToUser(myCanvas);
+//    if (userDoesntLikeTheColor())
+//    {
+//        Undo.undo()
+//    }
+//
+// Or
+//
+//    Undo.push(() => object.position.x -= 3)
+//    object.position.x += 3
+//    if (notReallyInAGoodPositionAfterAll(object))
+//    {
+//      Undo.undo()
+//    }
 class UndoStack {
+  // Creates a new undo stack with a maximum size of `maxSize`. If more undo
+  // actions are pushed to the stack, then the oldest ones will fall off the
+  // bottom.
+  //
+  // *Note:* The constructor will create `maxSize` number of canvases to
+  // optimize the `pushCanvas` function. If `maxSize` is too big, this can use
+  // a lot of memory.
   constructor({maxSize = 10} = {}) {
     this.stack = []
     this.maxSize = maxSize
@@ -20,6 +49,8 @@ class UndoStack {
       this.maxSize = 99999
     }
   }
+
+  // When set to false, calls to this `UndoStack` will be ignored
   set enabled(value) {
     this._enabled = !!value
     if (!this.enabled)
@@ -28,9 +59,13 @@ class UndoStack {
       this.pushAllowed = true
     }
   }
+
+  // Whether this `UndoStack` is accepting undo functions
   get enabled() {
     return this._enabled
   }
+
+  // Clears the undo stack and resizes its undo canvases to `width` x `height`
   clearAndResize(width, height) {
     this.stack = []
     for (let i = 0; i < this.maxSize; ++i)
@@ -39,6 +74,8 @@ class UndoStack {
       this.canvas[i].height = height
     }
   }
+
+  //
   pushCanvas(canvas) {
     if (!this.enabled) return
     // let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)

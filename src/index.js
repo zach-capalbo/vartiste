@@ -66,6 +66,7 @@ require('./fix-oculus-steamvr')
 require('./volumetrics')
 require('./quick-menu')
 require('./canvas-fx')
+require('./crash-handler')
 // require('./text')
 
 require('./app.styl')

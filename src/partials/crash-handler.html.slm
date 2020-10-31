@@ -1,0 +1,18 @@
+#crash-handler
+  h2 Oh no! It looks like VARTISTE Crashed 😱
+  markdown:
+    Really sorry about that. VARTISTE is a hobby project in active development,
+    so unfortunately it's bound to happen. I'd definitely appreciate if you file
+    a bug to report the crash at the [issue list](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue[assignee_id]=&issue[milestone_id]=&issue[title]=CrashDetection)
+
+  h2 Recovery Options
+
+  p There's a few things we can try to salvage whatever you've been working on.
+
+  #recovery-attempt-message
+
+  ul
+    li: a href="#" click-action="saveProject" Attempt to download the project file
+    li: a href="#" click-action="saveGLB" Attempt to export the GLB file
+    li: a href="#" click-action="saveLayers" Attempt to export each layer as a PNG
+    li: a href="#" click-action="dismiss" Ignore. This is not actually a crash

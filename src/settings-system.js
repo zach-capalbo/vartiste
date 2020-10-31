@@ -10,7 +10,8 @@ import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
 Util.registerComponentSystem('settings-system', {
   schema: {
-    addReferences: {default: false}
+    addReferences: {default: false},
+    exportJPEG: {default: false},
   },
   init() {
     console.log("Starting settings")

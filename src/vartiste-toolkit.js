@@ -130,12 +130,12 @@ if (checkFile('./artist-positioning')) require('./artist-positioning')
 if (checkFile('./canvas-fx')) require('./canvas-fx')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
-const {Undo} = require('./undo')
+const {Undo, UndoStack} = require('./undo')
 const {Pool} = require('./pool')
 const {MaterialTransformations} = require('./material-transformations')
 window.VARTISTE = {}
 VARTISTE.Util = require('./util.js').Util
-Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, MaterialTransformations})
+Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoStack, MaterialTransformations})
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {
