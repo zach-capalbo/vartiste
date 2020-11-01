@@ -68,6 +68,9 @@
           <!-- Easily export entities or even the entire scene to a GLB file -->
           <a-entity icon-button="#asset-floppy" tooltip="Download this scene as GLB" system-click-action="system: glb-exporter; action: downloadGLB"></a-entity>
 
+          <!-- Use the VARTISTE undo system to easily undo changes, too -->
+          <a-entity icon-button="#asset-undo" tooltip="Undo" onclick="VARTISTE.Undo.undo()"></a-entity>
+
           <a-entity icon-button="#asset-help-circle-outline" system-click-action="system: toolkit-demo; action: help" tooltip="VARTISTE Toolkit Documentation"></a-entity>
         </a-entity>
         <a-entity position="0 0.5 0" text="width: 3.4; wrapCount: 35; value: Welcome to the VARTISTE toolkit demo"></a-entity>
@@ -106,6 +109,7 @@
     <a-sphere class="clickable"
               constrain-to-sphere=""
               manipulator-weight="type: slow; weight: 0.9"
+              grab-options="undoable: true"
               material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
   </a-scene>
 </body>
