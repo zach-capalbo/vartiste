@@ -27,7 +27,10 @@ AFRAME.registerSystem('crash-handler', {
         this.numberOfBygoneTicks = 0
         return
       }
-      this.installCrashCheck()
+      else if (document.visibilityState === 'visible')
+      {
+        this.installCrashCheck()
+      }
     })
 
     this.handleCrash = this._handleCrash
@@ -35,7 +38,7 @@ AFRAME.registerSystem('crash-handler', {
   tick(t, dt) {
     this.numberOfBygoneTicks = 0
     this.installCrashCheck()
-    if (this.hasCrashed) this.clearCrash()
+    if (this.crashShown) this.clearCrash()
     if (this.shouldCrash) throw new Error("Simulated VARTISTE crash")
   },
   installCrashCheck() {
@@ -46,15 +49,18 @@ AFRAME.registerSystem('crash-handler', {
     }
   },
   _handleCrash() {
+    if (this.crashShown) return
     console.error("Handling crash. What to do what to do 😱");
     this.noticeDiv.classList.remove("hidden")
     this.hasCrashed = true
+    this.crashShown = true
 
     this.handleCrash = function() {};
   },
   clearCrash() {
-    console.info("Clearing crash")
-    this.handleCrash = this._handleCrash()
+    this.handleCrash = this._handleCrash
+    this.numberOfBygoneTicks = 0
+    this.crashShown = false
   },
   tryRecoveryOption(option)
   {

@@ -8,9 +8,8 @@ module.exports = function() {
     // It is recommended to place a general 'login' function here.
     async checkLogForErrors() {
       let logs = await this.grabBrowserLogs()
-      console.log(`L: ${logs[0]._type}`)
       logs.forEach(l => {
-        if (/error/i.test(l._type) && !l._text.includes("ws://127.0.0.1:6437/v6.json"))
+        if (/error/i.test(l._type) && !l._text.includes("/v6.json") && !l._text.includes("the server responded with a status of 503 ()"))
         {
           assert.fail(l._text)
         }
