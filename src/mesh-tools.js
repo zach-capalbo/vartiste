@@ -1,7 +1,11 @@
 import {Util} from './util.js'
 import {Undo} from './undo.js'
+import {Pool} from './pool.js'
 
 Util.registerComponentSystem('mesh-tools', {
+  init()  {
+    Pool.init(this)
+  },
   subdivide() {
     let mod = new THREE.SubdivisionModifier(2)
     Compositor.meshRoot.traverse(o => {
@@ -94,29 +98,40 @@ Util.registerComponentSystem('mesh-tools', {
     if (destinationCanvas.touch) destinationCanvas.touch()
   },
   applyTransformation() {
-    let obj = Compositor.meshRoot
-    obj.matrix.multiply(obj.parent.matrix)
-    obj.parent.matrix.identity()
-    Util.applyMatrix(obj.parent.matrix, obj.parent)
+    let obj = Compositor.meshTransformRoot
+    let parent = Compositor.meshRoot.parent
+    obj.matrix.multiply(parent.matrix)
+    parent.matrix.identity()
+    Util.applyMatrix(parent.matrix, parent)
     Util.applyMatrix(obj.matrix, obj)
+  },
+  applyTranslation() {
+    let mat = this.pool('mat', THREE.Matrix4)
+    let obj = Compositor.meshRoot
+    // mat.identity()
+    // mat.copyPosition(obj.parent.matrix)
+    // obj.matrix.multiply(mat)
+    // obj.parent.position.set(0, 0, 0)
+    // Util.applyMatrix(obj.matrix, obj)
+    // obj.position.multiplyVectors(obj.parent.position, obj.parent.scale)
+    // obj.position.applyQuaternion(obj.parent.quaternion)
+    // obj.parent.position.set(0, 0, 0)
   },
   applyRotation() {
     let mat = this.pool('mat', THREE.Matrix4)
-    let obj = Compositor.meshRoot
-    mat.extractRotation(obj.parent.rotation)
+    let obj = Compositor.meshTransformRoot
+    let parent = Compositor.meshRoot.parent
+    mat.extractRotation(parent.matrix)
     obj.matrix.multiply(mat)
-    obj.parent.rotation.set(0, 0, 0)
-    Util.applyMatrix(obj.parent.matrix, obj.parent)
+    parent.rotation.set(0, 0, 0)
     Util.applyMatrix(obj.matrix, obj)
   },
   applyScale() {
     let mat = this.pool('mat', THREE.Matrix4)
-    let obj = Compositor.meshRoot
-    mat.extractScale(obj.parent.rotation)
-    obj.matrix.multiply(mat)
-    obj.parent.scale.set(1, 1, 1)
-    Util.applyMatrix(obj.parent.matrix, obj.parent)
-    Util.applyMatrix(obj.matrix, obj)
+    let obj = Compositor.meshTransformRoot
+    let parent = Compositor.meshRoot.parent
+    obj.scale.copy(parent.scale)
+    parent.scale.set(1, 1, 1)
   }
 })
 

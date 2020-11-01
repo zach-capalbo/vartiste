@@ -921,8 +921,100 @@ AFRAME.registerComponent('movement-tool', {
 })
 
 AFRAME.registerComponent('selection-box-tool', {
-  dependencies: ['six-dof-tool'],
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}}
+  },
+  events: {
+    stateadded: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.startGrab()
+      }
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.stopGrab()
+      }
+    },
+    click: function(e) {
+      this.grabbing = !this.grabbing
+      this.box.setAttribute('material', 'color', this.grabbing ? '#6fde96' : "#333")
+      if (this.grabbing && this.el.is('grabbed'))
+      {
+        this.startGrab()
+      }
+      else if (this.el.is('grabbed'))
+      {
+        this.stopGrab()
+      }
+    }
+  },
   init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3})
+    this.el.append(this.handle)
+    Pool.init(this)
 
+    let box = document.createElement('a-box')
+    this.box = box
+    box.classList.add('clickable')
+    box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
+    this.el.append(box)
+    this.grabbing = false
+  },
+  update(oldData) {
+    this.box.setAttribute('width', this.data.boxSize.x)
+    this.box.setAttribute('height', this.data.boxSize.y)
+    this.box.setAttribute('depth', this.data.boxSize.z)
+    this.box.setAttribute('position', {x: 0, y: this.data.boxSize.y / 2, z: 0})
+  },
+  startGrab() {
+    let objects = document.querySelectorAll('.clickable, .canvas')
+    this.grabbers = {}
+    this.grabbed = {}
+    this.grabberId = {}
+
+    this.box.getObject3D('mesh').geometry.computeBoundingBox()
+    let boundingBox = this.box.getObject3D('mesh').geometry.boundingBox
+
+    let worldPos = this.pool('worldPos', THREE.Vector3)
+    let localPos = this.pool('localPos', THREE.Vector3)
+    for (let el of objects) {
+      let target = Util.resolveGrabRedirection(el)
+      if (target === this.el) continue
+      if (target.object3D.uuid in this.grabbers) continue
+
+      el.object3D.getWorldPosition(worldPos)
+      localPos.copy(worldPos)
+      this.box.getObject3D('mesh').worldToLocal(localPos)
+      if (!boundingBox.containsPoint(localPos)) continue
+
+      let obj = new THREE.Object3D
+      this.el.object3D.add(obj)
+      Util.positionObject3DAtTarget(obj, target.object3D)
+      this.grabbers[target.object3D.uuid] = obj
+      this.grabbed[obj.uuid] = target
+      this.grabberId[obj.uuid] = obj
+    }
+    this.tick = this._tick;
+  },
+  stopGrab() {
+    this.tick = function(){};
+  },
+  tick(t,dt) {},
+  _tick(t, dt) {
+    if (!this.el.is('grabbed')) return
+    if (!this.grabbing) return
+
+    for (let obj of Object.values(this.grabbers))
+    {
+      Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
+
+      //?
+      // if (this.grabbed[obj.uuid].manipulatorConstraint) this.grabbed[obj.uuid].manipulatorConstraint(t, dt)
+
+    }
   }
 })
