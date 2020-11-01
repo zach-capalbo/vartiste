@@ -21,6 +21,13 @@ Scenario('Load Preset', async (I) => {
   I.executeScript(() => document.querySelector('a-scene').systems['settings-system'].saveAction())
   I.amInPath('output/downloads');
   I.seeFileNameMatching('.vartiste')
+
+  I.handleDownloads()
+  I.executeScript(() => document.querySelector('a-scene').systems['settings-system'].export3dAction())
+  I.amInPath('output/downloads');
+  I.seeFileNameMatching('.glb');
+
+  await I.checkLogForErrors()
 });
 
 Scenario('Crash the page', async (I) => {
@@ -31,4 +38,22 @@ Scenario('Crash the page', async (I) => {
 
   I.executeScript(() => document.querySelector('a-scene').systems['crash-handler'].shouldCrash = true)
   I.see("It looks like VARTISTE Crashed")
+  await I.grabBrowserLogs()
+})
+
+Scenario('Toolkit Docs', async (I) => {
+  I.amOnPage("/docs.html");
+  I.see("glb-exporter")
+  await I.checkLogForErrors()
+})
+
+Scenario('Toolkit test', async (I) => {
+  I.amOnPage("/toolkit-test.html");
+  I.waitForFunction(() => document.querySelector('a-scene').hasLoaded, 20)
+  I.executeScript(() =>
+  {
+    Object.entries(document.querySelector('a-scene').systems).find(e => e[1].tick)[1].tick = () => window.hasTicked = true
+  })
+  I.waitForFunction(() => window.hasTicked, 20)
+  await I.checkLogForErrors()
 })
