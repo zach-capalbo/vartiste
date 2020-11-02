@@ -37,11 +37,12 @@ AFRAME.registerSystem('crash-handler', {
   },
   tick(t, dt) {
     this.numberOfBygoneTicks = 0
-    this.installCrashCheck()
+    if (dt < 50 && !this.interval && document.visibilityState === "visible") this.installCrashCheck()
     if (this.crashShown) this.clearCrash()
     if (this.shouldCrash) throw new Error("Simulated VARTISTE crash")
   },
   installCrashCheck() {
+    console.log("Installing check")
     if (!this.interval) {
       this.interval = window.setInterval(() => {
         if (this.numberOfBygoneTicks++ > 5) this.handleCrash()
