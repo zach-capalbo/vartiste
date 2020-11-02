@@ -867,6 +867,43 @@ AFRAME.registerComponent('lever', {
   }
 })
 
+// A lever that when pulled all the way down emits a 'click' event
+AFRAME.registerComponent('slot-machine', {
+  dependencies: ['lever'],
+  schema: {
+    // **[0..1]** How far down the lever has to be pulled to emit the event
+    threshold: {default: 0.8},
+
+    // **[0..1]** How far up past the threshold the lever has to go to be reset
+    // and able to trigger the event again
+    debounce: {default: 0.05},
+
+    // How fast the lever returns to its starting position
+    resetSpeed: {default: 0.8}
+  },
+  events: {
+    anglechanged: function(e) {
+      if (e.detail.value > this.data.threshold && !this.pulled)
+      {
+        this.el.emit('click', {type: 'slot'})
+        this.pulled = true
+      }
+      else if (e.detail.value < this.data.threshold - this.data.debounce) {
+        this.pulled = false
+      }
+    }
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+  },
+  tick(t, dt) {
+    if (!this.el.grabbed && this.el.components.lever.value > 0) {
+      this.el.components.lever.value = THREE.Math.clamp((this.el.components.lever.value || 0.0) - this.data.resetSpeed * dt / 1000, 0, 1)
+      this.el.components.lever.setValue(this.el.components.lever.value)
+    }
+  }
+})
+
 
 // AFRAME.registerComponent('constrain-track-to', {
 //   schema: {

@@ -250,6 +250,15 @@ class VARTISTEUtil {
     //v = (v < 0) ?  1.0 - v : v
     return val
   }
+
+  resolveGrabRedirection(targetEl) {
+    let target = targetEl
+    for (let redirection = targetEl['redirect-grab']; redirection; redirection = target['redirect-grab'])
+    {
+      target = redirection
+    }
+    return target
+  }
 }
 
 const Util = new VARTISTEUtil();

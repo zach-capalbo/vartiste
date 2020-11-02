@@ -1042,6 +1042,10 @@ class CompositorFinder {
     return document.getElementById('composition-view').getObject3D('mesh') || document.getElementById('canvas-view').getObject3D('mesh')
   }
 
+  get meshTransformRoot() {
+    return (this.meshRoot.type === 'Scene') ? this.meshRoot.children[0] : this.meshRoot
+  }
+
   get meshes() {
     if (this.mesh === this._cachedMeshesMesh) return this._meshes
 

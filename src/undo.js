@@ -1,5 +1,34 @@
-// Eases the creation of undo functionality
+// Eases the creation of undo functionality. You can either use a singleton Undo
+// stack by calling methods of `VARTISTE.Undo`, or create a new `UndoStack` for
+// individual needs.
+//
+// This works by pushing a function which undoes an action to the stack. Then
+// if needed, `undo()`` can be called to call this undo function. E.g.
+//
+//    Undo.pushCanvas(myCanvas); // Save the state of the canvas before doing anything
+//    myCanvas.getContext('2d').fillRect(0, 0, myCanvas.width, myCanvas.height);
+//    displayCanvasToUser(myCanvas);
+//    if (userDoesntLikeTheColor())
+//    {
+//        Undo.undo()
+//    }
+//
+// Or
+//
+//    Undo.push(() => object.position.x -= 3)
+//    object.position.x += 3
+//    if (notReallyInAGoodPositionAfterAll(object))
+//    {
+//      Undo.undo()
+//    }
 class UndoStack {
+  // Creates a new undo stack with a maximum size of `maxSize`. If more undo
+  // actions are pushed to the stack, then the oldest ones will fall off the
+  // bottom.
+  //
+  // *Note:* The constructor will create `maxSize` number of canvases to
+  // optimize the `pushCanvas` function. If `maxSize` is too big, this can use
+  // a lot of memory.
   constructor({maxSize = 10} = {}) {
     this.stack = []
     this.maxSize = maxSize
@@ -20,6 +49,8 @@ class UndoStack {
       this.maxSize = 99999
     }
   }
+
+  // When set to false, calls to this `UndoStack` will be ignored
   set enabled(value) {
     this._enabled = !!value
     if (!this.enabled)
@@ -28,9 +59,13 @@ class UndoStack {
       this.pushAllowed = true
     }
   }
+
+  // Whether this `UndoStack` is accepting undo functions
   get enabled() {
     return this._enabled
   }
+
+  // Clears the undo stack and resizes its undo canvases to `width` x `height`
   clearAndResize(width, height) {
     this.stack = []
     for (let i = 0; i < this.maxSize; ++i)
@@ -39,6 +74,9 @@ class UndoStack {
       this.canvas[i].height = height
     }
   }
+
+  // Adds the current state of `canvas` to the undo stack such that calling undo
+  // later will restore it even after other edits.
   pushCanvas(canvas) {
     if (!this.enabled) return
     // let imageData = canvas.getContext('2d').getImageData(0,0,canvas.width, canvas.height)
@@ -67,6 +105,11 @@ class UndoStack {
       if (canvas.touch) canvas.touch()
     })
   }
+
+  // Pushes `f` to the undo stack. When `undo()` is called and `f` is at the top
+  // of the stack, it will be called. If `f` goes off of the undo stack without
+  // being called, (e.g., due to the max undo size), then `whenSafe` will be
+  // called if provided.
   push(f, {whenSafe} = {}) {
     if (!this.pushAllowed) return
     this.stack.push(f)
@@ -80,6 +123,10 @@ class UndoStack {
       }
     }
   }
+
+  // Executes `f` and collects and `push()` or `pushCanvas` calls while f is
+  // running into a single undo operation, such that if `undo()` is called, it
+  // will undo all of them at once.
   collect(f) {
     var realStack = this.stack
     var realMaxSize = this.maxSize
@@ -104,10 +151,17 @@ class UndoStack {
       }
     })
   }
+
+  // Removes the next item from the undo stack and executes the undo action. Any
+  // attempts to push to the undo stack during the undo operation will be
+  // blocked.
   undo() {
     if (this.stack.length === 0) return
     this.block(this.stack.pop())
   }
+
+  // Executes `f`, while blocking any attempts to push anything to the undo
+  // stack.
   block(f) {
     try {
       this.pushAllowed = false
@@ -120,7 +174,13 @@ class UndoStack {
       throw e
     }
   }
+
+  // Clears the undo stack
   clear() {
+    for (let s of this.stack)
+    {
+      if (s.whenSafe) s.whenSafe()
+    }
     this.stack = []
   }
 }
