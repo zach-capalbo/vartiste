@@ -105,6 +105,8 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj)$/i, ""))
   }
 
+  let startingLayerLength = compositor.layers.length
+
   let startingLayer = compositor.activeLayer
 
   let format = 'glb'
@@ -302,11 +304,17 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     {
       try {
         compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+        while (compositor.layers.indexOf(compositor.activeLayer) > startingLayerLength)
+        {
+          compositor.swapLayers(compositor.activeLayer, compositor.layers[compositor.layers.indexOf(compositor.activeLayer) - 1])
+        }
       }
       catch (e) {
         console.error("Could not bake vertex colors", e)
       }
     }
+
+    compositor.activateLayer(startingLayer);
   })()
 }
 
