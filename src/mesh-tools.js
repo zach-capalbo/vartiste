@@ -132,6 +132,29 @@ Util.registerComponentSystem('mesh-tools', {
     let parent = Compositor.meshRoot.parent
     obj.scale.copy(parent.scale)
     parent.scale.set(1, 1, 1)
+  },
+  applyTransformationToVertices() {
+    let mat = this.pool('mat', THREE.Matrix4)
+    let pos = this.pool('pos', THREE.Vector3)
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      mat.copy(mesh.matrix)
+      for (let parent = mesh.parent; parent && parent !== Compositor.meshRoot.parent; parent = parent.parent)
+      {
+        mat.premultiply(parent.matrix)
+      }
+
+      mesh.geometry.attributes.position.applyMatrix4(mat)
+      mesh.geometry.attributes.position.needsUpdate = true
+    }
+
+    Compositor.meshRoot.traverse(o => {
+      if (o.matrix)
+      {
+        o.matrix.identity()
+        Util.applyMatrix(o.matrix, o)
+      }
+    })
   }
 })
 
