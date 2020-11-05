@@ -23,6 +23,7 @@ AFRAME.registerComponent('skeletonator', {
     else
     {
       rootBone = new THREE.Bone();
+      rootBone.name = "root";
       Compositor.meshRoot.add(rootBone)
       Util.positionObject3DAtTarget(rootBone, Compositor.meshRoot)
       // Util.applyMatrix(Compositor.meshRoot.matrixWorld, rootBone)
@@ -31,10 +32,14 @@ AFRAME.registerComponent('skeletonator', {
     }
     this.rootBone = rootBone
 
+    this.meshes = []
+
     console.log("Converting meshes to skinned mesh")
     for (let mesh of Compositor.nonCanvasMeshes)
     {
-      if (mesh.type === 'SkinnedMesh') continue
+      if (mesh.type === 'SkinnedMesh') {
+        this.meshes.push(mesh)
+      }
 
       var position = mesh.geometry.attributes.position;
 
@@ -55,10 +60,12 @@ AFRAME.registerComponent('skeletonator', {
       mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
 
       let skinnedMesh = new THREE.SkinnedMesh(mesh.geometry, mesh.material)
+      skinnedMesh.name = mesh.name
       if (skinnedMesh.name == "")
       {
         skinnedMesh.name = shortid.generate()
       }
+      skinnedMesh.el = mesh.el
 
       let mat = this.pool('mat', THREE.Matrix4)
 
@@ -86,6 +93,7 @@ AFRAME.registerComponent('skeletonator', {
       mesh.parent.remove(mesh)
       meshRootBone.add(skinnedMesh)
 
+      this.meshes.push(skinnedMesh)
       if (!this.mesh) this.mesh = skinnedMesh
     }
 
@@ -112,28 +120,33 @@ AFRAME.registerComponent('skeletonator', {
     }
 
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
   },
   tick(t, dt) {
-    if (!this.el.classList.contains("canvas") && this.mesh.material !== this.skinningMaterial)
+    if (!this.el.classList.contains("canvas"))
     {
-      for (let mesh of Compositor.nonCanvasMeshes)
+      if (!this.skinningMaterial)
       {
-        let oldMaterial = mesh.material
-        mesh.material = new THREE.MeshStandardMaterial({
+        this.skinningMaterial = new THREE.MeshStandardMaterial({
           skinning: true,
           transparent: true,
           opacity: 0.5
         })
-        this.skinningMaterial = mesh.material
+
+        let oldMaterial = Compositor.material
 
         for (let mode of ["map"].concat(THREED_MODES))
         {
           if (oldMaterial[mode])
           {
-            mesh.material[mode] = oldMaterial[mode]
+            this.skinningMaterial[mode] = oldMaterial[mode]
           }
         }
+      }
+
+      for (let mesh of this.meshes)
+      {
+        if (mesh.material === this.skinningMaterial) continue
+        mesh.material = this.skinningMaterial
       }
     }
   },
@@ -141,8 +154,14 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.add('canvas')
     Compositor.el.removeEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: false})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', true))
-    this.mesh.material = Compositor.material
+
+    console.log("Pausing Skeletonator")
+
+    for (let mesh of this.meshes)
+    {
+      mesh.material = Compositor.material
+      console.log("M", mesh.material === Compositor.material, mesh.material, Compositor.material)
+    }
 
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
@@ -153,7 +172,6 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.remove('canvas')
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
     this.mesh.material = this.skinningMaterial
 
     for (let el of document.querySelectorAll('*[raycaster]'))
@@ -565,7 +583,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
   },
   exportSkinnedMesh() {
-    for (let mesh of Compositor.nonCanvasMeshes) { mesh.material = Compositor.material }
+    for (let mesh of this.meshes) { mesh.material = Compositor.material }
     this.el.sceneEl.systems["settings-system"].export3dAction(Compositor.meshRoot)
   },
   clearTracks() {
@@ -600,7 +618,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     // mesh.bind(new THREE.Skeleton(bones), newSkeleton ? bones[0].matrixWorld : inv)
     // mesh.pose()
 
-    for (let mesh of Compositor.nonCanvasMeshes)
+    for (let mesh of this.meshes)
     {
       mesh.bind(new THREE.Skeleton(bones), new THREE.Matrix4)
     }
