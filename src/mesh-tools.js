@@ -146,6 +146,13 @@ Util.registerComponentSystem('mesh-tools', {
 
       mesh.geometry.attributes.position.applyMatrix4(mat)
       mesh.geometry.attributes.position.needsUpdate = true
+
+      if (mesh.geometry.attributes.normal)
+      {
+        mat.extractRotation(mat)
+        mesh.geometry.attributes.normal.applyMatrix4(mat)
+        mesh.geometry.attributes.normal.needsUpdate = true
+      }
     }
 
     Compositor.meshRoot.traverse(o => {
