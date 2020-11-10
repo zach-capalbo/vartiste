@@ -132,8 +132,8 @@ AFRAME.registerComponent('skeletonator', {
 
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
 
-    let helper = new THREE.SkeletonHelper(this.rootBone)
-    this.rootBone.add(helper)
+    // let helper = new THREE.SkeletonHelper(this.rootBone)
+    // this.rootBone.add(helper)
   },
   tick(t, dt) {
     if (!this.el.classList.contains("canvas"))
@@ -328,6 +328,8 @@ AFRAME.registerComponent('skeletonator', {
 
       let rootBone = Math.max(bones.indexOf(mesh.parent), 0)
 
+      console.log("Root Bone", rootBone)
+
       for (let vi = 0; vi < vertexUvs.count; vi ++ )
       {
         uv.fromBufferAttribute(vertexUvs, vi)
@@ -372,10 +374,14 @@ AFRAME.registerComponent('skeletonator', {
 
         if (norm < 1.0)
         {
-          topFour[3].idx = 0
+          topFour[3].idx = rootBone
           topFour[3].weight = 1.0 - norm
           norm = 1.0
         }
+
+        if (topFour[1].weight == 0) topFour[1].idx = 0
+        if (topFour[2].weight == 0) topFour[2].idx = 0
+        if (topFour[3].weight == 0) topFour[3].idx = 0
 
         skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
         skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
@@ -629,7 +635,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
   },
   exportSkinnedMesh() {
-    for (let mesh of this.meshes) { mesh.material = Compositor.material }
+    for (let mesh of this.el.skeletonator.meshes) { mesh.material = Compositor.material }
     this.el.sceneEl.systems["settings-system"].export3dAction(Compositor.meshRoot)
   },
   clearTracks() {
@@ -667,15 +673,15 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     for (let mesh of this.el.skeletonator.meshes)
     {
       mesh.bind(new THREE.Skeleton(bones
-      //   , bones.map(b => {
-      //   let idx = mesh.skeleton.bones.indexOf(b)
-      //   if (b >= 0) return mesh.skeleton.boneInverses[idx]
-      //   let m = new THREE.Matrix4()
-      //   m.copy(b.parent.matrix)
-      //   m.multiply(b.matrix)
-      //   m.getInverse(m)
-      //   return m
-      // })
+        , bones.map(b => {
+        let idx = mesh.skeleton.bones.indexOf(b)
+        if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
+        let m = this.pool('mat', THREE.Matrix4)
+        m.copy(b.matrixWorld)
+        m.getInverse(m)
+        m.multiply(mesh.matrixWorld)
+        return m
+      })
     ), new THREE.Matrix4)
     }
   },
