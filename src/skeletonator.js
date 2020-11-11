@@ -120,6 +120,11 @@ AFRAME.registerComponent('skeletonator', {
     document.querySelector('#left-shelf').append(controlPanel)
     this.controlPanel = controlPanel
 
+    Util.whenLoaded(controlPanel, () => {
+      controlPanel.querySelector('*[shelf-summoner]').components['shelf-summoner'].update()
+      controlPanel.querySelector('*[shelf-summoner]').components['shelf-summoner'].summon()
+    })
+
     this.setupBones()
 
     this.onFrameChange = this.onFrameChange.bind(this)

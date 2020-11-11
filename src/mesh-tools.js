@@ -6,6 +6,9 @@ Util.registerComponentSystem('mesh-tools', {
   init()  {
     Pool.init(this)
   },
+  exportAll() {
+    this.el.sceneEl.systems['settings-system'].export3dAction(document.getElementById('canvas-root').object3D)
+  },
   subdivide() {
     let mod = new THREE.SubdivisionModifier(2)
     Compositor.meshRoot.traverse(o => {
