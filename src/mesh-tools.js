@@ -1,6 +1,7 @@
 import {Util} from './util.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
+import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
 
 Util.registerComponentSystem('mesh-tools', {
   init()  {
@@ -24,6 +25,16 @@ Util.registerComponentSystem('mesh-tools', {
       if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
       {
         o.geometry = mod.modify(o.geometry, o.geometry.attributes.position.count * factor)
+      }
+    })
+  },
+  mergeByDistance(factor = 1.0e-2) {
+    Compositor.meshRoot.traverse(o => {
+      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+      {
+        let mergedGeometry = BufferGeometryUtils.mergeVertices(o.geometry, factor)
+        console.log(`Reducing geometry ${o.geometry.attributes.position.count} -> ${mergedGeometry.attributes.position.count}`)
+        o.geometry = mergedGeometry
       }
     })
   },
@@ -156,6 +167,9 @@ Util.registerComponentSystem('mesh-tools', {
         mesh.geometry.attributes.normal.applyMatrix4(mat)
         mesh.geometry.attributes.normal.needsUpdate = true
       }
+
+      mesh.geometry.computeBoundingBox()
+      mesh.geometry.computeBoundingSphere()
     }
 
     Compositor.meshRoot.traverse(o => {
