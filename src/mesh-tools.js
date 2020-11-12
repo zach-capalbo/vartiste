@@ -1,10 +1,14 @@
 import {Util} from './util.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
+import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
 
 Util.registerComponentSystem('mesh-tools', {
   init()  {
     Pool.init(this)
+  },
+  exportAll() {
+    this.el.sceneEl.systems['settings-system'].export3dAction(document.getElementById('canvas-root').object3D)
   },
   subdivide() {
     let mod = new THREE.SubdivisionModifier(2)
@@ -21,6 +25,16 @@ Util.registerComponentSystem('mesh-tools', {
       if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
       {
         o.geometry = mod.modify(o.geometry, o.geometry.attributes.position.count * factor)
+      }
+    })
+  },
+  mergeByDistance(factor = 1.0e-2) {
+    Compositor.meshRoot.traverse(o => {
+      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+      {
+        let mergedGeometry = BufferGeometryUtils.mergeVertices(o.geometry, factor)
+        console.log(`Reducing geometry ${o.geometry.attributes.position.count} -> ${mergedGeometry.attributes.position.count}`)
+        o.geometry = mergedGeometry
       }
     })
   },
@@ -132,6 +146,39 @@ Util.registerComponentSystem('mesh-tools', {
     let parent = Compositor.meshRoot.parent
     obj.scale.copy(parent.scale)
     parent.scale.set(1, 1, 1)
+  },
+  applyTransformationToVertices() {
+    let mat = this.pool('mat', THREE.Matrix4)
+    let pos = this.pool('pos', THREE.Vector3)
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      mat.copy(mesh.matrix)
+      for (let parent = mesh.parent; parent && parent !== Compositor.meshRoot.parent; parent = parent.parent)
+      {
+        mat.premultiply(parent.matrix)
+      }
+
+      mesh.geometry.attributes.position.applyMatrix4(mat)
+      mesh.geometry.attributes.position.needsUpdate = true
+
+      if (mesh.geometry.attributes.normal)
+      {
+        mat.extractRotation(mat)
+        mesh.geometry.attributes.normal.applyMatrix4(mat)
+        mesh.geometry.attributes.normal.needsUpdate = true
+      }
+
+      mesh.geometry.computeBoundingBox()
+      mesh.geometry.computeBoundingSphere()
+    }
+
+    Compositor.meshRoot.traverse(o => {
+      if (o.matrix)
+      {
+        o.matrix.identity()
+        Util.applyMatrix(o.matrix, o)
+      }
+    })
   }
 })
 

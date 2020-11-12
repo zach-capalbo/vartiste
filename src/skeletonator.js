@@ -4,6 +4,12 @@ import {Util} from "./util.js"
 import {Pool} from "./pool.js"
 import {OutputNode} from './layer.js'
 
+Util.registerComponentSystem('skeletonator-system', {
+  schema: {
+    lockLength: {default: true},
+  }
+})
+
 AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},
@@ -11,22 +17,49 @@ AFRAME.registerComponent('skeletonator', {
     recordFrameCount: {default: false},
   },
   init() {
+    Pool.init(this)
     window.Skeletonator = this
+    this.system = this.el.sceneEl.systems['skeletonator-system']
+    this.system.skeletonator = this
+    this.system.skeletonatorEl = this.el
+
     this.mesh = this.el.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh")
 
-    if (!this.mesh)
+    let rootBone
+    if (this.mesh)
     {
-      console.log("Converting first mesh to skinned mesh")
-      let firstMesh = this.el.getObject3D('mesh').getObjectByProperty("type", "Mesh")
+      rootBone = this.mesh.skeleton.bones[0]
+    }
+    else
+    {
+      rootBone = new THREE.Bone();
+      rootBone.name = "root";
+      Compositor.meshRoot.add(rootBone)
+      Util.positionObject3DAtTarget(rootBone, Compositor.meshRoot)
+      // Util.applyMatrix(Compositor.meshRoot.matrixWorld, rootBone)
+      Compositor.meshRoot.matrix.identity()
+      Util.applyMatrix(Compositor.meshRoot.matrix, Compositor.meshRoot)
+    }
+    this.rootBone = rootBone
 
-      var position = firstMesh.geometry.attributes.position;
+    this.meshes = []
+
+    console.log("Converting meshes to skinned mesh")
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      if (mesh.type === 'SkinnedMesh') {
+        this.meshes.push(mesh)
+        continue
+      }
+
+      var position = mesh.geometry.attributes.position;
 
       var skinIndices = [];
       var skinWeights = [];
 
       for ( var i = 0; i < position.count; i ++ ) {
 
-      	var skinIndex = 0;
+      	var skinIndex = 1;
       	var skinWeight = 1.0;
 
       	skinIndices.push( skinIndex, 0, 0, 0 );
@@ -34,26 +67,45 @@ AFRAME.registerComponent('skeletonator', {
 
       }
 
-      firstMesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
-      firstMesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+      mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+      mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
 
-      let skinnedMesh = new THREE.SkinnedMesh(firstMesh.geometry, firstMesh.material)
+      let skinnedMesh = new THREE.SkinnedMesh(mesh.geometry, mesh.material)
+      skinnedMesh.name = mesh.name
       if (skinnedMesh.name == "")
       {
-        skinnedMesh.name = "mesh"
+        skinnedMesh.name = shortid.generate()
       }
-      // Util.applyMatrix(firstMesh.matrix, skinnedMesh)
+      skinnedMesh.el = mesh.el
 
-      let rootBone = new THREE.Bone()
-      rootBone.name = "root"
-      skinnedMesh.add(rootBone)
+      let mat = this.pool('mat', THREE.Matrix4)
 
-      skinnedMesh.bind(new THREE.Skeleton([rootBone]), new THREE.Matrix4())
+      mat.copy(mesh.matrix)
+      let parent = mesh.parent
 
-      firstMesh.parent.add(skinnedMesh)
-      firstMesh.parent.remove(firstMesh)
-      this.mesh = skinnedMesh
-      this.el.setObject3D('mesh', this.mesh)
+      while (parent && !Util.traverseFind(parent, o => o === rootBone))
+      {
+        mat.premultiply(parent.matrix)
+        parent = parent.parent
+      }
+
+      let inv = this.pool('inv', THREE.Matrix4)
+      inv.getInverse(mat)
+
+      console.log("mat", mat.elements)
+
+      let meshRootBone = new THREE.Bone
+      meshRootBone.name = skinnedMesh.name + "_root"
+      rootBone.add(meshRootBone)
+      Util.positionObject3DAtTarget(meshRootBone, mesh)
+
+      skinnedMesh.bind(new THREE.Skeleton([rootBone, meshRootBone], [new THREE.Matrix4, new THREE.Matrix4]), new THREE.Matrix4)
+
+      mesh.parent.remove(mesh)
+      meshRootBone.add(skinnedMesh)
+
+      this.meshes.push(skinnedMesh)
+      if (!this.mesh) this.mesh = skinnedMesh
     }
 
     this.el.classList.remove('canvas')
@@ -68,6 +120,11 @@ AFRAME.registerComponent('skeletonator', {
     document.querySelector('#left-shelf').append(controlPanel)
     this.controlPanel = controlPanel
 
+    Util.whenLoaded(controlPanel, () => {
+      controlPanel.querySelector('*[shelf-summoner]').components['shelf-summoner'].update()
+      controlPanel.querySelector('*[shelf-summoner]').components['shelf-summoner'].summon()
+    })
+
     this.setupBones()
 
     this.onFrameChange = this.onFrameChange.bind(this)
@@ -79,25 +136,36 @@ AFRAME.registerComponent('skeletonator', {
     }
 
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
+
+    // let helper = new THREE.SkeletonHelper(this.rootBone)
+    // this.rootBone.add(helper)
   },
   tick(t, dt) {
-    if (!this.el.classList.contains("canvas") && this.mesh.material !== this.skinningMaterial)
+    if (!this.el.classList.contains("canvas"))
     {
-      let oldMaterial = this.mesh.material
-      this.mesh.material = new THREE.MeshStandardMaterial({
-        skinning: true,
-        transparent: true,
-        opacity: 0.5
-      })
-      this.skinningMaterial = this.mesh.material
-
-      for (let mode of ["map"].concat(THREED_MODES))
+      if (!this.skinningMaterial)
       {
-        if (oldMaterial[mode])
+        this.skinningMaterial = new THREE.MeshStandardMaterial({
+          skinning: true,
+          transparent: true,
+          opacity: 0.5
+        })
+
+        let oldMaterial = Compositor.material
+
+        for (let mode of ["map"].concat(THREED_MODES))
         {
-          this.mesh.material[mode] = oldMaterial[mode]
+          if (oldMaterial[mode])
+          {
+            this.skinningMaterial[mode] = oldMaterial[mode]
+          }
         }
+      }
+
+      for (let mesh of this.meshes)
+      {
+        if (mesh.material === this.skinningMaterial) continue
+        mesh.material = this.skinningMaterial
       }
     }
   },
@@ -105,8 +173,14 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.add('canvas')
     Compositor.el.removeEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: false})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', true))
-    this.mesh.material = Compositor.material
+
+    console.log("Pausing Skeletonator")
+
+    for (let mesh of this.meshes)
+    {
+      mesh.material = Compositor.material
+      console.log("M", mesh.material === Compositor.material, mesh.material, Compositor.material)
+    }
 
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
@@ -117,7 +191,6 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.remove('canvas')
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
-    document.querySelectorAll('*[layer-shelves]').forEach(el => el.setAttribute('visible', false))
     this.mesh.material = this.skinningMaterial
 
     for (let el of document.querySelectorAll('*[raycaster]'))
@@ -228,85 +301,102 @@ AFRAME.registerComponent('skeletonator', {
       Compositor.component.el.emit('nodeadded', {node})
     }
   },
-  skinFromeNodes() {
-    let vertexUvs = this.mesh.geometry.attributes.uv
-    let uv = new THREE.Vector2()
-
-    var skinIndices = [];
-    var skinWeights = [];
-
-    let canvasByName = {}
-
-    for (let node of Compositor.component.allNodes)
+  skinFromNodes() {
+    console.log("Skin From Nodes")
+    for (let mesh of this.meshes)
     {
-      if (node.name) {
-        if (!node.inputs.canvas) continue
-        if (!node.inputs.canvas.canvas) {
-          console.warn("No canvas for", node)
-          continue
-        }
+      console.log("Skinning", mesh.name)
+      let vertexUvs = mesh.geometry.attributes.uv
+      let uv = new THREE.Vector2()
 
-        canvasByName[node.name] = node.inputs.canvas.canvas
-      }
-    }
+      var skinIndices = [];
+      var skinWeights = [];
 
-    console.log("Canvas by name", canvasByName)
+      let canvasByName = {}
 
-    for (let vi = 0; vi < vertexUvs.count; vi ++ )
-    {
-      uv.fromBufferAttribute(vertexUvs, vi)
-
-      let topFour = [
-        {idx: 0, weight: 0},
-        {idx: 0, weight: 0},
-        {idx: 0, weight: 0},
-        {idx: 0, weight: 0},
-      ]
-
-      let anySet = false;
-
-      let bones = this.mesh.skeleton.bones
-
-      for (let i in bones)
+      for (let node of Compositor.component.allNodes)
       {
-        let bone = bones[i]
-        if (!(bone.name in canvasByName)) {
-        //   console.log("No canvas for", bone.name)
-          continue
+        if (node.name) {
+          if (!node.inputs.canvas) continue
+          if (!node.inputs.canvas.canvas) {
+            console.warn("No canvas for", node)
+            continue
+          }
+
+          canvasByName[node.name] = node.inputs.canvas.canvas
         }
-        let canvas = canvasByName[bone.name]
-        let color = canvas.getContext('2d').getImageData(Math.round(uv.x * canvas.width), Math.round(uv.y * canvas.height), 1, 1)
-        let alpha = color.data[3] / 255.0
-        // console.log("Sampled", JSON.stringify(color.s), bone.name)
-        if (alpha > topFour[3].weight)
+      }
+
+      console.log("Canvas by name", canvasByName)
+
+      let bones = mesh.skeleton.bones
+
+      let rootBone = Math.max(bones.indexOf(mesh.parent), 0)
+
+      console.log("Root Bone", rootBone)
+
+      for (let vi = 0; vi < vertexUvs.count; vi ++ )
+      {
+        uv.fromBufferAttribute(vertexUvs, vi)
+
+        let topFour = [
+          {idx: rootBone, weight: 0},
+          {idx: rootBone, weight: 0},
+          {idx: rootBone, weight: 0},
+          {idx: rootBone, weight: 0},
+        ]
+
+        let anySet = false;
+
+
+
+        for (let i in bones)
         {
-          topFour[3].idx = i
-          topFour[3].weight = alpha
-          topFour.sort((a,b) => - (a.weight - b.weight))
-          anySet = true
+          let bone = bones[i]
+          if (!(bone.name in canvasByName)) {
+          //   console.log("No canvas for", bone.name)
+            continue
+          }
+          let canvas = canvasByName[bone.name]
+          let color = canvas.getContext('2d').getImageData(Math.round(uv.x * canvas.width), Math.round(uv.y * canvas.height), 1, 1)
+          let alpha = color.data[3] / 255.0
+          // console.log("Sampled", JSON.stringify(color.s), bone.name)
+          if (alpha > topFour[3].weight)
+          {
+            topFour[3].idx = i
+            topFour[3].weight = alpha
+            topFour.sort((a,b) => - (a.weight - b.weight))
+            anySet = true
+          }
         }
+
+        if (!anySet)
+        {
+          topFour[0].weight = 1
+        }
+
+        let norm = topFour[0].weight + topFour[1].weight + topFour[2].weight + topFour[3].weight
+
+        if (norm < 1.0)
+        {
+          topFour[3].idx = rootBone
+          topFour[3].weight = 1.0 - norm
+          norm = 1.0
+        }
+
+        if (topFour[1].weight == 0) topFour[1].idx = 0
+        if (topFour[2].weight == 0) topFour[2].idx = 0
+        if (topFour[3].weight == 0) topFour[3].idx = 0
+
+        skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
+        skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
       }
 
-      if (!anySet)
-      {
-        topFour[0].weight = 1
-      }
-
-      let norm = topFour[0].weight + topFour[1].weight + topFour[2].weight + topFour[3].weight
-
-      if (norm < 1.0)
-      {
-        topFour[3].idx = 0
-        topFour[3].weight = 1.0 - norm
-        norm = 1.0
-      }
-
-      skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
-      skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
+      mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+      mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+      mesh.geometry.attributes.skinIndex.needsUpdate = true
+      mesh.geometry.attributes.skinWeight.needsUpdate = true
     }
-
-    this.mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
-    this.mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
   },
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
@@ -415,6 +505,22 @@ AFRAME.registerComponent("bone-handle", {
 
         if (this.el.skeletonator.data.recordFrameCount) this.stopGrabFrame = Number.POSITIVE_INFINITY
 
+        if (this.el.bone.parent.type === 'Bone' && this.el.skeletonator.system.data.lockLength)
+        {
+          // this.el.setAttribute('constrain-to-sphere', {innerRadius: this.el.bone.position.length(), outerRadius: this.el.bone.position.length(), })
+          // if (!this.startingUp) this.startingUp = new THREE.Vector3
+          // this.startingUp.set(0, 1, 0)
+          // this.startingUp.applyQuaternion(this.el.parentEl.object3D.quaternion)
+          // this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint)
+          // this.el.parentEl.addState("constrained")
+          // console.log("P", this.el.parentEl)
+        }
+        else
+        {
+          this.el.removeAttribute('constrain-to-sphere')
+          // this.el.sceneEl.systems.manipulator.removeConstraint(this.el.parentEl, this.trackParentConstraint)
+        }
+
         if (Compositor.component.isPlayingAnimation)
         {
           Compositor.component.jumpToFrame(0)
@@ -451,13 +557,15 @@ AFRAME.registerComponent("bone-handle", {
     this.el.bone.matrix.decompose(this.el.object3D.position,
                                   this.el.object3D.rotation,
                                   this.el.object3D.scale)
+
+    this.trackParentConstraint = this.trackParentConstraint.bind(this)
   },
   tick(t,dt) {
     let indicator = this.el.getObject3D('mesh')
     let scale = this.pool("scale", THREE.Vector3)
     indicator.getWorldScale(scale)
     indicator.scale.set(indicator.scale.x / scale.x, indicator.scale.y / scale.y, indicator.scale.z / scale.z)
-    if (this.el.is("grabbed"))
+    if (this.el.is("grabbed") || this.el.is("constrained"))
     {
       this.el.object3D.matrix.decompose(this.el.bone.position, this.el.bone.rotation, this.el.bone.scale)
 
@@ -488,6 +596,14 @@ AFRAME.registerComponent("bone-handle", {
     this.el.bone.matrix.decompose(this.el.object3D.position,
                                   this.el.object3D.rotation,
                                   this.el.object3D.scale)
+  },
+  trackParentConstraint()
+  {
+    let obj = this.el.parentEl.object3D
+    let up = this.startingUp
+    obj.matrix.lookAt(obj.position, this.pool('center', THREE.Vector3), up)
+    obj.quaternion.setFromRotationMatrix(obj.matrix)
+    // Util.applyMatrix(obj.matrix, obj)
   }
 })
 
@@ -524,8 +640,8 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
   },
   exportSkinnedMesh() {
-    this.el.skeletonator.mesh.material = Compositor.material
-    this.el.sceneEl.systems["settings-system"].export3dAction(this.el.skeletonator.mesh.parent)
+    for (let mesh of this.el.skeletonator.meshes) { mesh.material = Compositor.material }
+    this.el.sceneEl.systems["settings-system"].export3dAction(Compositor.meshRoot)
   },
   clearTracks() {
     for (let bone in this.el.skeletonator.boneTracks)
@@ -535,8 +651,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   bakeSkeleton(newSkeleton = false) {
     let bones = []
-    let mesh = this.el.skeletonator.mesh
-    mesh.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+    Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
     // mesh.bindMode = "detached"
     // bones[0].updateMatrixWorld()
     // mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
@@ -555,10 +670,25 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     //   if (a == this.el.skeletonator.el.object3D) stopTraversal = true
     // })
 
-    let inv = this.pool('inv', THREE.Matrix4)
-    inv.getInverse(bones[0].matrix)
-    mesh.bind(new THREE.Skeleton(bones), newSkeleton ? bones[0].matrixWorld : inv)
-    mesh.pose()
+    // let inv = this.pool('inv', THREE.Matrix4)
+    // inv.getInverse(bones[0].matrix)
+    // mesh.bind(new THREE.Skeleton(bones), newSkeleton ? bones[0].matrixWorld : inv)
+    // mesh.pose()
+
+    for (let mesh of this.el.skeletonator.meshes)
+    {
+      mesh.bind(new THREE.Skeleton(bones
+        , bones.map(b => {
+        let idx = mesh.skeleton.bones.indexOf(b)
+        if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
+        let m = this.pool('mat', THREE.Matrix4)
+        m.copy(b.matrixWorld)
+        m.getInverse(m)
+        m.multiply(mesh.matrixWorld)
+        return m
+      })
+    ), new THREE.Matrix4)
+    }
   },
   deleteActiveBone() {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
@@ -566,8 +696,8 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   clearActiveBoneTracks() {
     this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = []
   },
-  skinFromeNodes() {
-    this.el.skeletonator.skinFromeNodes()
+  skinFromNodes() {
+    this.el.skeletonator.skinFromNodes()
   },
   nodesFromBones() {
     this.el.skeletonator.nodesFromBones()

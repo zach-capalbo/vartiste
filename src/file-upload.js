@@ -98,12 +98,14 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   asset.id = `asset-model-${id}`
 
   let compositor = Compositor.component
-  let {combineMaterials} = compositor.el.sceneEl.components['file-upload'].data
+  let {combineMaterials, importMaterial} = compositor.el.sceneEl.components['file-upload'].data
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
     document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj)$/i, ""))
   }
+
+  let startingLayerLength = compositor.layers.length
 
   let startingLayer = compositor.activeLayer
 
@@ -166,117 +168,120 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
   let materialBoxes = {}
   let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
-  for (let material of Object.values(materials))
+  if (importMaterial)
   {
+    for (let material of Object.values(materials))
+    {
+      if (combineMaterials)
+      {
+        currentBox = boxes[currentBoxId++]
+        materialBoxes[materialId(material)] = currentBox
+      }
+
+      for (let mode of ["map"].concat(THREED_MODES))
+      {
+        if (material[mode] || mode === 'map')
+        {
+          if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
+          let image = material[mode] ? material[mode].image : undefined
+          let {width, height} = compositor
+          let layer = new Layer(width, height)
+          let layerCtx = layer.canvas.getContext('2d')
+          layerCtx.save()
+
+          //layerCtx.scale(1, -1)
+          if (!image && postProcessMesh)
+          {
+            if (mode === 'map'  && material.color)
+            {
+              console.log("coloring", material.color)
+              layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+              layerCtx.fillRect(0, 0, width, height)
+            }
+          }
+          else
+          {
+            layerCtx.translate(width / 2, height / 2)
+            try {
+              layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+            } catch (e)
+            {
+              console.log("Could not draw image for texture", mode, material)
+            }
+          }
+          layerCtx.restore()
+          if (mode !== "map")
+          {
+            layer.mode = mode
+          }
+          layer.transform.scale.x = currentBox.max.x - currentBox.min.x
+          layer.transform.scale.y = currentBox.max.y - currentBox.min.y
+          layer.transform.translation.x = width * ((currentBox.min.x + currentBox.max.x) / 2 - 0.5)
+          layer.transform.translation.y = height * ((currentBox.min.y + currentBox.max.y) / 2 - 0.5)
+          compositor.addLayer(0, {layer})
+        }
+      }
+    }
+
     if (combineMaterials)
     {
-      currentBox = boxes[currentBoxId++]
-      materialBoxes[materialId(material)] = currentBox
-    }
+      model.scene.traverse(o => {
 
-    for (let mode of ["map"].concat(THREED_MODES))
-    {
-      if (material[mode] || mode === 'map')
-      {
-        if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
-        let image = material[mode] ? material[mode].image : undefined
-        let {width, height} = compositor
-        let layer = new Layer(width, height)
-        let layerCtx = layer.canvas.getContext('2d')
-        layerCtx.save()
-
-        //layerCtx.scale(1, -1)
-        if (!image && postProcessMesh)
+        if (o.material && o.geometry.attributes.uv)
         {
-          if (mode === 'map'  && material.color)
+          let attr = o.geometry.attributes.uv
+          let geometry = o.geometry
+          let currentBox = materialBoxes[materialId(o.material)]
+          //geometry = geometry.toNonIndexed()
+
+          if (attr.data)
           {
-            console.log("coloring", material.color)
-            layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
-            layerCtx.fillRect(0, 0, width, height)
-          }
-        }
-        else
-        {
-          layerCtx.translate(width / 2, height / 2)
-          try {
-            layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
-          } catch (e)
-          {
-            console.log("Could not draw image for texture", mode, material)
-          }
-        }
-        layerCtx.restore()
-        if (mode !== "map")
-        {
-          layer.mode = mode
-        }
-        layer.transform.scale.x = currentBox.max.x - currentBox.min.x
-        layer.transform.scale.y = currentBox.max.y - currentBox.min.y
-        layer.transform.translation.x = width * ((currentBox.min.x + currentBox.max.x) / 2 - 0.5)
-        layer.transform.translation.y = height * ((currentBox.min.y + currentBox.max.y) / 2 - 0.5)
-        compositor.addLayer(0, {layer})
-      }
-    }
-  }
-
-  if (combineMaterials)
-  {
-    model.scene.traverse(o => {
-
-      if (o.material && o.geometry.attributes.uv)
-      {
-        let attr = o.geometry.attributes.uv
-        let geometry = o.geometry
-        let currentBox = materialBoxes[materialId(o.material)]
-        //geometry = geometry.toNonIndexed()
-
-        if (attr.data)
-        {
-          for (let i = 0; i < attr.count; ++i)
-          {
-            attr.setXY(i,
-              THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
-              THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
-          }
-        }
-        else
-        {
-          for (let i in geometry.attributes.uv.array) {
-            if (i %2 == 0) {
-              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
-            }
-            else
+            for (let i = 0; i < attr.count; ++i)
             {
-              attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
+              attr.setXY(i,
+                THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
+                THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
             }
           }
+          else
+          {
+            for (let i in geometry.attributes.uv.array) {
+              if (i %2 == 0) {
+                attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
+              }
+              else
+              {
+                attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
+              }
+            }
+          }
+          //o.geometry = geometry
+          geometry.attributes.uv.needsUpdate = true
         }
-        //o.geometry = geometry
-        geometry.attributes.uv.needsUpdate = true
-      }
-    })
+      })
 
-    for (let mode of THREED_MODES)
-    {
-      let {width, height} = compositor
-      let saveLayer = new Layer(width, height)
-      saveLayer.mode = mode
-      let deleteLayers = []
-      for (let layer of compositor.layers)
+      for (let mode of THREED_MODES)
       {
-        if (layer.mode !== mode) continue
-        if (!saveLayer) {
-          saveLayer = layer
-          continue
+        let {width, height} = compositor
+        let saveLayer = new Layer(width, height)
+        saveLayer.mode = mode
+        let deleteLayers = []
+        for (let layer of compositor.layers)
+        {
+          if (layer.mode !== mode) continue
+          if (!saveLayer) {
+            saveLayer = layer
+            continue
+          }
+          compositor.mergeLayers(layer, saveLayer)
+          deleteLayers.push(layer)
         }
-        compositor.mergeLayers(layer, saveLayer)
-        deleteLayers.push(layer)
-      }
-      if (deleteLayers.length === 0) continue
-      compositor.addLayer(0, {layer: saveLayer})
-      for (let layer of deleteLayers) {
-        if (layer !== startingLayer)
-        compositor.deleteLayer(layer)
+        if (deleteLayers.length === 0) continue
+        compositor.addLayer(0, {layer: saveLayer})
+        for (let layer of deleteLayers) {
+          if (layer !== startingLayer)
+          compositor.deleteLayer(layer)
+        }
       }
     }
   }
@@ -298,15 +303,21 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       await compositor.el.sceneEl.systems['uv-unwrapper'].quickBoundingBoxUnwrap()
     }
 
-    if (Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
+    if (importMaterial && Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
     {
       try {
         compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+        while (compositor.layers.indexOf(compositor.activeLayer) > startingLayerLength)
+        {
+          compositor.swapLayers(compositor.activeLayer, compositor.layers[compositor.layers.indexOf(compositor.activeLayer) - 1])
+        }
       }
       catch (e) {
         console.error("Could not bake vertex colors", e)
       }
     }
+
+    compositor.activateLayer(startingLayer);
   })()
 }
 
@@ -350,7 +361,7 @@ async function addGlbReference(file) {
 
 Util.registerComponentSystem('file-upload', {
   schema: {
-    importSingleMaterial: {default: true},
+    importMaterial: {default: true},
     combineMaterials: {default: true},
     autoscaleModel: {default: true},
     setMapFromFilename: {default: true},
