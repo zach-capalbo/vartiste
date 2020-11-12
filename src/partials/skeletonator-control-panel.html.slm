@@ -17,7 +17,7 @@ a-entity.grab-root shelf="name: Skeletonator" scale="0.3 0.3 0.3"
     a-entity icon-button="#asset-record" toggle-button="target: *[skeletonator]; component: skeletonator; property: recordFrameCount" tooltip="Set Frame Count from Puppetteering" position="1.6 0 0"
 
   a-entity position="0 -0.4 0"
-    a-entity.bone-name edit-field="type: string; tooltip: Bone Name" text="wrapCount: 20; width: 1.56;" frustum-culled="false"  position="-1.6 0 0"
+    a-entity.bone-name edit-field="type: string; tooltip: Bone Name" text="wrapCount: 20; width: 1.56;" not-frustum-culled=""  position="-1.6 0 0"
     a-entity click-action="deleteActiveBone" icon-button="#asset-delete" tooltip="Delete Bone"
     a-entity click-action="clearActiveBoneTracks" icon-button="#asset-backspace-outline" tooltip="Clear Bone Animation Tracks"
 

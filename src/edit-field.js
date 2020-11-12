@@ -296,7 +296,7 @@ AFRAME.registerComponent('popup-button', {
   }
 })
 
-AFRAME.registerComponent('frustum-culled', {
+AFRAME.registerComponent('not-frustum-culled', {
   events: {
     object3dset: function(e) {
       this.el.object3D.traverse(o => o.frustumCulled = false)
