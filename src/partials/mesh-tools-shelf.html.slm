@@ -1,6 +1,7 @@
 a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.3 1" visible="false"
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Import as Reference Object" toggle-button="target: a-scene; component: settings-system; property: addReferences; "
+    a-entity icon-button="#asset-close" tooltip="Replace mesh on import" toggle-button="target: a-scene; component: file-upload; property: replaceMesh"
     a-entity icon-button="#asset-transition" tooltip="Import Material" toggle-button="target: a-scene; component: file-upload; property: importMaterial"
     a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Combine Import Materials" toggle-button="target: a-scene; component: file-upload; property: combineMaterials"
     a-entity icon-button="#asset-oven" tooltip="Post-process Imported Mesh" toggle-button="target: a-scene; component: file-upload; property: postProcessMesh"
@@ -33,3 +34,4 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
   a-entity position="2.6 0.3 0" scale="4 4 4"
     a-entity hide-mesh-tool="" rotation="-25 0 0" preactivate-tooltip="Mesh Hiding Tool" action-tooltips="click: Hide Mesh"
     a-entity hide-mesh-tool="mode: delete" rotation="-25 0 0" position="0.3 0 0" preactivate-tooltip="Mesh Deleting Tool" action-tooltips="click: Delete Mesh"
+    a-entity selection-box-tool="grabElements: false; selector: #composition-view; undoable: true" rotation="-25 0 0" position="0.5 0 0" preactivate-tooltip="Mesh Moving Tool"
