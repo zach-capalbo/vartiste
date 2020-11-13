@@ -8,7 +8,9 @@ Util.registerComponentSystem('mesh-tools', {
     Pool.init(this)
   },
   exportAll() {
+    Compositor.el.object3D.visible = false
     this.el.sceneEl.systems['settings-system'].export3dAction(document.getElementById('canvas-root').object3D)
+    Compositor.el.object3D.visible = true
   },
   subdivide() {
     let mod = new THREE.SubdivisionModifier(2)

@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 // Eases the creation of undo functionality. You can either use a singleton Undo
 // stack by calling methods of `VARTISTE.Undo`, or create a new `UndoStack` for
 // individual needs.
@@ -122,6 +124,17 @@ class UndoStack {
         this.block(oldFn[0].whenSafe)
       }
     }
+  }
+
+  // Stores `object3D`'s current matrix, and restores it (including applying it)
+  // when `undo` is called.
+  pushObjectMatrix(object3D) {
+    let matrix = new THREE.Matrix4
+    // object3D.updateMatrix()
+    matrix.copy(object3D.matrix)
+    this.push(() => {
+      Util.applyMatrix(matrix, object3D)
+    })
   }
 
   // Executes `f` and collects and `push()` or `pushCanvas` calls while f is

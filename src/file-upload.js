@@ -98,7 +98,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   asset.id = `asset-model-${id}`
 
   let compositor = Compositor.component
-  let {combineMaterials, importMaterial} = compositor.el.sceneEl.components['file-upload'].data
+  let {combineMaterials, importMaterial, replaceMesh} = compositor.el.sceneEl.components['file-upload'].data
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
@@ -286,7 +286,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     }
   }
 
-  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model)
+  document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
 
   if (Compositor.el.getAttribute('material').shader === 'flat')
   {
@@ -366,6 +366,7 @@ Util.registerComponentSystem('file-upload', {
     autoscaleModel: {default: true},
     setMapFromFilename: {default: true},
     postProcessMesh: {default: true},
+    replaceMesh: {default: true},
   },
   init() {
     document.body.ondragover = (e) => {

@@ -4,6 +4,7 @@ import {Pool} from './pool.js'
 import Color from "color"
 import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerSystem('pencil-tool', {
   clonePencil() {
@@ -923,7 +924,10 @@ AFRAME.registerComponent('movement-tool', {
 AFRAME.registerComponent('selection-box-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}}
+    boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}},
+    selector: {type: 'string', default: '.clickable, .canvas'},
+    grabElements: {default: true},
+    undoable: {default: false}
   },
   events: {
     stateadded: function(e) {
@@ -971,7 +975,16 @@ AFRAME.registerComponent('selection-box-tool', {
     this.box.setAttribute('position', {x: 0, y: this.data.boxSize.y / 2, z: 0})
   },
   startGrab() {
-    let objects = document.querySelectorAll('.clickable, .canvas')
+    let objects = document.querySelectorAll(this.data.selector)
+    if (!this.data.grabElements)
+    {
+      let newObjects = []
+      for (let el of objects)
+      {
+        Util.traverseFindAll(el.object3D, o => o.type === 'Mesh' || o.type === 'SkinnedMesh', {outputArray: newObjects, visibleOnly: true})
+      }
+      objects = newObjects.map(o => { return {object3D: o}})
+    }
     this.grabbers = {}
     this.grabbed = {}
     this.grabberId = {}
@@ -982,14 +995,34 @@ AFRAME.registerComponent('selection-box-tool', {
     let worldPos = this.pool('worldPos', THREE.Vector3)
     let localPos = this.pool('localPos', THREE.Vector3)
     for (let el of objects) {
-      let target = Util.resolveGrabRedirection(el)
+      let target = this.data.grabElements ? Util.resolveGrabRedirection(el) : el
+
       if (target === this.el) continue
       if (target.object3D.uuid in this.grabbers) continue
 
-      el.object3D.getWorldPosition(worldPos)
-      localPos.copy(worldPos)
-      this.box.getObject3D('mesh').worldToLocal(localPos)
-      if (!boundingBox.containsPoint(localPos)) continue
+      if (this.data.grabElements)
+      {
+        el.object3D.getWorldPosition(worldPos)
+        localPos.copy(worldPos)
+        this.box.getObject3D('mesh').worldToLocal(localPos)
+        if (!boundingBox.containsPoint(localPos)) continue
+      }
+      else
+      {
+        let contained = false
+        for (let i = 0; i < el.object3D.geometry.attributes.position.count; ++i)
+        {
+          worldPos.fromBufferAttribute(el.object3D.geometry.attributes.position, i)
+          el.object3D.localToWorld(worldPos)
+          this.box.getObject3D('mesh').worldToLocal(worldPos)
+          if (boundingBox.containsPoint(worldPos))
+          {
+            contained = true
+            break
+          }
+        }
+        if (!contained) continue
+      }
 
       let obj = new THREE.Object3D
       this.el.object3D.add(obj)
@@ -997,6 +1030,14 @@ AFRAME.registerComponent('selection-box-tool', {
       this.grabbers[target.object3D.uuid] = obj
       this.grabbed[obj.uuid] = target
       this.grabberId[obj.uuid] = obj
+    }
+    if (Object.values(this.grabbed).length > 0) {
+      Undo.collect(() => {
+        for (let o of Object.values(this.grabbed))
+        {
+          Undo.pushObjectMatrix(o.object3D)
+        }
+      })
     }
     this.tick = this._tick;
   },

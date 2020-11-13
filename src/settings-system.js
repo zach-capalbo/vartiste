@@ -199,12 +199,14 @@ Util.registerComponentSystem('settings-system', {
       delete this.compositeRecorder
     }
   },
-  addModelView(model) {
+  addModelView(model, {replace = true} = {}) {
     let viewer = document.getElementById('composition-view')
 
     let rootObj = model.scene || model.scenes[0]
 
-    if (this.el.sceneEl.components['file-upload'].data.autoscaleModel)
+    if (!viewer.getObject3D('mesh')) replace = true
+
+    if (this.el.sceneEl.components['file-upload'].data.autoscaleModel && replace)
     {
       let boundingBox = this.pool('boundingBox', THREE.Box3)
       let tmpBox = this.pool('tmpBox', THREE.Box3)
@@ -232,10 +234,22 @@ Util.registerComponentSystem('settings-system', {
       boundingBox.getCenter(viewer.object3D.position)
       viewer.object3D.position.multiplyScalar(- targetScale)
       viewer.object3D.position.z = boundingBox.min.z * targetScale
-
     }
 
-    viewer.setObject3D('mesh', model.scene || model.scenes[0])
+    if (replace)
+    {
+      viewer.setObject3D('mesh', model.scene || model.scenes[0])
+    }
+    else
+    {
+      let scene = model.scene || model.scenes[0]
+      scene.el = viewer
+      scene.traverse(o => o.el = viewer)
+      Compositor.meshRoot.add(scene)
+      Compositor._cachedMeshesMesh = null
+      viewer.emit('updatemesh')
+    }
+
     viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
 
     let mainCanvas = document.getElementById('canvas-view')
