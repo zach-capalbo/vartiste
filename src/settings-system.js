@@ -242,7 +242,10 @@ Util.registerComponentSystem('settings-system', {
     }
     else
     {
-      Compositor.meshRoot.add(model.scene || model.scenes[0])
+      let scene = model.scene || model.scenes[0]
+      scene.el = viewer
+      scene.traverse(o => o.el = viewer)
+      Compositor.meshRoot.add(scene)
       Compositor._cachedMeshesMesh = null
       viewer.emit('updatemesh')
     }
