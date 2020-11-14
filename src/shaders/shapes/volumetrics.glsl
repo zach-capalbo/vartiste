@@ -126,6 +126,8 @@ void main() {
 
   d = u_bumpy ? opDisplace(d, p, 20.0) : d;
 
+  d = d / u_size;
+
   d = clamp(-d, 0.0, 1.0);
 
   d = u_hard ? smoothstep(0.0, u_size * 0.2, d) : d;
