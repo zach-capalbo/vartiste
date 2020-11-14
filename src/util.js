@@ -259,6 +259,29 @@ class VARTISTEUtil {
     }
     return target
   }
+
+  deinterleaveAttributes(geometry) {
+    for (let name in geometry.attributes)
+    {
+      let attr = geometry.attributes[name]
+      if (!attr) continue
+      if (!attr.isInterleavedBufferAttribute) continue
+      let arr = []
+      // arr.length = attr.count * attr.itemSize
+
+      console.log(name, attr)
+
+      for (let i = 0; i < attr.count; ++i)
+      {
+        arr.push(attr.getX(i))
+        if (attr.itemSize >= 2) arr.push(attr.getY(i))
+        if (attr.itemSize >= 3) arr.push(attr.getZ(i))
+        if (attr.itemSize >= 4) arr.push(attr.getW(i))
+      }
+
+      geometry.setAttribute(name, new THREE.Float32BufferAttribute(arr, attr.itemSize))
+    }
+  }
 }
 
 const Util = new VARTISTEUtil();

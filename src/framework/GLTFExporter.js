@@ -273,6 +273,8 @@ THREE.GLTFExporter.prototype = {
 
 			}
 
+			if (!normal.clone) return normal;
+
 			var attribute = normal.clone();
 
 			var v = new THREE.Vector3();

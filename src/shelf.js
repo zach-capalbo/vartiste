@@ -18,7 +18,9 @@ AFRAME.registerComponent('shelf', {
     hideOnly: {default: true},
     pinnable: {default: true},
 
-    // Possible future use for documentation or adding a titlebar
+    grabRoot: {default: true},
+
+    // Title bar
     name: {type: 'string'}
   },
   events: {
@@ -36,6 +38,10 @@ AFRAME.registerComponent('shelf', {
     this.container = container
     this.el.prepend(container)
 
+    if (this.data.grabRoot)
+    {
+      this.el.classList.add('grab-root')
+    }
 
     let inBillboard = false
     for (let parent = this.el.parentEl; parent; parent = parent.parentEl)
