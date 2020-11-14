@@ -83,7 +83,7 @@ AFRAME.registerSystem('manipulator', {
 // `scaleAmmount`). Setting the `zoomAmmount` will cause the object to move
 // closer or farther each tick (depending on the sign of `zoomAmmount`).
 AFRAME.registerComponent('manipulator', {
-  dependencies: ['raycaster'],
+  dependencies: ['scalable-raycaster'],
   schema: {
     // Note: **Don't Use**
     selector: {type: 'string'},

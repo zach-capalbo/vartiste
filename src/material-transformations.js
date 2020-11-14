@@ -148,6 +148,15 @@ class MaterialTransformations {
     if (!material) material = model.material
     console.log("Preparing", model, material)
 
+    if (model.geometry && model.geometry.attributes)
+    {
+      // if (undoStack) {
+      //   let oldGeometry = model.geometry
+      //   undoStack.push(() => model.geometry = oldGeometry)
+      // }
+      Util.deinterleaveAttributes(model.geometry)
+    }
+
     if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
     {
       if (undoStack) undoStack.push(() => model.visible = true)

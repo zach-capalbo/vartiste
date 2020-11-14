@@ -22,4 +22,4 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity scale="2 2 1" quick-gallery=""
   /a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"
 
-  a-entity#quick-menu-pencil preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="7.7 7.7 7.7" _six-dof-tool="reparentOnActivate: false" _manipulator-weight="type: slow"
+  a-entity#quick-menu-pencil preactivate-tooltip="Detail Pressure Pencil" pencil-tool="tipRatio: 0.35; radius: 0.01; pressureTip: true; detailTip: true" position="2.034664795181822 -0.03857531572491791 -0.021797842582531368" rotation="180 0 0" scale="7.7 7.7 7.7" _six-dof-tool="reparentOnActivate: false" _manipulator-weight="type: slow" )ammo-body="type: kinematic" _ammo-shape="type: box; fit: manual; halfExtents: 0.2 0.2 0.2" _ammo-fit-children=""

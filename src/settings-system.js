@@ -154,6 +154,7 @@ Util.registerComponentSystem('settings-system', {
     let originalImage = material.map.image
     material.map.image = Compositor.component.preOverlayCanvas
     material.map.needsUpdate = true
+    mesh.traverseVisible(m => { if (m.geometry) Util.deinterleaveAttributes(m.geometry) })
     prepareModelForExport(mesh, material)
 
     let exporter = new THREE.GLTFExporter()

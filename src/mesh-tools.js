@@ -208,8 +208,9 @@ AFRAME.registerComponent('hide-mesh-tool', {
         if (!this.el.hasAttribute('raycaster'))
         {
           this.el.setAttribute('raycaster', `objects: .canvas, .reference-glb; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${this.data.far}`)
+          this.el.setAttribute('scalable-raycaster', "")
           this.el.setAttribute('line', `color: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
-          this.fixRayLine()
+
         }
         this.el.components.raycaster.play()
       }
@@ -222,7 +223,7 @@ AFRAME.registerComponent('hide-mesh-tool', {
       {
         if (this.data.mode === 'delete')
         {
-          if (intersection.object.el.classList.contains("reference-glb"))
+          if (intersection.object.el.classList.contains("reference-glb") && Util.traverseFindAll(intersection.object.el.object3D, o => (o.visible && (o.type === 'Mesh' || o.type === 'SkinnedMesh'))).length === 1)
           {
             let originalParent = intersection.object.el.parentEl
             let originalEl = intersection.object.el
@@ -258,23 +259,4 @@ AFRAME.registerComponent('hide-mesh-tool', {
       this.updateRaycaster.call(this.el.components.raycaster)
     })
   },
-  fixRayLine() {
-    let worldScale = new THREE.Vector3
-    this.el.components.raycaster.updateLine = AFRAME.utils.bind(function () {
-      var el = this.el;
-      var intersections = this.intersections;
-      var lineLength;
-
-      if (intersections.length) {
-        this.el.object3D.getWorldScale(worldScale);
-        let worldScaleFactor = Math.abs(worldScale.dot(this.data.direction));
-        if (intersections[0].object.el === el && intersections[1]) {
-          lineLength = intersections[1].distance / worldScaleFactor;
-        } else {
-          lineLength = intersections[0].distance / worldScaleFactor;
-        }
-      }
-      this.drawLine(lineLength);
-    }, this.el.components.raycaster);
-  }
 })

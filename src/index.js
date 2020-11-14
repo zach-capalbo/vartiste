@@ -67,6 +67,8 @@ require('./volumetrics')
 require('./quick-menu')
 require('./canvas-fx')
 require('./crash-handler')
+require('./scalable-raycaster')
+require('./physics')
 // require('./text')
 
 require('./app.styl')

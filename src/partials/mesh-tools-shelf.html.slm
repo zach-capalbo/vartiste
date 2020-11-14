@@ -34,4 +34,4 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
   a-entity position="2.6 0.3 0" scale="4 4 4"
     a-entity hide-mesh-tool="" rotation="-25 0 0" preactivate-tooltip="Mesh Hiding Tool" action-tooltips="click: Hide Mesh"
     a-entity hide-mesh-tool="mode: delete" rotation="-25 0 0" position="0.3 0 0" preactivate-tooltip="Mesh Deleting Tool" action-tooltips="click: Delete Mesh"
-    a-entity selection-box-tool="grabElements: false; selector: #composition-view; undoable: true" rotation="-25 0 0" position="0.5 0 0" preactivate-tooltip="Mesh Moving Tool"
+    a-entity selection-box-tool="grabElements: false; selector: #composition-view, .reference-glb; undoable: true" rotation="-25 0 0" position="0.5 0 0" preactivate-tooltip="Mesh Moving Tool"

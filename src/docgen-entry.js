@@ -54,6 +54,7 @@ async function addDocumentation(src)
   require('./artist-positioning')
   require('./material-transformations')
   require('./canvas-fx')
+  require('./scalable-raycaster')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))
