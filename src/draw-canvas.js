@@ -331,15 +331,19 @@ AFRAME.registerComponent('draw-canvas', {
     if (!brush) brush = this.brush
     if (!this.wasErasing && sourceEl)
     {
+      console.log("Pushing erase canvas")
       Undo.pushCanvas(canvas)
       const eraseListener = (e) => {
         if (e.detail === 'erasing')
         {
+          console.log("Clearing erase undo canvas")
           this.wasErasing = false
           sourceEl.removeEventListener('stateremoved', eraseListener)
+          sourceEl.removeEventListener('fakeclearstate', eraseListener)
         }
       }
       sourceEl.addEventListener('stateremoved', eraseListener)
+      sourceEl.addEventListener('fakeclearstate', eraseListener)
       this.wasErasing = true
     }
 

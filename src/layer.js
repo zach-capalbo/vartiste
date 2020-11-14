@@ -261,6 +261,18 @@ export class CanvasNode {
   }
 }
 
+export class GreatLayerNode extends CanvasNode {
+  updateCanvas(frame) {
+    let originalMode = this.mode
+    try {
+      this.mode = undefined
+      super.updateCanvas(frame)
+    } finally {
+      this.mode = originalMode
+    }
+  }
+}
+
 export class MaterialNode extends CanvasNode {
   constructor(compositor) {
     super(compositor, {useCanvas: false})

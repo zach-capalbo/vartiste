@@ -329,6 +329,7 @@ AFRAME.registerComponent('pencil-tool', {
 
     if (intersection)
     {
+      this.hadIntersection = true
       let ratio = intersection.distance / far
       if (this.data.scaleTip)
       {
@@ -347,6 +348,11 @@ AFRAME.registerComponent('pencil-tool', {
       {
         this.el.components['hand-draw-tool'].pressure = 1.0
       }
+    }
+    else if (this.hadIntersection && this.el.is('erasing'))
+    {
+      this.el.emit('fakeclearstate', 'erasing')
+      this.hadIntersection = false
     }
   },
   _tick() {
