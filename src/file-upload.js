@@ -150,6 +150,12 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let materialId = (material) => material.map ? material.map.uuid : material.uuid;
 
   model.scene.traverse(o => {
+    if (o.geometry) {
+      Util.deinterleaveAttributes(o.geometry)
+    }
+  })
+
+  model.scene.traverse(o => {
     if (o.material)
     {
       materials[materialId(o.material)] = o.material

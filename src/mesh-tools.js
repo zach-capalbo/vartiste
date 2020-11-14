@@ -223,7 +223,7 @@ AFRAME.registerComponent('hide-mesh-tool', {
       {
         if (this.data.mode === 'delete')
         {
-          if (intersection.object.el.classList.contains("reference-glb"))
+          if (intersection.object.el.classList.contains("reference-glb") && Util.traverseFindAll(intersection.object.el.object3D, o => (o.visible && (o.type === 'Mesh' || o.type === 'SkinnedMesh'))).length === 1)
           {
             let originalParent = intersection.object.el.parentEl
             let originalEl = intersection.object.el
