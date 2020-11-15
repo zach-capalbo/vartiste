@@ -5,6 +5,7 @@ a-entity position="-1.6 1.1 0"
   a-entity click-action="export" icon-button="#asset-camera" tooltip="Export as PNG"
   a-entity click-action="export3d" icon-button="#asset-cube-send" tooltip="Export as GLB"
   a-entity.sketchfab-button click-action="exportSketchfab" icon-button="#asset-sketchfab" tooltip="Export to Sketchfab"
+  a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: exportJPEG" tooltip="Use JPEG Compression"
 
   a-entity.clickable click-action="help" icon-button="#asset-help-circle-outline" tooltip="Help"
 a-entity position="-1.6 0.6 0"
