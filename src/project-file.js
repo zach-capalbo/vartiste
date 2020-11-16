@@ -21,6 +21,7 @@ class ProjectFile {
     if (!('environment' in obj)) obj.environment = {state: 'reset'}
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
     if (!('tools' in obj)) obj.tools = []
+    if (!('exportJPEG' in obj)) obj.exportJPEG = false
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -67,8 +68,9 @@ class ProjectFile {
   static async load(obj, {compositor}) {
     console.log("Loading")
     ProjectFile.update(obj)
-    let settings = document.getElementsByTagName('a-scene')[0].systems['settings-system']
+    let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
     settings.setProjectName(obj.projectName)
+    settings.el.setAttribute('settings-system', {'exportJPEG': obj.exportJPEG})
 
     document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
 
@@ -168,7 +170,9 @@ class ProjectFile {
   async _save() {
     let obj = {}
     obj._fileVersion = FILE_VERSION
-    obj.projectName = document.querySelector('a-scene').systems['settings-system'].projectName
+    let settings = document.querySelector('a-scene').systems['settings-system']
+    obj.projectName = settings.projectName
+    obj.exportJPEG = settings.data.exportJPEG
     Object.assign(obj, this.saveCompositor())
 
     let glbMesh = document.getElementById('composition-view').getObject3D('mesh')

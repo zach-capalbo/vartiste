@@ -1,4 +1,5 @@
-console.log("including VARTISTE toolkit")
+let VERSION = require('./toolkit/package.json').version
+console.log("including VARTISTE toolkit", VERSION)
 
 if (document.currentScript)
 {
@@ -136,7 +137,7 @@ const {Pool} = require('./pool')
 const {MaterialTransformations} = require('./material-transformations')
 window.VARTISTE = {}
 VARTISTE.Util = require('./util.js').Util
-Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoStack, MaterialTransformations})
+Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoStack, MaterialTransformations, VERSION})
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {

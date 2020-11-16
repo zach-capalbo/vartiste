@@ -62,16 +62,22 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
+  imageURLType() {
+    return this.data.exportJPEG ? "image/jpeg" : "image/png"
+  },
+  imageExtension() {
+    return this.data.exportJPEG ? "jpg" : "png"
+  },
   exportAction({suffix = ""} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     let saveImg = new Image()
-    saveImg.src = compositor.preOverlayCanvas.toDataURL()
+    saveImg.src = compositor.preOverlayCanvas.toDataURL(this.imageURLType)
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
     if (suffix) suffix = `-${suffix}`
 
-    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}${suffix}.png`, "Canvas Images")
+    this.download(saveImg.src, `${this.projectName}-${this.formatFileDate()}${suffix}.${this.imageExtension()}`, "Canvas Images")
 
     if (compositor.data.useNodes)
     {
@@ -79,7 +85,7 @@ Util.registerComponentSystem('settings-system', {
       {
         if (Compositor.material[mode] && Compositor.material[mode].image)
         {
-          this.download(Compositor.material[mode].image.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
+          this.download(Compositor.material[mode].image.toDataURL(this.imageURLType()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
         }
       }
     }
@@ -91,7 +97,7 @@ Util.registerComponentSystem('settings-system', {
         {
           if (layer.mode !== mode) continue
 
-          this.download(layer.canvas.toDataURL(), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.png`, mode)
+          this.download(layer.canvas.toDataURL(this.imageURLType()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
         }
       }
     }
@@ -159,7 +165,7 @@ Util.registerComponentSystem('settings-system', {
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
+      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType()})
     })
 
     material.map.image = originalImage

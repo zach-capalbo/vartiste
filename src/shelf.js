@@ -2,7 +2,8 @@ const shelfHtml = require('./partials/shelf.html.slm')
 const {Util} = require('./util.js')
 
 // A moveable container for other components, consisting of a handlebar and a
-// wood-like background
+// wood-like background. You can create a mixin with the id `shelf-bg` or
+// `shelf-handle` to modify the background or handlebar, respectively.
 AFRAME.registerComponent('shelf', {
   dependencies: ['grab-activate', 'bypass-hidden-updates'],
   schema: {
@@ -21,7 +22,7 @@ AFRAME.registerComponent('shelf', {
     grabRoot: {default: true},
 
     // Title bar
-    name: {type: 'string'}
+    name: {type: 'string'},
   },
   events: {
     componentchanged: function(e) {

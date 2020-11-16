@@ -4,7 +4,10 @@ import {Util} from './util.js'
 // Helper for positioning the user
 Util.registerComponentSystem('artist-root', {
   schema: {
-    rotationAmount: {default: 3.14 / 4}
+    rotationAmount: {default: 3.14 / 4},
+
+    // Automatically reset the user's position (including prompt to reset) when entering VR
+    autoResetPosition: {default: true},
   },
   events: {
     entervr: function() {}
@@ -43,8 +46,13 @@ Util.registerComponentSystem('artist-root', {
       if (this.el.sceneEl.is('vr-mode'))
       {
         if (AFRAME.utils.device.isMobile() && !AFRAME.utils.device.isMobileVR()) return
+        if (!this.data.autoResetPosition) return
         this.resetCameraLocation()
       }
+    })
+
+    window.addEventListener('keyup', (event) => {
+      this.acceptOrientationPrompt()
     })
   },
 

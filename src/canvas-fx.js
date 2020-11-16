@@ -32,7 +32,10 @@ AFRAME.registerSystem('canvas-fx', {
     let ctx = canvas.getContext('2d')
     let oldOperation = ctx.globalCompositeOperation
     ctx.globalCompositeOperation = 'copy'
-    ctx.drawImage(processor.canvas, 0, 0)
+    ctx.drawImage(processor.canvas,
+                  0, 0, processor.canvas.width, processor.canvas.height,
+                  0, 0, canvas.width, canvas.height
+                  )
     ctx.globalCompositeOperation = oldOperation
     if (canvas.touch) canvas.touch()
     return canvas

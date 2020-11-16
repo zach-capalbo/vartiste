@@ -199,7 +199,7 @@ AFRAME.registerSystem('hide-mesh-tool', {
 AFRAME.registerComponent('hide-mesh-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    mode: {oneOf: ["delete", "hide"], default: "hide"},
+    mode: {oneOf: ["delete", "hide", "emit"], default: "hide"},
     far: {default: 0.6}
   },
   events: {
@@ -238,6 +238,10 @@ AFRAME.registerComponent('hide-mesh-tool', {
             intersection.object.parent.remove(intersection.object)
           }
         }
+        else if (this.data.mode === 'emit')
+        {
+          this.el.emit('meshtool', {intersection, object: intersection.object, el: intersection.object.el})
+        }
         else
         {
           Undo.push(() => intersection.object.visible = true)
@@ -259,4 +263,47 @@ AFRAME.registerComponent('hide-mesh-tool', {
       this.updateRaycaster.call(this.el.components.raycaster)
     })
   },
+})
+
+AFRAME.registerComponent('mesh-fill-tool', {
+  events: {
+    meshtool: function(e) {
+      this.fillMesh(e.detail.object)
+    }
+  },
+  init() {
+    this.el.setAttribute('hide-mesh-tool', 'mode', 'emit')
+  },
+  fillMesh(mesh) {
+    let destinationCanvas = Compositor.drawableCanvas
+    if (!this.proc)
+    {
+      this.proc = new CanvasShaderProcessor({source: require('./shaders/vertex-fill.glsl'), vertexShader: require('./shaders/vertex-baker.vert')})
+    }
+    let proc = this.proc
+
+    proc.setInputCanvas(destinationCanvas)
+
+    let geometry = mesh.geometry.toNonIndexed()
+
+    proc.vertexPositions = geometry.attributes.uv.array
+    proc.hasDoneInitialUpdate = false
+
+    proc.setUniform('u_color', 'uniform3fv', this.el.sceneEl.systems['paint-system'].brush.color3.toArray())
+
+    // proc.createVertexBuffer({name: "a_color", list: geometry.attributes.color.array, size: geometry.attributes.color.itemSize})
+
+    proc.initialUpdate()
+
+    proc.update()
+
+    let ctx = destinationCanvas.getContext("2d")
+    ctx.drawImage(proc.canvas,
+                  0, 0, proc.canvas.width, proc.canvas.height,
+                  0, 0, destinationCanvas.width, destinationCanvas.height)
+
+    window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
+
+    if (destinationCanvas.touch) destinationCanvas.touch()
+  }
 })
