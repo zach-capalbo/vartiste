@@ -2,22 +2,27 @@ AFRAME.registerComponent('scalable-raycaster', {
   dependencies: ['raycaster'],
   init()  {
     let worldScale = new THREE.Vector3
-    this.el.components.raycaster.updateLine = AFRAME.utils.bind(function () {
-      var el = this.el;
-      var intersections = this.intersections;
-      var lineLength;
 
-      if (intersections.length) {
-        this.el.object3D.getWorldScale(worldScale);
-        let worldScaleFactor = Math.abs(worldScale.dot(this.data.direction));
-        if (intersections[0].object.el === el && intersections[1]) {
-          lineLength = intersections[1].distance / worldScaleFactor;
-        } else {
-          lineLength = intersections[0].distance / worldScaleFactor;
+    // TODO: Not sure why this breaks on oculus quest. Still needs this kind of correction
+    if (!AFRAME.utils.device.isMobileVR())
+    {
+      this.el.components.raycaster.updateLine = AFRAME.utils.bind(function () {
+        var el = this.el;
+        var intersections = this.intersections;
+        var lineLength;
+
+        if (intersections.length) {
+          this.el.object3D.getWorldScale(worldScale);
+          let worldScaleFactor = Math.abs(worldScale.dot(this.data.direction));
+          if (intersections[0].object.el === el && intersections[1]) {
+            lineLength = intersections[1].distance / worldScaleFactor;
+          } else {
+            lineLength = intersections[0].distance / worldScaleFactor;
+          }
         }
-      }
-      this.drawLine(lineLength);
-    }, this.el.components.raycaster);
+        this.drawLine(lineLength);
+      }, this.el.components.raycaster);
+    }
 
     let originalUpdateOriginDirection = this.el.components.raycaster.updateOriginDirection
     this.el.components.raycaster.updateOriginDirection = AFRAME.utils.bind(function () {
