@@ -761,6 +761,7 @@ AFRAME.registerComponent('lever', {
     body.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     body.classList.add('clickable')
     body.setAttribute('propogate-grab', "")
+    if (document.getElementById('lever-handle')) body.setAttribute('mixin', 'lever-handle')
     this.body = body
     this.bodyPositioner = bodyPositioner
     bodyPositioner.append(body)
@@ -774,6 +775,7 @@ AFRAME.registerComponent('lever', {
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
     grip.setAttribute('grab-options', 'showHand: false; scalable: false')
+    if (document.getElementById('lever-grip')) grip.setAttribute('mixin', 'lever-grip')
     //grip.setAttribute('constrain-to-sphere', `innerRadius: ${this.data.handleLength}; outerRadius: ${this.data.handleLength}`)
     grip.classList.add('clickable')
     // gripPositioner.append(grip)

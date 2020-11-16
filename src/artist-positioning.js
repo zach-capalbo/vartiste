@@ -50,6 +50,10 @@ Util.registerComponentSystem('artist-root', {
         this.resetCameraLocation()
       }
     })
+
+    window.addEventListener('keyup', (event) => {
+      this.acceptOrientationPrompt()
+    })
   },
 
   // Rotates the user's viewport left
