@@ -137,8 +137,8 @@ AFRAME.registerComponent('skeletonator', {
 
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
 
-    // let helper = new THREE.SkeletonHelper(this.rootBone)
-    // this.rootBone.add(helper)
+    let helper = new THREE.SkeletonHelper(this.rootBone)
+    this.el.sceneEl.object3D.add(helper)
   },
   tick(t, dt) {
     if (!this.el.classList.contains("canvas"))

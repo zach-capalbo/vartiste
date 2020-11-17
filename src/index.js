@@ -80,11 +80,11 @@ if (location.host === "zach-geek.gitlab.io" && (location.pathname === '/vartiste
   // location.href = "https://vartiste.xyz" + location.pathname + location.hash + location.search
 }
 
-document.write(require('./scene.html.slm'));
-
 const {loadAllAssets} = require('./assets.js')
 
-loadAllAssets()
+// loadAllAssets()
+
+document.write(require('./scene.html.slm'));
 
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
 document.getElementById('left-hand').setAttribute('left-hand-controls', "")
