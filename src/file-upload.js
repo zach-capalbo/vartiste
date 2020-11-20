@@ -202,21 +202,33 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
           let layerCtx = layer.canvas.getContext('2d')
           layerCtx.save()
 
+          console.log("Material", material)
+
           //layerCtx.scale(1, -1)
-          if (!image && postProcessMesh)
+          if (!material.transparent || (!image && postProcessMesh))
           {
             if (mode === 'map'  && material.color)
             {
               console.log("coloring", material.color)
+              let oldOpacity = layerCtx.globalAlpha
               layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+              layerCtx.globalAlpha = material.opacity
               layerCtx.fillRect(0, 0, width, height)
+              layerCtx.globalAlpha = oldOpacity
             }
           }
-          else
+
+          if (image)
           {
             layerCtx.translate(width / 2, height / 2)
             try {
               layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+              layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+              layerCtx.globalCompositeOperation = 'multiply'
+              layerCtx.fillRect( -width / 2, -height / 2, width, height)
+              layerCtx.globalCompositeOperation = 'destination-in'
+              layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+              layerCtx.globalCompositeOperation = 'source-over'
             } catch (e)
             {
               console.log("Could not draw image for texture", mode, material)
