@@ -15,6 +15,7 @@ AFRAME.registerComponent('skeletonator', {
     recording: {default: true},
     frameCount: {default: 50},
     recordFrameCount: {default: false},
+    hideSkeleton: {default: false},
   },
   init() {
     Pool.init(this)
@@ -137,8 +138,33 @@ AFRAME.registerComponent('skeletonator', {
 
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
 
-    let helper = new THREE.SkeletonHelper(this.rootBone)
-    this.el.sceneEl.object3D.add(helper)
+    this.skeletonHelper = new THREE.SkeletonHelper(this.rootBone)
+    this.el.sceneEl.object3D.add(this.skeletonHelper)
+  },
+  update(oldData)
+  {
+    if (!this.skinningMaterial) return;
+
+    if (this.data.hideSkeleton)
+    {
+      this.skinningMaterial.opacity = 1.0
+      this.skeletonHelper.visible = false
+      for (let handle of Object.values(this.boneToHandle))
+      {
+        handle.object3D.visible = false
+      }
+    }
+    else
+    {
+      this.skinningMaterial.opacity = 0.5
+      this.skeletonHelper.visible = true
+      for (let handle of Object.values(this.boneToHandle))
+      {
+        handle.object3D.visible = true
+      }
+    }
+
+    this.el.sceneEl.emit('refreshobjects')
   },
   tick(t, dt) {
     if (!this.el.classList.contains("canvas"))
@@ -507,18 +533,18 @@ AFRAME.registerComponent("bone-handle", {
 
         if (this.el.bone.parent.type === 'Bone' && this.el.skeletonator.system.data.lockLength)
         {
-          // this.el.setAttribute('constrain-to-sphere', {innerRadius: this.el.bone.position.length(), outerRadius: this.el.bone.position.length(), })
+          this.el.setAttribute('constrain-to-sphere', {innerRadius: this.el.bone.position.length(), outerRadius: this.el.bone.position.length(), })
           // if (!this.startingUp) this.startingUp = new THREE.Vector3
           // this.startingUp.set(0, 1, 0)
           // this.startingUp.applyQuaternion(this.el.parentEl.object3D.quaternion)
-          // this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint)
-          // this.el.parentEl.addState("constrained")
+          this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint)
+          this.el.parentEl.addState("constrained")
           // console.log("P", this.el.parentEl)
         }
         else
         {
           this.el.removeAttribute('constrain-to-sphere')
-          // this.el.sceneEl.systems.manipulator.removeConstraint(this.el.parentEl, this.trackParentConstraint)
+          this.el.sceneEl.systems.manipulator.removeConstraint(this.el.parentEl, this.trackParentConstraint)
         }
 
         if (Compositor.component.isPlayingAnimation)
@@ -559,6 +585,8 @@ AFRAME.registerComponent("bone-handle", {
                                   this.el.object3D.scale)
 
     this.trackParentConstraint = this.trackParentConstraint.bind(this)
+    this.positioningHelper = new THREE.Object3D
+    this.el.sceneEl.object3D.add(this.positioningHelper)
   },
   tick(t,dt) {
     let indicator = this.el.getObject3D('mesh')
@@ -599,11 +627,16 @@ AFRAME.registerComponent("bone-handle", {
   },
   trackParentConstraint()
   {
+    Util.positionObject3DAtTarget(this.positioningHelper)
     let obj = this.el.parentEl.object3D
     let up = this.startingUp
     obj.matrix.lookAt(obj.position, this.pool('center', THREE.Vector3), up)
     obj.quaternion.setFromRotationMatrix(obj.matrix)
-    // Util.applyMatrix(obj.matrix, obj)
+    Util.positionObject3DAtTarget(his.el.object3D, this.positioningHelper)
+    // // Util.applyMatrix(obj.matrix, obj)
+    // let spherical = this.pool('spherical', THREE.Spherical)
+    // spherical.setFromCartesianCoords(this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+
   }
 })
 
@@ -652,28 +685,6 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   bakeSkeleton(newSkeleton = false) {
     let bones = []
     Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
-    // mesh.bindMode = "detached"
-    // bones[0].updateMatrixWorld()
-    // mesh.bind(new THREE.Skeleton(bones), bones[0].matrixWorld)
-
-    // bones[0].scale.set(1,1,1)
-    // bones[0].position.set(0,0,0)
-    // bones[0].rotation.set(0,0,0)
-
-    // let stopTraversal = false
-    //
-    // bones[0].traverseAncestors(a => {
-    //   if (stopTraversal) return
-    //   a.scale.set(1,1,1)
-    //   a.position.set(0,0,0)
-    //   a.rotation.set(0,0,0)
-    //   if (a == this.el.skeletonator.el.object3D) stopTraversal = true
-    // })
-
-    // let inv = this.pool('inv', THREE.Matrix4)
-    // inv.getInverse(bones[0].matrix)
-    // mesh.bind(new THREE.Skeleton(bones), newSkeleton ? bones[0].matrixWorld : inv)
-    // mesh.pose()
 
     for (let mesh of this.el.skeletonator.meshes)
     {
@@ -705,7 +716,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   closeSkeletonator() {
     this.el.skeletonator.pause()
     this.el.object3D.visible = false
-  }
+  },
 })
 
 AFRAME.registerComponent("new-bone-wand", {

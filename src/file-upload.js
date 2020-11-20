@@ -153,6 +153,11 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   model.scene.traverse(o => {
     if (o.geometry) {
       Util.deinterleaveAttributes(o.geometry)
+
+      if (postProcessMesh && o.geometry.index)
+      {
+        o.geometry = o.geometry.toNonIndexed()
+      }
     }
   })
 
@@ -317,6 +322,8 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       }
     }
   }
+
+  AFRAME.utils.extendDeep(model.scene.userData, model.userData)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
 
