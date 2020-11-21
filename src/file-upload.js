@@ -161,11 +161,22 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     }
   })
 
+  let transparentCollisions = {opaqueMeshes: [], transparentMeshes: []}
   model.scene.traverse(o => {
     if (o.materials || (o.material && o.material.length)) console.warn("Multimaterial!", o, o.material)
     if (o.material)
     {
       materials[materialId(o.material)] = o.material
+      if (postProcessMesh)
+      {
+        if (o.material.transparent) {
+          transparentCollisions.transparentMeshes.push(o)
+        }
+        else
+        {
+          transparentCollisions.opaqueMeshes.push(o)
+        }
+      }
     }
   })
 
@@ -181,6 +192,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
   let materialBoxes = {}
   let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
+  let doubleSided = Compositor.component.data.doubleSided
   if (importMaterial)
   {
     for (let material of Object.values(materials))
@@ -189,6 +201,11 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       {
         currentBox = boxes[currentBoxId++]
         materialBoxes[materialId(material)] = currentBox
+      }
+
+      if (material.side === THREE.DoubleSide || material.side === THREE.BackSide)
+      {
+        doubleSided = true
       }
 
       for (let mode of ["map"].concat(THREED_MODES))
@@ -344,6 +361,8 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
 
+  Compositor.el.setAttribute('compositor', 'doubleSided', doubleSided)
+
   compositor.activateLayer(startingLayer);
 
   if (!postProcessMesh) return;
@@ -365,6 +384,16 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       }
       catch (e) {
         console.error("Could not bake vertex colors", e)
+      }
+    }
+
+    // Handle Decals
+    if (transparentCollisions.transparentMeshes.length > 0) console.log("transparentCollisions", transparentCollisions)
+    for (let transparentMesh of transparentCollisions.transparentMeshes)
+    {
+      if (transparentCollisions.opaqueMeshes.some(o => o.parent === transparentMesh.parent && o.position.equals(transparentMesh.position)))
+      {
+        transparentMesh.position.z -= 0.001
       }
     }
 
