@@ -6,7 +6,7 @@ import {OutputNode} from './layer.js'
 
 Util.registerComponentSystem('skeletonator-system', {
   schema: {
-    lockLength: {default: true},
+    lockLength: {default: false},
   }
 })
 
@@ -533,18 +533,21 @@ AFRAME.registerComponent("bone-handle", {
 
         if (this.el.bone.parent.type === 'Bone' && this.el.skeletonator.system.data.lockLength)
         {
-          this.el.setAttribute('constrain-to-sphere', {innerRadius: this.el.bone.position.length(), outerRadius: this.el.bone.position.length(), })
+          // this.el.setAttribute('constrain-to-sphere', {innerRadius: this.el.bone.position.length(), outerRadius: this.el.bone.position.length(), })
           // if (!this.startingUp) this.startingUp = new THREE.Vector3
           // this.startingUp.set(0, 1, 0)
           // this.startingUp.applyQuaternion(this.el.parentEl.object3D.quaternion)
+          this.startingPosition = this.startingPosition || new THREE.Vector3
+          this.startingPosition.copy(this.el.object3D.position)
           this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint)
-          this.el.parentEl.addState("constrained")
+          // this.el.parentEl.addState("constrained")
           // console.log("P", this.el.parentEl)
+
         }
         else
         {
-          this.el.removeAttribute('constrain-to-sphere')
-          this.el.sceneEl.systems.manipulator.removeConstraint(this.el.parentEl, this.trackParentConstraint)
+          // this.el.removeAttribute('constrain-to-sphere')
+          // this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.trackParentConstraint)
         }
 
         if (Compositor.component.isPlayingAnimation)
@@ -564,6 +567,8 @@ AFRAME.registerComponent("bone-handle", {
         {
           this.el.skeletonator.el.setAttribute('skeletonator', {frameCount: Compositor.component.currentFrame, recordFrameCount: false})
         }
+
+        this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.trackParentConstraint)
       }
     }
   },
@@ -627,12 +632,20 @@ AFRAME.registerComponent("bone-handle", {
   },
   trackParentConstraint()
   {
+    // Util.positionObject3DAtTarget(this.positioningHelper, this.el.object3D)
+    this.el.object3D.position.copy(this.startingPosition)
+    // this.el.object3D.up.set(0, 0, -1)
+    // this.el.object3D.lookAt(this.positioningHelper.position)
+    // this.el.object3D.up.set(0, 1, 0)
+
+    return
+
     Util.positionObject3DAtTarget(this.positioningHelper)
     let obj = this.el.parentEl.object3D
     let up = this.startingUp
     obj.matrix.lookAt(obj.position, this.pool('center', THREE.Vector3), up)
     obj.quaternion.setFromRotationMatrix(obj.matrix)
-    Util.positionObject3DAtTarget(his.el.object3D, this.positioningHelper)
+    Util.positionObject3DAtTarget(this.el.object3D, this.positioningHelper)
     // // Util.applyMatrix(obj.matrix, obj)
     // let spherical = this.pool('spherical', THREE.Spherical)
     // spherical.setFromCartesianCoords(this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
