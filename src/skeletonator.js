@@ -427,6 +427,11 @@ AFRAME.registerComponent('skeletonator', {
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
 
+    if (!this.boneTracks[bone.name])
+    {
+      this.boneTracks[bone.name] = []
+    }
+
     if (!(frameIdx in this.boneTracks[bone.name]))
     {
       this.boneTracks[bone.name][frameIdx] = new THREE.Matrix4()
