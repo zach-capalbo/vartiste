@@ -30,6 +30,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-rotate-3d-variant" system-click-action="system: mesh-tools; action: applyRotation" tooltip="Apply Rotation to Mesh"
     a-entity icon-button="#asset-resize" system-click-action="system: mesh-tools; action: applyScale" tooltip="Apply Scale to Mesh"
     a-entity icon-button="#asset-oven" system-click-action="system: mesh-tools; action: applyTransformationToVertices" tooltip="Bake transformation to vertices"
+    a-entity icon-button="#asset-transition" system-click-action="system: mesh-tools; action: splitReferenceMeshes" tooltip="Split Apart Reference Mesh Entities"
 
   a-entity position="2.6 0.3 0" scale="4 4 4"
     a-entity hide-mesh-tool="" rotation="-25 0 0" preactivate-tooltip="Mesh Hiding Tool" action-tooltips="click: Hide Mesh"

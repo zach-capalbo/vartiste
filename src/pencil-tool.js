@@ -965,6 +965,8 @@ AFRAME.registerComponent('selection-box-tool', {
     box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
     this.el.append(box)
     this.grabbing = false
+
+    // this.box.setAttribute('axis-handles', "")
   },
   update(oldData) {
     this.box.setAttribute('width', this.data.boxSize.x)
@@ -978,6 +980,7 @@ AFRAME.registerComponent('selection-box-tool', {
     }
   },
   toggleGrabbing(newGrabbing) {
+    if (this.grabbing === newGrabbing) return;
     this.grabbing = newGrabbing;
     this.box.setAttribute('material', 'color', this.grabbing ? '#6fde96' : "#333")
     if (this.grabbing && this.el.is('grabbed'))
@@ -997,16 +1000,6 @@ AFRAME.registerComponent('selection-box-tool', {
       for (let el of objects)
       {
         Util.traverseFindAll(el.object3D, o => o.type === 'Mesh' || o.type === 'SkinnedMesh', {outputArray: newObjects, visibleOnly: true})
-      }
-      if (this.data.duplicateOnGrab)
-      {
-        for (let i in newObjects)
-        {
-          let oldObject = newObjects[i]
-          let newObject = newObjects[i].clone(true)
-          oldObject.parent.add(newObject)
-          newObjects[i] = newObject
-        }
       }
       objects = newObjects.map(o => { return {object3D: o}})
     }
@@ -1049,6 +1042,14 @@ AFRAME.registerComponent('selection-box-tool', {
         if (!contained) continue
       }
 
+      if (this.data.duplicateOnGrab)
+      {
+        let oldObject = target.object3D
+        let newObject = oldObject.clone(true)
+        oldObject.parent.add(newObject)
+        target.object3D = newObject
+      }
+
       let obj = new THREE.Object3D
       this.el.object3D.add(obj)
       Util.positionObject3DAtTarget(obj, target.object3D)
@@ -1077,7 +1078,7 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   stopGrab() {
     this.tick = function(){};
-    if (this.data.duplicateOnGrab)
+    if (this.data.duplicateOnGrab && this.grabbing)
     {
       this.toggleGrabbing(false)
     }
