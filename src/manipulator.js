@@ -27,7 +27,8 @@ AFRAME.registerSystem('manipulator', {
   },
   // Removes the constraint for manipulating the given entity
   removeConstraint(el, constraintFn) {
-    el.manipulatorConstraints.splice(this.el.manipulatorConstraints.indexOf(this.constrainObject), 1)
+    if (!el.manipulatorConstraints) el.manipulatorConstraints = []
+    el.manipulatorConstraints.splice(el.manipulatorConstraints.indexOf(constraintFn), 1)
   }
 })
 

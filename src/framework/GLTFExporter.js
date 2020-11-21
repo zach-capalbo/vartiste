@@ -84,6 +84,7 @@ THREE.GLTFExporter.prototype = {
 			forcePowerOfTwoTextures: false,
 			includeCustomExtensions: false,
 			mimeType: 'image/png',
+			postProcessJSON: function(j) { return j; }
 		};
 
 		options = Object.assign( {}, DEFAULT_OPTIONS, options );
@@ -2013,6 +2014,8 @@ THREE.GLTFExporter.prototype = {
 
 			// Merge buffers.
 			var blob = new Blob( buffers, { type: 'application/octet-stream' } );
+
+			options.postProcessJSON(outputJSON);
 
 			// Declare extensions.
 			var extensionsUsedList = Object.keys( extensionsUsed );

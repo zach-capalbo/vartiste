@@ -163,9 +163,15 @@ Util.registerComponentSystem('settings-system', {
     mesh.traverseVisible(m => { if (m.geometry) Util.deinterleaveAttributes(m.geometry) })
     prepareModelForExport(mesh, material)
 
+    function postProcessJSON(outputJSON) {
+      if (!outputJSON.extensions) outputJSON.extensions = {}
+
+      AFRAME.utils.extendDeep(outputJSON.extensions, mesh.userData.gltfExtensions)
+    }
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType()})
+      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), postProcessJSON})
     })
 
     material.map.image = originalImage
@@ -174,9 +180,16 @@ Util.registerComponentSystem('settings-system', {
     return glb
   },
   async export3dAction(exportMesh) {
+    if (!exportMesh) exportMesh = Compositor.meshRoot
     let glb = await this.getExportableGLB(exportMesh)
+    let extension = "glb"
 
-    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.glb`, "GLB File")
+    if (exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
+    {
+      extension = 'vrm'
+    }
+
+    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.${extension}`, "GLB File")
 
     document.getElementById('composition-view').emit('updatemesh')
   },

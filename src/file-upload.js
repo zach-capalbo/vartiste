@@ -102,7 +102,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
-    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj)$/i, ""))
+    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj|vrm)$/i, ""))
   }
 
   let startingLayerLength = compositor.layers.length
@@ -115,6 +115,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   {
     case '.obj': format = 'obj'; break
     case '.fbx': format = 'fbx'; break
+    case '.vrm': format = 'vrm'; break
   }
 
   let model
@@ -152,13 +153,30 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   model.scene.traverse(o => {
     if (o.geometry) {
       Util.deinterleaveAttributes(o.geometry)
+
+      if (postProcessMesh && o.geometry.index)
+      {
+        o.geometry = o.geometry.toNonIndexed()
+      }
     }
   })
 
+  let transparentCollisions = {opaqueMeshes: [], transparentMeshes: []}
   model.scene.traverse(o => {
+    if (o.materials || (o.material && o.material.length)) console.warn("Multimaterial!", o, o.material)
     if (o.material)
     {
       materials[materialId(o.material)] = o.material
+      if (postProcessMesh)
+      {
+        if (o.material.transparent) {
+          transparentCollisions.transparentMeshes.push(o)
+        }
+        else
+        {
+          transparentCollisions.opaqueMeshes.push(o)
+        }
+      }
     }
   })
 
@@ -174,6 +192,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
   let materialBoxes = {}
   let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
+  let doubleSided = Compositor.component.data.doubleSided
   if (importMaterial)
   {
     for (let material of Object.values(materials))
@@ -182,6 +201,11 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       {
         currentBox = boxes[currentBoxId++]
         materialBoxes[materialId(material)] = currentBox
+      }
+
+      if (material.side === THREE.DoubleSide || material.side === THREE.BackSide)
+      {
+        doubleSided = true
       }
 
       for (let mode of ["map"].concat(THREED_MODES))
@@ -195,21 +219,33 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
           let layerCtx = layer.canvas.getContext('2d')
           layerCtx.save()
 
+          console.log("Material", material)
+
           //layerCtx.scale(1, -1)
-          if (!image && postProcessMesh)
+          if (!material.transparent || (!image && postProcessMesh))
           {
             if (mode === 'map'  && material.color)
             {
               console.log("coloring", material.color)
+              let oldOpacity = layerCtx.globalAlpha
               layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+              layerCtx.globalAlpha = material.opacity
               layerCtx.fillRect(0, 0, width, height)
+              layerCtx.globalAlpha = oldOpacity
             }
           }
-          else
+
+          if (image)
           {
             layerCtx.translate(width / 2, height / 2)
             try {
               layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+              layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+              layerCtx.globalCompositeOperation = 'multiply'
+              layerCtx.fillRect( -width / 2, -height / 2, width, height)
+              layerCtx.globalCompositeOperation = 'destination-in'
+              layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+              layerCtx.globalCompositeOperation = 'source-over'
             } catch (e)
             {
               console.log("Could not draw image for texture", mode, material)
@@ -229,29 +265,50 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       }
     }
 
+    // Prevent double adjustment
+    let hasAdjustedGeometry = {}
+    let adjustedArrays = new Set()
+
     if (combineMaterials)
     {
       model.scene.traverse(o => {
 
         if (o.material && o.geometry.attributes.uv)
         {
+          if (hasAdjustedGeometry[o.geometry.uuid]) return;
+
           let attr = o.geometry.attributes.uv
           let geometry = o.geometry
           let currentBox = materialBoxes[materialId(o.material)]
+
           //geometry = geometry.toNonIndexed()
 
           if (attr.data)
           {
+            if (adjustedArrays.has(attr.data)) return;
+
             for (let i = 0; i < attr.count; ++i)
             {
               attr.setXY(i,
                 THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
                 THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
             }
+
+            adjustedArrays.add(attr.data)
           }
           else
           {
+            if (adjustedArrays.has(geometry.attributes.uv.array)) return;
+
+            let indices = {has: function() { return true; }}
+            if (geometry.index)
+            {
+              indices = new Set(geometry.index.array)
+            }
+
             for (let i in geometry.attributes.uv.array) {
+              if (!indices.has(Math.floor(i / 2))) continue;
+
               if (i %2 == 0) {
                 attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
               }
@@ -260,9 +317,12 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
                 attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
               }
             }
+
+            if (!geometry.index) adjustedArrays.add(geometry.attributes.uv.array)
           }
           //o.geometry = geometry
           geometry.attributes.uv.needsUpdate = true
+          hasAdjustedGeometry[geometry.uuid] = true
         }
       })
 
@@ -292,12 +352,16 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     }
   }
 
+  AFRAME.utils.extendDeep(model.scene.userData, model.userData)
+
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
 
   if (Compositor.el.getAttribute('material').shader === 'flat')
   {
     Compositor.el.setAttribute('material', 'shader', shouldUse3D ? 'standard' : 'matcap')
   }
+
+  Compositor.el.setAttribute('compositor', 'doubleSided', doubleSided)
 
   compositor.activateLayer(startingLayer);
 
@@ -321,6 +385,21 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       catch (e) {
         console.error("Could not bake vertex colors", e)
       }
+    }
+
+    // Handle Decals
+    if (transparentCollisions.transparentMeshes.length > 0) console.log("transparentCollisions", transparentCollisions)
+    for (let transparentMesh of transparentCollisions.transparentMeshes)
+    {
+      if (transparentCollisions.opaqueMeshes.some(o => o.parent === transparentMesh.parent && o.position.equals(transparentMesh.position)))
+      {
+        transparentMesh.position.z -= 0.001
+      }
+    }
+
+    if (format === 'vrm')
+    {
+      Compositor.meshRoot.parent.rotation.set(0, Math.PI, 0)
     }
 
     compositor.activateLayer(startingLayer);
@@ -429,7 +508,7 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.(glb)|(gltf)|(obj)|(fbx)$/i.test(file.name))
+    if (/\.(glb)|(gltf)|(obj)|(fbx)|(vrm)$/i.test(file.name))
     {
       if (settings.data.addReferences)
       {

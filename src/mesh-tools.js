@@ -302,7 +302,7 @@ AFRAME.registerComponent('mesh-fill-tool', {
                   0, 0, proc.canvas.width, proc.canvas.height,
                   0, 0, destinationCanvas.width, destinationCanvas.height)
 
-    window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
+    // window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
 
     if (destinationCanvas.touch) destinationCanvas.touch()
   }
