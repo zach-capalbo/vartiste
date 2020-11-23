@@ -436,6 +436,8 @@ AFRAME.registerComponent('skeletonator', {
       }
     }
 
+    let needsDilation = new Set()
+
     for (let mesh of this.meshes)
     {
       if (mesh.type !== 'SkinnedMesh') continue;
@@ -488,8 +490,16 @@ AFRAME.registerComponent('skeletonator', {
         ctx.drawImage(proc.canvas,
                       0, 0, proc.canvas.width, proc.canvas.height,
                       0, 0, destinationCanvas.width, destinationCanvas.height)
+
         if (destinationCanvas.touch) destinationCanvas.touch()
+
+        needsDilation.add(destinationCanvas)
       }
+    }
+
+    for (let canvas of needsDilation)
+    {
+      this.el.sceneEl.systems['canvas-fx'].applyFX('dilate', canvas)
     }
 
     if (!onlyUsedBones)

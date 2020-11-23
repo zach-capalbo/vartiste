@@ -24,6 +24,9 @@ a-entity.grab-root shelf="name: Skeletonator" scale="0.3 0.3 0.3"
     a-entity click-action="deleteActiveBone" icon-button="#asset-delete" tooltip="Delete Bone"
     a-entity click-action="clearActiveBoneTracks" icon-button="#asset-backspace-outline" tooltip="Clear Bone Animation Tracks"
 
+  a-entity position="0 -1.2 0"
+    a-entity icon-button="#asset-play-pause" system-click-action="system: timeline-system; action: playPauseAnimation" tooltip="Play / Pause" speech-alias="play; pause"
+
   a-entity position="0 2.0 0"
     a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab Object"
     a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"
