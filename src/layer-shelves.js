@@ -400,6 +400,9 @@ AFRAME.registerComponent("layer-shelves", {
     {
       if (this.compositor.data.useNodes)
       {
+        let identity = this.pool('identity', THREE.Matrix4)
+        identity.identity()
+
         this.el.querySelectorAll('.node-shelf').forEach(el => {
           el.setAttribute('visible', true)
         })
@@ -408,6 +411,13 @@ AFRAME.registerComponent("layer-shelves", {
         })
         for (let layer of this.compositor.layers)
         {
+          if (layer.shelfMatrix.equals(identity))
+          {
+            layer.shelfMatrix.makeScale(0.2, 0.2, 0.2)
+            layer.shelfMatrix.setPosition(Math.random() * 0.2 * Compositor.component.layers.length,
+                              Math.random() * 0.2 * Compositor.component.layers.length,
+                              Math.random() * 0.2)
+          }
           this.shelves[layer.id].object3D.matrix.copy(layer.shelfMatrix)
           layer.shelfMatrix.decompose(
             this.shelves[layer.id].object3D.position,

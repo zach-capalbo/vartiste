@@ -6,7 +6,7 @@ a-entity.grab-root shelf="name: Skeletonator" scale="0.3 0.3 0.3"
     a-entity click-action="exportSkinnedMesh" icon-button="#asset-cube-send" tooltip="Export Mesh + Armature"
     a-entity click-action="clearTracks" icon-button="#asset-backspace-outline" tooltip="Clear Animation Tracks for All Bones"
     a-entity click-action="skinFromNodes" icon-button="#asset-light-switch" tooltip="Set Bone Weights from Output Nodes by Name"
-    a-entity click-action="nodesFromBones" icon-button="#asset-light-switch" tooltip="Create Output Nodes from Bone Names"
+    a-entity click-action="nodesFromSkin" icon-button="#asset-light-switch" tooltip="Create Output Nodes from Bone Names and Existing Weights"
 
     a-entity click-action="closeSkeletonator" icon-button="#asset-close-circle-outline" tooltip="Exit Skeletonator"
   a-entity icon-row="" scale="1 1 ${1 / 0.3}" position="-1.5 1.1 0"

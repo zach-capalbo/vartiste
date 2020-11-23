@@ -2,7 +2,7 @@ import shortid from 'shortid'
 import {THREED_MODES} from "./layer-modes.js"
 import {Util} from "./util.js"
 import {Pool} from "./pool.js"
-import {OutputNode} from './layer.js'
+import {OutputNode, Layer} from './layer.js'
 
 Util.registerComponentSystem('skeletonator-system', {
   schema: {
@@ -322,8 +322,8 @@ AFRAME.registerComponent('skeletonator', {
 
       let node = new OutputNode(Compositor.component)
       node.name = boneName
-      node.shelfMatrix.makeScale(0.3, 0.3, 0.3)
-      node.shelfMatrix.setPosition(0.0, i * 0.4, 0.0)
+      node.shelfMatrix.makeScale(0.1, 0.1, 0.1)
+      node.shelfMatrix.setPosition(0.4, i++ * 0.4, 0.0)
       Compositor.component.el.emit('nodeadded', {node})
     }
   },
@@ -422,6 +422,80 @@ AFRAME.registerComponent('skeletonator', {
       mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
       mesh.geometry.attributes.skinIndex.needsUpdate = true
       mesh.geometry.attributes.skinWeight.needsUpdate = true
+    }
+  },
+  nodesFromSkin({onlyUsedBones = false} = {}) {
+    let proc = new CanvasShaderProcessor({source: require('./shaders/vertex-baker.glsl'), vertexShader: require('./shaders/weight-baker.vert')})
+    let layersForBone = {}
+
+    for (let node of Compositor.component.allNodes)
+    {
+      if (node.inputs && node.inputs.canvas)
+      {
+        layersForBone[node.name] = node.inputs.canvas
+      }
+    }
+
+    for (let mesh of this.meshes)
+    {
+      if (mesh.type !== 'SkinnedMesh') continue;
+
+      let geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
+
+      let bonesUsed = new Set(geometry.attributes.skinIndex.array)
+
+      console.log("Deskinning", mesh.name)
+
+      for (let i = 0; i < mesh.skeleton.bones.length; ++i)
+      {
+        if (!bonesUsed.has(i)) continue;
+
+        let bone = mesh.skeleton.bones[i]
+        if (!(bone.name in layersForBone))
+        {
+          let layer = new Layer(Compositor.component.width, Compositor.component.height)
+          layer.visible = false
+          layer.shelfMatrix.makeScale(0.2, 0.2, 0.2)
+          layer.shelfMatrix.setPosition(-0.2, Object.values(layersForBone).length, 0)
+          Compositor.component.addLayer(Compositor.component.layers.length, {layer})
+          layersForBone[bone.name] = layer
+          let outputNode = new OutputNode(Compositor.component)
+          outputNode.name = bone.name
+
+          outputNode.shelfMatrix.makeScale(0.1, 0.1, 0.1)
+          outputNode.shelfMatrix.setPosition(0.45, Object.values(layersForBone).length - 1 + 0.05, 0)
+          outputNode.connectInput(layer, {type: 'canvas'})
+          Compositor.component.el.emit('nodeadded', {node: outputNode})
+          Compositor.el.emit('nodeconnectionschanged', {node: outputNode})
+        }
+        let destinationCanvas = layersForBone[bone.name].canvas
+        proc.setInputCanvas(destinationCanvas)
+
+
+        proc.vertexPositions = geometry.attributes.uv.array
+        proc.hasDoneInitialUpdate = false
+
+        proc.createVertexBuffer({name: "a_boneWeights", list: geometry.attributes.skinWeight.array, size: geometry.attributes.skinWeight.itemSize})
+        proc.createVertexBuffer({name: "a_boneIndices", list: geometry.attributes.skinIndex.array, size: geometry.attributes.skinIndex.itemSize})
+
+        proc.setUniform('u_boneIndex', 'uniform1f',i)
+
+        proc.initialUpdate()
+
+        proc.update()
+
+        let ctx = destinationCanvas.getContext("2d")
+        ctx.drawImage(proc.canvas,
+                      0, 0, proc.canvas.width, proc.canvas.height,
+                      0, 0, destinationCanvas.width, destinationCanvas.height)
+        if (destinationCanvas.touch) destinationCanvas.touch()
+      }
+    }
+
+    if (!onlyUsedBones)
+    {
+      console.log("Adding unused bones")
+      this.nodesFromBones()
     }
   },
   keyframe(bone) {
@@ -727,6 +801,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   skinFromNodes() {
     this.el.skeletonator.skinFromNodes()
+  },
+  nodesFromSkin() {
+    this.el.skeletonator.nodesFromSkin()
   },
   nodesFromBones() {
     this.el.skeletonator.nodesFromBones()

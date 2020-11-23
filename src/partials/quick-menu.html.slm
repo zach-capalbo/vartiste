@@ -18,7 +18,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Reference Photos" shelf-summoner="name: Reference Timer Shelf"
     a-entity icon-button="#asset-nudge-brush" tooltip="Node Compositing System" quick-menu-action="toggleNodes"
     a-entity icon-button="#asset-help-circle-outline" tooltip="Help" system-click-action="system: settings-system; action: helpAction"
-  a-entity.quick-menu-more version-info="" text="width: 1.7; wrapCount: 25; align: right; anchor: right" position="1.3 -2.33 0.01"
+  a-entity.quick-menu-more version-info="" text="width: 1.7; wrapCount: 25; align: right; anchor: right" position="1.3 -2.33 0.01" visible="false"
   a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"
     a-entity scale="2 2 1" quick-gallery=""
   /a-entity.quick-menu-more icon-row="" position="-0.885 -0.5 0" visible="false"

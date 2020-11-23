@@ -72,7 +72,7 @@ Util.registerComponentSystem('settings-system', {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     let saveImg = new Image()
-    saveImg.src = compositor.preOverlayCanvas.toDataURL(this.imageURLType)
+    saveImg.src = compositor.preOverlayCanvas.toDataURL(this.imageURLType())
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
     if (suffix) suffix = `-${suffix}`
