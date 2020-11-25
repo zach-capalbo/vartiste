@@ -14,6 +14,9 @@ Util.registerComponentSystem('timeline-system', {
   init() {
     Pool.init(this)
   },
+  playPauseAnimation() {
+    Compositor.component.playPauseAnimation()
+  },
   exportFrames() {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component

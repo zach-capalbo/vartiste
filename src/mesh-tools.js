@@ -181,6 +181,32 @@ Util.registerComponentSystem('mesh-tools', {
         Util.applyMatrix(o.matrix, o)
       }
     })
+  },
+  splitReferenceMeshes() {
+    let positionHelper = this.pool('positionHelper', THREE.Object3D)
+    if (!positionHelper.parent) this.el.sceneEl.object3D.add(positionHelper)
+    let container = document.getElementById('reference-spawn')
+    for (let el of document.querySelectorAll('.reference-glb'))
+    {
+      let meshes = Util.traverseFindAll(el.object3D, o => o.type === 'Mesh' || o.type === 'SkinnedMesh')
+      for (let i = 1; i < meshes.length; ++i)
+      {
+        let mesh = meshes[i]
+        let mat = new THREE.Matrix4
+        Util.positionObject3DAtTarget(positionHelper, mesh)
+        mat.copy(positionHelper.matrix)
+        let entity = document.createElement('a-entity')
+        entity.classList.add('clickable')
+        entity.classList.add('reference-glb')
+        container.append(entity)
+        mesh.parent.remove(mesh)
+        entity.setObject3D('mesh', mesh)
+        Util.whenLoaded(entity, () => {
+          Util.applyMatrix(mat, positionHelper)
+          Util.positionObject3DAtTarget(mesh, positionHelper)
+        })
+      }
+    }
   }
 })
 

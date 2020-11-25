@@ -15,7 +15,7 @@ AFRAME.registerSystem('canvas-fx', {
     this.availableFX = FX
   },
   processorFor(fx) {
-    if (fx in this.processors) return this.processors[fx];
+    // if (fx in this.processors) return this.processors[fx];
     this.processors[fx] = new CanvasShaderProcessor({fx})
     return this.processors[fx]
   },
@@ -31,7 +31,8 @@ AFRAME.registerSystem('canvas-fx', {
     processor.update()
     let ctx = canvas.getContext('2d')
     let oldOperation = ctx.globalCompositeOperation
-    ctx.globalCompositeOperation = 'copy'
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(processor.canvas,
                   0, 0, processor.canvas.width, processor.canvas.height,
                   0, 0, canvas.width, canvas.height

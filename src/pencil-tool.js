@@ -933,7 +933,8 @@ AFRAME.registerComponent('selection-box-tool', {
     boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}},
     selector: {type: 'string', default: '.clickable, .canvas'},
     grabElements: {default: true},
-    undoable: {default: false}
+    undoable: {default: false},
+    duplicateOnGrab: {default: false},
   },
   events: {
     stateadded: function(e) {
@@ -949,16 +950,7 @@ AFRAME.registerComponent('selection-box-tool', {
       }
     },
     click: function(e) {
-      this.grabbing = !this.grabbing
-      this.box.setAttribute('material', 'color', this.grabbing ? '#6fde96' : "#333")
-      if (this.grabbing && this.el.is('grabbed'))
-      {
-        this.startGrab()
-      }
-      else if (this.el.is('grabbed'))
-      {
-        this.stopGrab()
-      }
+      this.toggleGrabbing(!this.grabbing)
     }
   },
   init() {
@@ -973,12 +965,32 @@ AFRAME.registerComponent('selection-box-tool', {
     box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
     this.el.append(box)
     this.grabbing = false
+
+    // this.box.setAttribute('axis-handles', "")
   },
   update(oldData) {
     this.box.setAttribute('width', this.data.boxSize.x)
     this.box.setAttribute('height', this.data.boxSize.y)
     this.box.setAttribute('depth', this.data.boxSize.z)
     this.box.setAttribute('position', {x: 0, y: this.data.boxSize.y / 2, z: 0})
+
+    if (this.data.grabElements && this.data.duplicateOnGrab)
+    {
+      throw new Error("Duplicating elements doesn't work yet")
+    }
+  },
+  toggleGrabbing(newGrabbing) {
+    if (this.grabbing === newGrabbing) return;
+    this.grabbing = newGrabbing;
+    this.box.setAttribute('material', 'color', this.grabbing ? '#6fde96' : "#333")
+    if (this.grabbing && this.el.is('grabbed'))
+    {
+      this.startGrab()
+    }
+    else if (this.el.is('grabbed'))
+    {
+      this.stopGrab()
+    }
   },
   startGrab() {
     let objects = document.querySelectorAll(this.data.selector)
@@ -1030,6 +1042,14 @@ AFRAME.registerComponent('selection-box-tool', {
         if (!contained) continue
       }
 
+      if (this.data.duplicateOnGrab)
+      {
+        let oldObject = target.object3D
+        let newObject = oldObject.clone(true)
+        oldObject.parent.add(newObject)
+        target.object3D = newObject
+      }
+
       let obj = new THREE.Object3D
       this.el.object3D.add(obj)
       Util.positionObject3DAtTarget(obj, target.object3D)
@@ -1039,6 +1059,15 @@ AFRAME.registerComponent('selection-box-tool', {
     }
     if (Object.values(this.grabbed).length > 0) {
       Undo.collect(() => {
+        if (this.data.duplicateOnGrab)
+        {
+            for (let o of Object.values(this.grabbed))
+            {
+              Undo.push(() => o.parent.remove(o))
+            }
+            return;
+        }
+
         for (let o of Object.values(this.grabbed))
         {
           Undo.pushObjectMatrix(o.object3D)
@@ -1049,6 +1078,10 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   stopGrab() {
     this.tick = function(){};
+    if (this.data.duplicateOnGrab && this.grabbing)
+    {
+      this.toggleGrabbing(false)
+    }
   },
   tick(t,dt) {},
   _tick(t, dt) {
