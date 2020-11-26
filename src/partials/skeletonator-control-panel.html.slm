@@ -25,9 +25,12 @@ a-entity.grab-root shelf="name: Skeletonator" scale="0.3 0.3 0.3"
     a-entity click-action="clearActiveBoneTracks" icon-button="#asset-backspace-outline" tooltip="Clear Bone Animation Tracks"
 
   a-entity position="0 -1.2 0"
+    a-entity icon-button="#asset-arrow-left" system-click-action="system: timeline-system; action: previousFrame" tooltip="Previous Frame"
     a-entity icon-button="#asset-play-pause" system-click-action="system: timeline-system; action: playPauseAnimation" tooltip="Play / Pause" speech-alias="play; pause"
+    a-entity icon-button="#asset-arrow-right" system-click-action="system: timeline-system; action: nextFrame" tooltip="Next Frame"
 
   a-entity position="0 2.0 0"
     a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab Object"
     a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"
+  a-entity position="3.5 0 0" skeletonator-keyframes=""
 a-entity new-bone-wand="" position="-0.7 0 0" tooltip="New Bone (Click to create)"

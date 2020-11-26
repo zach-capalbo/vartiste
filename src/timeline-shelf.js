@@ -17,6 +17,12 @@ Util.registerComponentSystem('timeline-system', {
   playPauseAnimation() {
     Compositor.component.playPauseAnimation()
   },
+  nextFrame() {
+    Compositor.component.nextFrame()
+  },
+  previousFrame() {
+    Compositor.component.previousFrame()
+  },
   exportFrames() {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component

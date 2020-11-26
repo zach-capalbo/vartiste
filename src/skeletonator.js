@@ -547,6 +547,10 @@ AFRAME.registerComponent('skeletonator', {
       if (!(frameIdx in this.boneTracks[bone.name]))
       {
         this.boneTracks[bone.name][frameIdx] = new THREE.Matrix4()
+        if (!Compositor.component.isPlayingAnimation)
+        {
+          this.el.emit('keyframeadded', {bone, frame: frameIdx})
+        }
       }
       this.boneTracks[bone.name][frameIdx].copy(bone.matrix)
     }
