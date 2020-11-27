@@ -259,7 +259,11 @@ AFRAME.registerComponent('skeletonator', {
           console.warn("No such saved bone", bone)
           continue
         }
-        this.boneTracks[bone] = obj.boneTracks[bone].filter(m => m).map(m => new THREE.Matrix4().fromArray(m.elements))
+        this.boneTracks[bone] = {}
+        for (let frame in obj.boneTracks[bone])
+        {
+          this.boneTracks[bone][frame] = new THREE.Matrix4().fromArray(obj.boneTracks[bone][frame].elements)
+        }
       }
     }
   },

@@ -59,7 +59,7 @@ AFRAME.registerComponent('skeletonator-keyframes', {
       {
         for (let el of this.el.children)
         {
-          el.setAttribute('position', `0 ${1.5 - Object.keys(Skeletonator.boneTracks[this.bone.name]).indexOf(el.getAttribute('frame-idx')) * 0.5} 0`)
+          el.setAttribute('position', `0 ${1.5 - Object.keys(Skeletonator.boneTracks[this.bone.name]).indexOf(el.getAttribute('frame-idx')) * 0.33} 0`)
         }
       }
       this.needsReorganizing = false
