@@ -878,17 +878,20 @@ AFRAME.registerComponent("skeletonator-control-panel", {
 
     for (let mesh of this.el.skeletonator.meshes)
     {
+      mesh.updateMatrixWorld()
       mesh.bind(new THREE.Skeleton(bones
         , bones.map(b => {
         let idx = mesh.skeleton.bones.indexOf(b)
         if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
-        let m = this.pool('mat', THREE.Matrix4)
+        let m = new THREE.Matrix4()//this.pool('mat', THREE.Matrix4)
+        b.updateMatrixWorld()
         m.copy(b.matrixWorld)
         m.getInverse(m)
         m.multiply(mesh.matrixWorld)
         return m
       })
     ), new THREE.Matrix4)
+    console.log(mesh.name, mesh.skeleton.boneInverses)
     }
   },
   deleteActiveBone() {
