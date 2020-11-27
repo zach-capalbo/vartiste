@@ -849,6 +849,13 @@ AFRAME.registerComponent("skeletonator-control-panel", {
 
       this.el.skeletonator.renameBone(this.el.skeletonator.activeBone, e.target.getAttribute('text').value)
     })
+    Util.whenLoaded(this.el, () => {
+      let frameText = this.el.querySelector('.frame-counter')
+      Compositor.el.addEventListener('framechanged', e => {
+        frameText.setAttribute('text', 'value', `Frame ${e.detail.frame}`)
+      })
+      frameText.setAttribute('text', 'value', `Frame ${Compositor.component.currentFrame}`)
+    })
   },
   restPose() {
     this.el.skeletonator.mesh.skeleton.pose()
@@ -883,7 +890,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
         , bones.map(b => {
         let idx = mesh.skeleton.bones.indexOf(b)
         if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
-        let m = new THREE.Matrix4()//this.pool('mat', THREE.Matrix4)
+        let m = new THREE.Matrix4() // Don't pool this one, it's copied
         b.updateMatrixWorld()
         m.copy(b.matrixWorld)
         m.getInverse(m)
@@ -891,7 +898,6 @@ AFRAME.registerComponent("skeletonator-control-panel", {
         return m
       })
     ), new THREE.Matrix4)
-    console.log(mesh.name, mesh.skeleton.boneInverses)
     }
   },
   deleteActiveBone() {
