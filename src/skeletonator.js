@@ -652,18 +652,17 @@ AFRAME.registerComponent('skeletonator', {
       let times = []
       let positionValues = []
       let rotationValues = []
+      let position = new THREE.Vector3
+      let rotation = new THREE.Quaternion
+      let scale = new THREE.Vector3
       for (let i in this.boneTracks[bone.name])
       {
         times.push(i / fps)
 
         let matrix = this.boneTracks[bone.name][i]
 
-        let position = new THREE.Vector3
-        position.setFromMatrixPosition(matrix)
+        matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
-
-        let rotation = new THREE.Quaternion
-        rotation.setFromRotationMatrix(matrix)
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
@@ -672,12 +671,8 @@ AFRAME.registerComponent('skeletonator', {
         times.push(this.data.frameCount / fps)
         let matrix = Object.values(this.boneTracks[bone.name]).find(b => b)
 
-        let position = new THREE.Vector3
-        position.setFromMatrixPosition(matrix)
+        matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
-
-        let rotation = new THREE.Quaternion
-        rotation.setFromRotationMatrix(matrix)
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
