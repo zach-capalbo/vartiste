@@ -1,5 +1,5 @@
 a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;"
-  a-assets#assets
+  a-assets#assets timeout="${60 * 1000 * 5}"
   a-sky color="#333" hide-in-ar-mode=""
 
   == partial('./partials/artist-root.html.slm')

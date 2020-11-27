@@ -10,12 +10,31 @@ Util.registerComponentSystem('skeletonator-system', {
   }
 })
 
+class SkeletonatorAnimation {
+  constructor(name = "") {
+    this.name = name
+    this.tracksForBones = {}
+  }
+  tracksFor(bone) {
+    if (bone.name) bone = bone.name
+    if (!(bone in this.tracksForBones))
+    {
+      this.tracksForBones[bone] = {
+        position: []
+      }
+    }
+  }
+  keyframe(bone, frameIdx) {
+  }
+}
+
 AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},
     frameCount: {default: 50},
     recordFrameCount: {default: false},
     hideSkeleton: {default: false},
+    useTracks: {default: false},
   },
   init() {
     Pool.init(this)
@@ -23,6 +42,9 @@ AFRAME.registerComponent('skeletonator', {
     this.system = this.el.sceneEl.systems['skeletonator-system']
     this.system.skeletonator = this
     this.system.skeletonatorEl = this.el
+
+    this.animations = [new SkeletonatorAnimation()]
+    this.currentAnimation = this.animations[0]
 
     this.mesh = this.el.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh")
 
@@ -149,6 +171,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.skinningMaterial.opacity = 1.0
       this.skeletonHelper.visible = false
+      Compositor.component.data.skipDrawing = false
       for (let handle of Object.values(this.boneToHandle))
       {
         handle.object3D.visible = false
@@ -158,6 +181,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.skinningMaterial.opacity = 0.5
       this.skeletonHelper.visible = true
+      Compositor.component.data.skipDrawing = true
       for (let handle of Object.values(this.boneToHandle))
       {
         handle.object3D.visible = true
@@ -235,7 +259,11 @@ AFRAME.registerComponent('skeletonator', {
           console.warn("No such saved bone", bone)
           continue
         }
-        this.boneTracks[bone] = obj.boneTracks[bone].filter(m => m).map(m => new THREE.Matrix4().fromArray(m.elements))
+        this.boneTracks[bone] = {}
+        for (let frame in obj.boneTracks[bone])
+        {
+          this.boneTracks[bone][frame] = new THREE.Matrix4().fromArray(obj.boneTracks[bone][frame].elements)
+        }
       }
     }
   },
@@ -261,7 +289,7 @@ AFRAME.registerComponent('skeletonator', {
     handle.bone = bone
     handle.skeletonator = this
     this.boneToHandle[bone.name] = handle
-    this.boneTracks[bone.name] = []
+    this.boneTracks[bone.name] = {}
 
     handle.addEventListener('click', e => {
       this.setActiveBone(bone)
@@ -511,16 +539,27 @@ AFRAME.registerComponent('skeletonator', {
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
 
-    if (!this.boneTracks[bone.name])
+    if (this.data.useTracks)
     {
-      this.boneTracks[bone.name] = []
+      this.currentAnimation.keyframe(bone, frameIdx)
     }
+    else
+    {
+      if (!this.boneTracks[bone.name])
+      {
+        this.boneTracks[bone.name] = {}
+      }
 
-    if (!(frameIdx in this.boneTracks[bone.name]))
-    {
-      this.boneTracks[bone.name][frameIdx] = new THREE.Matrix4()
+      if (!(frameIdx in this.boneTracks[bone.name]))
+      {
+        this.boneTracks[bone.name][frameIdx] = new THREE.Matrix4()
+        if (!Compositor.component.isPlayingAnimation)
+        {
+          this.el.emit('keyframeadded', {bone, frame: frameIdx})
+        }
+      }
+      this.boneTracks[bone.name][frameIdx].copy(bone.matrix)
     }
-    this.boneTracks[bone.name][frameIdx].copy(bone.matrix)
   },
   currentFrameIdx() {
     return Compositor.component.currentFrame % this.data.frameCount
@@ -540,17 +579,65 @@ AFRAME.registerComponent('skeletonator', {
 
       if (!(bone.name in this.boneTracks))
       {
-        this.boneTracks[bone.name] = []
+        continue
+        // this.boneTracks[bone.name] = {}
       }
 
-      while (!(boneFrameIdx in this.boneTracks[bone.name]) && boneFrameIdx > 0)
-      {
-        boneFrameIdx--
-      }
+      // while (!(boneFrameIdx in this.boneTracks[bone.name]) && boneFrameIdx > 0)
+      // {
+      //   boneFrameIdx--
+      // }
 
       if (boneFrameIdx in this.boneTracks[bone.name])
       {
         Util.applyMatrix(this.boneTracks[bone.name][boneFrameIdx], bone)
+        this.boneToHandle[bone.name].components['bone-handle'].resetToBone()
+      }
+      else if (Object.keys(this.boneTracks[bone.name]).length === 0)
+      {
+        continue
+      }
+      else if (Object.keys(this.boneTracks[bone.name]).length === 1)
+      {
+        Util.applyMatrix(Object.values(this.boneTracks[bone.name])[0], bone)
+        this.boneToHandle[bone.name].components['bone-handle'].resetToBone()
+      }
+      else
+      {
+        let frameIndices = Object.keys(this.boneTracks[bone.name])
+        let frameCount = this.data.frameCount
+        let l = frameIndices.length
+        let startFrame = 0
+        let endFrame = l
+        if (frameIndices[0] > boneFrameIdx)
+        {
+          startFrame = frameIndices[l - 1]
+          endFrame = frameIndices[0] + frameCount
+        }
+        else if (frameIndices[l - 1] < boneFrameIdx)
+        {
+          startFrame = frameIndices[l - 1]
+          endFrame = frameIndices[0] + frameCount
+        }
+        else
+        {
+          for (startFrame = boneFrameIdx; startFrame >= 0; startFrame--)
+          {
+            if (startFrame in this.boneTracks[bone.name]) break
+          }
+          for (endFrame = boneFrameIdx; endFrame <= this.data.frameCount; endFrame++)
+          {
+            if (endFrame in this.boneTracks[bone.name]) break
+          }
+        }
+
+
+        let interp = THREE.Math.mapLinear(boneFrameIdx, startFrame, endFrame, 0.0, 1.0)
+
+        Util.interpTransformMatrices(interp, this.boneTracks[bone.name][startFrame % frameCount], this.boneTracks[bone.name][endFrame % frameCount], {
+          result: bone.matrix
+        })
+        Util.applyMatrix(bone.matrix, bone)
         this.boneToHandle[bone.name].components['bone-handle'].resetToBone()
       }
     }
@@ -560,50 +647,46 @@ AFRAME.registerComponent('skeletonator', {
     let fps = Compositor.component.data.frameRate
     for (let bone of this.mesh.skeleton.bones)
     {
-      if (this.boneTracks[bone.name].length == 0) continue
+      if (Object.keys(this.boneTracks[bone.name]).length == 0) continue
 
       let times = []
       let positionValues = []
       let rotationValues = []
+      let position = new THREE.Vector3
+      let rotation = new THREE.Quaternion
+      let scale = new THREE.Vector3
       for (let i in this.boneTracks[bone.name])
       {
         times.push(i / fps)
 
         let matrix = this.boneTracks[bone.name][i]
 
-        let position = new THREE.Vector3
-        position.setFromMatrixPosition(matrix)
+        matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
-
-        let rotation = new THREE.Quaternion
-        rotation.setFromRotationMatrix(matrix)
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
       if (wrap)
       {
         times.push(this.data.frameCount / fps)
-        let matrix = this.boneTracks[bone.name].find(b => b)
+        let matrix = Object.values(this.boneTracks[bone.name]).find(b => b)
 
-        let position = new THREE.Vector3
-        position.setFromMatrixPosition(matrix)
+        matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
-
-        let rotation = new THREE.Quaternion
-        rotation.setFromRotationMatrix(matrix)
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
-      let positionTrack = new THREE.VectorKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].position`, times, positionValues)
-      let rotationTrack = new THREE.QuaternionKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].quaternion`, times, rotationValues)
+      let positionTrack = new THREE.VectorKeyframeTrack(`${bone.name}.position`, times, positionValues)
+      let rotationTrack = new THREE.QuaternionKeyframeTrack(`${bone.name}.quaternion`, times, rotationValues)
       tracks.push(positionTrack)
       tracks.push(rotationTrack)
     }
-    if (!('animations' in this.mesh.parent))
+    let animationContainer = Compositor.meshRoot || this.rootBone
+    if (!('animations' in animationContainer))
     {
-      this.mesh.parent.animations = []
+      animationContainer.animations = []
     }
-    this.mesh.parent.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
+    animationContainer.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
   }
 })
 
@@ -641,8 +724,8 @@ AFRAME.registerComponent("bone-handle", {
 
         if (Compositor.component.isPlayingAnimation)
         {
+          this.el.skeletonator.boneTracks[this.el.bone.name] = {}
           Compositor.component.jumpToFrame(0)
-          this.el.skeletonator.boneTracks[this.el.bone.name] = []
         }
       }
     },
@@ -687,7 +770,7 @@ AFRAME.registerComponent("bone-handle", {
     let scale = this.pool("scale", THREE.Vector3)
     indicator.getWorldScale(scale)
     indicator.scale.set(indicator.scale.x / scale.x, indicator.scale.y / scale.y, indicator.scale.z / scale.z)
-    if (this.el.is("grabbed") || this.el.is("constrained"))
+    if (this.el.is("grabbed"))
     {
       this.el.object3D.matrix.decompose(this.el.bone.position, this.el.bone.rotation, this.el.bone.scale)
 
@@ -761,6 +844,13 @@ AFRAME.registerComponent("skeletonator-control-panel", {
 
       this.el.skeletonator.renameBone(this.el.skeletonator.activeBone, e.target.getAttribute('text').value)
     })
+    Util.whenLoaded(this.el, () => {
+      let frameText = this.el.querySelector('.frame-counter')
+      Compositor.el.addEventListener('framechanged', e => {
+        frameText.setAttribute('text', 'value', `Frame ${e.detail.frame}`)
+      })
+      frameText.setAttribute('text', 'value', `Frame ${Compositor.component.currentFrame}`)
+    })
   },
   restPose() {
     this.el.skeletonator.mesh.skeleton.pose()
@@ -781,7 +871,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   clearTracks() {
     for (let bone in this.el.skeletonator.boneTracks)
     {
-      this.el.skeletonator.boneTracks = []
+      this.el.skeletonator.boneTracks[bone.name] = {}
     }
   },
   bakeSkeleton(newSkeleton = false) {
@@ -790,11 +880,13 @@ AFRAME.registerComponent("skeletonator-control-panel", {
 
     for (let mesh of this.el.skeletonator.meshes)
     {
+      mesh.updateMatrixWorld()
       mesh.bind(new THREE.Skeleton(bones
         , bones.map(b => {
         let idx = mesh.skeleton.bones.indexOf(b)
         if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
-        let m = this.pool('mat', THREE.Matrix4)
+        let m = new THREE.Matrix4() // Don't pool this one, it's copied
+        b.updateMatrixWorld()
         m.copy(b.matrixWorld)
         m.getInverse(m)
         m.multiply(mesh.matrixWorld)
@@ -807,7 +899,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)
   },
   clearActiveBoneTracks() {
-    this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = []
+    this.el.skeletonator.boneTracks[this.el.skeletonator.activeBone.name] = {}
   },
   skinFromNodes() {
     this.el.skeletonator.skinFromNodes()

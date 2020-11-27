@@ -462,12 +462,20 @@ AFRAME.registerComponent('compositor', {
   },
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
+    this.el.emit('playpause', this.isPlayingAnimation)
+  },
+  setIsPlayingAnimation(isPlaying) {
+    this.isPlayingAnimation = isPlaying
+    this.el.emit('playpause', this.isPlayingAnimation)
   },
   jumpToFrame(frame, {force = false, animate = false} = {}) {
     this.currentFrame = frame
+    let param = this.pool('param', Object)
     if (this.activeLayer.frames.length > 1 || force)
     {
-      this.el.setAttribute('draw-canvas', {canvas: this.activeLayer.frame(this.currentFrame)})
+      param.canvas = this.activeLayer.frame(this.currentFrame)
+      this.el.setAttribute('draw-canvas', param)
+      delete param.canvas
     }
 
     if (!animate)
@@ -475,14 +483,16 @@ AFRAME.registerComponent('compositor', {
       delete this.playingStartTime
     }
 
-    this.el.emit('framechanged', {frame: this.currentFrame})
+    param.frame = this.currentFrame
+    this.el.emit('framechanged', param)
+    delete param.frame
   },
   nextFrame() {
-    this.isPlayingAnimation = false
+    this.setIsPlayingAnimation(false)
     this.jumpToFrame(++this.currentFrame)
   },
   previousFrame() {
-    this.isPlayingAnimation = false
+    this.setIsPlayingAnimation(false)
     this.jumpToFrame(--this.currentFrame)
   },
   addFrameAfter() {

@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 export function loadAsset(fileName) {
   let asset = fileName.slice("./".length)
   if (asset.startsWith(".")) return
@@ -28,13 +30,20 @@ export function loadAsset(fileName) {
   element.setAttribute("src", assetSrc)
   element.id = `asset-${asset.split(".")[0]}`
   element.setAttribute('crossorigin',"anonymous")
+  element.classList.add("vartiste-asset")
   return element
 }
 
+var haveVartisteAssetsBeenAdded = false;
+
 export function loadAllAssets() {
+  let assets = document.querySelector('a-assets')
   for (let fileName of require.context('./assets/', true, /.*/).keys()) {
-    document.querySelector('a-assets').append(loadAsset(fileName))
+    assets.append(loadAsset(fileName))
   }
+  
+  haveVartisteAssetsBeenAdded = true
+  assets.parentNode.emit('vartisteassetsadded')
 }
 
 
@@ -43,6 +52,10 @@ var alreadyAttached = false;
 
 // Needed to masquerade as an a-assets element
 var fileLoader = new THREE.FileLoader();
+
+function fixUpMediaElement(el) {
+  return el
+}
 
 window.AFRAME.registerElement('vartiste-assets', {
   prototype: Object.create(window.AFRAME.ANode.prototype, {
@@ -69,9 +82,9 @@ window.AFRAME.registerElement('vartiste-assets', {
 
         // Set the innerHTML to all of the actual assets to inject
         // this.innerHTML = buildAssetHTML(this.getAttribute("url"));
-        for (let fileName of require.context('./assets/', true, /.*/).keys()) {
-          this.append(loadAsset(fileName))
-        }
+        // for (let fileName of require.context('./assets/', true, /.*/).keys()) {
+        //   this.append(loadAsset(fileName))
+        // }
 
         var parent = this.parentNode
 
@@ -79,23 +92,65 @@ window.AFRAME.registerElement('vartiste-assets', {
         this.setAttribute('timeout', parent.getAttribute('timeout'))
 
         // Make the parent pretend to be a scene, since that's what a-assets expects
-        this.parentNode.isScene = true
+        // this.parentNode.isScene = true
 
         // Since we expect the parent element to be a-assets, this will invoke the a-asset attachedCallback,
         // which handles waiting for all of the children to load. Since we're calling it with `this`, it
         // will wait for the streetmix-assets's children to load
-        Object.getPrototypeOf(parent).attachedCallback.call(this)
+        // Object.getPrototypeOf(parent).attachedCallback.call(this)
 
         // No more pretending needed
-        this.parentNode.isScene = false
+        // this.parentNode.isScene = false
+
+        if (haveVartisteAssetsBeenAdded)
+        {
+          this.load()
+        }
+        else
+        {
+          parent.parentNode.addEventListener('vartisteassetsadded', () => {
+            this.load()
+          })
+        }
       }
     },
     load: {
       value: function() {
-        // Wait for children to load, just like a-assets
-        AFRAME.ANode.prototype.load.call(this, null, function waitOnFilter (el) {
-          return el.isAssetItem && el.hasAttribute('src');
-        });
+        let parent = this.parentNode
+        let loaded = []
+        // Wait for <img>s.
+        let imgEls = parent.querySelectorAll('img.vartiste-asset');
+        for (let i = 0; i < imgEls.length; i++) {
+          let imgEl = fixUpMediaElement(imgEls[i]);
+          // imgEl = imgEls[i];
+          loaded.push(new Promise(function (resolve, reject) {
+            // Set in cache because we won't be needing to call three.js loader if we have.
+            // a loaded media element.
+            THREE.Cache.files[imgEls[i].getAttribute('src')] = imgEl;
+            imgEl.onload = resolve;
+            imgEl.onerror = reject;
+          }));
+        }
+
+        // Wait for <audio>s and <video>s.
+        let mediaEls = this.querySelectorAll('audio.vartiste-asset, video.vartiste-asset');
+        for (let i = 0; i < mediaEls.length; i++) {
+          let mediaEl = fixUpMediaElement(mediaEls[i]);
+          if (!mediaEl.src && !mediaEl.srcObject) {
+            warn('Audio/video asset has neither `src` nor `srcObject` attributes.');
+          }
+          loaded.push(mediaElementLoaded(mediaEl));
+        }
+
+        Promise.all(loaded).then(() => {
+          this.hasLoaded = true
+          this.emit('loaded', undefined, false)
+          parent.load()
+        })
+
+        return
+
+
       }
     }
   })
@@ -106,14 +161,13 @@ var domModifiedHandler = function(evt) {
   // Only care about events affecting an a-scene
   if (evt.target.nodeName !== 'A-SCENE') return;
 
-  console.log("Found scene for assets")
-
   // Try to find the a-assets element in the a-scene
   let assets = evt.target.querySelector('a-assets');
 
   if (!assets) {
     // Create and add the assets if they don't already exist
     assets = document.createElement('a-assets')
+    assets.setAttribute('timeout', 60 * 1000 * 5)
     evt.target.append(assets)
   }
 
@@ -124,8 +178,8 @@ var domModifiedHandler = function(evt) {
   // }
 
   // Create and add the custom streetmix-assets element
-  // let streetMix = document.createElement('vartiste-assets')
-  // assets.append(streetMix)
+  let vartisteAssets = document.createElement('vartiste-assets')
+  assets.append(vartisteAssets)
 
   loadAllAssets()
 

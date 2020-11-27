@@ -282,6 +282,28 @@ class VARTISTEUtil {
       geometry.setAttribute(name, new THREE.Float32BufferAttribute(arr, attr.itemSize))
     }
   }
+
+  // Linearly interpolates two transformation matrices
+  interpTransformMatrices(alpha, start, end, {result} = {})
+  {
+    if (!result) result = new THREE.Matrix4
+    let startPose = this.pool('startPose', THREE.Vector3)
+    let endPose = this.pool('endPose', THREE.Vector3)
+
+    let startQuat = this.pool('startQuat', THREE.Quaternion)
+    let endQuat = this.pool('endQuat', THREE.Quaternion)
+
+    let startScale = this.pool('startScale', THREE.Vector3)
+    let endScale = this.pool('endScale', THREE.Vector3)
+
+    start.decompose(startPose, startQuat, startScale)
+    end.decompose(endPose, endQuat, endScale)
+    startPose.lerp(endPose, alpha)
+    startQuat.slerp(endQuat, alpha)
+    startScale.lerp(endScale, alpha)
+    result.compose(startPose, startQuat, startScale)
+    return result
+  }
 }
 
 const Util = new VARTISTEUtil();

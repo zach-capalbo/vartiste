@@ -69,6 +69,7 @@ require('./canvas-fx')
 require('./crash-handler')
 require('./scalable-raycaster')
 require('./physics')
+require('./skeletonator-keyframes')
 // require('./text')
 
 require('./app.styl')
