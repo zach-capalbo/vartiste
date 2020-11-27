@@ -171,6 +171,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.skinningMaterial.opacity = 1.0
       this.skeletonHelper.visible = false
+      Compositor.component.data.skipDrawing = false
       for (let handle of Object.values(this.boneToHandle))
       {
         handle.object3D.visible = false
@@ -180,6 +181,7 @@ AFRAME.registerComponent('skeletonator', {
     {
       this.skinningMaterial.opacity = 0.5
       this.skeletonHelper.visible = true
+      Compositor.component.data.skipDrawing = true
       for (let handle of Object.values(this.boneToHandle))
       {
         handle.object3D.visible = true
@@ -675,16 +677,17 @@ AFRAME.registerComponent('skeletonator', {
         rotationValues = rotationValues.concat(rotation.toArray())
       }
 
-      let positionTrack = new THREE.VectorKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].position`, times, positionValues)
-      let rotationTrack = new THREE.QuaternionKeyframeTrack(`${this.mesh.name}.bones[${bone.name}].quaternion`, times, rotationValues)
+      let positionTrack = new THREE.VectorKeyframeTrack(`${bone.name}.position`, times, positionValues)
+      let rotationTrack = new THREE.QuaternionKeyframeTrack(`${bone.name}.quaternion`, times, rotationValues)
       tracks.push(positionTrack)
       tracks.push(rotationTrack)
     }
-    if (!('animations' in this.mesh.parent))
+    let animationContainer = Compositor.meshRoot || this.rootBone
+    if (!('animations' in animationContainer))
     {
-      this.mesh.parent.animations = []
+      animationContainer.animations = []
     }
-    this.mesh.parent.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
+    animationContainer.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
   }
 })
 
