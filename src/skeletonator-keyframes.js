@@ -11,6 +11,11 @@ AFRAME.registerComponent('skeletonator-keyframes', {
       Skeletonator.el.addEventListener('keyframeadded', (e) => {
         this.addKeyframe(e.detail.bone, e.detail.frame)
       })
+      Compositor.el.addEventListener('playpause', (e) => {
+        if (e.detail) {
+          this.setupBone(Skeletonator.activeBone)
+        }
+      })
       this.setupBone(Skeletonator.activeBone)
     })
   },
@@ -33,12 +38,20 @@ AFRAME.registerComponent('skeletonator-keyframes', {
       frameEl.addEventListener('click', (e) => {
         if (e.target.hasAttribute('click-action'))
         {
-          this[e.target.getAttribute('click-action')]
+          this[e.target.getAttribute('click-action')](bone, parseInt(frame), frameEl, e)
         }
       })
       this.needsReorganizing = true
     })
     this.el.append(frameEl)
+  },
+  delete(bone, frame, frameEl) {
+    delete Skeletonator.boneTracks[bone.name][frame]
+    frameEl.remove()
+    Compositor.component.jumpToFrame(Compositor.component.currentFrame)
+  },
+  jumpTo(bone, frame) {
+    Compositor.component.jumpToFrame(frame)
   },
   tick(t, dt) {
     if (this.needsReorganizing) {
@@ -46,7 +59,7 @@ AFRAME.registerComponent('skeletonator-keyframes', {
       {
         for (let el of this.el.children)
         {
-          el.setAttribute('position', `0 ${Object.keys(Skeletonator.boneTracks[this.bone.name]).indexOf(el.getAttribute('frame-idx'))} 0`)
+          el.setAttribute('position', `0 ${1.5 - Object.keys(Skeletonator.boneTracks[this.bone.name]).indexOf(el.getAttribute('frame-idx')) * 0.5} 0`)
         }
       }
       this.needsReorganizing = false

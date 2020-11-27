@@ -768,7 +768,7 @@ AFRAME.registerComponent("bone-handle", {
     let scale = this.pool("scale", THREE.Vector3)
     indicator.getWorldScale(scale)
     indicator.scale.set(indicator.scale.x / scale.x, indicator.scale.y / scale.y, indicator.scale.z / scale.z)
-    if (this.el.is("grabbed") || this.el.is("constrained"))
+    if (this.el.is("grabbed"))
     {
       this.el.object3D.matrix.decompose(this.el.bone.position, this.el.bone.rotation, this.el.bone.scale)
 

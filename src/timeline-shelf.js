@@ -182,7 +182,7 @@ Util.registerComponentSystem('timeline-system', {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component
 
-    compositor.isPlayingAnimation = false
+    compositor.setIsPlayingAnimation(false)
     compositor.jumpToFrame(0)
 
     let settings = this.el.sceneEl.systems['settings-system']

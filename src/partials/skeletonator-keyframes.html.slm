@@ -1,6 +1,6 @@
-a-entity
-  a-entity geometry="primitive: plane; width: 2; height: 0.88" material="src: #asset-shelf; shader: flat" position="0 0 -0.01"
-  a-entity.frame-idx text="width: 0.8; wrapCount: 3; anchor: right"
+a-entity scale="0.5 0.5 0.5"
+  a-entity geometry="primitive: plane; width: 4; height: 0.88" material="src: #asset-shelf; shader: flat" position="0 0 -0.01"
+  a-entity.frame-idx text="width: 1.6; wrapCount: 3; anchor: right"
   a-entity
     a-entity icon-button="#asset-arrow-right" tooltip="Jump To Frame" click-action="jumpTo"
     a-entity icon-button="#asset-delete" tooltip="Delete Keyframe" click-action="delete"
