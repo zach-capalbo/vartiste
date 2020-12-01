@@ -8,6 +8,10 @@ Util.registerComponentSystem('artist-root', {
 
     // Automatically reset the user's position (including prompt to reset) when entering VR
     autoResetPosition: {default: true},
+
+    //
+    addLight: {default: true},
+    
   },
   events: {
     entervr: function() {}

@@ -1659,12 +1659,15 @@ THREE.GLTFExporter.prototype = {
 			var joints = [];
 			var inverseBindMatrices = new Float32Array( skeleton.bones.length * 16 );
 
+			var tempMat = new THREE.Matrix4()
+
 			for ( var i = 0; i < skeleton.bones.length; ++ i ) {
 
 				joints.push( nodeMap.get( skeleton.bones[ i ] ) );
 
-				skeleton.boneInverses[ i ].toArray( inverseBindMatrices, i * 16 );
+				tempMat.copy(skeleton.boneInverses[ i ])
 
+				tempMat.multiply(object.bindMatrix).toArray( inverseBindMatrices, i * 16 );
 			}
 
 			if ( outputJSON.skins === undefined ) {

@@ -652,6 +652,7 @@ AFRAME.registerComponent('skeletonator', {
       let times = []
       let positionValues = []
       let rotationValues = []
+      let scaleValues = []
       let position = new THREE.Vector3
       let rotation = new THREE.Quaternion
       let scale = new THREE.Vector3
@@ -664,6 +665,7 @@ AFRAME.registerComponent('skeletonator', {
         matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
         rotationValues = rotationValues.concat(rotation.toArray())
+        scaleValues = scaleValues.concat(scale.toArray())
       }
 
       if (wrap)
@@ -674,12 +676,15 @@ AFRAME.registerComponent('skeletonator', {
         matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
         rotationValues = rotationValues.concat(rotation.toArray())
+        scaleValues = scaleValues.concat(scale.toArray())
       }
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${bone.name}.position`, times, positionValues)
+      let scaleTrack = new THREE.VectorKeyframeTrack(`${bone.name}.scale`, times, scaleValues)
       let rotationTrack = new THREE.QuaternionKeyframeTrack(`${bone.name}.quaternion`, times, rotationValues)
       tracks.push(positionTrack)
       tracks.push(rotationTrack)
+      tracks.push(scaleTrack)
     }
     let animationContainer = Compositor.meshRoot || this.rootBone
     if (!('animations' in animationContainer))

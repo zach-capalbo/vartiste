@@ -882,7 +882,10 @@ AFRAME.registerComponent('slot-machine', {
     debounce: {default: 0.05},
 
     // How fast the lever returns to its starting position
-    resetSpeed: {default: 0.8}
+    resetSpeed: {default: 0.8},
+
+    // What event to emit
+    event: {default: 'click'},
   },
   events: {
     anglechanged: function(e) {

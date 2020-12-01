@@ -687,9 +687,12 @@ AFRAME.registerComponent('compositor', {
 
       let material = this.el.getObject3D('mesh').material
 
-      let modesUsed = new Set()
+      let modesUsed = this.pool('modesUsed', Set)
+      modesUsed.clear()
 
       let canSetSkybox = this.el.sceneEl.systems['environment-manager'].canInstallSkybox()
+
+      let wrapType = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
       for (let layer of layers) {
         if (!layer.visible) continue
@@ -724,8 +727,17 @@ AFRAME.registerComponent('compositor', {
           material[layer.mode].flipY = this.data.flipY
         }
 
-        material[layer.mode].wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
-        material[layer.mode].wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+        if (material[layer.mode].wrapS !== wrapType)
+        {
+          material[layer.mode].wrapS = wrapType
+          material[layer.mode].needsUpdate = true
+        }
+
+        if (material[layer.mode].wrapT !== wrapType)
+        {
+          material[layer.mode].wrapT = wrapType
+          material[layer.mode].needsUpdate = true
+        }
 
         if (material[layer.mode].image !== layerCanvas)
         {

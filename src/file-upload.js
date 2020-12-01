@@ -111,7 +111,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
 
   let format = 'glb'
 
-  switch (file.name.slice(-4))
+  switch (file.name.slice(-4).toLowerCase())
   {
     case '.obj': format = 'obj'; break
     case '.fbx': format = 'fbx'; break
@@ -179,8 +179,6 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       }
     }
   })
-
-  compositor.el.setAttribute('compositor', {wrapTexture: true})
 
   let boxes
   if (combineMaterials)

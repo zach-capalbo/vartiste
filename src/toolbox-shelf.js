@@ -179,7 +179,7 @@ AFRAME.registerComponent('toolbox-shelf', {
     width = width * scale.x
     height = height * scale.y
 
-    let camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 0.1, 10)
+    let camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, - height / 2, 0.0001, 10)
 
     // Only show the canvas
     camera.layers.mask = 2
