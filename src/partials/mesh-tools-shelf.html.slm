@@ -5,8 +5,8 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-transition" tooltip="Import Material" toggle-button="target: a-scene; component: file-upload; property: importMaterial"
     a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Combine Import Materials" toggle-button="target: a-scene; component: file-upload; property: combineMaterials"
     a-entity icon-button="#asset-oven" tooltip="Post-process Imported Mesh" toggle-button="target: a-scene; component: file-upload; property: postProcessMesh"
-
     a-entity icon-button="#asset-cube-send" tooltip="Export Mesh and Reference Models" system-click-action="system: mesh-tools; action: exportAll"
+    a-entity icon-button="#asset-record" tooltip="Clone Mesh as Reference" system-click-action="system: mesh-tools; action: cloneAsReference"
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-delete" tooltip="Clear Existing UVs when unwrapping" toggle-button="target: a-scene; component: uv-unwrapper; property: autoClear"
     a-entity icon-button="#asset-web" tooltip="Add UV Unwrap Sphere" system-click-action="system: uv-unwrapper; action: createSphere"
@@ -31,6 +31,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-resize" system-click-action="system: mesh-tools; action: applyScale" tooltip="Apply Scale to Mesh"
     a-entity icon-button="#asset-oven" system-click-action="system: mesh-tools; action: applyTransformationToVertices" tooltip="Bake transformation to vertices"
     a-entity icon-button="#asset-transition" system-click-action="system: mesh-tools; action: splitReferenceMeshes" tooltip="Split Apart Reference Mesh Entities"
+    a-entity icon-button="#asset-skeletonator" tooltip="Morph Targets" popup-button="popup: morph-target-shelf; deferred: true; scale: 0.05 0.05 0.05"
 
   a-entity position="2.6 0.3 0" scale="4 4 4"
     a-entity hide-mesh-tool="" rotation="-25 0 0" preactivate-tooltip="Mesh Hiding Tool" action-tooltips="click: Hide Mesh"

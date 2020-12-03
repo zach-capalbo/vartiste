@@ -195,21 +195,26 @@ AFRAME.registerComponent('skeletonator', {
     {
       if (!this.skinningMaterial)
       {
-        this.skinningMaterial = new THREE.MeshStandardMaterial({
-          skinning: true,
-          transparent: true,
-          opacity: 0.5
-        })
+        // this.skinningMaterial = new THREE.MeshStandardMaterial({
+        //   skinning: true,
+        //   transparent: true,
+        //   opacity: 0.5
+        // })
 
         let oldMaterial = Compositor.material
+        this.skinningMaterial = Compositor.material.clone()
+        this.skinningMaterial.skinning = true
+        this.skinningMaterial.transparent = true
+        this.skinningMaterial.opacity = 0.5
+        this.skinningMaterial.needsUpdate = true
 
-        for (let mode of ["map"].concat(THREED_MODES))
-        {
-          if (oldMaterial[mode])
-          {
-            this.skinningMaterial[mode] = oldMaterial[mode]
-          }
-        }
+        // for (let mode of ["map"].concat(THREED_MODES))
+        // {
+        //   if (oldMaterial[mode])
+        //   {
+        //     this.skinningMaterial[mode] = oldMaterial[mode]
+        //   }
+        // }
       }
 
       for (let mesh of this.meshes)
