@@ -1,14 +1,18 @@
+import {Util} from './util.js'
 AFRAME.registerComponent('desktop-controls', {
   dependencies: ['wasd-controls', 'look-controls'],
   schema: {
     velocity: {default: 0.001}
   },
   init() {
-    this.el.setAttribute('wasd-controls', 'wsInverted: false; fly: true')
-    this.el.setAttribute('look-controls', 'touchEnabled: false')
+    this.el.setAttribute('wasd-controls', 'wsInverted: false; fly: true; acceleration: 0.3')
+    // this.el.setAttribute('look-controls', 'touchEnabled: false')
     this.el.setAttribute('position', {x: 0.0130435652091113, y: 1.0412983252490486, z: 0.6600262848245867})
 
-    this.setupLookControls()
+    let lookControlsEl = this.el.hasAttribute('look-controls') ? this.el : this.el.querySelector('*[look-controls]')
+    Util.whenLoaded([lookControlsEl], () => {
+      this.setupLookControls(lookControlsEl)
+    })
 
     this.keys = {q: false, e: false}
     document.addEventListener('keydown', e => {
@@ -25,14 +29,15 @@ AFRAME.registerComponent('desktop-controls', {
       }
     })
   },
-  setupLookControls() {
-    this.el.sceneEl.canvas.removeEventListener('mousedown', this.el.components['look-controls'].onMouseDown)
+  setupLookControls(el){
+    // console.log("Settting up look controls", el)
+    this.el.sceneEl.canvas.removeEventListener('mousedown', el.components['look-controls'].onMouseDown)
 
     document.body.oncontextmenu = (e) => false
 
-    shouldLook = function (evt) {
+    let shouldLook = (evt) => {
       var sceneEl = this.el.sceneEl;
-      if (!this.data.enabled || (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected())) { return false; }
+      if (!el.components['look-controls'].data.enabled || (sceneEl.is('vr-mode') && sceneEl.checkHeadsetConnected())) { return (console.log("vr mode"), false) }
       if (this.el.is('looking')) return true
 
       // Handle only not primary button.
@@ -41,15 +46,17 @@ AFRAME.registerComponent('desktop-controls', {
       return true
     }
 
-    this.el.components['look-controls'].onMouseDown = (function (evt) {
+    el.components['look-controls'].onMouseDown = (function (evt) {
+      // console.log("new mouse down", shouldLook(evt))
       var sceneEl = this.el.sceneEl;
 
-      if (!shouldLook.call(this, evt)) return
+      if (!shouldLook(evt)) return
 
       var canvasEl = sceneEl && sceneEl.canvas;
 
       this.mouseDown = true;
-      this.previousMouseEvent = evt;
+      this.previousMouseEvent.screenX = evt.screenX;
+      this.previousMouseEvent.screenY = evt.screenY;
       this.showGrabbingCursor();
 
       if (this.data.pointerLockEnabled && !this.pointerLocked) {
@@ -60,8 +67,8 @@ AFRAME.registerComponent('desktop-controls', {
         }
       }
       return false
-    }).bind(this.el.components['look-controls'])
-    this.el.sceneEl.canvas.addEventListener('mousedown', this.el.components['look-controls'].onMouseDown)
+    }).bind(el.components['look-controls'])
+    this.el.sceneEl.canvas.addEventListener('mousedown', el.components['look-controls'].onMouseDown)
   },
   tick(t, dt) {
     if (this.keys.q) {

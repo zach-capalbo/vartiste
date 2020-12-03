@@ -11,7 +11,7 @@ Util.registerComponentSystem('artist-root', {
 
     //
     addLight: {default: true},
-    
+
   },
   events: {
     entervr: function() {}
