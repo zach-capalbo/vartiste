@@ -101,7 +101,8 @@ AFRAME.registerSystem('vartiste-assets', {
   }
 })
 
-if (checkFile('./framework/valve-index-controls')) require('./framework/valve-index-controls')
+if (checkFile('fix-text-autoscaling-logging.js')) require('fix-text-autoscaling-logging.js')
+if (checkFile('./framework/valve-index-controls') && !AFRAME.components['valve-index-controls']) require('./framework/valve-index-controls')
 if (checkFile('./shelf')) require('./shelf')
 if (checkFile('./icon-button')) require('./icon-button')
 if (checkFile('./edit-field')) require('./edit-field')

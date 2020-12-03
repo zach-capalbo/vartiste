@@ -55,6 +55,7 @@ AFRAME.registerComponent('desktop-controls', {
       var canvasEl = sceneEl && sceneEl.canvas;
 
       this.mouseDown = true;
+      if (!this.previousMouseEvent) this.previousMouseEvent = {};
       this.previousMouseEvent.screenX = evt.screenX;
       this.previousMouseEvent.screenY = evt.screenY;
       this.showGrabbingCursor();

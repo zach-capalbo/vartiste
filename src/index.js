@@ -2,6 +2,7 @@
 // require('aframe-environment-component')
 // require('aframe-leap-hands');
 
+require('./framework/fix-text-autoscaling-logging.js')
 require('./framework/GLTFExporter.js')
 // require('./framework/valve-index-controls.js')
 require('./framework/hide-in-ar.js')
