@@ -1,2 +1,2 @@
-a-entity shelf="name: Morph Targets" morph-target-shelf=""
+a-entity shelf="name: Morph Targets; closeable: true" morph-target-shelf="" six-dof-tool="reparentOnActivate: true"
   a-entity.morph-levers

@@ -80,8 +80,15 @@ Util.registerComponentSystem('mesh-tools', {
       mesh.geometry.needsUpdate = true
     }
   },
-  bakeVertexColorsToTexture({autoDilate = true} = {}) {
-    Compositor.component.addLayer()
+  bakeVertexColorsToTexture({autoDilate = true, layer = undefined} = {}) {
+    if (layer)
+    {
+      Compositor.component.activateLayer(layer)
+    }
+    else
+    {
+      Compositor.component.addLayer()
+    }
     let destinationCanvas = Compositor.drawableCanvas
     let proc = new CanvasShaderProcessor({source: require('./shaders/vertex-baker.glsl'), vertexShader: require('./shaders/vertex-baker.vert')})
     proc.setInputCanvas(destinationCanvas)

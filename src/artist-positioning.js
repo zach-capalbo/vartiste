@@ -98,6 +98,7 @@ Util.registerComponentSystem('artist-root', {
   //
   //   return
     this.resetPosition()
+    // return;
 
     let targetObj = document.querySelector('#artist-root').object3D
     let positioner = document.querySelector('#camera-reset-el')
@@ -106,7 +107,8 @@ Util.registerComponentSystem('artist-root', {
     let cameraWorld = this.pool('cameraWorld', THREE.Vector3)
     let cameraObj = Util.cameraObject3D()
     cameraObj.getWorldPosition(cameraWorld)
-    targetObj.position.y -= cameraWorld.y
+    console.log("cameraWorld", cameraWorld)
+    targetObj.position.y -= cameraWorld.y - positioner.object3D.position.y
 
     this.resetPosition()
 

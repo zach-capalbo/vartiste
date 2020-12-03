@@ -374,7 +374,9 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     if (importMaterial && Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
     {
       try {
-        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+        let layer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(0, {layer})
+        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture({layer: layer})
         while (compositor.layers.indexOf(compositor.activeLayer) > startingLayerLength)
         {
           compositor.swapLayers(compositor.activeLayer, compositor.layers[compositor.layers.indexOf(compositor.activeLayer) - 1])

@@ -1546,6 +1546,8 @@ THREE.GLTFExporter.prototype = {
 
 			}
 
+			console.log("Processing animation", clip, clip.clone())
+
 			clip = THREE.GLTFExporter.Utils.mergeMorphTargetTracks( clip.clone(), root );
 
 			var tracks = clip.tracks;
