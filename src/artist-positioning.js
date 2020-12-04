@@ -1,5 +1,5 @@
-import {Pool} from './pool.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 // Helper for positioning the user
 Util.registerComponentSystem('artist-root', {
@@ -10,7 +10,7 @@ Util.registerComponentSystem('artist-root', {
     autoResetPosition: {default: true},
 
     //
-    addLight: {default: true},
+    // addLight: {default: true},
 
   },
   events: {
