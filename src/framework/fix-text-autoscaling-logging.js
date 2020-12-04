@@ -9,11 +9,16 @@ THREE.BufferGeometry.prototype.fromGeometry = function(g) {
 
 let oldRayCast = THREE.Mesh.prototype.raycast
 var wasSkinned = false
+var wasMorphed = false
 
 THREE.Mesh.prototype.raycast = function(...args) {
   wasSkinned = this.isSkinnedMesh
   this.isSkinnedMesh = this.isSkinnedMesh && this.material.skinning
+
+  wasMorphed = this.material.morphTargets
+  this.material.morphTargets = false
   let res = oldRayCast.call(this, ...args)
   this.isSkinnedMesh = wasSkinned
+  this.material.morphTargets = wasMorphed
   return res
 }

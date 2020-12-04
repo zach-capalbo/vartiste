@@ -141,7 +141,14 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   {
     let loader = new THREE.GLTFLoader()
     let buffer = await file.arrayBuffer()
-    model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+    try {
+      model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+    }
+    catch (e) {
+      console.error("Could not load model", e)
+      window.loadErrorBuffer = buffer
+      return
+    }
   }
 
   console.log("loaded", model)
@@ -508,7 +515,7 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.(glb)|(gltf)|(obj)|(fbx)|(vrm)$/i.test(file.name))
+    if (/\.((glb)|(gltf)|(obj)|(fbx)|(vrm))$/i.test(file.name))
     {
       if (settings.data.addReferences)
       {

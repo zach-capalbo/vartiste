@@ -1546,9 +1546,10 @@ THREE.GLTFExporter.prototype = {
 
 			}
 
-			console.log("Processing animation", clip, clip.clone())
+			// console.log("Processing animation", clip, clip.clone())
 
-			clip = THREE.GLTFExporter.Utils.mergeMorphTargetTracks( clip.clone(), root );
+			console.warn("Skipping morph target merging")
+			// clip = THREE.GLTFExporter.Utils.mergeMorphTargetTracks( clip.clone(), root );
 
 			var tracks = clip.tracks;
 			var channels = [];
@@ -1557,6 +1558,7 @@ THREE.GLTFExporter.prototype = {
 			for ( var i = 0; i < tracks.length; ++ i ) {
 
 				var track = tracks[ i ];
+				console.log("Track", track.name, track)
 				var trackBinding = THREE.PropertyBinding.parseTrackName( track.name );
 				var trackNode = THREE.PropertyBinding.findNode( root, trackBinding.nodeName );
 				var trackProperty = PATH_PROPERTIES[ trackBinding.propertyName ];
@@ -1586,8 +1588,9 @@ THREE.GLTFExporter.prototype = {
 				var outputItemSize = track.values.length / track.times.length;
 
 				if ( trackProperty === PATH_PROPERTIES.morphTargetInfluences ) {
-
+					console.log("t", track, trackProperty, trackNode, trackBinding, outputItemSize, trackNode.morphTargetInfluences.length)
 					outputItemSize /= trackNode.morphTargetInfluences.length;
+					outputItemSize = Math.max(1, Math.round(outputItemSize))
 
 				}
 
@@ -2241,8 +2244,9 @@ THREE.GLTFExporter.Utils = {
 			var targetIndex = sourceTrackNode.morphTargetDictionary[ sourceTrackBinding.propertyIndex ];
 
 			if ( targetIndex === undefined ) {
-
-				throw new Error( 'THREE.GLTFExporter: Morph target name not found: ' + sourceTrackBinding.propertyIndex );
+				targetIndex = parseInt(sourceTrackBinding.propertyIndex)
+				console.warn('Using', sourceTrackBinding.propertyIndex, "as target index")
+				// throw new Error( 'THREE.GLTFExporter: Morph target name not found: ' + sourceTrackBinding.propertyIndex );
 
 			}
 
