@@ -405,6 +405,7 @@ AFRAME.registerComponent('morph-lever', {
 
     let lever = document.createElement('a-entity')
     lever.setAttribute('lever', 'valueRange: 1 -1')
+    lever.setAttribute('scale', '1.5 1.5 1.5')
     this.el.append(lever)
   }
 })
