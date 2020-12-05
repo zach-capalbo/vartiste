@@ -163,6 +163,7 @@ AFRAME.registerComponent('shelf-summoner', {
       let positionObj = summonerPositionData.el.object3D
       Util.positionObject3DAtTarget(this.shelfEl.object3D, positionObj)
       this.shelfEl.object3D.scale.copy(positionObj.scale)
+      console.log("Summoning to scale", this.shelfEl, positionObj.el, positionObj.scale)
     }
     else
     {

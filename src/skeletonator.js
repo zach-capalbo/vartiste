@@ -134,9 +134,9 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.remove('canvas')
     this.el.classList.remove('clickable')
 
-    let controlPanel = document.createElement('a-entity')
-    controlPanel.innerHTML = require('./partials/skeletonator-control-panel.html.slm')
-    controlPanel.setAttribute('position', "-1.5 0 0.4")
+    let controlPanelRoot = document.createElement('a-entity')
+    controlPanelRoot.innerHTML = require('./partials/skeletonator-control-panel.html.slm')
+    let controlPanel = controlPanelRoot.querySelector('*[shelf]')
     controlPanel.skeletonator = this
     controlPanel.setAttribute('skeletonator-control-panel', "")
 
@@ -237,6 +237,13 @@ AFRAME.registerComponent('skeletonator', {
       console.log("M", mesh.material === Compositor.material, mesh.material, Compositor.material)
     }
 
+    this.skeletonHelper.visible = false
+
+    for (let handle of Object.values(this.boneToHandle))
+    {
+      handle.object3D.visible = false
+    }
+
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
       el.components.raycaster.refreshObjects()
@@ -247,6 +254,13 @@ AFRAME.registerComponent('skeletonator', {
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
     this.mesh.material = this.skinningMaterial
+
+    this.skeletonHelper.visible = true
+
+    for (let handle of Object.values(this.boneToHandle))
+    {
+      handle.object3D.visible = true
+    }
 
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
@@ -697,6 +711,42 @@ AFRAME.registerComponent('skeletonator', {
       animationContainer.animations = []
     }
     animationContainer.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
+  },
+  bakeToGeometry() {
+    let seenGeometries = new Set()
+    let p = new THREE.Vector3()
+    for (let mesh of this.meshes)
+    {
+      if (seenGeometries.has(mesh.geometry)) continue
+
+      let attribute = mesh.geometry.attributes.position
+      for (let i = 0; i < attribute.count; ++i)
+      {
+        mesh.boneTransform(i, p)
+        attribute.setXYZ(i, p.x, p.y, p.z)
+      }
+      attribute.needsUpdate = true
+    }
+
+    // Bake to skeelton?
+    let bones = []
+    Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+
+    for (let mesh of this.meshes)
+    {
+      mesh.updateMatrixWorld()
+      mesh.bind(new THREE.Skeleton(bones
+        , bones.map(b => {
+        let idx = mesh.skeleton.bones.indexOf(b)
+        let m = new THREE.Matrix4() // Don't pool this one, it's copied
+        b.updateMatrixWorld()
+        m.copy(b.matrixWorld)
+        m.getInverse(m)
+        m.multiply(mesh.matrixWorld)
+        return m
+      })
+    ), new THREE.Matrix4)
+    }
   }
 })
 
@@ -919,6 +969,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   nodesFromBones() {
     this.el.skeletonator.nodesFromBones()
+  },
+  bakeToGeometry() {
+    this.el.skeletonator.bakeToGeometry()
   },
   closeSkeletonator() {
     this.el.skeletonator.pause()
