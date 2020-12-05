@@ -216,11 +216,11 @@ function registerVolumeTool(name, toolOpts) {
       let destMat = this.pool('dest', THREE.Matrix4)
       destMat.copy(this.tip.object3D.matrixWorld)
       let invMat = this.pool('inv', THREE.Matrix4)
-      invMat.getInverse(target.matrixWorld)
+      invMat.copy(target.matrixWorld).invert()
       destMat.premultiply(invMat)
       invMat.identity()
       invMat.extractRotation(destMat)
-      invMat.getInverse(invMat)
+      invMat.copy(invMat).invert()
 
       proc.setUniform('u_matrix', 'uniformMatrix4fv', false, invMat.elements)
 

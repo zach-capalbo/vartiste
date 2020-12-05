@@ -13,7 +13,7 @@ AFRAME.registerComponent('ammo-fit-children', {
 
     let invMat = this.pool('invMat', THREE.Matrix4)
     this.el.object3D.updateMatrixWorld()
-    invMat.getInverse(this.el.object3D.matrixWorld)
+    invMat.copy(this.el.object3D.matrixWorld).invert()
 
     this.el.object3D.traverseVisible(mesh => {
       if (!mesh.geometry) return

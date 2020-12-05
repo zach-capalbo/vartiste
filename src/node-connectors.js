@@ -278,7 +278,7 @@ AFRAME.registerComponent('node-control-panel', {
     shelfMatrix.copy(positionObj.matrixWorld)
 
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(targetObj.matrixWorld)
+    invMat.copy(targetObj.matrixWorld).invert()
     shelfMatrix.premultiply(invMat)
   },
   toggleNodes(e) {

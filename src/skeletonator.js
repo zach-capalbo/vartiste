@@ -113,7 +113,7 @@ AFRAME.registerComponent('skeletonator', {
       }
 
       let inv = this.pool('inv', THREE.Matrix4)
-      inv.getInverse(mat)
+      inv.copy(mat).invert()
 
       console.log("mat", mat.elements)
 
@@ -743,7 +743,7 @@ AFRAME.registerComponent('skeletonator', {
         let m = new THREE.Matrix4() // Don't pool this one, it's copied
         b.updateMatrixWorld()
         m.copy(b.matrixWorld)
-        m.getInverse(m)
+        m.invert()
         m.multiply(mesh.matrixWorld)
         return m
       })
@@ -982,7 +982,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
         let m = new THREE.Matrix4() // Don't pool this one, it's copied
         b.updateMatrixWorld()
         m.copy(b.matrixWorld)
-        m.getInverse(m)
+        m.invert()
         m.multiply(mesh.matrixWorld)
         return m
       })
@@ -1070,12 +1070,12 @@ AFRAME.registerComponent("new-bone-wand", {
     if (activeBone)
     {
       activeBone.updateMatrixWorld()
-      invMat.getInverse(activeBone.matrixWorld)
+      invMat.copy(activeBone.matrixWorld).invert()
     }
     else
     {
       this.el.skeletonator.mesh.updateMatrixWorld()
-      invMat.getInverse(this.el.skeletonator.mesh.matrixWorld)
+      invMat.copy(this.el.skeletonator.mesh.matrixWorld).invert()
     }
 
     destMat.premultiply(invMat)
