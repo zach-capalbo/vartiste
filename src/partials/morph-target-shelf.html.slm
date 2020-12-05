@@ -1,0 +1,3 @@
+a-entity shelf="name: Morph Targets; closeable: true" morph-target-shelf="" six-dof-tool="reparentOnActivate: true"
+  a-entity position="4.5 1 0" icon-button="#asset-lead-pencil" toggle-button="target: a-scene; component: optimize-mesh-raycast; property: ignoreMorphTargets" tooltip="Faster drawing on morphed mesh (less accurate)"
+  a-entity.morph-levers

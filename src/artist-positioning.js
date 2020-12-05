@@ -1,5 +1,5 @@
-import {Pool} from './pool.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 // Helper for positioning the user
 Util.registerComponentSystem('artist-root', {
@@ -8,6 +8,10 @@ Util.registerComponentSystem('artist-root', {
 
     // Automatically reset the user's position (including prompt to reset) when entering VR
     autoResetPosition: {default: true},
+
+    //
+    // addLight: {default: true},
+
   },
   events: {
     entervr: function() {}
@@ -94,6 +98,7 @@ Util.registerComponentSystem('artist-root', {
   //
   //   return
     this.resetPosition()
+    // return;
 
     let targetObj = document.querySelector('#artist-root').object3D
     let positioner = document.querySelector('#camera-reset-el')
@@ -102,7 +107,8 @@ Util.registerComponentSystem('artist-root', {
     let cameraWorld = this.pool('cameraWorld', THREE.Vector3)
     let cameraObj = Util.cameraObject3D()
     cameraObj.getWorldPosition(cameraWorld)
-    targetObj.position.y -= cameraWorld.y
+    console.log("cameraWorld", cameraWorld)
+    targetObj.position.y -= cameraWorld.y - positioner.object3D.position.y
 
     this.resetPosition()
 

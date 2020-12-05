@@ -195,21 +195,26 @@ AFRAME.registerComponent('skeletonator', {
     {
       if (!this.skinningMaterial)
       {
-        this.skinningMaterial = new THREE.MeshStandardMaterial({
-          skinning: true,
-          transparent: true,
-          opacity: 0.5
-        })
+        // this.skinningMaterial = new THREE.MeshStandardMaterial({
+        //   skinning: true,
+        //   transparent: true,
+        //   opacity: 0.5
+        // })
 
         let oldMaterial = Compositor.material
+        this.skinningMaterial = Compositor.material.clone()
+        this.skinningMaterial.skinning = true
+        this.skinningMaterial.transparent = true
+        this.skinningMaterial.opacity = 0.5
+        this.skinningMaterial.needsUpdate = true
 
-        for (let mode of ["map"].concat(THREED_MODES))
-        {
-          if (oldMaterial[mode])
-          {
-            this.skinningMaterial[mode] = oldMaterial[mode]
-          }
-        }
+        // for (let mode of ["map"].concat(THREED_MODES))
+        // {
+        //   if (oldMaterial[mode])
+        //   {
+        //     this.skinningMaterial[mode] = oldMaterial[mode]
+        //   }
+        // }
       }
 
       for (let mesh of this.meshes)
@@ -652,6 +657,7 @@ AFRAME.registerComponent('skeletonator', {
       let times = []
       let positionValues = []
       let rotationValues = []
+      let scaleValues = []
       let position = new THREE.Vector3
       let rotation = new THREE.Quaternion
       let scale = new THREE.Vector3
@@ -664,6 +670,7 @@ AFRAME.registerComponent('skeletonator', {
         matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
         rotationValues = rotationValues.concat(rotation.toArray())
+        scaleValues = scaleValues.concat(scale.toArray())
       }
 
       if (wrap)
@@ -674,12 +681,15 @@ AFRAME.registerComponent('skeletonator', {
         matrix.decompose(position, rotation, scale)
         positionValues = positionValues.concat(position.toArray())
         rotationValues = rotationValues.concat(rotation.toArray())
+        scaleValues = scaleValues.concat(scale.toArray())
       }
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${bone.name}.position`, times, positionValues)
+      let scaleTrack = new THREE.VectorKeyframeTrack(`${bone.name}.scale`, times, scaleValues)
       let rotationTrack = new THREE.QuaternionKeyframeTrack(`${bone.name}.quaternion`, times, rotationValues)
       tracks.push(positionTrack)
       tracks.push(rotationTrack)
+      tracks.push(scaleTrack)
     }
     let animationContainer = Compositor.meshRoot || this.rootBone
     if (!('animations' in animationContainer))

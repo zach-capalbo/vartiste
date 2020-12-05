@@ -698,3 +698,7 @@ export class NetworkOutputNode extends CanvasNode {
     ctx.globalCompositeOperation = 'source-over'
   }
 }
+
+class MaskNode extends CanvasNode {
+  
+}

@@ -206,6 +206,9 @@ AFRAME.registerComponent('uv-scroll', {
       {
         this.resetObjectList()
       }
+    },
+    "model-loaded": function() {
+      this.resetObjectList()
     }
   },
   init() {

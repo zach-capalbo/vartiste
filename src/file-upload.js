@@ -111,7 +111,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
 
   let format = 'glb'
 
-  switch (file.name.slice(-4))
+  switch (file.name.slice(-4).toLowerCase())
   {
     case '.obj': format = 'obj'; break
     case '.fbx': format = 'fbx'; break
@@ -141,7 +141,14 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   {
     let loader = new THREE.GLTFLoader()
     let buffer = await file.arrayBuffer()
-    model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+    try {
+      model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+    }
+    catch (e) {
+      console.error("Could not load model", e)
+      window.loadErrorBuffer = buffer
+      return
+    }
   }
 
   console.log("loaded", model)
@@ -179,8 +186,6 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
       }
     }
   })
-
-  compositor.el.setAttribute('compositor', {wrapTexture: true})
 
   let boxes
   if (combineMaterials)
@@ -376,7 +381,9 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
     if (importMaterial && Compositor.meshes.some(o => o.geometry && o.geometry.attributes.uv && o.geometry.attributes.color))
     {
       try {
-        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture()
+        let layer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(0, {layer})
+        compositor.el.sceneEl.systems['mesh-tools'].bakeVertexColorsToTexture({layer: layer})
         while (compositor.layers.indexOf(compositor.activeLayer) > startingLayerLength)
         {
           compositor.swapLayers(compositor.activeLayer, compositor.layers[compositor.layers.indexOf(compositor.activeLayer) - 1])
@@ -508,7 +515,7 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.(glb)|(gltf)|(obj)|(fbx)|(vrm)$/i.test(file.name))
+    if (/\.((glb)|(gltf)|(obj)|(fbx)|(vrm))$/i.test(file.name))
     {
       if (settings.data.addReferences)
       {

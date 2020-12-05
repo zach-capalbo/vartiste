@@ -271,6 +271,7 @@ Util.registerComponentSystem('settings-system', {
     }
 
     viewer.setAttribute('composition-viewer', 'compositor: #canvas-view')
+    Compositor.el.setAttribute('compositor', {wrapTexture: true})
 
     let mainCanvas = document.getElementById('canvas-view')
     // mainCanvas.setAttribute("position", "0 0.6 3.14")

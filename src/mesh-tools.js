@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
 import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
+import {THREED_MODES} from './layer-modes.js'
 
 Util.registerComponentSystem('mesh-tools', {
   init()  {
@@ -79,8 +80,15 @@ Util.registerComponentSystem('mesh-tools', {
       mesh.geometry.needsUpdate = true
     }
   },
-  bakeVertexColorsToTexture({autoDilate = true} = {}) {
-    Compositor.component.addLayer()
+  bakeVertexColorsToTexture({autoDilate = true, layer = undefined} = {}) {
+    if (layer)
+    {
+      Compositor.component.activateLayer(layer)
+    }
+    else
+    {
+      Compositor.component.addLayer()
+    }
     let destinationCanvas = Compositor.drawableCanvas
     let proc = new CanvasShaderProcessor({source: require('./shaders/vertex-baker.glsl'), vertexShader: require('./shaders/vertex-baker.vert')})
     proc.setInputCanvas(destinationCanvas)
@@ -207,6 +215,45 @@ Util.registerComponentSystem('mesh-tools', {
         })
       }
     }
+  },
+  cloneAsReference() {
+    let el = document.createElement('a-entity')
+    el.classList.add('reference-glb')
+    el.classList.add('clickable')
+    document.querySelector('#reference-spawn').append(el)
+
+    // let material = Compositor.material.clone()
+    let material = new THREE.MeshMatcapMaterial()
+
+    for (let map of ['map'].concat(THREED_MODES))
+    {
+      if (!Compositor.material[map] || !Compositor.material[map].image) continue;
+      console.log("Copying", map, Compositor.material[map])
+      material[map] = Compositor.material[map].clone()
+      material[map].image = Util.cloneCanvas(Compositor.material[map].image)
+      material[map].needsUpdate = true
+    }
+
+    material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
+
+    material.needsUpdate = true
+
+    let newObject = Compositor.meshRoot.clone(true)
+    newObject.traverse(o => {
+      if (o.material)
+      {
+        o.material = material
+      }
+      if (o.type === 'SkinnedMesh')
+      {
+        let base = Compositor.meshes.find(m => m.name === o.name)
+        if (!base) return
+        o.bind(new THREE.Skeleton(base.skeleton.bones.map(b => b.clone()), base.skeleton.boneInverses.map(i => new THREE.Matrix4().copy(i))), new THREE.Matrix4().copy(base.bindMatrix))
+      }
+    })
+    Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix, newObject)
+    el.setObject3D('mesh', newObject)
+    console.log("Setting new object", newObject)
   }
 })
 
@@ -331,5 +378,78 @@ AFRAME.registerComponent('mesh-fill-tool', {
     // window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
 
     if (destinationCanvas.touch) destinationCanvas.touch()
+  }
+})
+
+AFRAME.registerComponent('morph-lever', {
+  schema: {
+    name: {type: 'string'},
+    value: {default: 0.0},
+  },
+  events: {
+    anglechanged: function (e) {
+      for (let mesh of Compositor.meshes) {
+        if (mesh.morphTargetDictionary && (this.data.name in mesh.morphTargetDictionary))
+        {
+          mesh.morphTargetInfluences[mesh.morphTargetDictionary[this.data.name]] = e.detail.value
+        }
+      }
+    }
+  },
+  init() {
+    let label = document.createElement('a-entity')
+    this.label = label
+    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 0.8`)
+    label.setAttribute('position', '0 0.2 0')
+    this.el.append(label)
+
+    let lever = document.createElement('a-entity')
+    lever.setAttribute('lever', 'valueRange: 1 -1')
+    lever.setAttribute('scale', '1.5 1.5 1.5')
+    this.el.append(lever)
+  }
+})
+
+AFRAME.registerComponent('morph-target-shelf', {
+  init() {
+    Compositor.material.morphTargets = true
+    Compositor.material.needsUpdate = true
+    this.populate()
+  },
+  populate() {
+    let container = this.el.querySelector(".morph-levers")
+    // container.clear()
+    let x = 0
+    let y = 0
+    let xSpacing = 0.9
+    let ySpacing = 0.5
+
+    let existingTargetValues = {}
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      console.log("Adding mesh to morph targets", mesh.name)
+      if (!mesh.morphTargetDictionary) continue;
+
+      for (let name in mesh.morphTargetDictionary)
+      {
+        if (name in existingTargetValues)
+        {
+          mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]] = existingTargetValues[name]
+          continue
+        }
+
+        console.log("Adding morph target", name)
+
+        existingTargetValues[name] = mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]]
+        let lever = document.createElement('a-entity')
+        lever.setAttribute('position', `${x++ * xSpacing} ${y * ySpacing} 0`)
+        lever.setAttribute('morph-lever', `name: ${name}; value: ${existingTargetValues[name]}`)
+        lever.setAttribute('scale', '2 2 2')
+        container.append(lever)
+      }
+    }
+
+    container.setAttribute('position', `${-(x - 1) * xSpacing / 2} 0 0`)
+    this.el.setAttribute('shelf', 'width', x * xSpacing)
   }
 })
