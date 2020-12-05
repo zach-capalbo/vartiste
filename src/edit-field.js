@@ -243,10 +243,12 @@ AFRAME.registerComponent('popup-button', {
       if (!e.target.hasAttribute('popup-action')) return
 
       this[e.target.getAttribute('popup-action') + "Popup"]()
+      // e.stopPropagation()
     })
 
     popup.addEventListener('popupaction', e => {
       this[e.detail + "Popup"]()
+      // e.stopPropagation()
     })
   },
   update(oldData) {

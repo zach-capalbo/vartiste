@@ -450,6 +450,6 @@ AFRAME.registerComponent('morph-target-shelf', {
     }
 
     container.setAttribute('position', `${-(x - 1) * xSpacing / 2} 0 0`)
-    this.el.setAttribute('shelf', 'width', x * xSpacing)
+    this.el.setAttribute('shelf', 'width', (Math.max(x, 1) * xSpacing))
   }
 })

@@ -716,6 +716,7 @@ AFRAME.registerComponent('six-dof-tool', {
     lockedComponent: {type: 'string'},
     lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
+    summonable: {default: true},
   },
   events: {
     activate: function() {
@@ -734,7 +735,9 @@ AFRAME.registerComponent('six-dof-tool', {
     }
   },
   init() {
-    this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
+    if (this.data.summonable && !this.el.hasAttribute('summonable')) {
+      this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
+    }
   }
 })
 

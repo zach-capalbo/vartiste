@@ -726,6 +726,8 @@ AFRAME.registerComponent('skeletonator', {
         attribute.setXYZ(i, p.x, p.y, p.z)
       }
       attribute.needsUpdate = true
+
+      seenGeometries.add(mesh.geometry)
     }
 
     // Bake to skeelton?
@@ -746,6 +748,35 @@ AFRAME.registerComponent('skeletonator', {
         return m
       })
     ), new THREE.Matrix4)
+    }
+  },
+  bakeMorphTarget(name) {
+    let seenGeometries = {}
+    let p = new THREE.Vector3()
+    for (let mesh of this.meshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries))
+      {
+        let attribute = geometry.attributes.position.clone()
+
+        for (let i = 0; i < attribute.count; ++i)
+        {
+          mesh.boneTransform(i, p)
+          attribute.setXYZ(i, p.x, p.y, p.z)
+        }
+        attribute.needsUpdate = true
+
+        if (!geometry.morphAttributes) geometry.morphAttributes = {}
+        if (!geometry.morphAttributes['position']) geometry.morphAttributes['position'] = []
+        geometry.morphAttributes['position'].push(attribute)
+        seenGeometries[geometry.uuid] = geometry.morphAttributes['position'].length - 1
+      }
+
+      if (!mesh.morphTargetDictionary) mesh.morphTargetDictionary = {}
+      if (!mesh.morphTargetInfluences) mesh.morphTargetInfluences = []
+      mesh.morphTargetDictionary[name] = seenGeometries[geometry.uuid]
+      mesh.morphTargetInfluences[seenGeometries[geometry.uuid]] = 0
     }
   }
 })
@@ -923,6 +954,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   bakeAnimations() {
     this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
+  },
+  bakeMorphTarget() {
+    this.el.skeletonator.bakeMorphTarget(this.el.querySelector('.action-name').getAttribute('text').value)
   },
   exportSkinnedMesh() {
     for (let mesh of this.el.skeletonator.meshes) { mesh.material = Compositor.material }

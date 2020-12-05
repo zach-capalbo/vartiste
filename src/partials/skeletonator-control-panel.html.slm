@@ -15,7 +15,7 @@ a-entity.grab-root shelf="name: Skeletonator" summoner-position="el: #quick-menu
     a-entity icon-button="#asset-hand-no-lines" tooltip="Rotate Only" toggle-button="target: a-scene; component: skeletonator-system; property: lockLength"
   a-entity icon-row="" position="-1.5 1.1 0"
     a-entity click-action="bakeAnimations" icon-button="#asset-oven" tooltip="Bake Animation" position="2.7 0 0"
-    a-entity click-action="bakeAnimations" icon-button="#asset-cylinder" tooltip="Bake to Morph Target" position="2.7 0 0"
+    a-entity click-action="bakeMorphTarget" icon-button="#asset-cylinder" tooltip="Bake to Morph Target" position="2.7 0 0"
     a-entity.action-name edit-field="type: string; tooltip: Action Name" text="value: vartisteAction; wrapCount: 20; width: 1.56; frustumCulled: false" position="1.15 0 0"
 
     a-entity
