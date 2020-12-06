@@ -856,7 +856,19 @@ AFRAME.registerComponent('lever', {
       if (this.data.target)
       {
         // console.log(this.data.target, this.data.component, this.data.property, this.value)
-        this.data.target.setAttribute(this.data.component, this.data.property ? this.data.property : this.value, this.data.property ? this.value : undefined)
+        if (this.data.property.length)
+        {
+          if (this.data.target === this.el.sceneEl) {
+            this.data.target.setAttribute(this.data.component, {[this.data.property]: this.value})
+          }
+          else {
+            this.data.target.setAttribute(this.data.component, this.data.property, this.value)
+          }
+        }
+        else
+        {
+          this.data.target.setAttribute(this.data.component, this.value)
+        }
       }
       else
       {

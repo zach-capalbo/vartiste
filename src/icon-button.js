@@ -493,15 +493,41 @@ AFRAME.registerComponent('system-click-action', {
   },
   events: {
     click: function() {
+      if (!this.data.action) return;
       console.log("Clicking", this)
 
-      if (this.data.component)
+      if (this.data.component.length)
       {
         this.el.sceneEl.components[this.data.component][this.data.action]()
       }
-      else
+      else if (this.data.system.length)
       {
         this.el.sceneEl.systems[this.data.system][this.data.action]()
+      }
+      else
+      {
+        try {
+          Util.traverseAncestors(this.el, (el) => {
+            if (!el.hasAttribute('system-click-action')) return
+            let data = el.getAttribute('system-click-action')
+            if (data.component)
+            {
+              this.el.sceneEl.components[data.component][this.data.action]()
+              throw 0
+            }
+            else if (data.system)
+            {
+              this.el.sceneEl.components[data.system][this.data.action]()
+              throw 0
+            }
+          })
+        }
+        catch (e) {
+          if (e !== 0)
+          {
+            console.error(e)
+          }
+        }
       }
     }
   }
