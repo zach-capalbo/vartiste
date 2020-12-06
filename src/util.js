@@ -108,7 +108,7 @@ class VARTISTEUtil {
     let invMat = this.pool('inv', THREE.Matrix4)
 
     transformRoot.updateMatrixWorld()
-    invMat.getInverse(transformRoot.matrixWorld)
+    invMat.copy(transformRoot.matrixWorld).invert()
     destMat.premultiply(invMat)
 
     Util.applyMatrix(destMat, obj)

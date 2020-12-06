@@ -156,7 +156,7 @@ AFRAME.registerComponent('toolbox-shelf', {
       return
     }
 
-    document.querySelector('*[skeletonator-control-panel]').object3D.visible = true
+    document.querySelector('*[skeletonator-control-panel] *[shelf-summoner]').components['shelf-summoner'].summon()
     skeletonatorEl.components.skeletonator.play()
   },
 

@@ -258,8 +258,8 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.setAttribute('grab-options', "showHand: false")
 
     // Pre-activation
-    this.raycasterTick = this.el.components.raycaster.tick
-    this.el.components.raycaster.tick = function() {}
+    this.raycasterTick = this.el.components.raycaster.tock
+    this.el.components.raycaster.tock = function() {}
 
   },
   update(oldData) {
@@ -278,7 +278,7 @@ AFRAME.registerComponent('pencil-tool', {
   activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
     this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
-    if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
+    if (this.raycasterTick) this.el.components.raycaster.tock = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
       if (!this.data.enabled) return
       this.updateDrawTool()
@@ -716,6 +716,7 @@ AFRAME.registerComponent('six-dof-tool', {
     lockedComponent: {type: 'string'},
     lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
+    summonable: {default: true},
   },
   events: {
     activate: function() {
@@ -734,7 +735,9 @@ AFRAME.registerComponent('six-dof-tool', {
     }
   },
   init() {
-    this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
+    if (this.data.summonable && !this.el.hasAttribute('summonable')) {
+      this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
+    }
   }
 })
 

@@ -254,6 +254,42 @@ Util.registerComponentSystem('mesh-tools', {
     Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix, newObject)
     el.setObject3D('mesh', newObject)
     console.log("Setting new object", newObject)
+  },
+  bakeMorphTarget() {
+    let p = new THREE.Vector3()
+    let m = new THREE.Vector3()
+    let seenGeometries = new Set()
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      if (!mesh.morphTargetInfluences) continue;
+      if (seenGeometries.has(mesh.geometry)) continue
+      let attribute = mesh.geometry.attributes.position
+
+      for (let morphIndex in mesh.morphTargetInfluences)
+      {
+        let influence = mesh.morphTargetInfluences[morphIndex]
+        if (influence === 0.0) continue;
+
+        let morphAttribute = mesh.geometry.morphAttributes['position'][morphIndex]
+
+        for (let i = 0; i < attribute.count; ++i)
+        {
+          p.fromBufferAttribute(attribute, i)
+          m.fromBufferAttribute(morphAttribute, i)
+
+          if ( mesh.geometry.morphTargetsRelative ) {
+    				p.addScaledVector(m, influence);
+    			} else {
+    				p.lerp(m, influence);
+    			}
+          attribute.setXYZ(i, p.x, p.y, p.z)
+        }
+
+        mesh.morphTargetInfluences[morphIndex] = 0
+      }
+      attribute.needsUpdate = true
+      seenGeometries.add(mesh.geometry)
+    }
   }
 })
 
@@ -378,78 +414,5 @@ AFRAME.registerComponent('mesh-fill-tool', {
     // window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
 
     if (destinationCanvas.touch) destinationCanvas.touch()
-  }
-})
-
-AFRAME.registerComponent('morph-lever', {
-  schema: {
-    name: {type: 'string'},
-    value: {default: 0.0},
-  },
-  events: {
-    anglechanged: function (e) {
-      for (let mesh of Compositor.meshes) {
-        if (mesh.morphTargetDictionary && (this.data.name in mesh.morphTargetDictionary))
-        {
-          mesh.morphTargetInfluences[mesh.morphTargetDictionary[this.data.name]] = e.detail.value
-        }
-      }
-    }
-  },
-  init() {
-    let label = document.createElement('a-entity')
-    this.label = label
-    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 0.8`)
-    label.setAttribute('position', '0 0.2 0')
-    this.el.append(label)
-
-    let lever = document.createElement('a-entity')
-    lever.setAttribute('lever', 'valueRange: 1 -1')
-    lever.setAttribute('scale', '1.5 1.5 1.5')
-    this.el.append(lever)
-  }
-})
-
-AFRAME.registerComponent('morph-target-shelf', {
-  init() {
-    Compositor.material.morphTargets = true
-    Compositor.material.needsUpdate = true
-    this.populate()
-  },
-  populate() {
-    let container = this.el.querySelector(".morph-levers")
-    // container.clear()
-    let x = 0
-    let y = 0
-    let xSpacing = 0.9
-    let ySpacing = 0.5
-
-    let existingTargetValues = {}
-    for (let mesh of Compositor.nonCanvasMeshes)
-    {
-      console.log("Adding mesh to morph targets", mesh.name)
-      if (!mesh.morphTargetDictionary) continue;
-
-      for (let name in mesh.morphTargetDictionary)
-      {
-        if (name in existingTargetValues)
-        {
-          mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]] = existingTargetValues[name]
-          continue
-        }
-
-        console.log("Adding morph target", name)
-
-        existingTargetValues[name] = mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]]
-        let lever = document.createElement('a-entity')
-        lever.setAttribute('position', `${x++ * xSpacing} ${y * ySpacing} 0`)
-        lever.setAttribute('morph-lever', `name: ${name}; value: ${existingTargetValues[name]}`)
-        lever.setAttribute('scale', '2 2 2')
-        container.append(lever)
-      }
-    }
-
-    container.setAttribute('position', `${-(x - 1) * xSpacing / 2} 0 0`)
-    this.el.setAttribute('shelf', 'width', x * xSpacing)
   }
 })

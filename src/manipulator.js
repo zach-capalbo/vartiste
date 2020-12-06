@@ -217,7 +217,7 @@ AFRAME.registerComponent('manipulator', {
     this.rightHand.object3D.getWorldPosition(this.startPoint.position)
 
     this.startPoint.updateMatrixWorld()
-    this.invM.getInverse(this.startPoint.matrixWorld)
+    this.invM.copy(this.startPoint.matrixWorld).invert()
 
     this.target.object3D.updateMatrixWorld()
 
@@ -227,7 +227,7 @@ AFRAME.registerComponent('manipulator', {
     this.startPoint.updateMatrixWorld()
 
     let pmw = this.pool('pmw', THREE.Matrix4)
-    pmw.getInverse(this.startPoint.matrixWorld)
+    pmw.copy(this.startPoint.matrixWorld).invert()
 
     this.target.object3D.getWorldQuaternion(targetQuart)
 
@@ -377,7 +377,7 @@ AFRAME.registerComponent('manipulator', {
 
           // this.endPoint.quaternion.multiply(quart)
           // let invm = this.pool("invm", THREE.Matrix4)
-          // invm.getInverse(this.endPoint.matrix)
+          // invm.copy(this.endPoint.matrix).invert()
           // rotAxis.applyMatrix4(invm)
           // rotAxis.normalize()
 
@@ -432,7 +432,7 @@ AFRAME.registerComponent('manipulator', {
 
       this.target.object3D.position.set(0,0,0)
       let pmw = this.pool('pmw', THREE.Matrix4)
-      pmw.getInverse(this.target.object3D.parent.matrixWorld)
+      pmw.copy(this.target.object3D.parent.matrixWorld).invert()
 
       this.endPoint.getWorldQuaternion(quart)
 

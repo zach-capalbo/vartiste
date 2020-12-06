@@ -955,7 +955,7 @@ AFRAME.registerComponent('compositor', {
 
     console.log("Fully loaded")
   },
-  resize(newWidth, newHeight, {resample = false, resizeGeometry = true} = {})
+  resize(newWidth, newHeight, {resample = false, resizeLayers = true, resizeGeometry = true} = {})
   {
     Undo.clearAndResize(newWidth, newHeight)
     let oldWidth = this.width
@@ -1003,7 +1003,7 @@ AFRAME.registerComponent('compositor', {
         layer.width = width
         layer.height = height
       }
-      else
+      else if (resizeLayers)
       {
         layer.resize(width, height)
       }

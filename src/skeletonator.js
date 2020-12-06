@@ -10,24 +10,6 @@ Util.registerComponentSystem('skeletonator-system', {
   }
 })
 
-class SkeletonatorAnimation {
-  constructor(name = "") {
-    this.name = name
-    this.tracksForBones = {}
-  }
-  tracksFor(bone) {
-    if (bone.name) bone = bone.name
-    if (!(bone in this.tracksForBones))
-    {
-      this.tracksForBones[bone] = {
-        position: []
-      }
-    }
-  }
-  keyframe(bone, frameIdx) {
-  }
-}
-
 AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},
@@ -42,9 +24,6 @@ AFRAME.registerComponent('skeletonator', {
     this.system = this.el.sceneEl.systems['skeletonator-system']
     this.system.skeletonator = this
     this.system.skeletonatorEl = this.el
-
-    this.animations = [new SkeletonatorAnimation()]
-    this.currentAnimation = this.animations[0]
 
     this.mesh = this.el.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh")
 
@@ -113,7 +92,7 @@ AFRAME.registerComponent('skeletonator', {
       }
 
       let inv = this.pool('inv', THREE.Matrix4)
-      inv.getInverse(mat)
+      inv.copy(mat).invert()
 
       console.log("mat", mat.elements)
 
@@ -134,9 +113,9 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.remove('canvas')
     this.el.classList.remove('clickable')
 
-    let controlPanel = document.createElement('a-entity')
-    controlPanel.innerHTML = require('./partials/skeletonator-control-panel.html.slm')
-    controlPanel.setAttribute('position', "-1.5 0 0.4")
+    let controlPanelRoot = document.createElement('a-entity')
+    controlPanelRoot.innerHTML = require('./partials/skeletonator-control-panel.html.slm')
+    let controlPanel = controlPanelRoot.querySelector('*[shelf]')
     controlPanel.skeletonator = this
     controlPanel.setAttribute('skeletonator-control-panel', "")
 
@@ -237,6 +216,13 @@ AFRAME.registerComponent('skeletonator', {
       console.log("M", mesh.material === Compositor.material, mesh.material, Compositor.material)
     }
 
+    this.skeletonHelper.visible = false
+
+    for (let handle of Object.values(this.boneToHandle))
+    {
+      handle.object3D.visible = false
+    }
+
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
       el.components.raycaster.refreshObjects()
@@ -247,6 +233,13 @@ AFRAME.registerComponent('skeletonator', {
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
     this.mesh.material = this.skinningMaterial
+
+    this.skeletonHelper.visible = true
+
+    for (let handle of Object.values(this.boneToHandle))
+    {
+      handle.object3D.visible = true
+    }
 
     for (let el of document.querySelectorAll('*[raycaster]'))
     {
@@ -697,6 +690,73 @@ AFRAME.registerComponent('skeletonator', {
       animationContainer.animations = []
     }
     animationContainer.animations.push(new THREE.AnimationClip(name || shortid.generate(), (this.data.frameCount - 1) / fps, tracks))
+  },
+  bakeToGeometry() {
+    let seenGeometries = new Set()
+    let p = new THREE.Vector3()
+    for (let mesh of this.meshes)
+    {
+      if (seenGeometries.has(mesh.geometry)) continue
+
+      let attribute = mesh.geometry.attributes.position
+      for (let i = 0; i < attribute.count; ++i)
+      {
+        mesh.boneTransform(i, p)
+        attribute.setXYZ(i, p.x, p.y, p.z)
+      }
+      attribute.needsUpdate = true
+
+      seenGeometries.add(mesh.geometry)
+    }
+
+    // Bake to skeelton?
+    let bones = []
+    Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
+
+    for (let mesh of this.meshes)
+    {
+      mesh.updateMatrixWorld()
+      mesh.bind(new THREE.Skeleton(bones
+        , bones.map(b => {
+        let idx = mesh.skeleton.bones.indexOf(b)
+        let m = new THREE.Matrix4() // Don't pool this one, it's copied
+        b.updateMatrixWorld()
+        m.copy(b.matrixWorld)
+        m.invert()
+        m.multiply(mesh.matrixWorld)
+        return m
+      })
+    ), new THREE.Matrix4)
+    }
+  },
+  bakeMorphTarget(name) {
+    let seenGeometries = {}
+    let p = new THREE.Vector3()
+    for (let mesh of this.meshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries))
+      {
+        let attribute = geometry.attributes.position.clone()
+
+        for (let i = 0; i < attribute.count; ++i)
+        {
+          mesh.boneTransform(i, p)
+          attribute.setXYZ(i, p.x, p.y, p.z)
+        }
+        attribute.needsUpdate = true
+
+        if (!geometry.morphAttributes) geometry.morphAttributes = {}
+        if (!geometry.morphAttributes['position']) geometry.morphAttributes['position'] = []
+        geometry.morphAttributes['position'].push(attribute)
+        seenGeometries[geometry.uuid] = geometry.morphAttributes['position'].length - 1
+      }
+
+      if (!mesh.morphTargetDictionary) mesh.morphTargetDictionary = {}
+      if (!mesh.morphTargetInfluences) mesh.morphTargetInfluences = []
+      mesh.morphTargetDictionary[name] = seenGeometries[geometry.uuid]
+      mesh.morphTargetInfluences[seenGeometries[geometry.uuid]] = 0
+    }
   }
 })
 
@@ -874,6 +934,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   bakeAnimations() {
     this.el.skeletonator.bakeAnimations({name: this.el.querySelector('.action-name').getAttribute('text').value})
   },
+  bakeMorphTarget() {
+    this.el.skeletonator.bakeMorphTarget(this.el.querySelector('.action-name').getAttribute('text').value)
+  },
   exportSkinnedMesh() {
     for (let mesh of this.el.skeletonator.meshes) { mesh.material = Compositor.material }
     this.el.sceneEl.systems["settings-system"].export3dAction(Compositor.meshRoot)
@@ -898,7 +961,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
         let m = new THREE.Matrix4() // Don't pool this one, it's copied
         b.updateMatrixWorld()
         m.copy(b.matrixWorld)
-        m.getInverse(m)
+        m.invert()
         m.multiply(mesh.matrixWorld)
         return m
       })
@@ -919,6 +982,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   nodesFromBones() {
     this.el.skeletonator.nodesFromBones()
+  },
+  bakeToGeometry() {
+    this.el.skeletonator.bakeToGeometry()
   },
   closeSkeletonator() {
     this.el.skeletonator.pause()
@@ -983,12 +1049,12 @@ AFRAME.registerComponent("new-bone-wand", {
     if (activeBone)
     {
       activeBone.updateMatrixWorld()
-      invMat.getInverse(activeBone.matrixWorld)
+      invMat.copy(activeBone.matrixWorld).invert()
     }
     else
     {
       this.el.skeletonator.mesh.updateMatrixWorld()
-      invMat.getInverse(this.el.skeletonator.mesh.matrixWorld)
+      invMat.copy(this.el.skeletonator.mesh.matrixWorld).invert()
     }
 
     destMat.premultiply(invMat)

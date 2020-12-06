@@ -186,7 +186,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
     boundingSphere.applyMatrix4(asphere.getObject3D('mesh').matrixWorld)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(Compositor.mesh.matrixWorld)
+    invMat.copy(Compositor.mesh.matrixWorld).invert()
     boundingSphere.applyMatrix4(invMat)
     return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
 
@@ -200,7 +200,7 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     boundingBox.copy(acylinder.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(acylinder.getObject3D('mesh').matrixWorld)
+    invMat.copy(acylinder.getObject3D('mesh').matrixWorld).invert()
 
     invMat.multiply(Compositor.mesh.matrixWorld)
     boundingBox.vertexTransform = invMat
@@ -223,7 +223,7 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     boundingBox.copy(abox.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.getInverse(abox.getObject3D('mesh').matrixWorld)
+    invMat.copy(abox.getObject3D('mesh').matrixWorld).invert()
 
 
     invMat.multiply(Compositor.mesh.matrixWorld)

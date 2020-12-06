@@ -21,6 +21,10 @@ AFRAME.registerComponent('shelf', {
 
     grabRoot: {default: true},
 
+    // If this shelf is summoned by a popup button. (Will be set automatically
+    // when used with the `popup-button` component)
+    popup: {default: false},
+
     // Title bar
     name: {type: 'string'},
   },
@@ -79,7 +83,17 @@ AFRAME.registerComponent('shelf', {
         })
       }
 
-      this.container.querySelector('.handle').setAttribute('position', `0 -${this.data.height / 2 + 0.1} 0`)
+      if (this.data.popup && this.data.frame)
+      {
+        // this.el.setAttribute('six-dof-tool', "reparentOnActivate: true; summonable: false")
+        Util.whenLoaded(this.container.querySelector('.bg'), () => {
+          this.el.setAttribute('frame', 'closePopup', true)
+        })
+      }
+
+      let handle = this.container.querySelector('.handle')
+      handle.setAttribute('position', `0 -${this.data.height / 2 + handle.getAttribute('geometry').radius} 0`)
+      handle.setAttribute('geometry', 'height', this.data.width * 1)
     }
     else
     {

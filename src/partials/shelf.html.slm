@@ -1,3 +1,3 @@
 a-entity
   a-entity.clickable.bg mixin="shelf-bg" material="shader: flat; src:#asset-shelf; side: double" geometry="primitive: plane; width: 4; height: 3" position="0 0 -0.01" shadow="cast: false; receive: false"
-    a-entity.clickable.handle mixin="shelf-handle" geometry="primitive: cylinder; radius:0.1; segmentsRadial: 10; segmentsHeight: 1" position="0 -1.6 0" rotation="0 0 90" material="shader:standard; metalness: 0.8; color: #dff7f4"
+    a-entity.clickable.handle mixin="shelf-handle" geometry="primitive: cylinder; radius:0.04; segmentsRadial: 7; segmentsHeight: 1" position="0 -1.6 0" rotation="0 0 90" material="shader:standard; metalness: 0.8; color: #dff7f4; src: #asset-shelf"
