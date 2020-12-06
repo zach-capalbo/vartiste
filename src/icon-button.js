@@ -168,7 +168,7 @@ AFRAME.registerSystem('icon-button', {
     new THREE.GLTFLoader().load(document.getElementById('asset-button').getAttribute('src'), (gltf) => {
       let scaleMatrix = new THREE.Matrix4().makeScale(this.width, this.width, this.depth - 0.005)
       this.geometry = gltf.scene.getObjectByProperty('type', 'Mesh').geometry
-      this.geometry.applyMatrix4(scaleMatrix)
+      this.geometry.applyMatrix(scaleMatrix)
     })
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width - 0.01, this.width - 0.01)
     this.colorManagement = this.el.getAttribute('renderer').colorManagement;

@@ -258,8 +258,8 @@ AFRAME.registerComponent('pencil-tool', {
     this.el.setAttribute('grab-options', "showHand: false")
 
     // Pre-activation
-    this.raycasterTick = this.el.components.raycaster.tick
-    this.el.components.raycaster.tick = function() {}
+    this.raycasterTick = this.el.components.raycaster.tock
+    this.el.components.raycaster.tock = function() {}
 
   },
   update(oldData) {
@@ -278,7 +278,7 @@ AFRAME.registerComponent('pencil-tool', {
   activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
     this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
-    if (this.raycasterTick) this.el.components.raycaster.tick = this.raycasterTick
+    if (this.raycasterTick) this.el.components.raycaster.tock = this.raycasterTick
     this.el.addEventListener('raycaster-intersection', e => {
       if (!this.data.enabled) return
       this.updateDrawTool()
