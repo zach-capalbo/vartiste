@@ -83,7 +83,7 @@ AFRAME.registerComponent('shelf', {
         })
       }
 
-      if (this.data.popup)
+      if (this.data.popup && this.data.frame)
       {
         // this.el.setAttribute('six-dof-tool', "reparentOnActivate: true; summonable: false")
         Util.whenLoaded(this.container.querySelector('.bg'), () => {
@@ -91,7 +91,9 @@ AFRAME.registerComponent('shelf', {
         })
       }
 
-      this.container.querySelector('.handle').setAttribute('position', `0 -${this.data.height / 2 + 0.1} 0`)
+      let handle = this.container.querySelector('.handle')
+      handle.setAttribute('position', `0 -${this.data.height / 2 + handle.getAttribute('geometry').radius} 0`)
+      handle.setAttribute('geometry', 'height', this.data.width * 1)
     }
     else
     {

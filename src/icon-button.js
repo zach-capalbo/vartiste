@@ -20,7 +20,7 @@ for (let k in DEFAULT_BUTTON_STYLE_SCHEMA) {
 // E.g.: `<a-entity icon-button="#my-icon" button-style="color: blue"></a-entity>`
 AFRAME.registerComponent('button-style', {
   schema: {
-    color: {type: 'color', default: "#abe"},
+    color: {type: 'color', default: "#b6c5f2"},
     clickColor: {type: 'color', default: '#aea'},
     intersectedColor: {type: 'color', default: '#cef'},
     toggleOnColor: {type: 'color', default: '#bea'},
