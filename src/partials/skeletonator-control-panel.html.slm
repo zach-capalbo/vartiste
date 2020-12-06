@@ -37,4 +37,4 @@ a-entity.grab-root shelf="name: Skeletonator" summoner-position="el: #quick-menu
     a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab Object"
     a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"
   a-entity.grab-root position="3.0 0 0" skeletonator-keyframes=""
-a-entity new-bone-wand="" position="-0.7 0 0" tooltip="New Bone (Click to create)"
+  a-entity new-bone-wand="" position="2.7 0 0" preactivate-tooltip="New Bone (Click to create)" scale="5 5 5" tooltip-style="scale: 0.5 0.5 0.5"
