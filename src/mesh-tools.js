@@ -258,12 +258,14 @@ Util.registerComponentSystem('mesh-tools', {
   bakeMorphTarget() {
     let p = new THREE.Vector3()
     let m = new THREE.Vector3()
+    let o = new THREE.Vector3()
     let seenGeometries = new Set()
     for (let mesh of Compositor.nonCanvasMeshes)
     {
       if (!mesh.morphTargetInfluences) continue;
       if (seenGeometries.has(mesh.geometry)) continue
       let attribute = mesh.geometry.attributes.position
+      let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
 
       for (let morphIndex in mesh.morphTargetInfluences)
       {
@@ -280,7 +282,8 @@ Util.registerComponentSystem('mesh-tools', {
           if ( mesh.geometry.morphTargetsRelative ) {
     				p.addScaledVector(m, influence);
     			} else {
-    				p.lerp(m, influence);
+            o.fromBufferAttribute(originalPositions, i)
+    				p.addScaledVector(m.sub(o), influence);
     			}
           attribute.setXYZ(i, p.x, p.y, p.z)
         }

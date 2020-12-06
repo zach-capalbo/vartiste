@@ -853,6 +853,7 @@ AFRAME.registerComponent('lever', {
   _tick(t,dt) {
     if (this.lastAngle !== this.angle)
     {
+      // console.log("Updating angle again!!")
       if (this.data.target)
       {
         // console.log(this.data.target, this.data.component, this.data.property, this.value)
