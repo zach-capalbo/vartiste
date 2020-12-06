@@ -13,7 +13,7 @@ AFRAME.registerComponent('morph-lever', {
       }
     },
     click: function(e) {
-      this.el.components['lever'].setValue(0)
+      this.el.querySelector('*[lever]').components['lever'].setValue(0)
       for (let mesh of Compositor.meshes) {
         if (mesh.morphTargetDictionary && (this.data.name in mesh.morphTargetDictionary))
         {
@@ -76,6 +76,6 @@ AFRAME.registerComponent('morph-target-shelf', {
     }
 
     container.setAttribute('position', `${-(x - 1) * xSpacing / 2} 0 0`)
-    this.el.setAttribute('shelf', 'width', (Math.max(x, 1) * xSpacing))
+    this.el.setAttribute('shelf', 'width', (Math.max(x, 2) * xSpacing))
   }
 })

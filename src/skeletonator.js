@@ -25,9 +25,6 @@ AFRAME.registerComponent('skeletonator', {
     this.system.skeletonator = this
     this.system.skeletonatorEl = this.el
 
-    this.animations = [new SkeletonatorAnimation()]
-    this.currentAnimation = this.animations[0]
-
     this.mesh = this.el.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh")
 
     let rootBone
