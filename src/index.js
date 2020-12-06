@@ -71,6 +71,8 @@ require('./crash-handler')
 require('./scalable-raycaster')
 require('./physics')
 require('./skeletonator-keyframes')
+require('./morph-targets')
+require('./animation-3d')
 // require('./text')
 
 require('./app.styl')

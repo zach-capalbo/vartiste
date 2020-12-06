@@ -90,7 +90,7 @@ AFRAME.registerComponent('settings-shelf', {
     ctx.fillRect(0,0,width,height)
     compositor.addLayer(1)
   },
-  resampleAction(e) {
+  resampleAction(e, {resample = true, ...opts} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     if (e.target.hasAttribute('size'))
@@ -108,7 +108,10 @@ AFRAME.registerComponent('settings-shelf', {
     if (!(Number.isInteger(width) && width > 0)) throw new Error(`Invalid composition width ${width}`)
     if (!(Number.isInteger(height) && height > 0)) throw new Error(`Invalid composition height ${height}`)
 
-    compositor.resize(width, height, {resample: true})
+    compositor.resize(width, height, {resample, ...opts})
+  },
+  resizeCanvasAction(e) {
+    this.resampleAction(e, {resample: false, resizeLayers: false})
   },
   toggleShadingAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;

@@ -10,24 +10,6 @@ Util.registerComponentSystem('skeletonator-system', {
   }
 })
 
-class SkeletonatorAnimation {
-  constructor(name = "") {
-    this.name = name
-    this.tracksForBones = {}
-  }
-  tracksFor(bone) {
-    if (bone.name) bone = bone.name
-    if (!(bone in this.tracksForBones))
-    {
-      this.tracksForBones[bone] = {
-        position: []
-      }
-    }
-  }
-  keyframe(bone, frameIdx) {
-  }
-}
-
 AFRAME.registerComponent('skeletonator', {
   schema: {
     recording: {default: true},

@@ -200,6 +200,8 @@ AFRAME.registerComponent('popup-button', {
     // Scale for the popup when shown
     scale: {type: 'vec3', default: '1 1 1'},
 
+    autoScale: {default: false},
+
     // If true, the popup entity will not be loaded until the button is clicked
     deferred: {type: 'boolean', default: false}
   },
@@ -248,7 +250,8 @@ AFRAME.registerComponent('popup-button', {
 
     popup.addEventListener('popupaction', e => {
       this[e.detail + "Popup"]()
-      // e.stopPropagation()
+      e.stopPropagation()
+      console.log("Trying to stop propogation", this.el, e)
     })
   },
   update(oldData) {
@@ -276,13 +279,28 @@ AFRAME.registerComponent('popup-button', {
       popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
       this.popupLoaded = true
     }
+    if (!this.shelfPopup && popup.children.length === 1 && popup.children[0].hasAttribute('shelf'))
+    {
+      this.shelfPopup = popup.children[0]
+      Util.whenLoaded(this.shelfPopup, () => {
+        this.shelfPopup.setAttribute('shelf', 'popup', true)
+        this.shelfPopup.addEventListener('popupaction', e => {
+          this.popup.emit('popupaction', e.detail)
+          e.stopPropagation()
+        })
+      })
+    }
     popup.setAttribute('position', '0 0 0.1')
     popup.object3D.updateMatrixWorld()
-    let invScale =  popup.object3D.parent.getWorldScale(new THREE.Vector3())
-    invScale.x = this.data.scale.x / invScale.x
-    invScale.y = this.data.scale.y / invScale.y
-    invScale.z = this.data.scale.z / invScale.z
-    popup.object3D.scale.copy(invScale)
+
+    if (!this.data.autoScale)
+    {
+      let invScale =  popup.object3D.parent.getWorldScale(new THREE.Vector3())
+      invScale.x = this.data.scale.x / invScale.x
+      invScale.y = this.data.scale.y / invScale.y
+      invScale.z = this.data.scale.z / invScale.z
+      popup.object3D.scale.copy(invScale)
+    }
 
     popup.setAttribute('visible', true)
     this.el.sceneEl.emit('refreshobjects')

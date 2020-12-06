@@ -42,6 +42,8 @@ AFRAME.registerComponent("frame", {
     // If true, the close button hides the entity instead of removing it
     hideOnly: {default: false},
 
+    closePopup: {default: false},
+
     // If true, there's a visible border around the entity
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
@@ -61,6 +63,7 @@ AFRAME.registerComponent("frame", {
       if (e.target.hasAttribute('frame-action'))
       {
         this[e.target.getAttribute('frame-action')](e)
+        e.stopPropagation()
       }
     }
   },
@@ -156,7 +159,11 @@ AFRAME.registerComponent("frame", {
     return button
   },
   closeFrame() {
-    if (this.data.hideOnly)
+    if (this.data.closePopup)
+    {
+      this.el.emit('popupaction', 'close')
+    }
+    else if (this.data.hideOnly)
     {
       this.el.setAttribute('visible', false)
     }
