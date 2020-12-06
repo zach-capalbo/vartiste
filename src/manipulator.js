@@ -853,10 +853,23 @@ AFRAME.registerComponent('lever', {
   _tick(t,dt) {
     if (this.lastAngle !== this.angle)
     {
+      // console.log("Updating angle again!!")
       if (this.data.target)
       {
         // console.log(this.data.target, this.data.component, this.data.property, this.value)
-        this.data.target.setAttribute(this.data.component, this.data.property ? this.data.property : this.value, this.data.property ? this.value : undefined)
+        if (this.data.property.length)
+        {
+          if (this.data.target === this.el.sceneEl) {
+            this.data.target.setAttribute(this.data.component, {[this.data.property]: this.value})
+          }
+          else {
+            this.data.target.setAttribute(this.data.component, this.data.property, this.value)
+          }
+        }
+        else
+        {
+          this.data.target.setAttribute(this.data.component, this.value)
+        }
       }
       else
       {

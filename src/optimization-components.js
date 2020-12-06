@@ -50,7 +50,7 @@ AFRAME.registerComponent('fix-light-shadow', {
 // skinning material
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {
-    ignoreMorphTargets: {default: false},
+    ignoreMorphTargets: {default: true},
     ignoreSkinning: {default: false},
   },
   init() {

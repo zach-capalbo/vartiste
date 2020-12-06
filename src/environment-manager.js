@@ -1,6 +1,7 @@
 import Color from 'color'
 import { PMREMGenerator} from './framework/PMREMGenerator.js'
 import {RGBELoader} from './framework/RGBELoader.js'
+import {Util} from './util.js'
 
 const [
   STATE_COLOR,
@@ -14,11 +15,38 @@ const [
   "STATE_PRESET"
 ]
 
-AFRAME.registerSystem('environment-manager', {
+Util.registerComponentSystem('environment-manager', {
+  schema: {
+    rendererExposure: {default: 0.724},
+    bgExposure: {default: 1.0},
+    envMapIntensity: {default: 1.0},
+  },
+  events: {
+    anglechanged: function (e) {
+      let exposure = e.detail.value
+
+      if (e.target.classList.contains("bg-exposure"))
+      {
+        let skyEl = document.getElementsByTagName('a-sky')[0]
+        skyEl.getObject3D('mesh').material.color.r = exposure
+        skyEl.getObject3D('mesh').material.color.g = exposure
+        skyEl.getObject3D('mesh').material.color.b = exposure
+      }
+
+      if (e.target.classList.contains("renderer-exposure"))
+      {
+        this.el.sceneEl.renderer.toneMappingExposure = exposure
+      }
+
+    },
+  },
   init() {
     this.state = STATE_COLOR
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
+  },
+  update() {
+    this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
   },
   switchState(newState) {
     if (newState == this.state) return
@@ -235,6 +263,9 @@ AFRAME.registerSystem('environment-manager', {
     if (color === undefined) color = this.el.sceneEl.systems['paint-system'].data.color
     document.querySelector('a-sky').setAttribute('material', 'color', color)
   },
+  toneMapping() {
+    this.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
+  },
 
   tick(t,dt) {
     if (this.state === STATE_HDRI)
@@ -242,57 +273,14 @@ AFRAME.registerSystem('environment-manager', {
       for (let r of this.elementsToCheck)
       {
         r.object3D.traverseVisible(o => {
-          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && o.material.envMap !== this.envMap)
+          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity))
           {
             o.material.envMap = this.envMap
             o.material.needsUpdate = true
+            o.material.envMapIntensity = this.data.envMapIntensity
           }
         })
       }
     }
-  }
-})
-
-AFRAME.registerComponent('environment-manager', {
-  schema: {
-    rendererExposure: {default: 0.724},
-    bgExposure: {default: 1.0},
-  },
-  events: {
-    anglechanged: function (e) {
-      let exposure = e.detail.value
-
-      if (e.target.classList.contains("bg-exposure"))
-      {
-        let skyEl = document.getElementsByTagName('a-sky')[0]
-        skyEl.getObject3D('mesh').material.color.r = exposure
-        skyEl.getObject3D('mesh').material.color.g = exposure
-        skyEl.getObject3D('mesh').material.color.b = exposure
-      }
-
-      if (e.target.classList.contains("renderer-exposure"))
-      {
-        this.el.sceneEl.renderer.toneMappingExposure = exposure
-      }
-    },
-    click: function (e) {
-      if (e.target.hasAttribute("click-action"))
-      {
-        let action = e.target.getAttribute('click-action')
-
-        if (action in this)
-        {
-          this[action](e)
-        }
-        else if (action in this.system)
-        {
-          this.system[action]()
-        }
-      }
-    }
-  },
-  init() {},
-  toneMapping() {
-    this.system.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
   }
 })
