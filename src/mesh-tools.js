@@ -319,9 +319,8 @@ AFRAME.registerComponent('hide-mesh-tool', {
       if (e.detail === 'grabbed') {
         if (!this.el.hasAttribute('raycaster'))
         {
-          this.el.setAttribute('raycaster', `objects: .canvas, .reference-glb; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${this.data.far}`)
+          this.el.setAttribute('raycaster', `objects: .canvas, .reference-glb; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${this.data.far}; lineColor: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
           this.el.setAttribute('scalable-raycaster', "")
-          this.el.setAttribute('line', `color: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
 
         }
         this.el.components.raycaster.play()
@@ -333,6 +332,7 @@ AFRAME.registerComponent('hide-mesh-tool', {
     click: function(e) {
       for (let intersection of this.el.components.raycaster.intersections)
       {
+        console.log("Checking",  intersection)
         if (this.data.mode === 'delete')
         {
           if (intersection.object.el.classList.contains("reference-glb") && Util.traverseFindAll(intersection.object.el.object3D, o => (o.visible && (o.type === 'Mesh' || o.type === 'SkinnedMesh'))).length === 1)
