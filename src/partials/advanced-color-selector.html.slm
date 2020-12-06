@@ -1,0 +1,4 @@
+a-entity shelf="name: Advanced Color Selector"
+  a-entity
+    a-entity icon-row=""
+      a-entity edit-field="" text="anchor: right; align: right; wrapCount: 7; width: 1; value: #RRGGBB"

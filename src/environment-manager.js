@@ -284,3 +284,10 @@ Util.registerComponentSystem('environment-manager', {
     }
   }
 })
+
+AFRAME.registerComponent('light-tool', {
+  dependencies: ['six-dof-tool'],
+  init() {
+
+  }
+})

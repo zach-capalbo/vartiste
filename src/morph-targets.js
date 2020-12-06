@@ -1,7 +1,10 @@
+import {Util} from './util.js'
+
 AFRAME.registerComponent('morph-lever', {
   schema: {
     name: {type: 'string'},
     value: {default: 0.0},
+    hubsAudio: {default: false},
   },
   events: {
     anglechanged: function (e) {
@@ -33,6 +36,66 @@ AFRAME.registerComponent('morph-lever', {
     lever.setAttribute('lever', 'valueRange: 1 -1')
     lever.setAttribute('scale', '1.5 1.5 1.5')
     this.el.append(lever)
+
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      if ( mesh.userData
+        && mesh.userData.gltfExtensions
+        && mesh.userData.gltfExtensions.MOZ_hubs_components
+        && mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback']
+        && mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback'].name === this.data.name
+      )
+      {
+        this.data.hubsAudio = true
+      }
+    }
+
+    let hubsAudioButton = document.createElement('a-entity')
+    this.el.append(hubsAudioButton)
+    hubsAudioButton.setAttribute('icon-button', '#asset-ear-hearing')
+    hubsAudioButton.setAttribute('position', '0 -0.5 0')
+    hubsAudioButton.setAttribute('scale', '0.5 0.5 0.5')
+    hubsAudioButton.setAttribute('tooltip', 'Set as Mozilla Hubs Avatar Audio Feedback')
+    hubsAudioButton.setAttribute('tooltip-style', 'scale: 0.5 0.5 0.5')
+    Util.whenLoaded(hubsAudioButton, () => {
+      hubsAudioButton.setAttribute('toggle-button', {
+        target: this.el,
+        component: 'morph-lever',
+        property: 'hubsAudio'
+      })
+    })
+  },
+  update(oldData) {
+    if (this.data.hubsAudio)
+    {
+      for (let mesh of Compositor.nonCanvasMeshes)
+      {
+        if (!mesh.userData.gltfExtensions) mesh.userData.gltfExtensions = {}
+        if (!mesh.userData.gltfExtensions.MOZ_hubs_components) mesh.userData.gltfExtensions.MOZ_hubs_components = {}
+        mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback'] = {
+          name: this.data.name,
+          minValue: 0,
+          maxValue: 1,
+        }
+      }
+
+      this.el.emit('hubsaudioset', this.data.name)
+    }
+    else
+    {
+      for (let mesh of Compositor.nonCanvasMeshes)
+      {
+        if ( mesh.userData
+          && mesh.userData.gltfExtensions
+          && mesh.userData.gltfExtensions.MOZ_hubs_components
+          && mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback']
+          && mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback'].name === this.data.name
+        )
+        {
+          delete mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback'];
+        }
+      }
+    }
   }
 })
 
@@ -41,6 +104,16 @@ AFRAME.registerComponent('morph-target-shelf', {
     Compositor.material.morphTargets = true
     Compositor.material.needsUpdate = true
     this.populate()
+  },
+  events: {
+    hubsaudioset: function (e) {
+      this.el.querySelectorAll("*[morph-lever]").forEach(el => {
+        if (el.hasLoaded && el.getAttribute('morph-lever').name !== e.detail)
+        {
+          el.setAttribute('morph-lever', 'hubsAudio', false)
+        }
+      })
+    }
   },
   populate() {
     let container = this.el.querySelector(".morph-levers")
