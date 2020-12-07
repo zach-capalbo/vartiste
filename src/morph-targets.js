@@ -33,9 +33,9 @@ AFRAME.registerComponent('morph-lever', {
     this.el.append(label)
 
     let lever = document.createElement('a-entity')
-    lever.setAttribute('lever', 'valueRange: 1 -1')
-    lever.setAttribute('scale', '1.5 1.5 1.5')
     this.el.append(lever)
+    lever.setAttribute('lever', `valueRange: 1 -1; initialValue: ${this.data.value}`)
+    lever.setAttribute('scale', '1.5 1.5 1.5')
 
     for (let mesh of Compositor.nonCanvasMeshes)
     {
@@ -101,9 +101,6 @@ AFRAME.registerComponent('morph-lever', {
 
 AFRAME.registerComponent('morph-target-shelf', {
   init() {
-    Compositor.material.morphTargets = true
-    Compositor.material.needsUpdate = true
-    this.populate()
   },
   events: {
     hubsaudioset: function (e) {
@@ -113,11 +110,20 @@ AFRAME.registerComponent('morph-target-shelf', {
           el.setAttribute('morph-lever', 'hubsAudio', false)
         }
       })
-    }
+    },
+    popupshown: function (e) {
+      Compositor.material.morphTargets = true
+      Compositor.material.needsUpdate = true
+      this.populate()
+    },
+    popuphidden: function (e) {
+      Compositor.material.morphTargets = false
+      Compositor.material.needsUpdate = true
+    },
   },
   populate() {
     let container = this.el.querySelector(".morph-levers")
-    // container.clear()
+    container.getChildEntities().forEach(e => e.remove())
     let x = 0
     let y = 0
     let xSpacing = 0.9
