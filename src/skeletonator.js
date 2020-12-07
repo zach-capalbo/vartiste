@@ -732,6 +732,7 @@ AFRAME.registerComponent('skeletonator', {
   bakeMorphTarget(name) {
     let seenGeometries = {}
     let p = new THREE.Vector3()
+    let o = new THREE.Vector3()
     for (let mesh of this.meshes)
     {
       let geometry = mesh.geometry
@@ -742,6 +743,11 @@ AFRAME.registerComponent('skeletonator', {
         for (let i = 0; i < attribute.count; ++i)
         {
           mesh.boneTransform(i, p)
+          if (geometry.morphTargetsRelative)
+          {
+            o.fromBufferAttribute(geometry.attributes.position, i)
+            p.sub(o)
+          }
           attribute.setXYZ(i, p.x, p.y, p.z)
         }
         attribute.needsUpdate = true
@@ -750,12 +756,28 @@ AFRAME.registerComponent('skeletonator', {
         if (!geometry.morphAttributes['position']) geometry.morphAttributes['position'] = []
         geometry.morphAttributes['position'].push(attribute)
         seenGeometries[geometry.uuid] = geometry.morphAttributes['position'].length - 1
+
+        // geometry.id = new THREE.BufferGeometry().id // I wish....
       }
 
       if (!mesh.morphTargetDictionary) mesh.morphTargetDictionary = {}
       if (!mesh.morphTargetInfluences) mesh.morphTargetInfluences = []
       mesh.morphTargetDictionary[name] = seenGeometries[geometry.uuid]
       mesh.morphTargetInfluences[seenGeometries[geometry.uuid]] = 0
+    }
+
+    // Work around https://github.com/mrdoob/three.js/pull/20845
+    let clonedGeometries = {}
+    for (let mesh of this.meshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries)) continue
+      if (!(geometry.uuid in clonedGeometries))
+      {
+        clonedGeometries[geometry.uuid] = geometry.clone()
+      }
+
+      mesh.geometry = clonedGeometries[geometry.uuid]
     }
   }
 })

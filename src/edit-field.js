@@ -305,14 +305,22 @@ AFRAME.registerComponent('popup-button', {
     popup.setAttribute('visible', true)
     this.el.sceneEl.emit('refreshobjects')
     this.el.emit('popuplaunched')
-    popup.emit('popupshown')
+    if (this.shelfPopup)
+    {
+      Util.whenLoaded(this.shelfPopup, () => this.shelfPopup.emit('popupshown'))
+    }
+    else
+    {
+      popup.emit('popupshown')
+    }
   },
 
   // Closes the popup
   closePopup() {
     this.popup.setAttribute('visible', false)
     this.popup.setAttribute('position', '0 -999999 0.1')
-    this.el.emit('popupclosed')
+    this.el.emit('popupclosed');
+    (this.shelfPopup || this.popup).emit('popuphidden')
   }
 })
 
