@@ -22,4 +22,4 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
   a-entity position="2.7 0 0" rotation="40 0 0"
     a-entity light-tool="" preactivate-tooltip="Spot Light"
     a-entity position="1 0 0" light-tool="" preactivate-tooltip="Soft Light" light-tool-light="shadowRadius: 5; penumbra: 0.5"
-    a-entity position="2 0 0" light-bauble="" scale="5 5 5"
+    a-entity position="2 0 0" light-bauble="" scale="1 1 1" preactivate-tooltip="Sun" _tooltip-style="scale: 0.2 0.2 0.2"

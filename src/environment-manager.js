@@ -341,7 +341,7 @@ AFRAME.registerComponent('light-bauble', {
     activate: function() {
       this.system.activateShadow()
 
-      this.sun.setAttribute('light', 'type: directional; castShadow: true; intensity: 1')
+      this.sun.setAttribute('light', 'type: directional; castShadow: true; intensity: 5')
       this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
     }
   },
@@ -355,11 +355,11 @@ AFRAME.registerComponent('light-bauble', {
     this.el.append(sun)
     sun.classList.add('clickable')
     sun['redirect-grab'] = this.el
-    sun.setAttribute('geometry', 'primitive: sphere; segments: width: 8; segmentsHeight: 8; radius: 0.1')
+    sun.setAttribute('geometry', 'primitive: sphere; segments: width: 8; segmentsHeight: 8; radius: 0.5')
     sun.setAttribute('material', 'shader: matcap; color: #ffffe3')
     this.sun = sun
   },
   sunMoved(el) {
-    this.sun.setAttribute('light', 'intensity', this.el.object3D.scale.x)
+    this.sun.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 5))
   }
 })

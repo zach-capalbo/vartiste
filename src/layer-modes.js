@@ -55,7 +55,9 @@ const FX = [
   'alpha-to-grayscale',
   'invert',
   'uv-offset',
-  'show-uv'
+  'show-uv',
+  'srgb-to-linear',
+  'linear-to-srgb',
 ]
 
 const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)
