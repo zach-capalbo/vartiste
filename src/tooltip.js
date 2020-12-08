@@ -6,6 +6,7 @@ import {Util} from './util.js'
 AFRAME.registerComponent('tooltip', {
   // Text to show in the tooltip
   schema: {default: ""},
+  multiple: true,
   events: {
     'mouseenter': function() {this.popup();},
     'mouseleave': function() {this.hide();},
@@ -48,21 +49,30 @@ AFRAME.registerComponent('tooltip', {
 // Allows you to change the style of the [`tooltip`](#tooltip) component somewhat
 AFRAME.registerComponent('tooltip-style', {
   dependencies: ["tooltip"],
+  multiple: true,
   schema: {
     offset: {type: 'vec3', default: '0 0 0'},
     scale: {type: 'vec3', default: '1 1 1'},
     rotation: {type: 'vec3', default: '0 0 0'},
+    wrapCount: {default: 10}
   },
   update(oldData) {
     Util.whenLoaded(this.el, () => {
-    this.el.components.tooltip.targetY = this.data.offset.y + 0.4
-    this.el.components.tooltip.tooltip.object3D.position.x = this.data.offset.x
-    this.el.components.tooltip.tooltip.object3D.position.z = this.data.offset.z + 0.004
-    this.el.components.tooltip.tooltip.object3D.scale.copy(this.data.scale)
-    this.el.components.tooltip.tooltip.object3D.rotation.set(this.data.rotation.x * Math.PI / 180,
-                                                             this.data.rotation.y * Math.PI / 180,
-                                                             this.data.rotation.z * Math.PI / 180,)
-                                                           })
+      let component = this.el.components[this.attrName.replace("-style", "")]
+      if (!component) {
+        console.warn("No tooltip component yet", this.attrName)
+        Util.callLater(this.update.bind(this, oldData))
+        return
+      }
+      component.targetY = this.data.offset.y + 0.4
+      component.tooltip.setAttribute('text', 'wrapCount', this.data.wrapCount)
+      component.tooltip.object3D.position.x = this.data.offset.x
+      component.tooltip.object3D.position.z = this.data.offset.z + 0.004
+      component.tooltip.object3D.scale.copy(this.data.scale)
+      component.tooltip.object3D.rotation.set(this.data.rotation.x * Math.PI / 180,
+                                                               this.data.rotation.y * Math.PI / 180,
+                                                               this.data.rotation.z * Math.PI / 180,)
+                                                             })
   }
 })
 

@@ -218,6 +218,7 @@ Util.registerComponentSystem('environment-manager', {
         o.material.needsUpdate = true
       }
     })})
+    this.el.sceneEl.emit('tonemappingchanged', toneMapping)
   },
   async usePresetHDRI() {
     this.switchState(STATE_HDRI)
@@ -361,5 +362,23 @@ AFRAME.registerComponent('light-bauble', {
   },
   sunMoved(el) {
     this.sun.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 5))
+  }
+})
+
+AFRAME.registerComponent('tonemapping-tooltip', {
+  init() {
+    this.mappings = Object.keys(THREE).filter(k => /ToneMapping/.test(k))
+    this.setMapping = this.setMapping.bind(this)
+    Util.whenLoaded(this.el.sceneEl, () => this.setMapping({detail: this.el.sceneEl.renderer.toneMapping}))
+  },
+  play() {
+    this.el.sceneEl.addEventListener('tonemappingchanged', this.setMapping)
+
+  },
+  pause() {
+    this.el.sceneEl.removeEventListener('tonemappingchanged', this.setMapping)
+  },
+  setMapping(e) {
+    this.el.setAttribute('tooltip__tonemapping', this.mappings.find(m => THREE[m] == e.detail))
   }
 })
