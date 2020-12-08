@@ -293,6 +293,12 @@ Util.registerComponentSystem('mesh-tools', {
       attribute.needsUpdate = true
       seenGeometries.add(mesh.geometry)
     }
+  },
+  actualScale() {
+    Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix.identity(), Compositor.meshRoot.el.object3D)
+    let p = new THREE.Vector3
+    Compositor.meshRoot.el.object3D.getWorldPosition(p)
+    Compositor.meshRoot.el.object3D.position.y -= p.y
   }
 })
 

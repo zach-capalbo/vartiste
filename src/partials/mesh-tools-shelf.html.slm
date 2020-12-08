@@ -25,6 +25,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-palette-swatch-outline" toggle-button="target: #canvas-view; component: compositor; property: doubleSided" tooltip="Double Sided"
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-eye-off" system-click-action="system: hide-mesh-tool; action: unhideAll" tooltip="Unhide all hidden meshes"
+    a-entity icon-button="#asset-dice-2" system-click-action="system: mesh-tools; action: actualScale" tooltip="View Actual Size"
     a-entity icon-button="#asset-arrow-all" system-click-action="system: mesh-tools; action: applyTransformation" tooltip="Apply All Transformations to Mesh"
     /a-entity icon-button="#asset-arrow-right" system-click-action="system: mesh-tools; action: applyTranslation" tooltip="Apply Translation to Mesh"
     a-entity icon-button="#asset-rotate-3d-variant" system-click-action="system: mesh-tools; action: applyRotation" tooltip="Apply Rotation to Mesh"

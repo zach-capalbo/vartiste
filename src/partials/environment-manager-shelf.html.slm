@@ -19,3 +19,6 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
   a-entity.renderer-exposure tooltip="Camera Exposure" lever="valueRange: 2 0; initialValue: 1.0; target: a-scene; component:  environment-manager; property: rendererExposure" position="-0.8 0.3 0" scale="2 2 2"
   /a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
   /a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"
+  a-entity position="2.7 0 0" rotation="40 0 0"
+    a-entity light-tool="" preactivate-tooltip="Spot Light"
+    /a-entity position="1 0 0" light-tool="" preactivate-tooltip="Soft Light"

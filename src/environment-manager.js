@@ -285,9 +285,41 @@ Util.registerComponentSystem('environment-manager', {
   }
 })
 
-AFRAME.registerComponent('light-tool', {
-  dependencies: ['six-dof-tool'],
-  init() {
+AFRAME.registerSystem('light-tool', {
+  activateShadow() {
+    this.el.sceneEl.setAttribute('shadow', 'enabled: true')
+  }
+})
 
+AFRAME.registerComponent('light-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    activate: function() {
+      this.system.activateShadow()
+      let light = document.createElement('a-entity')
+      this.el.append(light)
+      light.setAttribute('light', 'type: spot; intensity: 3; castShadow: true; shadowCameraVisible: false; shadowCameraNear: 0.001')
+      light.setAttribute('fix-light-shadow', '')
+      this.light = light
+
+      let intensity = document.createElement('a-entity')
+      this.el.append(intensity)
+      intensity.setAttribute('lever', {valueRange: '0 10', initialValue: 3, target: light, component: 'light', property: 'intensity', axis: 'y'})
+      intensity.setAttribute('position', '0.265 0 0.5')
+      intensity.setAttribute('rotation', '0 90 0')
+    },
+    click: function() {
+      this.light.setAttribute('visible', !this.light.getAttribute('visible'))
+    }
+  },
+  init() {
+    let handle = document.createElement('a-entity')
+    this.el.append(handle)
+    handle.setAttribute('gltf-model', '#asset-spotlight')
+    handle.setAttribute('scale', '0.3 0.3 0.3')
+    handle.setAttribute('material', 'src: #asset-shelf; metalness: 0.8; roughness: 0.2')
+    handle.setAttribute('apply-material-to-mesh', '')
+    handle.classList.add('clickable')
+    handle['redirect-grab'] = this.el
   }
 })

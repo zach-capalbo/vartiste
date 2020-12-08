@@ -1,6 +1,7 @@
 a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;"
   a-assets#assets timeout="${60 * 1000 * 5}"
   a-sky color="#333" hide-in-ar-mode=""
+  /a-entity light="type: directional; castShadow: true; intensity: 10" position="1 1 0" fix-light-shadow=""
 
   == partial('./partials/artist-root.html.slm')
 
@@ -11,7 +12,7 @@ a-scene renderer="colorManagement: true; physicallyCorrectLights: true; sortObje
     /a-entity position="0 0 -2.5"
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
 
-    a-entity#environment-place gltf-model="#asset-place" visible="false" _ammo-body="type: static" _ammo-shape="type: mesh"
+    a-entity#environment-place gltf-model="#asset-place" visible="false" _ammo-body="type: static" _ammo-shape="type: mesh" shadow="receive: true; cast: false"
 
     /a-plane material="src: #asset-shelf" rotation="-90 0 0" position="0 0.01 0" _artist-shadow="" scale="2 2 2" ammo-body="type: static" ammo-shape="type: box"
 
