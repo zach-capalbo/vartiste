@@ -288,6 +288,12 @@ Util.registerComponentSystem('environment-manager', {
 AFRAME.registerSystem('light-tool', {
   activateShadow() {
     this.el.sceneEl.setAttribute('shadow', 'enabled: true')
+  },
+  tick() {
+    if (!this.el.sceneEl.systems.shadow.data.enabled) return
+    for (let m of Compositor.nonCanvasMeshes) {
+      m.isSkinnedMesh = m.isSkinnedMesh && m.material.skinning
+    }
   }
 })
 
@@ -307,6 +313,11 @@ AFRAME.registerComponent('light-tool', {
       intensity.setAttribute('lever', {valueRange: '0 10', initialValue: 3, target: light, component: 'light', property: 'intensity', axis: 'y'})
       intensity.setAttribute('position', '0.265 0 0.5')
       intensity.setAttribute('rotation', '0 90 0')
+
+      if (this.el.hasAttribute('light-tool-light'))
+      {
+        light.setAttribute('light', AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light')))
+      }
     },
     click: function() {
       this.light.setAttribute('visible', !this.light.getAttribute('visible'))
