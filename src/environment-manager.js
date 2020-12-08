@@ -334,3 +334,32 @@ AFRAME.registerComponent('light-tool', {
     handle['redirect-grab'] = this.el
   }
 })
+
+AFRAME.registerComponent('light-bauble', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    activate: function() {
+      this.system.activateShadow()
+
+      this.sun.setAttribute('light', 'type: directional; castShadow: true; intensity: 1')
+      this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['light-tool']
+    this.el.classList.add('grab-root')
+
+    // let ground = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.3, height: 0.03})
+    // this.el.append(ground)
+    let sun = document.createElement('a-entity')
+    this.el.append(sun)
+    sun.classList.add('clickable')
+    sun['redirect-grab'] = this.el
+    sun.setAttribute('geometry', 'primitive: sphere; segments: width: 8; segmentsHeight: 8; radius: 0.1')
+    sun.setAttribute('material', 'shader: matcap; color: #ffffe3')
+    this.sun = sun
+  },
+  sunMoved(el) {
+    this.sun.setAttribute('light', 'intensity', this.el.object3D.scale.x)
+  }
+})
