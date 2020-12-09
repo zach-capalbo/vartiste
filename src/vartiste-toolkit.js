@@ -21,6 +21,11 @@ window.VARTISTE_TOOLKIT = Object.assign({
 
 VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)\.?j?s?$/)[1])
 
+// Compatibility
+if (!THREE.Matrix4.prototype.invert) {
+  THREE.Matrix4.prototype.invert = function() { return this.getInverse(this)}
+}
+
 const {loadAsset, loadAllAssets} = require('./assets.js')
 
 const originalRegisterComponent = AFRAME.registerComponent
