@@ -251,6 +251,7 @@ Util.registerComponentSystem('settings-system', {
                                   boundingBox.max.z - boundingBox.min.z)
       let targetScale = 0.5 / maxDimension
       viewer.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
+      viewer.setAttribute('shadow', 'cast: true; receive: true')
       boundingBox.getCenter(viewer.object3D.position)
       viewer.object3D.position.multiplyScalar(- targetScale)
       viewer.object3D.position.z = boundingBox.min.z * targetScale

@@ -59,6 +59,7 @@ AFRAME.registerSystem('camera-capture', {
 
     let newTarget = new THREE.WebGLRenderTarget(targetTempCanvas.width, targetTempCanvas.height)
 
+    newTarget.texture.encoding = renderer.outputEncoding
     renderer.setRenderTarget(newTarget)
 
     let ctx = targetTempCanvas.getContext('2d')
@@ -411,6 +412,8 @@ AFRAME.registerComponent('spray-can-tool', {
       this.newTarget = new THREE.WebGLRenderTarget(width, height)
     }
     let newTarget = this.newTarget
+
+    newTarget.texture.encoding = renderer.outputEncoding
 
     renderer.setRenderTarget(newTarget)
 

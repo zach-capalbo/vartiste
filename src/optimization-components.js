@@ -32,6 +32,13 @@ AFRAME.registerComponent('remove-audio-listener', {
 // situations where setting the shadow camera properties don't stick for some
 // reason
 AFRAME.registerComponent('fix-light-shadow', {
+  events: {
+    componentchanged: function(e) {
+      if (this.el.sceneEl.time > 2000) {
+        this.el.components['light'].updateShadow();
+      }
+    }
+  },
   init() {
     VARTISTE.Util.whenLoaded(this.el, () => {
       // this.el.components['light'].updateShadow()

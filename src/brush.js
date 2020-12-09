@@ -149,8 +149,8 @@ class ProceduralBrush extends Brush {
 
     this.width = this.baseWidth * scale
     this.height = this.baseHeight * scale
-    this.overlayCanvas.width = this.width
-    this.overlayCanvas.height = this.height
+    this.overlayCanvas.width = Math.max(this.width, 1)
+    this.overlayCanvas.height = Math.max(this.height, 1)
 
     this.updateBrush()
   }

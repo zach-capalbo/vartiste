@@ -305,6 +305,22 @@ class VARTISTEUtil {
     result.compose(startPose, startQuat, startScale)
     return result
   }
+
+  callLater(fn) {
+    return new Promise((r, e) => {
+      window.setTimeout(() => {
+        fn()
+        r()
+      }, 1)
+    })
+  }
+
+  // recursiveBoundingBox(object, {box = undefined} = {})
+  // {
+  //   if (!box) box = new THREE.Box3
+  //
+  //
+  // }
 }
 
 const Util = new VARTISTEUtil();

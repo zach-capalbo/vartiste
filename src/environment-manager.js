@@ -218,6 +218,7 @@ Util.registerComponentSystem('environment-manager', {
         o.material.needsUpdate = true
       }
     })})
+    this.el.sceneEl.emit('tonemappingchanged', toneMapping)
   },
   async usePresetHDRI() {
     this.switchState(STATE_HDRI)
@@ -285,9 +286,101 @@ Util.registerComponentSystem('environment-manager', {
   }
 })
 
-AFRAME.registerComponent('light-tool', {
-  dependencies: ['six-dof-tool'],
-  init() {
+AFRAME.registerSystem('light-tool', {
+  activateShadow() {
+    this.el.sceneEl.setAttribute('shadow', 'enabled: true')
+  },
+  tick() {
+    if (!this.el.sceneEl.systems.shadow.data.enabled) return
+    for (let m of Compositor.nonCanvasMeshes) {
+      m.isSkinnedMesh = m.isSkinnedMesh && m.material.skinning
+    }
+  }
+})
 
+AFRAME.registerComponent('light-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    activate: function() {
+      this.system.activateShadow()
+      let light = document.createElement('a-entity')
+      this.el.append(light)
+      light.setAttribute('light', 'type: spot; intensity: 3; castShadow: true; shadowCameraVisible: false; shadowCameraNear: 0.001')
+      light.setAttribute('fix-light-shadow', '')
+      this.light = light
+
+      let intensity = document.createElement('a-entity')
+      this.el.append(intensity)
+      intensity.setAttribute('lever', {valueRange: '0 10', initialValue: 3, target: light, component: 'light', property: 'intensity', axis: 'y'})
+      intensity.setAttribute('position', '0.265 0 0.5')
+      intensity.setAttribute('rotation', '0 90 0')
+
+      if (this.el.hasAttribute('light-tool-light'))
+      {
+        light.setAttribute('light', AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light')))
+      }
+
+      this.el.sceneEl.emit('refreshobjects')
+    },
+    click: function() {
+      this.light.setAttribute('visible', !this.light.getAttribute('visible'))
+    }
+  },
+  init() {
+    let handle = document.createElement('a-entity')
+    this.el.append(handle)
+    handle.setAttribute('gltf-model', '#asset-spotlight')
+    handle.setAttribute('scale', '0.3 0.3 0.3')
+    handle.setAttribute('material', 'src: #asset-shelf; metalness: 0.8; roughness: 0.2')
+    handle.setAttribute('apply-material-to-mesh', '')
+    handle.classList.add('clickable')
+    handle['redirect-grab'] = this.el
+  }
+})
+
+AFRAME.registerComponent('light-bauble', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    activate: function() {
+      this.system.activateShadow()
+
+      this.sun.setAttribute('light', 'type: directional; castShadow: true; intensity: 5')
+      this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['light-tool']
+    this.el.classList.add('grab-root')
+
+    // let ground = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.3, height: 0.03})
+    // this.el.append(ground)
+    let sun = document.createElement('a-entity')
+    this.el.append(sun)
+    sun.classList.add('clickable')
+    sun['redirect-grab'] = this.el
+    sun.setAttribute('geometry', 'primitive: sphere; segments: width: 8; segmentsHeight: 8; radius: 0.5')
+    sun.setAttribute('material', 'shader: matcap; color: #ffffe3')
+    this.sun = sun
+  },
+  sunMoved(el) {
+    this.sun.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 5))
+  }
+})
+
+AFRAME.registerComponent('tonemapping-tooltip', {
+  init() {
+    this.mappings = Object.keys(THREE).filter(k => /ToneMapping/.test(k))
+    this.setMapping = this.setMapping.bind(this)
+    Util.whenLoaded(this.el.sceneEl, () => this.setMapping({detail: this.el.sceneEl.renderer.toneMapping}))
+  },
+  play() {
+    this.el.sceneEl.addEventListener('tonemappingchanged', this.setMapping)
+
+  },
+  pause() {
+    this.el.sceneEl.removeEventListener('tonemappingchanged', this.setMapping)
+  },
+  setMapping(e) {
+    this.el.setAttribute('tooltip__tonemapping', this.mappings.find(m => THREE[m] == e.detail))
   }
 })

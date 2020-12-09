@@ -232,7 +232,11 @@ AFRAME.registerComponent('skeletonator', {
     this.el.classList.remove('canvas')
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
     Compositor.el.setAttribute('compositor', {skipDrawing: true})
-    this.mesh.material = this.skinningMaterial
+    for (let mesh of this.meshes)
+    {
+      mesh.material = this.skinningMaterial
+      mesh.isSkinnedMesh = true
+    }
 
     this.skeletonHelper.visible = true
 

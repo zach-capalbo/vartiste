@@ -1,7 +1,7 @@
 a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable: true" scale="0.3 0.3 1"visible="false" system-click-action="system: environment-manager"
   a-entity position="-1.6 -1.1 0"
     a-entity icon-button="#asset-backspace-outline" system-click-action="action: reset" tooltip="Remove Environment"
-    a-entity icon-button="#asset-blur-linear" system-click-action="action: toneMapping" tooltip="Change Tone Mapping"
+    a-entity icon-button="#asset-blur-linear" system-click-action="action: toneMapping" tooltip="Change Tone Mapping" tooltip__tonemapping="THREE.Linear" tooltip-style__tonemapping="offset: 0, -0.8 0; wrapCount: 14" tonemapping-tooltip=""
     a-entity icon-button="#asset-brightness-4" system-click-action="action: usePresetHDRI" tooltip="Use Preset Lighting Environment"
     a-entity icon-button="#asset-image-filter-hdr" system-click-action="action: setBackgroundColor" tooltip="Set Background Color"
 
@@ -19,3 +19,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
   a-entity.renderer-exposure tooltip="Camera Exposure" lever="valueRange: 2 0; initialValue: 1.0; target: a-scene; component:  environment-manager; property: rendererExposure" position="-0.8 0.3 0" scale="2 2 2"
   /a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
   /a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"
+  a-entity position="2.7 0 0" rotation="40 0 0"
+    a-entity light-tool="" preactivate-tooltip="Spot Light"
+    a-entity position="1 0 0" light-tool="" preactivate-tooltip="Soft Light" light-tool-light="shadowRadius: 5; penumbra: 0.5"
+    a-entity position="2 0 0" light-bauble="" scale="1 1 1" preactivate-tooltip="Sun" _tooltip-style="scale: 0.2 0.2 0.2"

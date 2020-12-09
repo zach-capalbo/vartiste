@@ -222,16 +222,23 @@ Util.registerComponentSystem('mesh-tools', {
     el.classList.add('clickable')
     document.querySelector('#reference-spawn').append(el)
 
-    // let material = Compositor.material.clone()
-    let material = new THREE.MeshMatcapMaterial()
+    let material = Compositor.material.clone()
+    // let material = new THREE.MeshMatcapMaterial()
 
     for (let map of ['map'].concat(THREED_MODES))
     {
+      if (map === 'envMap') continue
       if (!Compositor.material[map] || !Compositor.material[map].image) continue;
       console.log("Copying", map, Compositor.material[map])
-      material[map] = Compositor.material[map].clone()
-      material[map].image = Util.cloneCanvas(Compositor.material[map].image)
-      material[map].needsUpdate = true
+      try {
+        material[map] = Compositor.material[map].clone()
+        material[map].image = Util.cloneCanvas(Compositor.material[map].image)
+        material[map].needsUpdate = true
+      } catch (e) {
+        console.warn("Couldn't clone map", map, e)
+        material[map] = null
+        material.needsUpdate = true
+      }
     }
 
     material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
@@ -293,6 +300,12 @@ Util.registerComponentSystem('mesh-tools', {
       attribute.needsUpdate = true
       seenGeometries.add(mesh.geometry)
     }
+  },
+  actualScale() {
+    Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix.identity(), Compositor.meshRoot.el.object3D)
+    let p = new THREE.Vector3
+    Compositor.meshRoot.el.object3D.getWorldPosition(p)
+    Compositor.meshRoot.el.object3D.position.y -= p.y
   }
 })
 

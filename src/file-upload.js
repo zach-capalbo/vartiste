@@ -445,6 +445,7 @@ async function addGlbReference(file) {
   }
 
   entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
+  entity.setAttribute('shadow', 'cast: true; receive: true')
 
   entity.emit('model-loaded', {format: 'gltf', model: model});
 

@@ -191,6 +191,8 @@ AFRAME.registerComponent('manipulator', {
 
     this.target.addState("grabbed")
 
+    this.el.components['raycaster'].pause()
+
     this.grabOptions = this.target.hasAttribute('grab-options') ? this.target.getAttribute('grab-options') : this.el.getAttribute('grab-options')
 
     let startMatrix = new THREE.Matrix4
@@ -310,6 +312,7 @@ AFRAME.registerComponent('manipulator', {
     this.grabLineObject.visible = false
     this.endPoint.visible = false
     this.el.removeState('grabbing')
+    this.el.components['raycaster'].play()
   },
   onGripClose(e){
     if (e) {
