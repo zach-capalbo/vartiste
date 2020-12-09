@@ -319,6 +319,8 @@ AFRAME.registerComponent('light-tool', {
       {
         light.setAttribute('light', AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light')))
       }
+
+      this.el.sceneEl.emit('refreshobjects')
     },
     click: function() {
       this.light.setAttribute('visible', !this.light.getAttribute('visible'))
