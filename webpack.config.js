@@ -72,7 +72,7 @@ let config = {
           {
             loader: 'url-loader',
             options: {
-              limit: 512,
+              limit: 1024,
               esModule: false,
               fallback: require.resolve('file-loader'),
               name: 'asset/[contenthash].[ext]',
