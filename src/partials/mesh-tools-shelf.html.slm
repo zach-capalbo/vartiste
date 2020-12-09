@@ -12,7 +12,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-web" tooltip="Add UV Unwrap Sphere" system-click-action="system: uv-unwrapper; action: createSphere"
     a-entity icon-button="#asset-cylinder" tooltip="Add UV Unwrap Cylinder" system-click-action="system: uv-unwrapper; action: createCylinder"
     a-entity icon-button="#asset-dice-2" tooltip="Add UV Unwrap Cube" system-click-action="system: uv-unwrapper; action: createCube"
-    a-entity icon-button="#asset-dice-4" tooltip="Add UV Unwrap Bounding Box" system-click-action="system: uv-unwrapper; action: createBoundingBox"
+    a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Add UV Unwrap Bounding Box" system-click-action="system: uv-unwrapper; action: createBoundingBox"
     a-entity icon-button="#asset-check-outline" tooltip="Unwrap" system-click-action="system: uv-unwrapper; action: unwrap"
     a-entity icon-button="#asset-close" tooltip="Clear UV Shapes" system-click-action="system: uv-unwrapper; action: clearShapes"
   a-entity icon-row="" position="-1.6 1.1 0"

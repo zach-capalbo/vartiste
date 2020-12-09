@@ -241,7 +241,7 @@ Util.registerComponentSystem('mesh-tools', {
       }
     }
 
-    material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
+    // material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
 
     material.needsUpdate = true
 
