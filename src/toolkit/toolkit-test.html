@@ -3,8 +3,8 @@
 
 <head>
   <title>VARTISTE Toolkit Demo</title>
-  <!-- <script src="https://aframe.io/releases/1.1.0/aframe.js"></script> -->
-  <script src="https://aframe.io/releases/1.0.4/aframe.js"></script>
+  <script src="https://aframe.io/releases/1.1.0/aframe.js"></script>
+  <!-- <script src="https://aframe.io/releases/1.0.4/aframe.js"></script> -->
   <!-- You can specify components / systems, or files to exclude from being registered -->
   <script>VARTISTE_TOOLKIT = {
       /*excludeComponents: ["frame"], */ // Will exclude "frame" component
@@ -19,7 +19,7 @@
 </head>
 
 <body>
-  <a-scene icon-button="shader: matcap" renderer="colorManagement: true">
+  <a-scene icon-button="shader: matcap" renderer="colorManagement: true; physicallyCorrectLights: true">
     <a-assets>
       <canvas height="768" id="draw-canvas-asset" width="1024"></canvas>
 
@@ -33,6 +33,7 @@
 
       <!-- You can override some built-in components by defining mixins -->
       <a-mixin id="lever-grip" material="color: #a2c4fa"></a-mixin>
+      <a-mixin id="shelf-bg" materia="shader: standard"></a-mixin>
     </a-assets>
 
     <!-- HDRIs are an easy way to get nice lighting and backgrounds really quickly -->
@@ -90,7 +91,7 @@
         </a-entity>
 
         <!-- You can make interactables, like this lever -->
-        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
+        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.724" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
       </a-entity>
     </a-entity>
 

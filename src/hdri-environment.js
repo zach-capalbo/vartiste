@@ -13,7 +13,7 @@ AFRAME.registerComponent('hdri-environment', {
     exposure: {default: 0.724},
 
     // THREE.js tone mapping constant
-    toneMapping: {default: 5},
+    toneMapping: {default: 1},
 
     // If set, will set the envMap for all selected elements and children with compatible materials
     envMapSelector: {type: 'string', default: 'a-scene'},
@@ -35,8 +35,8 @@ AFRAME.registerComponent('hdri-environment', {
       this.envMapSelectorElements = Array.from(document.querySelectorAll(this.data.envMapSelector))
     }
 
-    this.el.sceneEl.renderer.toneMappingExposure = this.data.exposure
     this.el.sceneEl.renderer.toneMapping = this.data.toneMapping
+    this.el.sceneEl.renderer.toneMappingExposure = this.data.exposure
 
     if (oldData.updateEnvMapThrottle !== this.data.updateEnvMapThrottle)
     {
