@@ -200,7 +200,7 @@ class ProjectFile {
       referenceCanvas.height = img.height
       referenceCanvas.getContext('2d').drawImage(img, 0, 0)
       obj.referenceImages.push({
-        src: referenceCanvas.toDataURL(),
+        src: referenceCanvas.toDataURL(settings.imageURLType(), settings.compressionQuality()),
         matrix: image.object3D.matrix.elements
       })
     })
@@ -281,6 +281,7 @@ class ProjectFile {
   saveCompositor() {
     let {compositor} = this
     let {layers, allNodes} = compositor
+    let settings = compositor.el.sceneEl.systems['settings-system']
 
     return {
       layers,
@@ -291,7 +292,7 @@ class ProjectFile {
       shader: compositor.el.getAttribute('material').shader,
       frameRate: compositor.data.frameRate,
       flipY: compositor.data.flipY,
-      canvases: layers.map(l => l.frames.map(f => f.toDataURL()))
+      canvases: layers.map(l => l.frames.map(f => f.toDataURL(settings.imageURLType(), settings.compressionQuality())))
     }
   }
 

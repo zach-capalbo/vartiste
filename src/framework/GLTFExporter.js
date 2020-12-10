@@ -84,6 +84,7 @@ THREE.GLTFExporter.prototype = {
 			forcePowerOfTwoTextures: false,
 			includeCustomExtensions: false,
 			mimeType: 'image/png',
+			imageQuality: undefined,
 			postProcessJSON: function(j) { return j; }
 		};
 
@@ -795,13 +796,13 @@ THREE.GLTFExporter.prototype = {
 
 							} );
 
-						}, mimeType );
+						}, mimeType, options.imageQuality );
 
 					} ) );
 
 				} else {
 
-					gltfImage.uri = canvas.toDataURL( mimeType );
+					gltfImage.uri = canvas.toDataURL( mimeType, options.imageQuality );
 
 				}
 

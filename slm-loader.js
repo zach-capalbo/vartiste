@@ -33,6 +33,8 @@ var path = require('path')
 
 markdown.register(slm.template);
 
+let oldPartial = slm.template.VM.prototype.partial;
+
 module.exports = function(source) {
   this.cacheable && this.cacheable(true);
 
@@ -41,10 +43,11 @@ module.exports = function(source) {
 
   let addDep = (dep) => this.addDependency(dep);
 
-  let oldPartial = slm.template.VM.prototype.partial;
+
   slm.template.VM.prototype.partial = function(...args) {
     let dep = path.resolve("src/" + args[0])
     console.info("Adding a new dep", dep)
+    // console.trace()
     addDep(dep)
     return oldPartial.apply(this, args)
   }

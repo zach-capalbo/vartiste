@@ -1,5 +1,5 @@
 - const {FX} = require('./layer-modes.js')
-a-entity shelf="width: 5; height: 4; closeable: false; hideOnly: false" scale="0.05 0.05 0.05"
+a-entity shelf="width: 5; height: 4; closeable: true" scale="0.05 0.05 0.05"
   - var modeListIndex = 0
   a-entity position="-1.5 1.5 0"
     - var i = 0

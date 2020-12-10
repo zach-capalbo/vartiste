@@ -1,8 +1,11 @@
 import {Util} from './util.js'
 
-export function loadAsset(fileName) {
+export function loadAsset(fileName, assetsEl) {
   let asset = fileName.slice("./".length)
   if (asset.startsWith(".")) return
+
+  let assetId = `asset-${asset.split(".")[0]}`
+  if (document.getElementById(assetId)) return;
 
   let elementType = 'a-asset-item'
 
@@ -26,9 +29,10 @@ export function loadAsset(fileName) {
   }
 
   var element = document.createElement(elementType)
+  assetsEl.append(element)
 
   element.setAttribute("src", assetSrc)
-  element.id = `asset-${asset.split(".")[0]}`
+  element.id = assetId
   element.setAttribute('crossorigin',"anonymous")
   element.classList.add("vartiste-asset")
   return element
@@ -39,11 +43,8 @@ var haveVartisteAssetsBeenAdded = false;
 export function loadAllAssets() {
   let assets = document.querySelector('a-assets')
   for (let fileName of require.context('./assets/', true, /.*/).keys()) {
-    assets.append(loadAsset(fileName))
+    loadAsset(fileName, assets)
   }
-  
-  haveVartisteAssetsBeenAdded = true
-  assets.parentNode.emit('vartisteassetsadded')
 }
 
 
@@ -118,6 +119,7 @@ window.AFRAME.registerElement('vartiste-assets', {
       value: function() {
         let parent = this.parentNode
         let loaded = []
+        this.waitingFor = {}
         // Wait for <img>s.
         let imgEls = parent.querySelectorAll('img.vartiste-asset');
         for (let i = 0; i < imgEls.length; i++) {
@@ -130,6 +132,7 @@ window.AFRAME.registerElement('vartiste-assets', {
             imgEl.onload = resolve;
             imgEl.onerror = reject;
           }));
+          this.waitingFor[imgEl.id] = loaded[loaded.length - 1]
         }
 
         // Wait for <audio>s and <video>s.
@@ -140,6 +143,7 @@ window.AFRAME.registerElement('vartiste-assets', {
             warn('Audio/video asset has neither `src` nor `srcObject` attributes.');
           }
           loaded.push(mediaElementLoaded(mediaEl));
+          this.waitingFor[mediaEl.id] = loaded[loaded.length - 1]
         }
 
         Promise.all(loaded).then(() => {
@@ -147,6 +151,8 @@ window.AFRAME.registerElement('vartiste-assets', {
           this.emit('loaded', undefined, false)
           parent.load()
         })
+
+        console.log("Waiting", this.waitingFor)
 
         return
 
@@ -171,17 +177,25 @@ var domModifiedHandler = function(evt) {
     evt.target.append(assets)
   }
 
-  // Already have the streetmix assets. No need to add them
-  // if (assets.querySelector('vartiste-assets')) {
-  //   document.removeEventListener("DOMSubtreeModified", domModifiedHandler);
-  //   return
-  // }
+  if (window.VARTISTE_TOOLKIT && !assets.querySelector('vartiste-assets, *[vartiste-assets]'))
+  {
+    for (let fileName of VARTISTE_TOOLKIT.required_assets)
+    {
+      // console.log("loading required", fileName)
+      loadAsset(fileName, assets)
+    }
+  }
+  else
+  {
+    loadAllAssets()
+  }
+
+  haveVartisteAssetsBeenAdded = true
 
   // Create and add the custom streetmix-assets element
   let vartisteAssets = document.createElement('vartiste-assets')
   assets.append(vartisteAssets)
 
-  loadAllAssets()
 
   // Clean up by removing the event listener
   document.removeEventListener("DOMSubtreeModified", domModifiedHandler);

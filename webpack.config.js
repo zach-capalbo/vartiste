@@ -3,10 +3,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const process = require('process')
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
+const Visualizer = require('webpack-visualizer-plugin2');
+const { StatsWriterPlugin } = require("webpack-stats-plugin")
+
+const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
+const devMode = !production
 
 let config = {
-  mode: "development",
-  devtool: 'inline-source-map',
+  mode: devMode ? "development" : "production",
+  devtool: devMode ? 'inline-source-map' : undefined,
   devServer: {
     contentBase: './dist',
     disableHostCheck: true,
@@ -66,7 +72,7 @@ let config = {
           {
             loader: 'url-loader',
             options: {
-              limit: 8192,
+              limit: 1024,
               esModule: false,
               fallback: require.resolve('file-loader'),
               name: 'asset/[contenthash].[ext]',
@@ -80,6 +86,17 @@ let config = {
 
 const faviconPath = './src/static/favicon.png'
 
+function minimizer() {
+  if (devMode) return undefined;
+
+  return [new TerserPlugin({
+  parallel: true,
+  terserOptions: {
+    toplevel: true,
+    keep_classnames: /Node|Layer/
+  }
+})]};
+
 let app = Object.assign({
   entry: {
     app: './src/index.js'
@@ -90,9 +107,20 @@ let app = Object.assign({
       template: './src/template.html.slm',
       filename: 'index.html'
     }),
-  ],
+  ].concat(devMode ? [] : [
+    new StatsWriterPlugin({
+        filename: path.join('.', 'stats', 'app-log.json'),
+        fields: null,
+        stats: { chunkModules: true },
+    }),
+    new Visualizer({
+        filename: path.join('.', 'stats', 'app-statistics.html'),
+    }),
+  ]),
   optimization: {
-    splitChunks: {}
+    splitChunks: {},
+    minimize: !devMode,
+    minimizer: minimizer(),
   },
 }, config);
 
@@ -122,10 +150,19 @@ let toolkit = Object.assign({
     //   template: './src/template.html.slm',
     //   filename: 'index.html'
     // }),
+    new StatsWriterPlugin({
+        filename: path.join('.', 'stats', 'toolkit-log.json'),
+        fields: null,
+        stats: { chunkModules: true },
+    }),
+    new Visualizer({
+        filename: path.join('.', 'stats', 'toolkit-statistics.html'),
+    }),
   ],
-  // optimization: {
-  //   splitChunks: {}
-  // },
+  optimization: {
+    minimize: !devMode,
+    minimizer: minimizer(),
+  },
 }, config, {
   output: {
     filename: 'vartiste-toolkit.js',

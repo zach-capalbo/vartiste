@@ -23,7 +23,7 @@ class Gallery {
       entry.setAttribute('href', "index.html?load=" + require(`../gallery/${name}.vartiste`))
 
       try {
-        entry.querySelector('.preview').setAttribute('src', require(`advanced-image-loader!../gallery/${name}.png?width=200`))
+        entry.querySelector('.preview').setAttribute('src', require(`resize-loader?200!../gallery/${name}.png`))
       }
       catch(e)
       {

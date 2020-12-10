@@ -65,6 +65,9 @@ Util.registerComponentSystem('settings-system', {
   imageURLType() {
     return this.data.exportJPEG ? "image/jpeg" : "image/png"
   },
+  compressionQuality() {
+    return this.data.exportJPEG ? 0.85 : undefined;
+  },
   imageExtension() {
     return this.data.exportJPEG ? "jpg" : "png"
   },
@@ -72,7 +75,7 @@ Util.registerComponentSystem('settings-system', {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     let saveImg = new Image()
-    saveImg.src = compositor.preOverlayCanvas.toDataURL(this.imageURLType())
+    saveImg.src = compositor.preOverlayCanvas.toDataURL(this.imageURLType(), this.compressionQuality())
     saveImg.style = "z-index: 10000; position: absolute; top: 0px; left: 0px"
 
     if (suffix) suffix = `-${suffix}`
@@ -85,7 +88,7 @@ Util.registerComponentSystem('settings-system', {
       {
         if (Compositor.material[mode] && Compositor.material[mode].image)
         {
-          this.download(Compositor.material[mode].image.toDataURL(this.imageURLType()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
+          this.download(Compositor.material[mode].image.toDataURL(this.imageURLType(), this.compressionQuality()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
         }
       }
     }
@@ -97,7 +100,7 @@ Util.registerComponentSystem('settings-system', {
         {
           if (layer.mode !== mode) continue
 
-          this.download(layer.canvas.toDataURL(this.imageURLType()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
+          this.download(layer.canvas.toDataURL(this.imageURLType(), this.compressionQuality()), `${this.projectName}-${this.formatFileDate()}${suffix}-${mode}.${this.imageExtension()}`, mode)
         }
       }
     }
@@ -171,7 +174,7 @@ Util.registerComponentSystem('settings-system', {
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), postProcessJSON})
+      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), imageQuality: this.compressionQuality(), postProcessJSON})
     })
 
     material.map.image = originalImage

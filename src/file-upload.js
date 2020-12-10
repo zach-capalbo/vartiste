@@ -92,6 +92,8 @@ async function addHDRImage(file) {
   })
 }
 
+var defaultStandardMaterial = new THREE.MeshStandardMaterial();
+
 async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
@@ -240,17 +242,31 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
             }
           }
 
+          if (mode === 'metalnessMap' || mode === 'roughnessMap')
+          {
+            let intensityAttribute = mode.slice(0, -3)
+            if (material[intensityAttribute] !== defaultStandardMaterial[intensityAttribute])
+            {
+              console.log("Applying scalar for", mode) 
+              layerCtx.fillStyle = `rgba(${material[intensityAttribute]}, ${material[intensityAttribute]}, ${material[intensityAttribute]}, 255)`
+              layerCtx.fillRect(0, 0, width, height)
+            }
+          }
+
           if (image)
           {
             layerCtx.translate(width / 2, height / 2)
             try {
               layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
-              layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
-              layerCtx.globalCompositeOperation = 'multiply'
-              layerCtx.fillRect( -width / 2, -height / 2, width, height)
-              layerCtx.globalCompositeOperation = 'destination-in'
-              layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
-              layerCtx.globalCompositeOperation = 'source-over'
+              if (mode === 'map')
+              {
+                layerCtx.fillStyle = material.color.convertLinearToSRGB().getStyle()
+                layerCtx.globalCompositeOperation = 'multiply'
+                layerCtx.fillRect( -width / 2, -height / 2, width, height)
+                layerCtx.globalCompositeOperation = 'destination-in'
+                layerCtx.drawImage(image, -width / 2, -height / 2, width, height)
+                layerCtx.globalCompositeOperation = 'source-over'
+              }
             } catch (e)
             {
               console.log("Could not draw image for texture", mode, material)
@@ -337,6 +353,24 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
         let saveLayer = new Layer(width, height)
         saveLayer.mode = mode
         let deleteLayers = []
+        let ctx = saveLayer.canvas.getContext('2d')
+
+        switch (mode) {
+          case 'normalMap':
+            ctx.fillStyle = 'rgb(128, 128, 255)'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          break;
+          case 'bumpMap':
+          case 'metalnessMap':
+            ctx.fillStyle = 'rgb(0, 0, 0)'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          break;
+          case 'roughnessMap':
+            ctx.fillStyle = 'rgb(255, 255, 255)'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          break;
+        }
+
         for (let layer of compositor.layers)
         {
           if (layer.mode !== mode) continue

@@ -194,10 +194,11 @@ AFRAME.registerComponent('quick-gallery', {
     for (let entry of GALLERY_ENTRIES.find(s => s.section === "Templates").entries)
     {
       if (!entry.quickLoad) continue
-      let img = require(`advanced-image-loader!./gallery/${entry.name}.png?width=128`)
-      console.log(img)
+      let img = document.createElement('img')
+      img.src = require(`resize-loader?200!./gallery/${entry.name}.png`)
+      console.log("Gallery Entry", img)
       let button = document.createElement('a-entity')
-      button.setAttribute('icon-button', img.src)
+      button.setAttribute('icon-button', img)
       button.setAttribute('tooltip', `Quick Start ${entry.displayName}`)
       button.setAttribute('quick-load', entry.name)
       this.el.append(button)
