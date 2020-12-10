@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "acorn": "^8.0.1",
     "aframe": "^1.0.2",
     "aframe-environment-component": "^2.0.0",
     "aframe-svg-extruder": "^1.0.2",
