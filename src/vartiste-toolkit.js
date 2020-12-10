@@ -16,7 +16,16 @@ window.VARTISTE_TOOLKIT = Object.assign({
   excludeFiles: [],
   includeComponents: undefined,
   excludeComponents: [],
-
+  required_assets: [
+    "./shelf.png",
+    "./hand-right.png",
+    "./matcap.jpg",
+    "./hand.glb",
+    "./close-circle-outline.png",
+    "./reset-orientation.jpg",
+    "./button.glb",
+    "./lead-pencil.png"
+  ]
 }, window.VARTISTE_TOOLKIT || {})
 
 VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)\.?j?s?$/)[1])
@@ -49,62 +58,6 @@ function checkFile (rawName) {
   if (VARTISTE_TOOLKIT.excludeFiles.includes(name)) return false;
   return true;
 }
-
-// Loads VARTISTE assets
-//
-// If there is an `a-assets` in the scene, and it contains a `vartiste-assets`
-// element, then all of the VARTISTE assets will be loaded. Otherwise only the
-// essential assets for the toolkit components will be loaded.
-//
-// *Note,* any existing assets will be kept, so you can override any VARTISTE
-// assets by including an element with the same id as the asset to override in
-// your `a-assets`.
-AFRAME.registerSystem('vartiste-assets', {
-  init() {
-    let assets = this.el.sceneEl.querySelector('a-assets')
-
-    if (!assets)
-    {
-      assets = document.createElement('a-assets')
-      this.el.sceneEl.append(assets)
-    }
-
-    if (assets.querySelector('*[vartiste-assets]'))
-    {
-      loadAllAssets()
-    }
-
-    if (!assets.querySelector('#asset-shelf'))
-    {
-      assets.append(loadAsset('./shelf.png'))
-    }
-
-    if (!assets.querySelector('#asset-hand-right'))
-    {
-      assets.append(loadAsset('./hand-right.png'))
-    }
-
-    if (!assets.querySelector('#asset-matcap'))
-    {
-      assets.append(loadAsset('./matcap.jpg'))
-    }
-
-    if (!assets.querySelector('#asset-hand'))
-    {
-      assets.append(loadAsset('./hand.glb'))
-    }
-
-    if (!assets.querySelector('#asset-close-circle-outline'))
-    {
-      assets.append(loadAsset('./close-circle-outline.png'))
-    }
-
-    if (!assets.querySelector('#asset-reset-orientation'))
-    {
-      assets.append(loadAsset('./reset-orientation.jpg'))
-    }
-  }
-})
 
 if (checkFile('./framework/fix-text-autoscaling-logging.js')) require('./framework/fix-text-autoscaling-logging.js')
 if (checkFile('./framework/valve-index-controls') && !AFRAME.components['valve-index-controls']) require('./framework/valve-index-controls')

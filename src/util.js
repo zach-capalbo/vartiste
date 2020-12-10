@@ -306,6 +306,18 @@ class VARTISTEUtil {
     return result
   }
 
+  // Returns true if `canvas` has no pixels with an alpha less than 1.0
+  isCanvasFullyOpaque(canvas) {
+    let ctx = canvas.getContext('2d')
+    let data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    for (let i = 3; i < data.data.length; i += 4)
+    {
+      if (data.data[i] < 255) return false
+    }
+
+    return true
+  }
+
   callLater(fn) {
     return new Promise((r, e) => {
       window.setTimeout(() => {
