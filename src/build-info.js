@@ -12,6 +12,7 @@ async function sh(cmd) {
 }
 
 async function changeLog() {
+  return "Changelong Disabled"
   try {
     let gitlog = await sh(`git rev-list -n 3 --min-parents=2 --format="%B" HEAD`)
     return gitlog.split(/^commit \w+$/m).slice(1)

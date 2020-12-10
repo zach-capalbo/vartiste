@@ -104,6 +104,7 @@ let app = Object.assign({
       template: './src/template.html.slm',
       filename: 'index.html'
     }),
+  ].concat(devMode ? [] : [
     new StatsWriterPlugin({
         filename: path.join('.', 'stats', 'app-log.json'),
         fields: null,
@@ -112,7 +113,7 @@ let app = Object.assign({
     new Visualizer({
         filename: path.join('.', 'stats', 'app-statistics.html'),
     }),
-  ],
+  ]),
   optimization: {
     splitChunks: {},
     minimize: true,
@@ -156,7 +157,7 @@ let toolkit = Object.assign({
     }),
   ],
   optimization: {
-    minimize: true,
+    minimize: !devMode,
     minimizer: minimizer(),
   },
 }, config, {

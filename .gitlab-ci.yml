@@ -8,7 +8,7 @@ stages:
 build:
   stage: build
   script:
-    - npm install --unsafe-perm
+    - npm install
     - npm run-script build
     - echo $CI_JOB_ID > dist/CI_JOB_ID
   artifacts:
