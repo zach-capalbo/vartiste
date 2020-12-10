@@ -92,6 +92,8 @@ async function addHDRImage(file) {
   })
 }
 
+var defaultStandardMaterial = new THREE.MeshStandardMaterial();
+
 async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
@@ -237,6 +239,17 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
               layerCtx.globalAlpha = material.opacity
               layerCtx.fillRect(0, 0, width, height)
               layerCtx.globalAlpha = oldOpacity
+            }
+          }
+
+          if (mode === 'metalnessMap' || mode === 'roughnessMap')
+          {
+            let intensityAttribute = mode.slice(0, -3)
+            if (material[intensityAttribute] !== defaultStandardMaterial[intensityAttribute])
+            {
+              console.log("Applying scalar for", mode) 
+              layerCtx.fillStyle = `rgba(${material[intensityAttribute]}, ${material[intensityAttribute]}, ${material[intensityAttribute]}, 255)`
+              layerCtx.fillRect(0, 0, width, height)
             }
           }
 

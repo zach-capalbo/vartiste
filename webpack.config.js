@@ -86,7 +86,10 @@ let config = {
 
 const faviconPath = './src/static/favicon.png'
 
-function minimizer() { return [new TerserPlugin({
+function minimizer() {
+  if (devMode) return undefined;
+
+  return [new TerserPlugin({
   parallel: true,
   terserOptions: {
     toplevel: true,
@@ -116,7 +119,7 @@ let app = Object.assign({
   ]),
   optimization: {
     splitChunks: {},
-    minimize: true,
+    minimize: !devMode,
     minimizer: minimizer(),
   },
 }, config);

@@ -256,15 +256,38 @@ AFRAME.registerComponent('compositor', {
       Undo.push(() => this.setLayerBlendMode(layer, oldMode))
       layer.mode = mode
 
-      if (mode === 'normalMap' && layer.updateTime === 0)
+      if (layer.updateTime === 0)
       {
-        console.log("Clearing brand new normal map")
-        Undo.pushCanvas(layer.canvas)
+        let shouldFill = false
         let ctx = layer.canvas.getContext('2d')
-        ctx.globalCompositeOperation = 'destination-over'
-        ctx.fillStyle = 'rgb(128, 128, 255)'
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.globalCompositeOperation = 'source-over'
+        switch (mode)
+        {
+          case 'normalMap':
+            ctx.fillStyle = 'rgb(128, 128, 255)'
+            shouldFill = true
+            break;
+          case 'metalnessMap':
+            ctx.fillStyle = 'rgb(0, 0, 0)'
+            shouldFill = true;
+            break;
+          case 'roughnessMap':
+            ctx.fillStyle = 'rgb(255, 255, 255)'
+            shouldFill = true;
+            break;
+          case 'bumpMap':
+            ctx.fillStyle = 'rgb(0, 0, 0)'
+            shouldFill = true;
+            break;
+          }
+
+          if (shouldFill)
+          {
+            console.log("Clearing brand new", mode)
+            Undo.pushCanvas(layer.canvas)
+            ctx.globalCompositeOperation = 'destination-over'
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+            ctx.globalCompositeOperation = 'source-over'
+          }
       }
 
       layer.touch()
