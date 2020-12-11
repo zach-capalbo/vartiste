@@ -78,7 +78,7 @@ and contributions, both code-wise and documentation-wise are welcome.
 <html>
 <head>
   <title>VARTISTE Toolkit Demo</title>
-  <script src="https://aframe.io/releases/1.0.4/aframe.js"></script>
+  <script src="https://aframe.io/releases/1.1.0/aframe.js"></script>
 
   <!-- You can specify components / systems, or files to exclude from being registered -->
   <script>VARTISTE_TOOLKIT = {
@@ -93,7 +93,7 @@ and contributions, both code-wise and documentation-wise are welcome.
   <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
 </head>
 <body>
-  <a-scene icon-button="shader: matcap" renderer="colorManagement: true">
+  <a-scene icon-button="shader: matcap" renderer="colorManagement: true;  physicallyCorrectLights: true">
     <a-assets>
       <canvas height="768" id="draw-canvas-asset" width="1024"></canvas>
 
@@ -104,6 +104,10 @@ and contributions, both code-wise and documentation-wise are welcome.
       component. Otherwise, only the ones needed for other components are
       included-->
       <a-asset vartiste-assets=""></a-asset>
+
+      <!-- You can override some built-in components by defining mixins -->
+      <a-mixin id="lever-grip" material="color: #a2c4fa"></a-mixin>
+      <a-mixin id="shelf-bg" materia="shader: standard"></a-mixin>
     </a-assets>
 
     <!-- HDRIs are an easy way to get nice lighting and backgrounds really quickly -->
@@ -142,6 +146,9 @@ and contributions, both code-wise and documentation-wise are welcome.
 
           <!-- Easily export entities or even the entire scene to a GLB file -->
           <a-entity icon-button="#asset-floppy" tooltip="Download this scene as GLB" system-click-action="system: glb-exporter; action: downloadGLB"></a-entity>
+
+          <!-- Use the VARTISTE undo system to easily undo changes, too -->
+          <a-entity icon-button="#asset-undo" tooltip="Undo" onclick="VARTISTE.Undo.undo()"></a-entity>
 
           <a-entity icon-button="#asset-help-circle-outline" system-click-action="system: toolkit-demo; action: help" tooltip="VARTISTE Toolkit Documentation"></a-entity>
         </a-entity>
