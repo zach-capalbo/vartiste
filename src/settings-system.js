@@ -62,8 +62,10 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
-  imageURLType() {
-    return this.data.exportJPEG ? "image/jpeg" : "image/png"
+  imageURLType(canvas) {
+    if (!canvas) return this.data.exportJPEG ? "image/jpeg" : "image/png"
+    if (this.data.exportJPEG) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
+    return "image/png"
   },
   compressionQuality() {
     return this.data.exportJPEG ? 0.85 : undefined;

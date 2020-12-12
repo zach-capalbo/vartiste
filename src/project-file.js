@@ -199,8 +199,9 @@ class ProjectFile {
       referenceCanvas.width = img.width
       referenceCanvas.height = img.height
       referenceCanvas.getContext('2d').drawImage(img, 0, 0)
+      let dataType = Util.isCanvasFullyOpaque(referenceCanvas) ? settings.imageURLType() : 'image/png'
       obj.referenceImages.push({
-        src: referenceCanvas.toDataURL(settings.imageURLType(), settings.compressionQuality()),
+        src: referenceCanvas.toDataURL(dataType, settings.compressionQuality()),
         matrix: image.object3D.matrix.elements
       })
     })

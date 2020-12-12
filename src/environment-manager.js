@@ -232,7 +232,7 @@ Util.registerComponentSystem('environment-manager', {
     })
 
     document.querySelector('a-sky').setAttribute('material', {src: "#asset-colorful_studio"})
-    this.setToneMapping(5)
+    this.setToneMapping(THREE.LinearToneMapping)
     this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
     this.substate = 'preset-hdri'
