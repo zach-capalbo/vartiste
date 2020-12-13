@@ -100,7 +100,7 @@ Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoS
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   init() {
     let buttonMap = new ButtonMaps()
 

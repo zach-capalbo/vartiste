@@ -125,7 +125,7 @@ AFRAME.registerComponent('smooth-controller', {
 
 // Forces the raycaster origin to [0,0,0]
 AFRAME.registerComponent('fix-raycaster', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   init() {
     this.el.addEventListener('controllermodelready', e => {
       this.el.setAttribute('raycaster', {origin: [0,0,0]})

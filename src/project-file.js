@@ -293,7 +293,7 @@ class ProjectFile {
       shader: compositor.el.getAttribute('material').shader,
       frameRate: compositor.data.frameRate,
       flipY: compositor.data.flipY,
-      canvases: layers.map(l => l.frames.map(f => f.toDataURL(settings.imageURLType(), settings.compressionQuality())))
+      canvases: layers.map(l => l.frames.map(f => f.toDataURL(settings.imageURLType(f), settings.compressionQuality())))
     }
   }
 

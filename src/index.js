@@ -73,6 +73,7 @@ require('./physics')
 require('./skeletonator-keyframes')
 require('./morph-targets')
 require('./animation-3d')
+require('./webxr-input-profiles')
 // require('./text')
 
 require('./app.styl')
