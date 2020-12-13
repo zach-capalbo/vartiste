@@ -93,6 +93,11 @@ AFRAME.registerComponent('webxr-input-profiles', {
   init() {
     // this.tick = AFRAME.utils.throttleTick(this.tick, 600, this)
     this.lastComponentState = new Map();
+    this.lastButtonAmount = new Map();
+    this.lastXAxis = new Map();
+    this.lastYAxis = new Map();
+    this.changedDetail = {value: 0.0};
+    this.movedDetail = {axis: [0, 0]};
   },
   remove() {
 
@@ -115,6 +120,18 @@ AFRAME.registerComponent('webxr-input-profiles', {
     object3D.matrix.elements = pose.transform.matrix;
     object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
   },
+  getAFrameComponentName(component)
+  {
+    switch (component.type) {
+      case 'squeeze': return "grip"; break;
+      case 'thumbstick': return "thumbstick"; break;
+      case 'touchpad': return "trackpad"; break;
+      case 'trigger': return "trigger"; break;
+      default:
+        console.log("Unkown component type", component.type, component)
+        return component.type
+    }
+  },
   updateButtons() {
     if (!this.controller) return;
 
@@ -122,38 +139,57 @@ AFRAME.registerComponent('webxr-input-profiles', {
     {
       if (!component.values || !component.values.state) continue;
       let state = component.values.state
-      if (this.lastComponentState.get(component) === state) continue;
-      // if (!this.lastComponentState.has(component))
-      // {
-      //   this.lastComponentState.set(component, 'default')
-      // }
 
-      console.log("State change")
-
-      let eventState = ""
-
-      if (state === Constants.ComponentState.PRESSED)
+      if (!this.lastComponentState.has(component))
       {
-        eventState = "down"
+        this.lastComponentState.set(component, 'default')
       }
-      else
+
+      if (this.lastComponentState.get(component) !== state)
       {
-        eventState = "up"
+        console.log("State change")
+
+        let eventState = ""
+
+        if (state === Constants.ComponentState.PRESSED)
+        {
+          eventState = "down"
+        }
+        else
+        {
+          eventState = "up"
+        }
+
+        event = this.getAFrameComponentName(component) + eventState;
+
+        this.lastComponentState.set(component, state)
+
+        console.log("Handling component event", event, component)
+        this.el.emit("buttonchanged", {id: component.gamepadIndices.button, state})
+        this.el.emit(event, {id: component.gamepadIndices.button, state})
       }
 
-      switch (component.type) {
-        case 'squeeze': event = "grip" + eventState; break;
-        case 'thumbstick': event = "thumbstick" + eventState; break;
-        case 'touchpad': event = "trackpad" + eventState; break;
-        case 'trigger': event = "trigger" + eventState; break;
-        default: console.log("Unkown component type", component.type, component)
+      if (component.type === 'squeeze' || component.type === 'trigger')
+      {
+        if (component.values.button !== this.lastButtonAmount.get(component))
+        {
+          this.changedDetail.value = component.values.button
+          this.el.emit(this.getAFrameComponentName(component) + "changed", this.changedDetail)
+          this.lastButtonAmount.set(component, component.values.button)
+        }
       }
-
-      this.lastComponentState.set(component, state)
-
-      console.log("Handling component event", event, component)
-      this.el.emit("buttonchanged", {id: component.gamepadIndices.button, state})
-      this.el.emit(event, {id: component.gamepadIndices.button, state})
+      else if (component.type === 'touchpad' || component.type === 'thumbstick')
+      {
+        if (component.values.xAxis !== this.lastXAxis.get(component) ||
+            component.values.yAxis !== this.lastYAxis.get(component))
+        {
+          this.movedDetail.axis[0] = component.values.xAxis
+          this.movedDetail.axis[1] = component.values.yAxis
+          this.el.emit('axismove', this.movedDetail)
+          this.lastXAxis.set(component, component.values.xAxis)
+          this.lastYAxis.set(component, component.values.yAxis)
+        }
+      }
     }
   },
   checkForController() {
