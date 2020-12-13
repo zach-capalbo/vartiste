@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
 
 Object.assign(window, { fetchProfile, MotionController })
@@ -7,7 +9,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
     url: {default: "https://unpkg.com/@webxr-input-profiles/assets@1.0.5/dist/profiles"}
   },
   init() {
-    // this.tick = AFRAME.utils.throttleTick(this.tick, 500, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 500, this)
     this.motionControllers = new Map();
     this.loadingControllers = new Set();
 
@@ -58,7 +60,6 @@ AFRAME.registerSystem('webxr-input-profiles', {
       if (this.motionControllers.has(input))
       {
         this.motionControllers.get(input).seen = true
-        this.motionControllers.get(input).updateFromGamepad()
       }
       else if (this.loadingControllers.has(input))
       {
@@ -70,7 +71,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
         let prof = await fetchProfile(input, this.data.url)
         let m = new MotionController(input, prof.profile, prof.assetPath)
         this.motionControllers.set(input, m)
-        this.loadingControllers.remove(input)
+        this.loadingControllers.delete(input)
         console.log("Added new motion contorller", m)
       }
     }
@@ -117,6 +118,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
     // console.log("pose", pose)
     var object3D = this.el.object3D;
     if (!pose) { return; }
+    this.hasUpdatedPose = true;
     object3D.matrix.elements = pose.transform.matrix;
     object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
   },
@@ -127,6 +129,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
       case 'thumbstick': return "thumbstick"; break;
       case 'touchpad': return "trackpad"; break;
       case 'trigger': return "trigger"; break;
+      case 'button': return component.id.split("-").join(""); break;
       default:
         console.log("Unkown component type", component.type, component)
         return component.type
@@ -135,8 +138,11 @@ AFRAME.registerComponent('webxr-input-profiles', {
   updateButtons() {
     if (!this.controller) return;
 
+    this.controller.updateFromGamepad()
+
     for (let component of Object.values(this.controller.components))
     {
+      this.updateComponentVisuals(component);
       if (!component.values || !component.values.state) continue;
       let state = component.values.state
 
@@ -192,6 +198,36 @@ AFRAME.registerComponent('webxr-input-profiles', {
       }
     }
   },
+  updateComponentVisuals(component) {
+    let motionControllerRoot = this.el.getObject3D('mesh')
+    if (!motionControllerRoot) return;
+
+    for (let visualResponse of Object.values(component.visualResponses))
+    {
+      const valueNode = motionControllerRoot.getChildByName(visualResponse.valueNodeName);
+
+      // Calculate the new properties based on the weight supplied
+      if (visualResponse.valueNodeProperty === 'visibility') {
+        valueNode.visible = visualResponse.value;
+      } else if (visualResponse.valueNodeProperty === 'transform') {
+        const minNode = motionControllerRoot.getObjectByName(visualResponse.minNodeName);
+        const maxNode = motionControllerRoot.getObjectByName(visualResponse.maxNodeName);
+
+        THREE.Quaternion.slerp(
+          minNode.quaternion,
+          maxNode.quaternion,
+          valueNode.quaternion,
+          visualResponse.value
+        );
+
+        valueNode.position.lerpVectors(
+          minNode.position,
+          maxNode.position,
+          visualResponse.value
+        );
+      }
+    }
+  },
   checkForController() {
     if (this.controller && !this.system.motionControllers.has(this.controller.xrInputSource))
     {
@@ -208,7 +244,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
         this.el.emit('webxrcontrollerset', {controller})
       }
     }
-  }
+  },
 })
 
 AFRAME.registerComponent('webxr-laser', {
@@ -218,4 +254,32 @@ AFRAME.registerComponent('webxr-laser', {
       this.el.setAttribute('raycaster', 'showLine', true)
     }
   }
+})
+
+AFRAME.registerComponent('smoothed-webxr-input-profile', {
+  dependencies: ['webxr-input-profiles'],
+  schema: {
+    amount: {default: 0.8}
+  },
+  init() {
+    let smoothing = this;
+
+    (function() {
+      this.oldMatrix = new THREE.Matrix4()
+      this.oldUpdatePose = this.updatePose.bind(this)
+      this.newMatrix = new THREE.Matrix4()
+      this.smoothing = smoothing
+    }).call(this.el.components['webxr-input-profiles'])
+
+    this.el.components['webxr-input-profiles'].updatePose = this.updatePose.bind(this.el.components['webxr-input-profiles'])
+  },
+  updatePose: function() {
+    if (!this.controller) return
+    this.oldMatrix.copy(this.el.object3D.matrix)
+    this.oldUpdatePose.call(this)
+    if (!this.hasUpdatedPose) return
+    Util.interpTransformMatrices(1.0 - this.smoothing.data.amount, this.oldMatrix, this.el.object3D.matrix, {result: this.newMatrix})
+    Util.applyMatrix(this.newMatrix, this.el.object3D)
+  }
+
 })
