@@ -1,21 +1,29 @@
 import {Util} from './util.js'
-
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
 
-Object.assign(window, { fetchProfile, MotionController })
-
+// Implements the webxr-input-profiles motion-controllers package. Use the
+// [`webxr-motion-controller`](#webxr-motion-controller) in your scene to use this system
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
-    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@1.0.5/dist/profiles"}
+    // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
+    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@1.0.5/dist/profiles"},
+    disableTrackedControls: {default: true}
   },
-  init() {
-    this.tick = AFRAME.utils.throttleTick(this.tick, 500, this)
+  start() {
+    this.start = function() {};
+    this.tick = AFRAME.utils.throttleTick(this._tick, 500, this)
     this.motionControllers = new Map();
     this.loadingControllers = new Set();
 
     this.updateReferenceSpace = this.updateReferenceSpace.bind(this);
     this.el.addEventListener('enter-vr', this.updateReferenceSpace);
     this.el.addEventListener('exit-vr', this.updateReferenceSpace);
+
+    if (this.data.disableTrackedControls)
+    {
+      this.el.systems['tracked-controls-webxr'].pause()
+      this.el.systems['tracked-controls-webxr'].tick = function() {};
+    }
   },
   updateReferenceSpace() {
     var self = this;
@@ -36,11 +44,12 @@ AFRAME.registerSystem('webxr-input-profiles', {
     }).catch(function (err) {
       self.el.sceneEl.systems.webxr.warnIfFeatureNotRequested(
           refspace,
-          'tracked-controls-webxr uses reference space "' + refspace + '".');
+          'webxr-input-profiles uses reference space "' + refspace + '".');
       throw err;
     });
   },
-  tick() {
+  tick() {},
+  _tick() {
     this.updateControllerList()
   },
   async updateControllerList() {
@@ -72,7 +81,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
         let m = new MotionController(input, prof.profile, prof.assetPath)
         this.motionControllers.set(input, m)
         this.loadingControllers.delete(input)
-        console.log("Added new motion contorller", m)
+        // console.log("Added new motion contorller", m)
       }
     }
 
@@ -80,18 +89,52 @@ AFRAME.registerSystem('webxr-input-profiles', {
     {
       if (!controller.seen)
       {
-        console.log("Removing controller", controller)
+        // console.log("Removing controller", controller)
         this.motionControllers.remove(controller.xrInputSource)
       }
     }
   }
 })
 
-AFRAME.registerComponent('webxr-input-profiles', {
-  data: {
-    hand: {oneOf: ['left', 'right']}
+// Represents a tracked motion controller from the webxr-input-profiles package.
+// Replacement for A-Frame's built-in tracked-controls
+AFRAME.registerComponent('webxr-motion-controller', {
+  schema: {
+    // **[left, right]** Handed controller to attach to
+    hand: {oneOf: ['left', 'right']},
+
+    // If true, hides extraneous tracking features from the model which can get in the way
+    hideTrackingMesh: {default: false},
+
+    // If true, uses model's "pointing" rotation for pointing the raycaster direction. (Setting the raycaster's origin is still under development)
+    usePointingPose: {default: true},
+  },
+  events: {
+    object3dset: function(e) {
+      // console.log("object3dset", e)
+      let mesh = this.el.getObject3D('mesh')
+      if (!mesh) return;
+
+      (() => {
+        if (!this.data.hideTrackingMesh) return
+        let trackingMesh = mesh.getObjectByName('TRACKING_MESH')
+        if (!trackingMesh) return
+        trackingMesh.visible = false
+      })();
+
+      (() => {
+        if (!usePointingPose) return;
+        let pointingPose = mesh.getObjectByName('POINTING_POSE')
+        if (!pointingPose) return;
+        let forward = new THREE.Vector3(0, 1, 0)
+        forward.applyQuaternion(pointingPose.quaternion)
+        this.el.setAttribute('raycaster', {direction: forward})
+      })();
+    }
   },
   init() {
+    this.system = this.el.sceneEl.systems['webxr-input-profiles']
+    this.system.start();
     // this.tick = AFRAME.utils.throttleTick(this.tick, 600, this)
     this.lastComponentState = new Map();
     this.lastButtonAmount = new Map();
@@ -101,10 +144,12 @@ AFRAME.registerComponent('webxr-input-profiles', {
     this.movedDetail = {axis: [0, 0]};
   },
   remove() {
-
-  },
-  update() {
-
+    let mesh = this.el.getObject3D('mesh')
+    if (mesh)
+    {
+      mesh.remove()
+      this.el.setObject3D('mesh', undefined)
+    }
   },
   tick(t, dt) {
     this.checkForController()
@@ -114,6 +159,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
   updatePose() {
     if (!this.controller) return
     let frame = this.el.sceneEl.frame
+    if (!frame) return;
     let pose = frame.getPose(this.controller.targetRaySpace, this.system.referenceSpace)
     // console.log("pose", pose)
     var object3D = this.el.object3D;
@@ -131,7 +177,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
       case 'trigger': return "trigger"; break;
       case 'button': return component.id.split("-").join(""); break;
       default:
-        console.log("Unkown component type", component.type, component)
+        console.warn("Unkown component type", component.type, component)
         return component.type
     }
   },
@@ -153,7 +199,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
 
       if (this.lastComponentState.get(component) !== state)
       {
-        console.log("State change")
+        // console.log("State change")
 
         let eventState = ""
 
@@ -170,7 +216,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
 
         this.lastComponentState.set(component, state)
 
-        console.log("Handling component event", event, component)
+        // console.log("Handling component event", event, component)
         this.el.emit("buttonchanged", {id: component.gamepadIndices.button, state})
         this.el.emit(event, {id: component.gamepadIndices.button, state})
       }
@@ -204,7 +250,7 @@ AFRAME.registerComponent('webxr-input-profiles', {
 
     for (let visualResponse of Object.values(component.visualResponses))
     {
-      const valueNode = motionControllerRoot.getChildByName(visualResponse.valueNodeName);
+      const valueNode = motionControllerRoot.getObjectByName(visualResponse.valueNodeName);
 
       // Calculate the new properties based on the weight supplied
       if (visualResponse.valueNodeProperty === 'visibility') {
@@ -247,19 +293,29 @@ AFRAME.registerComponent('webxr-input-profiles', {
   },
 })
 
+// Replacement for A-Frame's built-in `laser-controls`
 AFRAME.registerComponent('webxr-laser', {
   dependencies: ['cursor'],
   events: {
     webxrcontrollerset: function(e) {
       this.el.setAttribute('raycaster', 'showLine', true)
     }
+  },
+  init() {
+    if (!this.el.hasAttribute('smoothed-webxr-motion-controller'))
+    {
+      this.el.setAttribute('webxr-motion-controller', this.getAttribute('webxr-laser'))
+      this.el.setAttribute('smoothed-webxr-motion-controller')
+    }
   }
 })
 
-AFRAME.registerComponent('smoothed-webxr-input-profile', {
-  dependencies: ['webxr-input-profiles'],
+// Applies motion smoothing to a `webxr-motion-controller` on the same entity
+AFRAME.registerComponent('smoothed-webxr-motion-controller', {
+  dependencies: ['webxr-motion-controller'],
   schema: {
-    amount: {default: 0.8}
+    // **[0..1]** How much smoothing to apply. 0 means no smoothing, 1 means infinite smoothing (i.e., the controller never moves)
+    amount: {default: 0.8},
   },
   init() {
     let smoothing = this;
@@ -269,9 +325,9 @@ AFRAME.registerComponent('smoothed-webxr-input-profile', {
       this.oldUpdatePose = this.updatePose.bind(this)
       this.newMatrix = new THREE.Matrix4()
       this.smoothing = smoothing
-    }).call(this.el.components['webxr-input-profiles'])
+    }).call(this.el.components['webxr-motion-controller'])
 
-    this.el.components['webxr-input-profiles'].updatePose = this.updatePose.bind(this.el.components['webxr-input-profiles'])
+    this.el.components['webxr-motion-controller'].updatePose = this.updatePose.bind(this.el.components['webxr-motion-controller'])
   },
   updatePose: function() {
     if (!this.controller) return
@@ -281,5 +337,4 @@ AFRAME.registerComponent('smoothed-webxr-input-profile', {
     Util.interpTransformMatrices(1.0 - this.smoothing.data.amount, this.oldMatrix, this.el.object3D.matrix, {result: this.newMatrix})
     Util.applyMatrix(this.newMatrix, this.el.object3D)
   }
-
 })

@@ -1,3 +1,4 @@
+// Makes `raycaster` respond appropriately when its world matrix is scaled
 AFRAME.registerComponent('scalable-raycaster', {
   dependencies: ['raycaster'],
   init()  {

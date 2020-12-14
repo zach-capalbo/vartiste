@@ -55,6 +55,7 @@ async function addDocumentation(src)
   require('./material-transformations')
   require('./canvas-fx')
   require('./scalable-raycaster')
+  require('.//webxr-input-profiles')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))
