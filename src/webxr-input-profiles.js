@@ -299,7 +299,25 @@ AFRAME.registerComponent('webxr-motion-controller', {
   },
 })
 
+
+var EVENTS = {
+  CLICK: 'click',
+  FUSING: 'fusing',
+  MOUSEENTER: 'mouseenter',
+  MOUSEDOWN: 'mousedown',
+  MOUSELEAVE: 'mouseleave',
+  MOUSEUP: 'mouseup'
+};
+
+var STATES = {
+  FUSING: 'cursor-fusing',
+  HOVERING: 'cursor-hovering',
+  HOVERED: 'cursor-hovered'
+};
+
 // Replacement for A-Frame's built-in `laser-controls`
+// Much of this code comes from A-FRAME cursor component: https://github.com/aframevr/aframe/blob/v1.1.0/src/components/cursor.js
+// and is licensed under the MIT License.
 AFRAME.registerComponent('webxr-laser', {
   dependencies: [''],
   events: {
@@ -307,34 +325,102 @@ AFRAME.registerComponent('webxr-laser', {
       this.el.setAttribute('raycaster', 'showLine', true)
     },
     triggerup: function(e) {
-      if (this.el.components.raycaster.intersections.length == 0) return
+      if (!this.intersectedEl) return;
+      this.eventDetail.intersection = this.el.components.raycaster.getIntersection(this.intersectedEl);
+      this.twoWayEmit('click')
+    },
+    'raycaster-intersection': function(evt) {
+      var currentIntersection;
+      var cursorEl = this.el;
+      var index;
+      var intersectedEl;
+      var intersection;
 
-      let intersection
-      let closestDistance = 9999
-      let d
-      for (let i of this.el.components.raycaster.intersections)
-      {
-        d = i.distance
-        if (d < closestDistance)
-        {
-          intersection = i
-          closestDistance = d
-        }
+      // Select closest object, excluding the cursor.
+      index = evt.detail.els[0] === cursorEl ? 1 : 0;
+      intersection = evt.detail.intersections[index];
+      intersectedEl = evt.detail.els[index];
+
+      // If cursor is the only intersected object, ignore the event.
+      if (!intersectedEl) { return; }
+
+      // Already intersecting this entity.
+      if (this.intersectedEl === intersectedEl) { return; }
+
+      // Ignore events further away than active intersection.
+      if (this.intersectedEl) {
+        currentIntersection = this.el.components.raycaster.getIntersection(this.intersectedEl);
+        if (currentIntersection && currentIntersection.distance <= intersection.distance) { return; }
       }
-      if (!intersection) return
-      let el = intersection.object.el
 
-      this.eventDetail.intersection = intersection
-      el.emit('click', this.eventDetail)
+      // Unset current intersection.
+      this.clearCurrentIntersection(true);
+
+      this.setIntersection(intersectedEl, intersection);
+    },
+    'raycaster-intersection-cleared': function(evt) {
+      var clearedEls = evt.detail.clearedEls;
+      // Check if the current intersection has ended
+      if (clearedEls.indexOf(this.intersectedEl) === -1) { return; }
+      this.clearCurrentIntersection();
     }
   },
   init() {
     this.eventDetail = {cursorEl: this.el};
+    this.intersectedEventDetail = {cursorEl: this.el}
     if (!this.el.hasAttribute('smoothed-webxr-motion-controller'))
     {
       this.el.setAttribute('webxr-motion-controller', this.getAttribute('webxr-laser'))
       this.el.setAttribute('smoothed-webxr-motion-controller')
     }
+  },
+  clearCurrentIntersection(ignoreRemaining) {
+    if (!this.intersectedEl) { return; }
+
+    this.intersectedEl.removeState(STATES.HOVERED);
+    this.el.removeState(STATES.HOVERING);
+    this.twoWayEmit(EVENTS.MOUSELEAVE);
+
+    this.intersectedEl = null;
+    if (ignoreRemaining === true) { return; }
+    let intersections = this.el.components.raycaster.intersections;
+    if (intersections.length === 0) { return; }
+    // Exclude the cursor.
+    let index = intersections[0].object.el === this.cursorEl ? 1 : 0;
+    let intersection = intersections[index];
+    if (!intersection) { return; }
+    this.setIntersection(intersection.object.el, intersection);
+  },
+  setIntersection(intersectedEl, intersection) {
+    var cursorEl = this.el;
+    var data = this.data;
+    var self = this;
+
+    // Already intersecting.
+    if (this.intersectedEl === intersectedEl) { return; }
+
+    // Set new intersection.
+    this.intersectedEl = intersectedEl;
+
+    // Hovering.
+    cursorEl.addState(STATES.HOVERING);
+    intersectedEl.addState(STATES.HOVERED);
+    this.twoWayEmit(EVENTS.MOUSEENTER);
+  },
+  twoWayEmit(evtName) {
+    var el = this.el;
+    var intersectedEl = this.intersectedEl;
+    var intersection;
+
+    intersection = this.el.components.raycaster.getIntersection(intersectedEl);
+    this.eventDetail.intersectedEl = intersectedEl;
+    this.eventDetail.intersection = intersection;
+    el.emit(evtName, this.eventDetail);
+
+    if (!intersectedEl) { return; }
+
+    this.intersectedEventDetail.intersection = intersection;
+    intersectedEl.emit(evtName, this.intersectedEventDetail);
   }
 })
 
