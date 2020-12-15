@@ -58,7 +58,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
 
     let sources = xrSession.inputSources
 
-    for (let controller of Object.values(this.motionControllers))
+    for (let controller of this.motionControllers.values())
     {
       controller.seen = false
     }
@@ -79,18 +79,19 @@ AFRAME.registerSystem('webxr-input-profiles', {
         this.loadingControllers.add(input)
         let prof = await fetchProfile(input, this.data.url)
         let m = new MotionController(input, prof.profile, prof.assetPath)
+        m.seen = true
         this.motionControllers.set(input, m)
         this.loadingControllers.delete(input)
         // console.log("Added new motion contorller", m)
       }
     }
 
-    for (let controller of Object.values(this.motionControllers))
+    for (let controller of this.motionControllers.values())
     {
       if (!controller.seen)
       {
         // console.log("Removing controller", controller)
-        this.motionControllers.remove(controller.xrInputSource)
+        this.motionControllers.delete(controller.xrInputSource)
       }
     }
   }
