@@ -7,7 +7,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
     url: {default: "https://unpkg.com/@webxr-input-profiles/assets@latest/dist/profiles"},
-    disableTrackedControls: {default: true}
+    disableTrackedControls: {default: true},
+    webVRPolyfill: {default: true},
   },
   start() {
     this.start = function() {};
@@ -125,6 +126,8 @@ AFRAME.registerComponent('webxr-motion-controller', {
     // If true, uses model's "pointing" rotation for pointing the raycaster direction. (Setting the raycaster's origin is still under development)
     // **NOTE** This is a little iffy right now.
     usePointingPose: {default: false},
+
+    fallbackToLaserControls: {default: true},
   },
   events: {
     object3dset: function(e) {
@@ -173,6 +176,21 @@ AFRAME.registerComponent('webxr-motion-controller', {
     }
   },
   init() {
+    if (!navigator.xr)
+    {
+      console.log("No webXR, falling back to laser controls")
+      this.pause()
+      this.enabled = false
+      this.data.enabled = false
+      this.tick = function() {};
+      this.el.setAttribute('laser-controls', `hand: ${this.data.hand}`)
+      Util.whenLoaded(this.el, () => {
+        // this.el.removeAttribute('webxr-laser')
+        // this.el.removeAttribute('smoothed-webxr-motion-controller')
+        // this.el.removeAttribute('webxr-motion-controller')
+      })
+      return
+    }
     this.system = this.el.sceneEl.systems['webxr-input-profiles']
     this.system.start();
     // this.tick = AFRAME.utils.throttleTick(this.tick, 600, this)
@@ -472,6 +490,7 @@ AFRAME.registerComponent('smoothed-webxr-motion-controller', {
   },
   init() {
     let smoothing = this;
+    if (!this.el.components['webxr-motion-controller']) return;
 
     (function() {
       this.oldMatrix = new THREE.Matrix4()
