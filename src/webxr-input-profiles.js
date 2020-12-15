@@ -6,12 +6,12 @@ import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
-    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@1.0.5/dist/profiles"},
+    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@latest/dist/profiles"},
     disableTrackedControls: {default: true}
   },
   start() {
     this.start = function() {};
-    this.tick = AFRAME.utils.throttleTick(this._tick, 500, this)
+    this.tick = AFRAME.utils.throttleTick(this._tick, 100, this)
     this.motionControllers = new Map();
     this.loadingControllers = new Set();
 
@@ -24,6 +24,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
       this.el.systems['tracked-controls-webxr'].pause()
       this.el.systems['tracked-controls-webxr'].tick = function() {};
     }
+
+    this.updateControllerList = this.updateControllerList.bind(this)
   },
   updateReferenceSpace() {
     var self = this;
@@ -50,7 +52,20 @@ AFRAME.registerSystem('webxr-input-profiles', {
   },
   tick() {},
   _tick() {
-    this.updateControllerList()
+    if (this.el.sceneEl.xrSession !== this.connectedSession)
+    {
+      if (this.connectedSession)
+      {
+        this.connectedSession.removeEventListener('inputsourceschange', this.updateControllerList)
+      }
+
+      this.connectedSession = this.el.sceneEl.xrSession;
+      if (this.connectedSession)
+      {
+        this.connectedSession.addEventListener('inputsourceschange', this.updateControllerList)
+        this.updateControllerList()
+      }
+    }
   },
   async updateControllerList() {
     let xrSession = this.el.sceneEl.xrSession;
@@ -108,7 +123,8 @@ AFRAME.registerComponent('webxr-motion-controller', {
     hideTrackingMesh: {default: false},
 
     // If true, uses model's "pointing" rotation for pointing the raycaster direction. (Setting the raycaster's origin is still under development)
-    usePointingPose: {default: true},
+    // **NOTE** This is a little iffy right now.
+    usePointingPose: {default: false},
   },
   events: {
     object3dset: function(e) {
@@ -130,29 +146,29 @@ AFRAME.registerComponent('webxr-motion-controller', {
 
         console.log("Applying Pointing Pose", pointingPose.matrix.elements, pointingPose.position)
 
-        let poseMesh = new THREE.Matrix4();
+        // let poseMesh = new THREE.Matrix4();
 
         // mesh.matrix.copy(pointingPose.matrix)
-
-        mesh.matrix.identity()
-
-        while (pointingPose !== mesh && pointingPose)
-        {
-          poseMesh.compose(pointingPose.position, pointingPose.quaternion, pointingPose.scale)
-          mesh.matrix.premultiply(poseMesh)
-          pointingPose = pointingPose.parent
-        }
+        //
+        // mesh.matrix.identity()
+        //
+        // while (pointingPose !== mesh && pointingPose)
+        // {
+        //   poseMesh.compose(pointingPose.position, pointingPose.quaternion, pointingPose.scale)
+        //   mesh.matrix.premultiply(poseMesh)
+        //   pointingPose = pointingPose.parent
+        // }
         // mesh.matrix.compose(pointingPose.position, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)).invert()
         // mesh.matrix.invert()
-        Util.applyMatrix(mesh.matrix, mesh)
-        mesh.position.z *= -1
+        // Util.applyMatrix(mesh.matrix, mesh)
+        // mesh.position.z *= -1
         // poseMesh.extractRotation(mesh.matrix)
         // mesh.quaternion.setFromRotationMatrix(poseMesh)
         // mesh.matrix.extract
 
-        // let forward = new THREE.Vector3(0, 1, 0)
-        // forward.applyQuaternion(pointingPose.quaternion)
-        // this.el.setAttribute('raycaster', {direction: forward})
+        let forward = new THREE.Vector3(0, 1, 0)
+        forward.applyQuaternion(pointingPose.quaternion)
+        this.el.setAttribute('raycaster', {direction: forward})
       })();
     }
   },
@@ -185,7 +201,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     if (!this.controller) return
     let frame = this.el.sceneEl.frame
     if (!frame) return;
-    let pose = frame.getPose(this.controller.targetRaySpace, this.system.referenceSpace)
+    let pose = frame.getPose(this.controller.gripSpace, this.system.referenceSpace)
     // console.log("pose", pose)
     var object3D = this.el.object3D;
     if (!pose) { return; }

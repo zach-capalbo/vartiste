@@ -5,7 +5,7 @@ AFRAME.registerComponent('scalable-raycaster', {
     let worldScale = new THREE.Vector3
 
     // TODO: Not sure why this breaks on oculus quest. Still needs this kind of correction
-    if (!AFRAME.utils.device.isMobileVR())
+    if (false && !AFRAME.utils.device.isMobileVR())
     {
       this.el.components.raycaster.updateLine = AFRAME.utils.bind(function () {
         var el = this.el;
