@@ -127,9 +127,32 @@ AFRAME.registerComponent('webxr-motion-controller', {
         if (!this.data.usePointingPose) return;
         let pointingPose = mesh.getObjectByName('POINTING_POSE')
         if (!pointingPose) return;
-        let forward = new THREE.Vector3(0, 1, 0)
-        forward.applyQuaternion(pointingPose.quaternion)
-        this.el.setAttribute('raycaster', {direction: forward})
+
+        console.log("Applying Pointing Pose", pointingPose.matrix.elements, pointingPose.position)
+
+        let poseMesh = new THREE.Matrix4();
+
+        // mesh.matrix.copy(pointingPose.matrix)
+
+        mesh.matrix.identity()
+
+        while (pointingPose !== mesh && pointingPose)
+        {
+          poseMesh.compose(pointingPose.position, pointingPose.quaternion, pointingPose.scale)
+          mesh.matrix.premultiply(poseMesh)
+          pointingPose = pointingPose.parent
+        }
+        // mesh.matrix.compose(pointingPose.position, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)).invert()
+        // mesh.matrix.invert()
+        Util.applyMatrix(mesh.matrix, mesh)
+        mesh.position.z *= -1
+        // poseMesh.extractRotation(mesh.matrix)
+        // mesh.quaternion.setFromRotationMatrix(poseMesh)
+        // mesh.matrix.extract
+
+        // let forward = new THREE.Vector3(0, 1, 0)
+        // forward.applyQuaternion(pointingPose.quaternion)
+        // this.el.setAttribute('raycaster', {direction: forward})
       })();
     }
   },
