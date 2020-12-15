@@ -123,7 +123,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
       })();
 
       (() => {
-        if (!usePointingPose) return;
+        if (!this.data.usePointingPose) return;
         let pointingPose = mesh.getObjectByName('POINTING_POSE')
         if (!pointingPose) return;
         let forward = new THREE.Vector3(0, 1, 0)
@@ -137,6 +137,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     this.system.start();
     // this.tick = AFRAME.utils.throttleTick(this.tick, 600, this)
     this.lastComponentState = new Map();
+    this.lastComponentEventState = new Map();
     this.lastButtonAmount = new Map();
     this.lastXAxis = new Map();
     this.lastYAxis = new Map();
@@ -212,13 +213,17 @@ AFRAME.registerComponent('webxr-motion-controller', {
           eventState = "up"
         }
 
-        event = this.getAFrameComponentName(component) + eventState;
+        if (eventState !== this.lastComponentEventState.get(component))
+        {
+          event = this.getAFrameComponentName(component) + eventState;
 
-        this.lastComponentState.set(component, state)
+          this.lastComponentState.set(component, state)
+          this.lastComponentEventState.set(component, eventState)
 
-        // console.log("Handling component event", event, component)
-        this.el.emit("buttonchanged", {id: component.gamepadIndices.button, state})
-        this.el.emit(event, {id: component.gamepadIndices.button, state})
+          // console.log("Handling component event", component, state, this.el, event)
+          this.el.emit("buttonchanged", {id: component.gamepadIndices.button, state})
+          this.el.emit(event, {id: component.gamepadIndices.button, state})
+        }
       }
 
       if (component.type === 'squeeze' || component.type === 'trigger')
@@ -295,13 +300,35 @@ AFRAME.registerComponent('webxr-motion-controller', {
 
 // Replacement for A-Frame's built-in `laser-controls`
 AFRAME.registerComponent('webxr-laser', {
-  dependencies: ['cursor'],
+  dependencies: [''],
   events: {
     webxrcontrollerset: function(e) {
       this.el.setAttribute('raycaster', 'showLine', true)
+    },
+    triggerup: function(e) {
+      if (this.el.components.raycaster.intersections.length == 0) return
+
+      let intersection
+      let closestDistance = 9999
+      let d
+      for (let i of this.el.components.raycaster.intersections)
+      {
+        d = i.distance
+        if (d < closestDistance)
+        {
+          intersection = i
+          closestDistance = d
+        }
+      }
+      if (!intersection) return
+      let el = intersection.object.el
+
+      this.eventDetail.intersection = intersection
+      el.emit('click', this.eventDetail)
     }
   },
   init() {
+    this.eventDetail = {cursorEl: this.el};
     if (!this.el.hasAttribute('smoothed-webxr-motion-controller'))
     {
       this.el.setAttribute('webxr-motion-controller', this.getAttribute('webxr-laser'))
