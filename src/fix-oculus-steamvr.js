@@ -71,3 +71,14 @@ AFRAME.registerComponent('fix-oculus-steamvr', {
     touchComponent.injectTrackedControls = injectTrackedControls.bind(touchComponent)
   }
 })
+
+
+// Makes the rendering context XR compatible so you can actually use XR on
+// updated browsers.
+AFRAME.registerSystem('fix-webgl-context', {
+  init() {
+    if (navigator.xr) {
+      this.el.sceneEl.renderer.getContext().makeXRCompatible()
+    }
+  },
+})

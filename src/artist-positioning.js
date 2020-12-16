@@ -19,7 +19,7 @@ Util.registerComponentSystem('artist-root', {
   init() {
     Pool.init(this)
 
-    document.querySelectorAll('*[laser-controls]').forEach(el => {
+    document.querySelectorAll('*[cursor], *[webxr-laser]').forEach(el => {
       el.addEventListener('buttonchanged', e => {
         if (this.acceptOrientationPrompt())
         {
@@ -29,7 +29,7 @@ Util.registerComponentSystem('artist-root', {
       })
     })
 
-    document.querySelectorAll('*[cursor]').forEach(el => {
+    document.querySelectorAll('*[cursor], *[webxr-laser]').forEach(el => {
       el.addEventListener('mouseup', () => this.acceptOrientationPrompt())
     })
 

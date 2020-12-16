@@ -89,6 +89,7 @@ if (checkFile('./fix-oculus-steamvr')) require('./fix-oculus-steamvr')
 if (checkFile('./artist-positioning')) require('./artist-positioning')
 if (checkFile('./canvas-fx')) require('./canvas-fx')
 if (checkFile('./scalable-raycaster')) require('./scalable-raycaster')
+if (checkFile('./webxr-input-profiles')) require('./webxr-input-profiles')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo, UndoStack} = require('./undo')
@@ -100,7 +101,7 @@ Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoS
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   init() {
     let buttonMap = new ButtonMaps()
 

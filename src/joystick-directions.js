@@ -2,10 +2,12 @@ const Axes = {
   LEFT_RIGHT: 0,
   UP_DOWN: 1,
   up_down(el) {
+    if (el.hasAttribute('webxr-motion-controller')) return this.UP_DOWN;
     let offset = (el.components['tracked-controls'].axis.length === 4) ? 2 : 0
     return this.UP_DOWN + offset;
   },
   left_right(el) {
+    if (el.hasAttribute('webxr-motion-controller')) return this.LEFT_RIGHT;
     let offset = (el.components['tracked-controls'].axis.length === 4) ? 2 : 0
     return this.LEFT_RIGHT + offset;
   }

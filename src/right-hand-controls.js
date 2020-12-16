@@ -1,7 +1,7 @@
 import {ButtonMaps, Axes, JoystickDirections} from './joystick-directions.js'
 
 AFRAME.registerComponent('right-hand-controls', {
-  dependencies: ['raycaster', 'laser-controls'],
+  dependencies: ['raycaster'],
   init() {
     this.paintSystem = document.querySelector('a-scene').systems['paint-system']
     // this.el.setAttribute('joystick-turn', "target: #artist-root")

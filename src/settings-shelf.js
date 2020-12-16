@@ -36,9 +36,9 @@ AFRAME.registerComponent('settings-shelf', {
     })
 
     this.el.sceneEl.addEventListener('stabilizationchanged', e => {
-      this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 4.0)
-      this.el.querySelector('[click-action="mediumStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 4.0 && e.detail.stabilization < 12.0)
-      this.el.querySelector('[click-action="maxStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 12.0)
+      this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 0.4)
+      this.el.querySelector('[click-action="mediumStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.4 && e.detail.stabilization < 0.9)
+      this.el.querySelector('[click-action="maxStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.9)
     })
 
     this.el.sceneEl.addEventListener('qualitychanged', e => {

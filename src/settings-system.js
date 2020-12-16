@@ -62,8 +62,10 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
-  imageURLType() {
-    return this.data.exportJPEG ? "image/jpeg" : "image/png"
+  imageURLType(canvas) {
+    if (!canvas) return this.data.exportJPEG ? "image/jpeg" : "image/png"
+    if (this.data.exportJPEG) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
+    return "image/png"
   },
   compressionQuality() {
     return this.data.exportJPEG ? 0.85 : undefined;
@@ -310,12 +312,12 @@ Util.registerComponentSystem('settings-system', {
   mediumQualityAction() { this.setQuality(0.5) },
   fullQualityAction() { this.setQuality(1.0) },
   setStabilizeAmount(amount) {
-    document.querySelectorAll('*[smooth-controller]').forEach((e) => e.setAttribute('smooth-controller', {amount}))
+    document.querySelectorAll('*[smoothed-webxr-motion-controller]').forEach((e) => e.setAttribute('smoothed-webxr-motion-controller', {amount}))
     this.el.emit('stabilizationchanged', {stabilization: amount})
   },
-  noStabilizationAction() { this.setStabilizeAmount(1) },
-  mediumStabilizationAction() { this.setStabilizeAmount(4) },
-  maxStabilizationAction() { this.setStabilizeAmount(12) },
+  noStabilizationAction() { this.setStabilizeAmount(0) },
+  mediumStabilizationAction() { this.setStabilizeAmount(0.8) },
+  maxStabilizationAction() { this.setStabilizeAmount(0.95) },
   undoAction() {
     Undo.undo()
   },
