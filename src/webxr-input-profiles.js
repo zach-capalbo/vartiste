@@ -1,10 +1,11 @@
 import {Util} from './util.js'
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
 
-// Implements the webxr-input-profiles motion-controllers package. Use the
-// [`webxr-motion-controller`](#webxr-motion-controller) in your scene to use
-// this system. It will not be active until a `webxr-motion-controller`
-// component is initialized
+// Implements the [webxr-input-profiles
+// motion-controllers](https://github.com/immersive-web/webxr-input-profiles)
+// package. Use the [`webxr-motion-controller`](#webxr-motion-controller) as
+// your controller components to use this system. It will not be active until a
+// `webxr-motion-controller` component is initialized
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
@@ -377,9 +378,23 @@ var STATES = {
   HOVERED: 'cursor-hovered'
 };
 
-// Replacement for A-Frame's built-in `laser-controls`
-// Much of this code comes from A-FRAME cursor component: https://github.com/aframevr/aframe/blob/v1.1.0/src/components/cursor.js
-// and is licensed under the MIT License. https://github.com/aframevr/aframe/blob/master/LICENSE
+// Can be used in place of the built-in `laser-controls` to provide a similar
+// laser-pointer based experience.  Much of this code comes from A-FRAME cursor
+// component:
+// https://github.com/aframevr/aframe/blob/v1.1.0/src/components/cursor.js and
+// is licensed under the MIT License.
+// https://github.com/aframevr/aframe/blob/master/LICENSE
+//
+// If there is no `webxr-motion-controller` already present on the entity, one
+// will be added and all properties set on this component will be forwarded to
+// it.
+//
+// Example:
+//
+//    <a-entity id="rig" camera="">
+//        <a-entity id="right-hand" webxr-laser="hand: right"></a-entity>
+//        <a-entity id="left-hand" webxr-laser="hand: left"></a-entity>
+//    </a-entity>
 AFRAME.registerComponent('webxr-laser', {
   dependencies: [''],
   events: {
@@ -430,10 +445,13 @@ AFRAME.registerComponent('webxr-laser', {
   init() {
     this.eventDetail = {cursorEl: this.el};
     this.intersectedEventDetail = {cursorEl: this.el}
+    if (!this.el.hasAttribute('webxr-motion-controller'))
+    {
+      this.el.setAttribute('webxr-motion-controller', this.el.getAttribute('webxr-laser'))
+    }
     if (!this.el.hasAttribute('smoothed-webxr-motion-controller'))
     {
-      this.el.setAttribute('webxr-motion-controller', this.getAttribute('webxr-laser'))
-      this.el.setAttribute('smoothed-webxr-motion-controller')
+      this.el.setAttribute('smoothed-webxr-motion-controller', '')
     }
   },
   clearCurrentIntersection(ignoreRemaining) {
@@ -495,23 +513,31 @@ AFRAME.registerComponent('smoothed-webxr-motion-controller', {
   },
   init() {
     let smoothing = this;
-    if (!this.el.components['webxr-motion-controller']) return;
+    if (!this.el.components['webxr-motion-controller']) {
+      console.warn("Can't set smoothed-webxr-motion-controller without as webxr-motion-controller")
+    };
 
     (function() {
       this.oldMatrix = new THREE.Matrix4()
       this.oldUpdatePose = this.updatePose.bind(this)
       this.newMatrix = new THREE.Matrix4()
       this.smoothing = smoothing
+      this.t = this.el.sceneEl.time
     }).call(this.el.components['webxr-motion-controller'])
 
     this.el.components['webxr-motion-controller'].updatePose = this.updatePose.bind(this.el.components['webxr-motion-controller'])
   },
   updatePose: function() {
-    if (!this.controller) return
+    if (!this.controller) return;
     this.oldMatrix.copy(this.el.object3D.matrix)
     this.oldUpdatePose.call(this)
-    if (!this.hasUpdatedPose) return
-    Util.interpTransformMatrices(1.0 - this.smoothing.data.amount, this.oldMatrix, this.el.object3D.matrix, {result: this.newMatrix})
+    if (!this.hasUpdatedPose) return;
+    let weight = this.smoothing.data.amount
+    // let dt = this.el.sceneEl.time - this.t
+    // this.t = this.el.sceneEl.time
+    // weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 1, 0, 1)
+    // if (isNaN(weight)) weight = this.smoothing.data.amount
+    Util.interpTransformMatrices(1.0 - weight, this.oldMatrix, this.el.object3D.matrix, {result: this.newMatrix})
     Util.applyMatrix(this.newMatrix, this.el.object3D)
   }
 })
