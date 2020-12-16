@@ -144,34 +144,24 @@ AFRAME.registerComponent('webxr-motion-controller', {
 
       (() => {
         if (!this.data.usePointingPose) return;
-        let pointingPose = mesh.getObjectByName('POINTING_POSE')
-        if (!pointingPose) return;
+        // let pointingPose = mesh.getObjectByName('POINTING_POSE')
+        // if (!pointingPose) return;
 
-        console.log("Applying Pointing Pose", pointingPose.matrix.elements, pointingPose.position)
+        // console.log("Applying Pointing Pose", pointingPose.matrix.elements, pointingPose.position)
 
-        // let poseMesh = new THREE.Matrix4();
-
-        // mesh.matrix.copy(pointingPose.matrix)
+        // let frame = this.el.sceneEl.frame
+        // if (!frame) return;
+        // // let pose = frame.getPose(this.controller.gripSpace, this.system.referenceSpace)
         //
-        // mesh.matrix.identity()
+        // let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
+        // this.rayMatrix.elements = objectRayPose.transform.matrix;
         //
-        // while (pointingPose !== mesh && pointingPose)
-        // {
-        //   poseMesh.compose(pointingPose.position, pointingPose.quaternion, pointingPose.scale)
-        //   mesh.matrix.premultiply(poseMesh)
-        //   pointingPose = pointingPose.parent
-        // }
-        // mesh.matrix.compose(pointingPose.position, new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)).invert()
-        // mesh.matrix.invert()
-        // Util.applyMatrix(mesh.matrix, mesh)
-        // mesh.position.z *= -1
-        // poseMesh.extractRotation(mesh.matrix)
-        // mesh.quaternion.setFromRotationMatrix(poseMesh)
-        // mesh.matrix.extract
-
-        let forward = new THREE.Vector3(0, 1, 0)
-        forward.applyQuaternion(pointingPose.quaternion)
-        this.el.setAttribute('raycaster', {direction: forward})
+        // this.rayMatrix.extractRotation(this.rayMatrix)
+        //
+        // let forward = new THREE.Vector3(0, 1, 0)
+        // forward.applyMatrix4(this.rayMatrix)
+        // // forward.applyQuaternion(pointingPose.quaternion)
+        // this.el.setAttribute('raycaster', {direction: forward})
       })();
     }
   },
@@ -201,6 +191,9 @@ AFRAME.registerComponent('webxr-motion-controller', {
     this.lastYAxis = new Map();
     this.changedDetail = {value: 0.0};
     this.movedDetail = {axis: [0, 0]};
+
+    this.rayMatrix = new THREE.Matrix4();
+    this.rayForward = new THREE.Vector3();
   },
   remove() {
     let mesh = this.el.getObject3D('mesh')
@@ -226,6 +219,20 @@ AFRAME.registerComponent('webxr-motion-controller', {
     this.hasUpdatedPose = true;
     object3D.matrix.elements = pose.transform.matrix;
     object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
+
+    if (this.setPointingPose) return;
+
+    if (!this.data.usePointingPose) return;
+    let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
+    this.rayMatrix.elements = objectRayPose.transform.matrix;
+
+    this.rayMatrix.extractRotation(this.rayMatrix)
+
+    let forward = new THREE.Vector3(0, 0, -1)
+    forward.applyMatrix4(this.rayMatrix)
+    // forward.applyQuaternion(pointingPose.quaternion)
+    this.el.setAttribute('raycaster', {direction: forward})
+    this.setPointingPose = true
   },
   getAFrameComponentName(component)
   {
