@@ -123,9 +123,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     // If true, hides extraneous tracking features from the model which can get in the way
     hideTrackingMesh: {default: false},
 
-    // If true, uses model's "pointing" rotation for pointing the raycaster direction. (Setting the raycaster's origin is still under development)
-    // **NOTE** This is a little iffy right now.
-    usePointingPose: {default: false},
+    originSpace: {oneOf: ['targetRaySpace', 'gripSpace'], default: 'targetRaySpace'},
 
     fallbackToLaserControls: {default: true},
   },
@@ -140,28 +138,6 @@ AFRAME.registerComponent('webxr-motion-controller', {
         let trackingMesh = mesh.getObjectByName('TRACKING_MESH')
         if (!trackingMesh) return
         trackingMesh.visible = false
-      })();
-
-      (() => {
-        if (!this.data.usePointingPose) return;
-        // let pointingPose = mesh.getObjectByName('POINTING_POSE')
-        // if (!pointingPose) return;
-
-        // console.log("Applying Pointing Pose", pointingPose.matrix.elements, pointingPose.position)
-
-        // let frame = this.el.sceneEl.frame
-        // if (!frame) return;
-        // // let pose = frame.getPose(this.controller.gripSpace, this.system.referenceSpace)
-        //
-        // let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
-        // this.rayMatrix.elements = objectRayPose.transform.matrix;
-        //
-        // this.rayMatrix.extractRotation(this.rayMatrix)
-        //
-        // let forward = new THREE.Vector3(0, 1, 0)
-        // forward.applyMatrix4(this.rayMatrix)
-        // // forward.applyQuaternion(pointingPose.quaternion)
-        // this.el.setAttribute('raycaster', {direction: forward})
       })();
     }
   },
@@ -212,27 +188,37 @@ AFRAME.registerComponent('webxr-motion-controller', {
     if (!this.controller) return
     let frame = this.el.sceneEl.frame
     if (!frame) return;
-    let pose = frame.getPose(this.controller.gripSpace, this.system.referenceSpace)
-    // console.log("pose", pose)
+    let pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
+
     var object3D = this.el.object3D;
     if (!pose) { return; }
     this.hasUpdatedPose = true;
     object3D.matrix.elements = pose.transform.matrix;
     object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
 
-    if (this.setPointingPose) return;
+    if (!this.el.getObject3D('mesh')) return
+    if (this.setPoseController === this.controller) return;
+    this.setPoseController = this.controller
 
-    if (!this.data.usePointingPose) return;
-    let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
-    this.rayMatrix.elements = objectRayPose.transform.matrix;
-
-    this.rayMatrix.extractRotation(this.rayMatrix)
-
-    let forward = new THREE.Vector3(0, 0, -1)
-    forward.applyMatrix4(this.rayMatrix)
-    // forward.applyQuaternion(pointingPose.quaternion)
-    this.el.setAttribute('raycaster', {direction: forward})
-    this.setPointingPose = true
+    if (this.data.originSpace === 'gripSpace')
+    {
+      let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
+      this.rayMatrix.elements = objectRayPose.transform.matrix;
+      this.rayMatrix.extractRotation(this.rayMatrix)
+      let forward = new THREE.Vector3(0, 0, -1)
+      forward.applyMatrix4(this.rayMatrix)
+      this.el.setAttribute('raycaster', {direction: forward})
+    }
+    else
+    {
+      let gripPose = frame.getPose(this.controller.gripSpace, this.controller.targetRaySpace)
+      this.rayMatrix.elements = gripPose.transform.matrix
+      let mesh = this.el.getObject3D('mesh')
+      // mesh.updateMatrix()
+      mesh.matrix.compose(mesh.position, mesh.quaternion, mesh.scale)
+      mesh.matrix.multiply(this.rayMatrix)
+      Util.applyMatrix(mesh.matrix, mesh)
+    }
   },
   getAFrameComponentName(component)
   {
