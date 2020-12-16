@@ -2,13 +2,17 @@ import {Util} from './util.js'
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
 
 // Implements the webxr-input-profiles motion-controllers package. Use the
-// [`webxr-motion-controller`](#webxr-motion-controller) in your scene to use this system
+// [`webxr-motion-controller`](#webxr-motion-controller) in your scene to use
+// this system. It will not be active until a `webxr-motion-controller`
+// component is initialized
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
     url: {default: "https://unpkg.com/@webxr-input-profiles/assets@latest/dist/profiles"},
+
+    // If true, it will attempt to disable the built-in A-Frame tracked control
+    // systems
     disableTrackedControls: {default: true},
-    webVRPolyfill: {default: true},
   },
   start() {
     this.start = function() {};
@@ -123,8 +127,16 @@ AFRAME.registerComponent('webxr-motion-controller', {
     // If true, hides extraneous tracking features from the model which can get in the way
     hideTrackingMesh: {default: false},
 
+    // **[targetRaySpace, gripSpace]** Selects where the origin for the
+    // controller, and associated laser ray should begin. `targetRaySpace` puts
+    // the origin at the origin of the per-controller target ray point, and
+    // works better for point-and-click sorts of things. `gripSpace` puts the
+    // origin around the user's palm, and works better for grabby sort of
+    // things.
     originSpace: {oneOf: ['targetRaySpace', 'gripSpace'], default: 'targetRaySpace'},
 
+    // If true, attempts to fall back to built-in laser controls if WebXR is not
+    // supported by the browser
     fallbackToLaserControls: {default: true},
   },
   events: {
@@ -367,7 +379,7 @@ var STATES = {
 
 // Replacement for A-Frame's built-in `laser-controls`
 // Much of this code comes from A-FRAME cursor component: https://github.com/aframevr/aframe/blob/v1.1.0/src/components/cursor.js
-// and is licensed under the MIT License.
+// and is licensed under the MIT License. https://github.com/aframevr/aframe/blob/master/LICENSE
 AFRAME.registerComponent('webxr-laser', {
   dependencies: [''],
   events: {
