@@ -1,5 +1,5 @@
 import Color from 'color'
-import { PMREMGenerator} from './framework/PMREMGenerator.js'
+// import { PMREMGenerator} from './framework/PMREMGenerator.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 
@@ -149,7 +149,7 @@ Util.registerComponentSystem('environment-manager', {
     let renderer = AFRAME.scenes[0].renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
-    var pmremGenerator = new PMREMGenerator( renderer );
+    var pmremGenerator = new THREE.PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
 
     let scene = this.el.object3D
@@ -167,6 +167,7 @@ Util.registerComponentSystem('environment-manager', {
     this.hdriTexture = texture
 
     var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+    envMap.mapping = THREE.CubeUVReflectionMapping
 
     // When new three.js is integrated into AFRAME, we can do something like:
     // scene.background = texture;

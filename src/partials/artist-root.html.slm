@@ -24,7 +24,7 @@ a-entity#artist-root position="0 0 0"
             vartiste-rotation-button-mapping=""
             fix-oculus-steamvr=""
             hand-action-tooltip=""
-            webxr-laser="hand: ${hand}; hideTrackingMesh: true; originSpace: gripSpace; fallbackToLaserControls: true"
+            webxr-laser="hand: ${hand}; hideTrackingMesh: true; originSpace: gripSpace; fallbackToLaserControls: true; highlightButtonPresses: false"
             _leap-hand="hand: ${hand}; pinchButton: pinch"
             _hand-helper="hand: ${hand}"
           ]
