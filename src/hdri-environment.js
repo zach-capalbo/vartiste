@@ -72,7 +72,8 @@ AFRAME.registerComponent('hdri-environment', {
     renderer.toneMappingExposure = this.data.exposure
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
-    var pmremGenerator = new PMREMGenerator( renderer );
+    let PMREMGeneratorClass = THREE.PMREMGenerator || PMREMGenerator
+    var pmremGenerator = new PMREMGeneratorClass( renderer );
     pmremGenerator.compileEquirectangularShader();
 
     let skyEl = this.el

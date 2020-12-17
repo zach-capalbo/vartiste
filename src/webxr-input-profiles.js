@@ -139,6 +139,13 @@ AFRAME.registerComponent('webxr-motion-controller', {
     // If true, attempts to fall back to built-in laser controls if WebXR is not
     // supported by the browser
     fallbackToLaserControls: {default: true},
+
+    // If true, sets the emission color for the a button to highlightColor when
+    // the button is pressed
+    highlightButtonPresses: {default: false},
+
+    // Color to set a button to when it is pressed
+    highlightColor: {type: 'color', default: new THREE.Color('#33b889')}
   },
   events: {
     object3dset: function(e) {
@@ -341,6 +348,29 @@ AFRAME.registerComponent('webxr-motion-controller', {
           visualResponse.value
         );
       }
+    }
+
+    if (this.data.highlightButtonPresses && Object.values(component.visualResponses).length)
+    {
+      let value = component.values.button
+      let valueNode = motionControllerRoot.getObjectByName(Object.values(component.visualResponses)[0].valueNodeName)
+      if (!valueNode) {
+        console.warn("can't find node", component.visualResponses[0].valueNodeName)
+        return;
+      }
+
+      valueNode.traverse(o => {
+        if (o.material)
+        {
+          if (o.material.emissiveMap)
+          {
+            o.material = o.material.clone()
+            o.material.emissiveMap = null
+            o.material.needsUpdate = true
+          }
+          o.material.emissive.setRGB(value * this.data.highlightColor.r, value * this.data.highlightColor.g, value * this.data.highlightColor.b);
+        }
+      })
     }
   },
   checkForController() {
