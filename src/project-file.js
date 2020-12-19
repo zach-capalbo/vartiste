@@ -18,6 +18,7 @@ class ProjectFile {
     if (!('allNodes' in obj)) obj.allNodes = []
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
+    if (!('referenceModels' in obj)) obj.referenceModels = []
     if (!('environment' in obj)) obj.environment = {state: 'reset'}
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
     if (!('tools' in obj)) obj.tools = []
@@ -137,6 +138,18 @@ class ProjectFile {
       )
     }
 
+    let referenceContainer = document.querySelector('#reference-spawn')
+    let objectLoader = new THREE.ObjectLoader();
+    for (let refJson of obj.referenceModels)
+    {
+      console.log("Loading reference model")
+      let newEl = document.createElement('a-entity')
+      referenceContainer.append(newEl)
+      newEl.object3D.copy(objectLoader.parse(refJson))
+      newEl.classList.add('clickable')
+      newEl.classList.add('reference-glb')
+    }
+
     if ('skeletonator' in obj)
     {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
@@ -204,6 +217,11 @@ class ProjectFile {
         src: referenceCanvas.toDataURL(dataType, settings.compressionQuality()),
         matrix: image.object3D.matrix.elements
       })
+    })
+
+    obj.referenceModels = []
+    document.querySelectorAll('.reference-glb').forEach(el => {
+      obj.referenceModels.push(el.object3D.toJSON())
     })
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')

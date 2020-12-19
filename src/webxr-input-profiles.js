@@ -426,9 +426,10 @@ var STATES = {
 //        <a-entity id="left-hand" webxr-laser="hand: left"></a-entity>
 //    </a-entity>
 AFRAME.registerComponent('webxr-laser', {
-  dependencies: [''],
+  dependencies: ['raycaster'],
   events: {
     webxrcontrollerset: function(e) {
+      this.el.components.raycaster.data.enabled = true;
       this.el.setAttribute('raycaster', 'showLine', true)
     },
     triggerup: function(e) {
@@ -483,6 +484,7 @@ AFRAME.registerComponent('webxr-laser', {
     {
       this.el.setAttribute('smoothed-webxr-motion-controller', '')
     }
+    this.el.components.raycaster.data.enabled = false;
   },
   clearCurrentIntersection(ignoreRemaining) {
     if (!this.intersectedEl) { return; }

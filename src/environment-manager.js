@@ -214,11 +214,15 @@ Util.registerComponentSystem('environment-manager', {
   setToneMapping(toneMapping) {
     this.el.renderer.toneMapping = toneMapping
     document.querySelectorAll('#world-root,#artist-root,a-sky').forEach(r => { r.object3D.traverse(o => {
-      if (o.visible && o.material && (this.shouldTouchMaterial(o.material)))
+      if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial' || o.material.type === 'MeshBasicMaterial'))
       {
         o.material.needsUpdate = true
       }
     })})
+    // document.querySelectorAll('a-sky').forEach(el => {
+    //   let m = el.getObject3D('mesh').material;
+    //   m.needsUpdate = true
+    // })
     this.el.sceneEl.emit('tonemappingchanged', toneMapping)
   },
   async usePresetHDRI() {

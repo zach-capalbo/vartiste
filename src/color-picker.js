@@ -1,6 +1,7 @@
 // Based on https://jsfiddle.net/gftruj/tLo2vh99/
 const Color = require('color')
 const {Undo} = require('./undo.js')
+import {Util} from './util.js'
 
 // Adds a colorwheel for picking colors for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("color-picker", {
@@ -278,5 +279,45 @@ AFRAME.registerComponent("palette", {
     newButton.setAttribute('tooltip', color)
     newButton.classList.add('custom')
     this.el.append(newButton)
+  }
+})
+
+AFRAME.registerComponent('color-selector-lever', {
+  dependencies: ['lever'],
+  schema: {
+    component: {type: 'string'}
+  },
+  events: {
+    anglechanged: function(e) {
+      let color = this.system.brush.ccolor || Color(this.system.data.color)
+      color = color[this.data.component](e.detail.value)
+      console.log("Levering color", color.rgb().hex(), e.detail.value)
+      this.el.sceneEl.systems['paint-system'].selectColor(color.rgb().hex())
+      if ('ccolor' in this.system.brush)
+      {
+        this.system.brush.ccolor = color
+      }
+    },
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged.bind(this))
+    Util.whenLoaded(this.el, () => {
+      this.onColorChanged({color: this.system.data.color})
+    })
+    if (!this.el.hasAttribute('tooltip'))
+    {
+      this.el.setAttribute('tooltip', Util.titleCase(this.data.component))
+    }
+  },
+  onColorChanged(e) {
+    if (this.system.brush.ccolor)
+    {
+      this.el.components['lever'].setValue(this.system.brush.ccolor[this.data.component]())
+    }
+    else
+    {
+      this.el.components['lever'].setValue(Color(e.detail.color)[this.data.component]())
+    }
   }
 })
