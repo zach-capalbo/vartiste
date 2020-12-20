@@ -289,35 +289,50 @@ AFRAME.registerComponent('color-selector-lever', {
   },
   events: {
     anglechanged: function(e) {
-      let color = this.system.brush.ccolor || Color(this.system.data.color)
-      color = color[this.data.component](e.detail.value)
-      console.log("Levering color", color.rgb().hex(), e.detail.value)
-      this.el.sceneEl.systems['paint-system'].selectColor(color.rgb().hex())
-      if ('ccolor' in this.system.brush)
-      {
-        this.system.brush.ccolor = color
-      }
+      this.isDragging = true
+      this.updateColorValue(e.detail.value)
+      this.isDragging = false
     },
+    editfinished: function(e) {
+      this.updateColorValue(THREE.MathUtils.clamp(parseInt(e.detail.value), 0, this.el.components.lever.data.valueRange.y))
+    }
   },
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
     this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged.bind(this))
-    Util.whenLoaded(this.el, () => {
-      this.onColorChanged({color: this.system.data.color})
-    })
     if (!this.el.hasAttribute('tooltip'))
     {
       this.el.setAttribute('tooltip', Util.titleCase(this.data.component))
     }
+    Util.whenLoaded(this.el, () => {
+      this.onColorChanged({color: this.system.data.color})
+      this.el.querySelector('.label').setAttribute('text', 'value', this.el.getAttribute('tooltip'))
+      this.valueEl = this.el.querySelector('.value')
+    })
+  },
+  updateColorValue(value)
+  {
+    let color = this.system.brush.ccolor || Color(this.system.data.color)
+    color = color[this.data.component](value)
+    console.log("Levering color", color.rgb().hex(), value)
+    this.el.sceneEl.systems['paint-system'].selectColor(color.rgb().hex())
+    if ('ccolor' in this.system.brush)
+    {
+      this.system.brush.ccolor = color
+    }
   },
   onColorChanged(e) {
+    let value
     if (this.system.brush.ccolor)
     {
-      this.el.components['lever'].setValue(this.system.brush.ccolor[this.data.component]())
+      value = this.system.brush.ccolor[this.data.component]()
     }
     else
     {
-      this.el.components['lever'].setValue(Color(e.detail.color)[this.data.component]())
+      value = Color(e.detail.color)[this.data.component]()
     }
+
+    if (!this.isDragging) this.el.components['lever'].setValue(value)
+    this.el.querySelector('.value').setAttribute('text', 'value', `${Math.round(value)}`)
   }
 })
