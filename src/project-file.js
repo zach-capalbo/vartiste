@@ -19,6 +19,7 @@ class ProjectFile {
     if (!('flipY' in obj)) obj.flipY = true
     if (!('referenceImages' in obj)) obj.referenceImages = []
     if (!('referenceModels' in obj)) obj.referenceModels = []
+    if (!('referenceGLBs' in obj)) obj.referenceGLBs = []
     if (!('environment' in obj)) obj.environment = {state: 'reset'}
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
     if (!('tools' in obj)) obj.tools = []
@@ -146,8 +147,23 @@ class ProjectFile {
       let newEl = document.createElement('a-entity')
       referenceContainer.append(newEl)
       newEl.object3D.copy(objectLoader.parse(refJson))
+      newEl.setObject3D('mesh', newEl.object3D.children[0])
       newEl.classList.add('clickable')
       newEl.classList.add('reference-glb')
+    }
+
+    let glbLoader = new THREE.GLTFLoader()
+    for (let glb of obj.referenceGLBs)
+    {
+      console.log("Loading reference glb")
+      let buffer = await base64ToBufferAsync(glb)
+      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+      let newEl = document.createElement('a-entity')
+      newEl.classList.add('clickable')
+      newEl.classList.add('reference-glb')
+      referenceContainer.append(newEl)
+      newEl.object3D.copy(model.scenes[0].children[0])
+      newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
     }
 
     if ('skeletonator' in obj)
@@ -219,10 +235,21 @@ class ProjectFile {
       })
     })
 
+    obj.referenceGLBs = []
     obj.referenceModels = []
-    document.querySelectorAll('.reference-glb').forEach(el => {
-      obj.referenceModels.push(el.object3D.toJSON())
-    })
+    let referenceEls = Array.from(document.querySelectorAll('.reference-glb'));
+
+    for (let el of referenceEls)
+    {
+      try {
+        let glb = await settings.getExportableGLB(el.object3D)
+        let buffer = base64ArrayBuffer(glb)
+        obj.referenceGLBs.push(buffer)
+      } catch (e) {
+        console.warn("Error exporting", el, "as GLB. Saving as JSON")
+        obj.referenceModels.push(el.object3D.toJSON())
+      }
+    }
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')
     if (skeletonatorEl)
