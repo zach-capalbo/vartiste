@@ -47,3 +47,6 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
     a-entity preactivate-tooltip="Move Selector" selection-box-tool="" position="0 -0.2 0"
   a-entity#six-dof-volumetrics visible="false"
     == partial('./volumetrics.html.slm')
+  a-entity#material-packs position="4 0 0"
+    a-entity position="0 0.2 0"
+      a-entity material-pack="pack: Fabric022_2K"
