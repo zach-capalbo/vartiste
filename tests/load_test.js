@@ -57,3 +57,18 @@ Scenario('Toolkit test', async (I) => {
   I.waitForFunction(() => window.hasTicked, 20)
   await I.checkLogForErrors()
 })
+
+Scenario('Skeletonator', async (I) => {
+  I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
+  I.see("VARTISTE is intended to be used with a virtual reality headset.")
+  I.waitForFunction(() => window.passedLoadTest, 20)
+  I.waitForFunction(() => window.loadedSuccessfully, 100)
+  let meshLength = await I.executeScript(() => Compositor.meshes.length)
+  assert.equal(meshLength, 2)
+
+  I.executeScript(() => {
+    document.querySelector('*[tooltip="Skeletonator Animation Tool"]').emit('click', {})
+  })
+  I.waitForFunction(() => Skeletonator.meshes.length, 20)
+  await I.checkLogForErrors()
+})
