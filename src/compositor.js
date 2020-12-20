@@ -1116,7 +1116,7 @@ class CompositorFinder {
       if (mesh !== this.el.getObject3D('mesh'))
       {
         this._nonCanvasMeshes.push(mesh)
-        if (mesh.geometry) this._nonCanvasGeometries.add(o.geometry)
+        if (mesh.geometry) this._nonCanvasGeometries.add(mesh.geometry)
       }
     }
 
