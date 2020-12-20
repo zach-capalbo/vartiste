@@ -336,3 +336,25 @@ AFRAME.registerComponent('color-selector-lever', {
     this.el.querySelector('.value').setAttribute('text', 'value', `${Math.round(value)}`)
   }
 })
+
+AFRAME.registerComponent('color-entry-field', {
+  events: {
+    editfinished: function(e) {
+      let color
+      try {
+        color = Color(e.detail.value).rgb().hex()
+      } catch (err) {
+        color = Color("#" + e.detail.value).rgb().hex()
+      }
+      this.system.selectColor(color)
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged.bind(this))
+    this.el.setAttribute('text', 'value', this.system.data.color)
+  },
+  onColorChanged(e) {
+    this.el.setAttribute('text', 'value', e.detail.color)
+  }
+})
