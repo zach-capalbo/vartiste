@@ -2,7 +2,8 @@ import {Util} from './util.js'
 import {Layer} from './layer.js'
 AFRAME.registerComponent('material-pack', {
   schema: {
-    pack: {type: 'string'}
+    pack: {type: 'string'},
+    applyMask: {default: false},
   },
   events: {
     click: function(e) {
@@ -17,16 +18,24 @@ AFRAME.registerComponent('material-pack', {
     this.view = this.el.querySelector('.view')
     Util.whenLoaded(this.view, () => {
       this.loadTextures()
-    })
+    }),
+    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
   },
   async loadTextures() {
     let promises = []
     let attr = {shader: 'standard'}
 
-    for (let map of ['src', 'normalMap', 'roughnessMap'])
+    let rc = require.context('./material-packs/', true, /.*\.jpg/);
+    for (let fileName of rc.keys())
     {
+      if (!fileName.startsWith("./" + this.data.pack + "/")) continue;
+      console.log("Getting file", fileName)
+      let map = Util.mapFromFilename(fileName)
+      if (!map) {
+        map = 'src'
+      }
       let img = document.createElement('img')
-      img.src = require(`./material-packs/${this.data.pack}/${this.data.pack}_${map}.jpg`)
+      img.src = rc(fileName)
       promises.push(img.decode())
       attr[map] = img
     }
@@ -62,6 +71,7 @@ AFRAME.registerComponent('material-pack', {
     }
   },
   applyMask() {
+    this.data.applyMask = true
     if (!this.tmpCanvas) {
       this.tmpCanvas = document.createElement('canvas')
       this.tmpCanvas.width = Compositor.component.width
@@ -82,43 +92,45 @@ AFRAME.registerComponent('material-pack', {
     for (let map in this.maps)
     {
       let canvas
+      let layer
       if (map === 'src')
       {
-        canvas = Compositor.drawableCanvas
+        layer = Compositor.component.layers.find(l => l.id === this.data.pack)
       }
       else
       {
-        let layer = Compositor.component.layers.find(l => l.mode === map)
-        if (!layer)
+        layer = Compositor.component.layers.find(l => l.mode === map)
+      }
+      if (!layer)
+      {
+        layer = new Layer(Compositor.component.width, Compositor.component.height)
+        if (map === 'src')
         {
-
-          layer = new Layer(Compositor.component.width, Compositor.component.height)
+          layer.id = this.data.pack
+          Compositor.component.addLayer(0, {layer})
+        }
+        else
+        {
           Compositor.component.addLayer(0, {layer})
           Compositor.component.setLayerBlendMode(layer, map)
-          canvas = layer.canvas
         }
-        canvas = layer.frame(Compositor.component.currentFrame)
       }
+      canvas = layer.frame(Compositor.component.currentFrame)
 
       tmpCtx.drawImage(this.maps[map], 0, 0, tmpCanvas.width, tmpCanvas.height,)
       let ctx = canvas.getContext('2d')
-
-      if (map === 'src')
-      {
-        ctx.globalCompositeOperation = 'copy'
-      }
-
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
-
-      if (map === 'src')
-      {
-        ctx.globalCompositeOperation = 'source-over'
-      }
-
       if (canvas.touch) canvas.touch()
+      layer.needsUpdate = true
     }
 
+    maskCanvas.getContext('2d').clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+
     Compositor.component.activateLayer(startingActiveLayer)
+  },
+  tick(t, dt) {
+    if (!this.data.applyMask) return
+    this.applyMask()
   }
 })
 

@@ -21,16 +21,6 @@ function toSrcString(file) {
   return file
 }
 
-const MAP_FROM_FILENAME = {
-  'multiply': [/AmbientOcclusion/i, /(\b|_)AO(map)?(\b|_)/i],
-  'displacementMap': [/(\b|_)Disp(lacement)?(\b|_)/i],
-  'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
-  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
-  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
-  'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
-  'matcap': [/(\b|_)matcap(\b|_)/i]
-}
-
 async function addImageLayer(file, {setMapFromFilename = false} = {}) {
   let image = new Image()
   image.src = toSrcString(file)
@@ -44,13 +34,9 @@ async function addImageLayer(file, {setMapFromFilename = false} = {}) {
 
   if (file.name && setMapFromFilename)
   {
-    for (let map in MAP_FROM_FILENAME)
-    {
-      if (MAP_FROM_FILENAME[map].some(exp => exp.test(file.name)))
-      {
-        layer.mode = map
-        break;
-      }
+    let map = Util.mapFromFilename(file.name)
+    if (map) {
+      layer.mode = map
     }
   }
 
@@ -247,7 +233,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
             let intensityAttribute = mode.slice(0, -3)
             if (material[intensityAttribute] !== defaultStandardMaterial[intensityAttribute])
             {
-              console.log("Applying scalar for", mode) 
+              console.log("Applying scalar for", mode)
               layerCtx.fillStyle = `rgba(${material[intensityAttribute]}, ${material[intensityAttribute]}, ${material[intensityAttribute]}, 255)`
               layerCtx.fillRect(0, 0, width, height)
             }

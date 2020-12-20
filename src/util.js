@@ -1,5 +1,15 @@
 import {Pool} from './pool.js'
 
+const MAP_FROM_FILENAME = {
+  'multiply': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
+  'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
+  'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
+  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
+  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
+  'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
+  'matcap': [/(\b|_)matcap(\b|_)/i]
+}
+
 function whenLoadedSingle(entity, fn) {
   if (entity.hasLoaded)
   {
@@ -325,6 +335,16 @@ class VARTISTEUtil {
         r()
       }, 1)
     })
+  }
+
+  mapFromFilename(filename) {
+    for (let map in MAP_FROM_FILENAME)
+    {
+      if (MAP_FROM_FILENAME[map].some(exp => exp.test(filename)))
+      {
+        return map
+      }
+    }
   }
 
   // recursiveBoundingBox(object, {box = undefined} = {})
