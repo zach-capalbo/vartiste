@@ -1,6 +1,7 @@
 // Based on https://jsfiddle.net/gftruj/tLo2vh99/
 const Color = require('color')
 const {Undo} = require('./undo.js')
+import {Util} from './util.js'
 
 // Adds a colorwheel for picking colors for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("color-picker", {
@@ -278,5 +279,82 @@ AFRAME.registerComponent("palette", {
     newButton.setAttribute('tooltip', color)
     newButton.classList.add('custom')
     this.el.append(newButton)
+  }
+})
+
+AFRAME.registerComponent('color-selector-lever', {
+  dependencies: ['lever'],
+  schema: {
+    component: {type: 'string'}
+  },
+  events: {
+    anglechanged: function(e) {
+      this.isDragging = true
+      this.updateColorValue(e.detail.value)
+      this.isDragging = false
+    },
+    editfinished: function(e) {
+      this.updateColorValue(THREE.MathUtils.clamp(parseInt(e.detail.value), 0, this.el.components.lever.data.valueRange.y))
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged.bind(this))
+    if (!this.el.hasAttribute('tooltip'))
+    {
+      this.el.setAttribute('tooltip', Util.titleCase(this.data.component))
+    }
+    Util.whenLoaded(this.el, () => {
+      this.onColorChanged({color: this.system.data.color})
+      this.el.querySelector('.label').setAttribute('text', 'value', this.el.getAttribute('tooltip'))
+      this.valueEl = this.el.querySelector('.value')
+    })
+  },
+  updateColorValue(value)
+  {
+    let color = this.system.brush.ccolor || Color(this.system.data.color)
+    color = color[this.data.component](value)
+    console.log("Levering color", color.rgb().hex(), value)
+    this.el.sceneEl.systems['paint-system'].selectColor(color.rgb().hex())
+    if ('ccolor' in this.system.brush)
+    {
+      this.system.brush.ccolor = color
+    }
+  },
+  onColorChanged(e) {
+    let value
+    if (this.system.brush.ccolor)
+    {
+      value = this.system.brush.ccolor[this.data.component]()
+    }
+    else
+    {
+      value = Color(e.detail.color)[this.data.component]()
+    }
+
+    if (!this.isDragging) this.el.components['lever'].setValue(value)
+    this.el.querySelector('.value').setAttribute('text', 'value', `${Math.round(value)}`)
+  }
+})
+
+AFRAME.registerComponent('color-entry-field', {
+  events: {
+    editfinished: function(e) {
+      let color
+      try {
+        color = Color(e.detail.value).rgb().hex()
+      } catch (err) {
+        color = Color("#" + e.detail.value).rgb().hex()
+      }
+      this.system.selectColor(color)
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged.bind(this))
+    this.el.setAttribute('text', 'value', this.system.data.color)
+  },
+  onColorChanged(e) {
+    this.el.setAttribute('text', 'value', e.detail.color)
   }
 })

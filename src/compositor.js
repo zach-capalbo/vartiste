@@ -440,12 +440,14 @@ AFRAME.registerComponent('compositor', {
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
     }
 
+    let isVr = this.el.sceneEl.is('vr-mode')
+
     if (!brush.solo)
     {
       for (overlayKey in this.overlays)
       {
         overlay = this.overlays[overlayKey]
-        if (!overlay.el.id.endsWith('-hand')) continue
+        if (isVr && !overlay.el.id.endsWith('-hand')) continue
         let raycaster = overlay.el.components.raycaster
         if (!raycaster) continue
 
@@ -1098,6 +1100,8 @@ class CompositorFinder {
 
     this._meshes = []
     this._nonCanvasMeshes = []
+    this._nonCanvasGeometries = this._nonCanvasGeometries || new Set()
+    this._nonCanvasGeometries.clear()
 
     for (let obj of traverseObjects)
     {
@@ -1109,7 +1113,11 @@ class CompositorFinder {
 
     for (let mesh of this._meshes)
     {
-      if (mesh !== this.el.getObject3D('mesh')) this._nonCanvasMeshes.push(mesh)
+      if (mesh !== this.el.getObject3D('mesh'))
+      {
+        this._nonCanvasMeshes.push(mesh)
+        if (mesh.geometry) this._nonCanvasGeometries.add(mesh.geometry)
+      }
     }
 
     return this._meshes
@@ -1119,6 +1127,12 @@ class CompositorFinder {
     if (this.mesh === this._cachedMeshesMesh) return this._nonCanvasMeshes
     let m = this.meshes
     return this._nonCanvasMeshes
+  }
+
+  get nonCanvasGeometries() {
+    if (this.mesh === this._cachedMeshesMesh) return this._nonCanvasGeometries
+    let m = this.meshes
+    return this._nonCanvasGeometries
   }
 
   get object3D() {

@@ -725,6 +725,9 @@ AFRAME.registerComponent('lever', {
     // Length of the lever handle
     handleLength: {default: 0.35},
 
+    // Radius of the grip sphere
+    gripRadius: {default: 0.07},
+
     // **[min, max]** Range of motion in degrees for the handle. Min and max should be between 0 and 180
     angleRange: {type: 'vec2', default: '30 150'},
 
@@ -774,7 +777,7 @@ AFRAME.registerComponent('lever', {
     let gripPositioner = document.createElement('a-entity')
     let grip = document.createElement('a-sphere')
     grip.setAttribute('position', `0 ${this.data.handleLength} 0`)
-    grip.setAttribute('radius', 0.07)
+    grip.setAttribute('radius', this.data.gripRadius)
     grip.setAttribute('segments-radial', 6)
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
@@ -799,7 +802,7 @@ AFRAME.registerComponent('lever', {
 
     this.eventDetail = {angle: 0, percent: 0, value: this.data.initialValue}
   },
-  update() {
+  update(oldData) {
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
 
     switch (this.data.axis)
@@ -813,6 +816,11 @@ AFRAME.registerComponent('lever', {
       case 'z':
       this.angler.setAttribute('rotation', '0 -90 0')
       break
+    }
+
+    if (this.data.gripRadius !== oldData.gripRadius)
+    {
+      this.grip.setAttribute('radius', this.data.gripRadius)
     }
   },
   tick() {},

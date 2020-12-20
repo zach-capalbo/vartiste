@@ -503,6 +503,31 @@ Util.registerComponentSystem('uv-unwrapper', {
     this.unwrap()
     this.clearShapes()
   },
+  applyLayerTransformToDrawnUVs() {
+    let uv = new THREE.Vector2();
+    let layer = Compositor.component.activeLayer
+    let transform = Compositor.component.activeLayer.transform
+    let canvas = Compositor.drawableCanvas
+    let ctx = canvas.getContext('2d')
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+    let {translation, scale, rotation} = transform
+
+    let transformMatrix = new THREE.Matrix3();
+    let tmpMatrix = new THREE.Matrix3();
+
+    transformMatrix.setUvTransform(translation.x / (layer.width * scale.x), translation.y / (layer.height * scale.y),
+                                   scale.x, scale.y,
+                                   rotation,
+                                   0.5, 0.5)
+
+    for (let geometry of Compositor.nonCanvasGeometries)
+    {
+      let attr = geometry.attributes.uv
+      attr.applyMatrix3(transformMatrix);
+      attr.needsUpdate = true
+    }
+  }
 })
 
 AFRAME.registerComponent('axis-handles', {
