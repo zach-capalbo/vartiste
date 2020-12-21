@@ -6,13 +6,14 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
 const { StatsWriterPlugin } = require("webpack-stats-plugin")
+const webpack = require('webpack')
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
 
 let config = {
   mode: devMode ? "development" : "production",
-  devtool: devMode ? 'inline-source-map' : undefined,
+  devtool: devMode ? 'inline-cheap-module-source-map' : undefined,
   devServer: {
     contentBase: './dist',
     disableHostCheck: true,
@@ -107,7 +108,13 @@ let app = Object.assign({
       template: './src/template.html.slm',
       filename: 'index.html'
     }),
-  ].concat(devMode ? [] : [
+  ].concat(devMode
+    ? [
+       // new webpack.SourceMapDevToolPlugin({
+       //   exclude: /material-packs/,
+       // })
+    ]
+    : [
     new StatsWriterPlugin({
         filename: path.join('.', 'stats', 'app-log.json'),
         fields: null,

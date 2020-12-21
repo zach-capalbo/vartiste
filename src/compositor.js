@@ -258,36 +258,7 @@ AFRAME.registerComponent('compositor', {
 
       if (layer.updateTime === 0)
       {
-        let shouldFill = false
-        let ctx = layer.canvas.getContext('2d')
-        switch (mode)
-        {
-          case 'normalMap':
-            ctx.fillStyle = 'rgb(128, 128, 255)'
-            shouldFill = true
-            break;
-          case 'metalnessMap':
-            ctx.fillStyle = 'rgb(0, 0, 0)'
-            shouldFill = true;
-            break;
-          case 'roughnessMap':
-            ctx.fillStyle = 'rgb(255, 255, 255)'
-            shouldFill = true;
-            break;
-          case 'bumpMap':
-            ctx.fillStyle = 'rgb(0, 0, 0)'
-            shouldFill = true;
-            break;
-          }
-
-          if (shouldFill)
-          {
-            console.log("Clearing brand new", mode)
-            Undo.pushCanvas(layer.canvas)
-            ctx.globalCompositeOperation = 'destination-over'
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-            ctx.globalCompositeOperation = 'source-over'
-          }
+        Util.fillDefaultCanvasForMap(layer.canvas, mode)
       }
 
       layer.touch()

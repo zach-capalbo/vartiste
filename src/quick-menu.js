@@ -175,6 +175,7 @@ AFRAME.registerComponent('shelf-summoner', {
 
     this.shelfEl.removeState('grab-activated')
     this.system.lastSummoned[key] = this.shelfEl
+    this.shelfEl.emit('summoned', {summoner: this.el})
     this.el.sceneEl.emit('refreshobjects')
   }
 })

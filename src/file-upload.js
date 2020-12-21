@@ -15,20 +15,10 @@ class URLFileAdapter {
   }
 }
 
-function toSrcString(file) {
+export function toSrcString(file) {
   if (file instanceof File) return URL.createObjectURL(file)
   if (file instanceof URLFileAdapter) return file.url
   return file
-}
-
-const MAP_FROM_FILENAME = {
-  'multiply': [/AmbientOcclusion/i, /(\b|_)AO(map)?(\b|_)/i],
-  'displacementMap': [/(\b|_)Disp(lacement)?(\b|_)/i],
-  'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
-  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
-  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
-  'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
-  'matcap': [/(\b|_)matcap(\b|_)/i]
 }
 
 async function addImageLayer(file, {setMapFromFilename = false} = {}) {
@@ -44,13 +34,9 @@ async function addImageLayer(file, {setMapFromFilename = false} = {}) {
 
   if (file.name && setMapFromFilename)
   {
-    for (let map in MAP_FROM_FILENAME)
-    {
-      if (MAP_FROM_FILENAME[map].some(exp => exp.test(file.name)))
-      {
-        layer.mode = map
-        break;
-      }
+    let map = Util.mapFromFilename(file.name)
+    if (map) {
+      layer.mode = map
     }
   }
 
@@ -247,7 +233,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
             let intensityAttribute = mode.slice(0, -3)
             if (material[intensityAttribute] !== defaultStandardMaterial[intensityAttribute])
             {
-              console.log("Applying scalar for", mode) 
+              console.log("Applying scalar for", mode)
               layerCtx.fillStyle = `rgba(${material[intensityAttribute]}, ${material[intensityAttribute]}, ${material[intensityAttribute]}, 255)`
               layerCtx.fillRect(0, 0, width, height)
             }
@@ -496,6 +482,7 @@ Util.registerComponentSystem('file-upload', {
     replaceMesh: {default: true},
   },
   init() {
+    this.fileInterceptors = []
     document.body.ondragover = (e) => {
       // console.log("Drag over", e.detail)
       e.preventDefault()
@@ -505,9 +492,15 @@ Util.registerComponentSystem('file-upload', {
       console.log("Drop", e.detail)
       e.preventDefault()
       let referenceIdx = 0
+      let items = Array.from(e.dataTransfer.items)
 
-      if (e.dataTransfer.items) {
-        for (let item of e.dataTransfer.items)
+      for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+      {
+        if (this.fileInterceptors[i](items)) return;
+      }
+
+      if (items) {
+        for (let item of items)
         {
           if (item.kind !== 'file') continue
 
