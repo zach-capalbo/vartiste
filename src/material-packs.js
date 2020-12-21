@@ -222,7 +222,8 @@ AFRAME.registerComponent('material-pack', {
       }
       let img = document.createElement('img')
       img.src = rc(fileName)
-      promises.push(img.decode())
+
+      promises.push(new Promise(r => img.onload = r))
       attr[map] = img
     }
 
