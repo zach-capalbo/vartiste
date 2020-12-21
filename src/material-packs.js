@@ -1,12 +1,45 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
+import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 
+window.Undo = Undo
+
 Util.registerComponentSystem('material-pack-system', {
+  events: {
+    startdrawing: function(e) {
+      if (!this.activeMaterialMask || !Undo.enabled) return
+      this.oldUndo = Undo.pushCanvas
+      this.undid = true
+      Undo.pushCanvas = () => {
+        console.log("Trying to push material undo")
+        Undo.pushCanvas = this.oldUndo
+        Undo.collect(() => {
+          let currentFrame = Compositor.component.currentFrame
+          let src = Compositor.component.layers.find(l => l.id === 'material-pack')
+          if (src) Undo.pushCanvas(src.frame(currentFrame))
+          for (let map in this.defaultMap)
+          {
+            let layer = Compositor.component.layers.find(l => l.mode === map)
+            if (!layer) continue;
+            Undo.pushCanvas(layer.frame(currentFrame))
+          }
+        })
+        Undo.pushAllowed = false
+      };
+    },
+    enddrawing: function(e) {
+      if (!this.undid) return
+      Undo.pushAllowed = true
+      Undo.pushCanvas = this.oldUndo
+      this.undid = false
+    }
+  },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     let packRootEl = this.el.sceneEl.querySelector('#material-packs')
-    packRootEl.addEventListener('summoned', this.loadPacks.bind(this))
+    this.loadPacks = this.loadPacks.bind(this)
+    packRootEl.addEventListener('summoned', this.loadPacks)
     this.packRootEl = packRootEl
     this.loadedPacks = {}
     this.interceptFile = this.interceptFile.bind(this)
@@ -40,6 +73,7 @@ Util.registerComponentSystem('material-pack-system', {
     this.ySpacing = 1.5
   },
   loadPacks() {
+    this.packRootEl.removeEventListener('summoned', this.loadPacks)
     let packContainer = this.packRootEl.querySelector('.pack-container')
     let rc = require.context('./material-packs/', true, /.*\.jpg/)
     let x = 0
@@ -140,7 +174,7 @@ Util.registerComponentSystem('material-pack-system', {
   tick(t,dt) {
     if (this.activeMaterialMask)
     {
-      this.activeMaterialMask.applyMask()
+      Undo.block(this.activeMaterialMask.applyMask)
     }
   }
 })
@@ -162,6 +196,7 @@ AFRAME.registerComponent('material-pack', {
     this.system = this.el.sceneEl.systems['material-pack-system'];
     this.el.innerHTML = require('./partials/material-pack.html.slm')
     this.view = this.el.querySelector('.view')
+    this.applyMask = this.applyMask.bind(this)
     Util.whenLoaded(this.view, () => {
       if (this.data.pack) this.loadTextures()
       this.el.children[0].setAttribute('frame', 'name', this.data.pack)
@@ -252,7 +287,7 @@ AFRAME.registerComponent('material-pack', {
       if (!layer)
       {
         if (this.maps[map].id.startsWith('default-')) continue;
-        
+
         layer = new Layer(Compositor.component.width, Compositor.component.height)
         if (map === 'src')
         {
