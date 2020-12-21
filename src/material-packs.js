@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
+import {toSrcString} from './file-upload.js'
 
 Util.registerComponentSystem('material-pack-system', {
   init() {
@@ -8,15 +9,31 @@ Util.registerComponentSystem('material-pack-system', {
     packRootEl.addEventListener('summoned', this.loadPacks.bind(this))
     this.packRootEl = packRootEl
     this.loadedPacks = {}
+    this.interceptFile = this.interceptFile.bind(this)
+    packRootEl.addEventListener('componentchanged', (e) => {
+      if (e.detail.name === 'visible')
+      {
+        if (packRootEl.getAttribute('visible'))
+        {
+          this.el.sceneEl.systems['file-upload'].fileInterceptors.push(this.interceptFile)
+        }
+        else
+        {
+          this.el.sceneEl.systems['file-upload'].fileInterceptors.splice(this.el.sceneEl.systems['file-upload'].fileInterceptors.indexOf(this.interceptFile), 1)
+        }
+      }
+    })
+
+    this.colCount = 3
+    this.xSpacing = 1.1
+    this.ySpacing = 1.5
   },
   loadPacks() {
     let packContainer = this.packRootEl.querySelector('.pack-container')
     let rc = require.context('./material-packs/', true, /.*\.jpg/)
     let x = 0
     let y = 0
-    let colCount = 3
-    let xSpacing = 1.1
-    let ySpacing = 1.5
+
     for (let fileName of rc.keys())
     {
       let packName = fileName.split("/")[1]
@@ -25,13 +42,64 @@ Util.registerComponentSystem('material-pack-system', {
       let el = document.createElement('a-entity')
       packContainer.append(el)
       el.setAttribute('material-pack', `pack: ${packName}`)
-      el.setAttribute('position', `${x * xSpacing} ${y * ySpacing} 0`)
+      el.setAttribute('position', `${x * this.xSpacing} -${y * this.ySpacing} 0`)
       this.loadedPacks[packName] = el
-      if (++x === colCount) {
+      if (++x === this.colCount) {
         x = 0
         y++
       }
     }
+    this.x = x
+    this.y = y
+  },
+  interceptFile(items)
+  {
+    console.log("Intercepting files for material", items)
+    let itemsToRemove = []
+    let attr = {}
+    let hasAttr = false
+    let promises = []
+    for (let i = 0; i < items.length; ++i)
+    {
+      let item = items[i];
+      if (item.kind !== 'file') continue
+      let file = item.getAsFile()
+      let isImage = item.type ? /image\//.test(item.type) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
+      if (!isImage) continue
+
+      let img = new Image()
+      img.src = toSrcString(file)
+      let map = Util.mapFromFilename(file.name)
+      if (!map) {
+        map = 'src'
+      }
+      promises.push(img.decode())
+      attr[map] = img
+      hasAttr = true
+    }
+    if (hasAttr) {
+      attr.shader = 'standard'
+      let el = document.createElement('a-entity')
+      let packContainer = this.packRootEl.querySelector('.pack-container')
+      packContainer.append(el)
+      el.setAttribute('material-pack', '')
+      el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
+      if (++this.x === this.colCount)
+      {
+        this.x = 0;
+        this.y++;
+      }
+      Promise.all(promises).then(() => {
+        Util.whenLoaded(el, () => {
+          el.components['material-pack'].view.setAttribute('material', attr)
+          delete attr.shader
+          el.components['material-pack'].maps = attr
+        })
+      })
+      return true
+    }
+
+    return false
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
@@ -80,7 +148,7 @@ AFRAME.registerComponent('material-pack', {
     this.el.innerHTML = require('./partials/material-pack.html.slm')
     this.view = this.el.querySelector('.view')
     Util.whenLoaded(this.view, () => {
-      this.loadTextures()
+      if (this.data.pack) this.loadTextures()
       this.el.children[0].setAttribute('frame', 'name', this.data.pack)
     })
   },
@@ -130,12 +198,14 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
   },
   fillMaterial() {
+    Compositor.el.setAttribute('material', 'shader', 'standard')
+    let startingActiveLayer = Compositor.component.activeLayer
     for (let map in this.maps)
     {
       let canvas
       if (map === 'src')
       {
-        canvas = Compositor.drawableCanvas
+        canvas = startingActiveLayer.frame(Compositor.component.currentFrame)
       }
       else
       {
@@ -149,10 +219,13 @@ AFRAME.registerComponent('material-pack', {
           canvas = layer.canvas
         }
         canvas = layer.frame(Compositor.component.currentFrame)
+        layer.needsUpdate = true
       }
 
       canvas.getContext('2d').drawImage(this.maps[map], 0, 0, canvas.width, canvas.height,)
+      if (canvas.touch) canvas.touch()
     }
+    Compositor.component.activateLayer(startingActiveLayer)
   },
   applyMask() {
     let tmpCanvas = this.system.tmpCanvas()

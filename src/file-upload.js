@@ -15,7 +15,7 @@ class URLFileAdapter {
   }
 }
 
-function toSrcString(file) {
+export function toSrcString(file) {
   if (file instanceof File) return URL.createObjectURL(file)
   if (file instanceof URLFileAdapter) return file.url
   return file
@@ -482,6 +482,7 @@ Util.registerComponentSystem('file-upload', {
     replaceMesh: {default: true},
   },
   init() {
+    this.fileInterceptors = []
     document.body.ondragover = (e) => {
       // console.log("Drag over", e.detail)
       e.preventDefault()
@@ -491,9 +492,15 @@ Util.registerComponentSystem('file-upload', {
       console.log("Drop", e.detail)
       e.preventDefault()
       let referenceIdx = 0
+      let items = Array.from(e.dataTransfer.items)
 
-      if (e.dataTransfer.items) {
-        for (let item of e.dataTransfer.items)
+      for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+      {
+        if (this.fileInterceptors[i](items)) return;
+      }
+
+      if (items) {
+        for (let item of items)
         {
           if (item.kind !== 'file') continue
 

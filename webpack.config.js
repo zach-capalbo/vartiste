@@ -107,7 +107,13 @@ let app = Object.assign({
       template: './src/template.html.slm',
       filename: 'index.html'
     }),
-  ].concat(devMode ? [] : [
+  ].concat(devMode
+    ? [
+       // new webpack.SourceMapDevToolPlugin({
+       //   exclude: /material-packs/,
+       // })
+    ]
+    : [
     new StatsWriterPlugin({
         filename: path.join('.', 'stats', 'app-log.json'),
         fields: null,
