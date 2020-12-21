@@ -5,6 +5,7 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
     a-entity icon-button="#asset-spray" tooltip="Cameras / Spray Paint" shelf-summoner="selector: #cameras-and-spray-paint"
     a-entity icon-button="#asset-web" tooltip="Volumetric Tools" shelf-summoner="selector: #six-dof-volumetrics"
     a-entity icon-button="#asset-masked-bucket" tooltip="Misc Tools" shelf-summoner="selector: #misc-six-dof-tools"
+    a-entity icon-button="#asset-transition-masked" tooltip="Material Packs" shelf-summoner="selector: #material-packs"
   a-entity position="-1.5 1.1 0" icon-row=""
   a-entity position="-1.5 1.1 0" icon-row=""
     a-entity system-click-action="system: pencil-tool; action: toggleGrabRotation" icon-button="#asset-rotate-orbit" tooltip="Toggle Grab Rotation Lock"
@@ -47,8 +48,5 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
     a-entity preactivate-tooltip="Move Selector" selection-box-tool="" position="0 -0.2 0"
   a-entity#six-dof-volumetrics visible="false"
     == partial('./volumetrics.html.slm')
-  a-entity#material-packs position="4 0 0"
-    a-entity position="0 0.2 0"
-      a-entity material-pack="pack: Fabric022_2K" position="-1 0 0"
-      a-entity material-pack="pack: Rock011_2K" position="0 0 0"
-      a-entity material-pack="pack: Metal007_2K" position="1 0 0"
+  a-entity#material-packs position="4 0 0" visible="false"
+    a-entity.pack-container position="-0.2 0.2 0" scale="0.3 0.3 0.3"

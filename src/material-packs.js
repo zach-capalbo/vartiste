@@ -1,5 +1,67 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
+
+Util.registerComponentSystem('material-pack-system', {
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    let packRootEl = this.el.sceneEl.querySelector('#material-packs')
+    packRootEl.addEventListener('summoned', this.loadPacks.bind(this))
+    this.packRootEl = packRootEl
+    this.loadedPacks = {}
+  },
+  loadPacks() {
+    let packContainer = this.packRootEl.querySelector('.pack-container')
+    let rc = require.context('./material-packs/', true, /.*\.jpg/)
+    let x = 0
+    let y = 0
+    let colCount = 3
+    let xSpacing = 1.1
+    let ySpacing = 1.5
+    for (let fileName of rc.keys())
+    {
+      let packName = fileName.split("/")[1]
+      if (packName in this.loadedPacks) continue;
+      console.log("Loading", packName)
+      let el = document.createElement('a-entity')
+      packContainer.append(el)
+      el.setAttribute('material-pack', `pack: ${packName}`)
+      el.setAttribute('position', `${x * xSpacing} ${y * ySpacing} 0`)
+      this.loadedPacks[packName] = el
+      if (++x === colCount) {
+        x = 0
+        y++
+      }
+    }
+  },
+  activateMaterialMask(mask) {
+    this.activeMaterialMask = mask
+    Compositor.el.setAttribute('material', 'shader', 'standard')
+  },
+  tmpCanvas() {
+    if (!this._tmpCanvas)
+    {
+      this._tmpCanvas = document.createElement('canvas')
+    }
+    if (this._tmpCanvas.width !== Compositor.component.width || this._tmpCanvas.height !== Compositor.component.height)
+    {
+      this._tmpCanvas.width = Compositor.component.width
+      this._tmpCanvas.height = Compositor.component.height
+    }
+    this._tmpCtx = this._tmpCanvas.getContext('2d')
+    return this._tmpCanvas
+  },
+  tmpCtx() {
+    this.tmpCanvas()
+    return this._tmpCtx
+  },
+  tick(t,dt) {
+    if (this.activeMaterialMask)
+    {
+      this.activeMaterialMask.applyMask()
+    }
+  }
+})
+
 AFRAME.registerComponent('material-pack', {
   schema: {
     pack: {type: 'string'},
@@ -14,12 +76,13 @@ AFRAME.registerComponent('material-pack', {
     }
   },
   init() {
+    this.system = this.el.sceneEl.systems['material-pack-system'];
     this.el.innerHTML = require('./partials/material-pack.html.slm')
     this.view = this.el.querySelector('.view')
     Util.whenLoaded(this.view, () => {
       this.loadTextures()
-    }),
-    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+      this.el.children[0].setAttribute('frame', 'name', this.data.pack)
+    })
   },
   async loadTextures() {
     let promises = []
@@ -44,6 +107,27 @@ AFRAME.registerComponent('material-pack', {
     this.view.setAttribute('material', attr)
     this.maps = attr
     delete this.maps.shader
+  },
+  activateMask(e) {
+    if (this.system.activeMaterialMask === this)
+    {
+      this.system.activeMaterialMask = undefined
+      this.deactivateMask()
+      return
+    }
+
+    if (this.system.activeMaterialMask)
+    {
+      this.system.activeMaterialMask.deactivateMask()
+    }
+
+    this.system.activateMaterialMask(this)
+    this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = true
+    this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(true)
+  },
+  deactivateMask() {
+    this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
+    this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
   },
   fillMaterial() {
     for (let map in this.maps)
@@ -71,16 +155,9 @@ AFRAME.registerComponent('material-pack', {
     }
   },
   applyMask() {
-    this.data.applyMask = true
-    if (!this.tmpCanvas) {
-      this.tmpCanvas = document.createElement('canvas')
-      this.tmpCanvas.width = Compositor.component.width
-      this.tmpCanvas.height = Compositor.component.height
-    }
-
-    let tmpCanvas = this.tmpCanvas
+    let tmpCanvas = this.system.tmpCanvas()
     let maskCanvas = Compositor.drawableCanvas
-    let tmpCtx = tmpCanvas.getContext('2d')
+    let tmpCtx = this.system.tmpCtx()
 
     tmpCtx.globalCompositeOperation = 'copy'
     tmpCtx.drawImage(maskCanvas, 0, 0)
@@ -95,7 +172,7 @@ AFRAME.registerComponent('material-pack', {
       let layer
       if (map === 'src')
       {
-        layer = Compositor.component.layers.find(l => l.id === this.data.pack)
+        layer = Compositor.component.layers.find(l => l.id === 'material-pack')
       }
       else
       {
@@ -106,8 +183,8 @@ AFRAME.registerComponent('material-pack', {
         layer = new Layer(Compositor.component.width, Compositor.component.height)
         if (map === 'src')
         {
-          layer.id = this.data.pack
-          Compositor.component.addLayer(0, {layer})
+          layer.id = 'material-pack'
+          Compositor.component.addLayer(undefined, {layer})
         }
         else
         {
@@ -128,10 +205,6 @@ AFRAME.registerComponent('material-pack', {
 
     Compositor.component.activateLayer(startingActiveLayer)
   },
-  tick(t, dt) {
-    if (!this.data.applyMask) return
-    this.applyMask()
-  }
 })
 
 AFRAME.registerComponent('material-draw', {
