@@ -7,6 +7,12 @@ window.Undo = Undo
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
+    layerupdated: function(e) {
+      if (!this.activeMaterialMask) return;
+      if (this.activeMaterialMask.isApplying) return;
+      this.activeMaterialMask.deactivateMask()
+      this.activeMaterialMask = undefined
+    },
     startdrawing: function(e) {
       if (!this.activeMaterialMask || !Undo.enabled) return
       this.oldUndo = Undo.pushCanvas
@@ -267,6 +273,7 @@ AFRAME.registerComponent('material-pack', {
 
   },
   applyMask() {
+    this.isApplying = true
     let tmpCanvas = this.system.tmpCanvas()
     let maskCanvas = Compositor.drawableCanvas
     let tmpCtx = this.system.tmpCtx()
@@ -318,6 +325,7 @@ AFRAME.registerComponent('material-pack', {
     maskCanvas.getContext('2d').clearRect(0, 0, maskCanvas.width, maskCanvas.height)
 
     Compositor.component.activateLayer(startingActiveLayer)
+    this.isApplying = false
   },
 })
 
