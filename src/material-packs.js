@@ -73,6 +73,10 @@ Util.registerComponentSystem('material-pack-system', {
       if (!map) {
         map = 'src'
       }
+      if (map === 'displacementMap') {
+        console.warn("Ignoring displacement map for the time being")
+        continue;
+      }
       promises.push(img.decode())
       attr[map] = img
       hasAttr = true

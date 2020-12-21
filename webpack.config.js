@@ -6,6 +6,7 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
 const { StatsWriterPlugin } = require("webpack-stats-plugin")
+const webpack = require('webpack')
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
