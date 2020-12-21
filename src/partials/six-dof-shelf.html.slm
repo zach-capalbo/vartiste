@@ -48,5 +48,6 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
     a-entity preactivate-tooltip="Move Selector" selection-box-tool="" position="0 -0.2 0"
   a-entity#six-dof-volumetrics visible="false"
     == partial('./volumetrics.html.slm')
-  a-entity#material-packs position="4 0 0" visible="false"
+  a-entity#material-packs.grab-root position="4 0 0" visible="false"
+    a-entity.clickable#droptext propogate-grab="" text="width: 1; value: Drag and drop images to create new material packs" geometry="primitive: plane; width: 1; height: 0.17" material="src: #asset-shelf" position="0 0.52 0" frame="closable: true"
     a-entity.pack-container position="-0.2 0.2 0" scale="0.3 0.3 0.3"

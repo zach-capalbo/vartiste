@@ -215,6 +215,11 @@ AFRAME.registerComponent('material-pack', {
       if (!map) {
         map = 'src'
       }
+      if (map === 'multiply' || map === 'displacementMap')
+      {
+        console.warn("Map", map, "not currently supported. Skipping")
+        continue;
+      }
       let img = document.createElement('img')
       img.src = rc(fileName)
       promises.push(img.decode())

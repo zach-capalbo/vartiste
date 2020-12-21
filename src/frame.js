@@ -68,34 +68,58 @@ AFRAME.registerComponent("frame", {
     }
   },
   init() {
-    Pool.init(this)
-    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
+    let target = (this.data.geometryTarget || this.el)
+    let {width, height} = target.getAttribute('geometry')
     this.width = width
     this.height = height
 
+    target.addEventListener('componentinitialized', (e) => {
+      if (e.detail.name === 'geometry')
+      {
+        this.update(this.data)
+      }
+    })
+
+    Pool.init(this)
     this.buttonCount = 0
 
     this.buttonRow = document.createElement('a-entity')
     this.el.append(this.buttonRow)
 
     this.objects = []
+  },
+  remove() {
+    if (this.lineObject) {
+      this.lineObject.parent.remove(this.lineObject)
+    }
+  },
+  update(oldData) {
+    if (!this.objects) return
+    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
 
-    if (this.data.closable)
+    if (this.data.closable && !oldData.closable)
     {
       let closeButton = this.addButton('#asset-close-circle-outline')
       closeButton.setAttribute('frame-action', "closeFrame")
       closeButton.setAttribute('tooltip', "Close")
       closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
     }
+    else if (!this.data.closable && oldData.closable)
+    {
+      this.removeButton('#asset-close-circle-outline')
+    }
 
-    if (this.data.pinnable) {
+    if (this.data.pinnable && !oldData.pinnable) {
       let closeButton = this.addButton('#asset-hand-right')
       closeButton.setAttribute('frame-action', "pinFrame")
       closeButton.setAttribute('tooltip', "Pin / Unpin to opposite hand")
       closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
     }
+    else if (!this.data.pinnable && oldData.pinnable) {
+      this.removeButton('#asset-close-circle-outline')
+    }
 
-    if (this.data.name)
+    if (this.data.name && !this.title)
     {
       let {width, height} = this
       let title = document.createElement('a-entity')
@@ -106,19 +130,16 @@ AFRAME.registerComponent("frame", {
       title.setAttribute('class', 'raycast-invisible')
       this.el.append(title)
       this.objects.push(title.object3D)
+      this.title = title
     }
-  },
-  remove() {
-    if (this.lineObject) {
-      this.lineObject.parent.remove(this.lineObject)
-    }
-  },
-  update(oldData) {
-    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
-
-    if (this.data.outline && !this.lineObject)
+    else if (this.data.name && this.data.name !== oldData.name)
     {
-      let zOffset = -0.001
+      this.title.setAttribute('text', 'value', this.data.name)
+    }
+
+    let zOffset = -0.001
+    if (this.data.outline && !this.lineObject && !isNaN(width) && !isNaN(height))
+    {
       let outline = new THREE.Geometry()
       outline.vertices.push(new THREE.Vector3(-width / 2, height / 2, zOffset));
       outline.vertices.push(new THREE.Vector3(width / 2, height / 2, zOffset));
@@ -130,6 +151,14 @@ AFRAME.registerComponent("frame", {
       this.el.object3D.add(lineObject)
       this.lineObject = lineObject
       this.objects.push(lineObject)
+    }
+    else if (this.data.outline && this.lineObject)
+    {
+      this.lineObject.geometry.vertices[0].set(-width / 2, height / 2, zOffset);
+      this.lineObject.geometry.vertices[1].set( width / 2, height / 2, zOffset);
+      this.lineObject.geometry.vertices[2].set(width / 2, - height / 2, zOffset);
+      this.lineObject.geometry.vertices[3].set(-width / 2, - height / 2, zOffset);
+      this.lineObject.geometry.vertices[4].set(-width / 2, height / 2, zOffset);
     }
     else if (!this.data.outline && this.lineObject)
     {
@@ -146,6 +175,10 @@ AFRAME.registerComponent("frame", {
     {
       this.el.classList.remove('clickable')
     }
+
+    this.width = width
+    this.height = height
+    this.relayout()
   },
   addButton(icon) {
     let {width, height} = this
@@ -157,6 +190,24 @@ AFRAME.registerComponent("frame", {
     this.buttonRow.append(button)
     this.objects.push(button)
     return button
+  },
+  removeButton(icon) {
+    let button = this.objects.find(o => o.getAttribute('icon-button') === icon)
+    if (!button) {
+      console.warn("Can't find icon to remove button", icon)
+      return
+    }
+    idx = this.objects.indexOf(button)
+    this.objects.splice(idx, 1)
+    this.buttonRow.remove(button)
+  },
+  relayout() {
+    let i = 0;
+    let {width, height} = this;
+    for (let b of this.buttonRow.children)
+    {
+      b.setAttribute('position', `${width / 2 - 0.055 - i++ * 0.6} ${height / 2 + 0.055} 0`)
+    }
   },
   closeFrame() {
     if (this.data.closePopup)
