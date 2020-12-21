@@ -1,6 +1,7 @@
 import {Pool} from './pool.js'
+import {Undo} from './undo.js'
 
-const MAP_FROM_FILENAME = {
+export const MAP_FROM_FILENAME = {
   'multiply': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
   'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
   'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
@@ -345,6 +346,41 @@ class VARTISTEUtil {
         return map
       }
     }
+  }
+
+  fillDefaultCanvasForMap(canvas, map)
+  {
+    let shouldFill = false
+    let ctx = canvas.getContext('2d')
+    switch (map)
+    {
+      case 'normalMap':
+        ctx.fillStyle = 'rgb(128, 128, 255)'
+        shouldFill = true
+        break;
+      case 'metalnessMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'roughnessMap':
+        ctx.fillStyle = 'rgb(255, 255, 255)'
+        shouldFill = true;
+        break;
+      case 'bumpMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      }
+
+      if (shouldFill)
+      {
+        Undo.pushCanvas(canvas)
+        ctx.globalCompositeOperation = 'destination-over'
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.globalCompositeOperation = 'source-over'
+      }
+
+      return shouldFill
   }
 
   // recursiveBoundingBox(object, {box = undefined} = {})

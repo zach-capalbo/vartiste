@@ -13,7 +13,7 @@ const devMode = !production
 
 let config = {
   mode: devMode ? "development" : "production",
-  devtool: devMode ? 'inline-source-map' : undefined,
+  devtool: devMode ? 'inline-cheap-module-source-map' : undefined,
   devServer: {
     contentBase: './dist',
     disableHostCheck: true,

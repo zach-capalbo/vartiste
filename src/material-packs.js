@@ -24,6 +24,17 @@ Util.registerComponentSystem('material-pack-system', {
       }
     })
 
+    this.defaultMap = {};
+    for (let map of ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'])
+    {
+      let canvas = document.createElement('canvas')
+      canvas.width = 24
+      canvas.height = 24
+      canvas.id = 'default-' + map
+      Util.fillDefaultCanvasForMap(canvas, map)
+      this.defaultMap[map] = canvas
+    }
+
     this.colCount = 3
     this.xSpacing = 1.1
     this.ySpacing = 1.5
@@ -179,6 +190,12 @@ AFRAME.registerComponent('material-pack', {
     this.view.setAttribute('material', attr)
     this.maps = attr
     delete this.maps.shader
+
+    for (let map in this.system.defaultMap)
+    {
+      if (map in this.maps) continue;
+      this.maps[map] = this.system.defaultMap[map]
+    }
   },
   activateMask(e) {
     if (this.system.activeMaterialMask === this)
@@ -203,33 +220,10 @@ AFRAME.registerComponent('material-pack', {
   },
   fillMaterial() {
     Compositor.el.setAttribute('material', 'shader', 'standard')
-    let startingActiveLayer = Compositor.component.activeLayer
-    for (let map in this.maps)
-    {
-      let canvas
-      if (map === 'src')
-      {
-        canvas = startingActiveLayer.frame(Compositor.component.currentFrame)
-      }
-      else
-      {
-        let layer = Compositor.component.layers.find(l => l.mode === map)
-        if (!layer)
-        {
+    let canvas = Compositor.drawableCanvas
+    canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height)
+    this.applyMask()
 
-          layer = new Layer(Compositor.component.width, Compositor.component.height)
-          Compositor.component.addLayer(0, {layer})
-          Compositor.component.setLayerBlendMode(layer, map)
-          canvas = layer.canvas
-        }
-        canvas = layer.frame(Compositor.component.currentFrame)
-        layer.needsUpdate = true
-      }
-
-      canvas.getContext('2d').drawImage(this.maps[map], 0, 0, canvas.width, canvas.height,)
-      if (canvas.touch) canvas.touch()
-    }
-    Compositor.component.activateLayer(startingActiveLayer)
   },
   applyMask() {
     let tmpCanvas = this.system.tmpCanvas()
@@ -257,6 +251,8 @@ AFRAME.registerComponent('material-pack', {
       }
       if (!layer)
       {
+        if (this.maps[map].id.startsWith('default-')) continue;
+        
         layer = new Layer(Compositor.component.width, Compositor.component.height)
         if (map === 'src')
         {
