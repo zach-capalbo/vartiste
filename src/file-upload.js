@@ -543,6 +543,25 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
+    if (/\.materialpack$/i.test(file.name))
+    {
+      (async () => {
+      let loader = new THREE.GLTFLoader()
+      let buffer = await file.arrayBuffer()
+      let model
+      try {
+        model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+      }
+      catch (e) {
+        console.error("Could not load model", e)
+        window.loadErrorBuffer = buffer
+        return
+      }
+      settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
+      })()
+      return
+    }
+
     if (/\.((glb)|(gltf)|(obj)|(fbx)|(vrm))$/i.test(file.name))
     {
       if (settings.data.addReferences)

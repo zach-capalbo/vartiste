@@ -194,6 +194,13 @@ class ProjectFile {
         Util.applyMatrix(matrix, el.object3D)
       })
     }
+
+    if (obj.materialPack)
+    {
+      let buffer = await base64ToBufferAsync(obj.materialPack[0])
+      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+      settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
+    }
   }
 
   async _save() {
@@ -312,6 +319,18 @@ class ProjectFile {
         componentDependencies: dependencies,
       })
     })
+
+    let materialPackRoot = new THREE.Object3D
+    document.querySelectorAll('.user[material-pack] .view').forEach(el => {
+      materialPackRoot.add(el.getObject3D('mesh').clone())
+    })
+    if (materialPackRoot.children.length)
+    {
+      let oldExportJPEG = settings.data.exportJPEG
+      settings.data.exportJPEG = true
+      obj.materialPack = [await base64ArrayBuffer(await settings.getExportableGLB(materialPackRoot))]
+      settings.data.exportJPEG = oldExportJPEG
+    }
 
     return obj
   }

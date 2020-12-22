@@ -3,7 +3,7 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 
-window.Undo = Undo
+const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -64,7 +64,7 @@ Util.registerComponentSystem('material-pack-system', {
     })
 
     this.defaultMap = {};
-    for (let map of ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'])
+    for (let map of HANDLED_MAPS)
     {
       let canvas = document.createElement('canvas')
       canvas.width = 24
@@ -77,13 +77,13 @@ Util.registerComponentSystem('material-pack-system', {
     this.colCount = 3
     this.xSpacing = 1.1
     this.ySpacing = 1.5
+    this.x = 0
+    this.y = 0
   },
   loadPacks() {
     this.packRootEl.removeEventListener('summoned', this.loadPacks)
     let packContainer = this.packRootEl.querySelector('.pack-container')
     let rc = require.context('./material-packs/', true, /.*\.jpg/)
-    let x = 0
-    let y = 0
 
     for (let fileName of rc.keys())
     {
@@ -93,15 +93,14 @@ Util.registerComponentSystem('material-pack-system', {
       let el = document.createElement('a-entity')
       packContainer.append(el)
       el.setAttribute('material-pack', `pack: ${packName}`)
-      el.setAttribute('position', `${x * this.xSpacing} -${y * this.ySpacing} 0`)
+      el.setAttribute('rotation', '-15 0 0')
+      el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
       this.loadedPacks[packName] = el
-      if (++x === this.colCount) {
-        x = 0
-        y++
+      if (++this.x === this.colCount) {
+        this.x = 0
+        this.y++
       }
     }
-    this.x = x
-    this.y = y
   },
   interceptFile(items)
   {
@@ -109,7 +108,6 @@ Util.registerComponentSystem('material-pack-system', {
     let itemsToRemove = []
     let attr = {}
     let hasAttr = false
-    let promises = []
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
@@ -128,33 +126,80 @@ Util.registerComponentSystem('material-pack-system', {
         console.warn("Ignoring displacement map for the time being")
         continue;
       }
-      promises.push(img.decode())
       attr[map] = img
       hasAttr = true
     }
     if (hasAttr) {
-      attr.shader = 'standard'
-      let el = document.createElement('a-entity')
-      let packContainer = this.packRootEl.querySelector('.pack-container')
-      packContainer.append(el)
-      el.setAttribute('material-pack', '')
-      el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
-      if (++this.x === this.colCount)
-      {
-        this.x = 0;
-        this.y++;
-      }
-      Promise.all(promises).then(() => {
-        Util.whenLoaded(el, () => {
-          el.components['material-pack'].view.setAttribute('material', attr)
-          delete attr.shader
-          el.components['material-pack'].maps = attr
-        })
-      })
+      this.addMaterialPack(attr)
       return true
     }
 
     return false
+  },
+  addMaterialPack(attr) {
+    let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
+    attr.shader = 'standard'
+    let el = document.createElement('a-entity')
+    let packContainer = this.packRootEl.querySelector('.pack-container')
+    packContainer.append(el)
+    el.classList.add("user")
+    el.setAttribute('material-pack', '')
+    el.setAttribute('rotation', '-15 0 0')
+    el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
+    if (++this.x === this.colCount)
+    {
+      this.x = 0;
+      this.y++;
+    }
+    promises.push(Util.whenLoaded(el))
+    Promise.all(promises).then(() => {
+      Util.whenLoaded(el, () => {
+        el.components['material-pack'].view.setAttribute('material', attr)
+        delete attr.shader
+        el.components['material-pack'].maps = attr
+      })
+    })
+  },
+  addPacksFromObjects(obj) {
+    function fakeImgFromImageBitmap(img) {
+      if (!('tagName' in img))
+      {
+        img.tagName = 'IMG'
+      }
+      if (!('id' in img))
+      [
+        img.id = ""
+      ]
+    }
+    let bitmapToImage = (bmp) => {
+      let canvas = this.tmpCanvas()
+      let ctx = this.tmpCtx()
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+      let img = new Image();
+      img.src = canvas.toDataURL()
+      return img
+    }
+    obj.traverse(o => {
+      if (!o.material || o.material.type === 'MeshBasicMaterial') return;
+
+      let hasAttr = false
+      let attr = {}
+      for (let m of HANDLED_MAPS)
+      {
+        if (!o.material[m] || !o.material[m].image) continue;
+        attr[m] = bitmapToImage(o.material[m].image)
+        hasAttr = true
+      }
+      if (o.material.map && o.material.map.image) {
+        attr.src = bitmapToImage(o.material.map.image)
+        hasAttr = true
+      }
+      if (hasAttr) {
+        console.log("Creating mateiral pack", attr)
+        this.addMaterialPack(attr)
+      }
+    })
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
@@ -185,10 +230,22 @@ Util.registerComponentSystem('material-pack-system', {
   }
 })
 
+// Avoid garbage
+const ENABLED_MAP = {'src': 'srcEnabled'}
+for (let m of HANDLED_MAPS)
+{
+  ENABLED_MAP[m] = m + "Enabled"
+}
+
 AFRAME.registerComponent('material-pack', {
   schema: {
     pack: {type: 'string'},
     applyMask: {default: false},
+
+    srcEnabled: {default: true},
+    normalMapEnabled: {default: true},
+    metalnessMapEnabled: {default: true},
+    roughnessMapEnabled: {default: true},
   },
   events: {
     click: function(e) {
@@ -206,6 +263,11 @@ AFRAME.registerComponent('material-pack', {
     Util.whenLoaded(this.view, () => {
       if (this.data.pack) this.loadTextures()
       this.el.children[0].setAttribute('frame', 'name', this.data.pack)
+    })
+    this.el.querySelectorAll('.map-row > *[icon-button]').forEach(el => {
+      Util.whenLoaded(el, () => {
+        el.setAttribute('toggle-button', {target: this.el, component: 'material-pack', property: ENABLED_MAP[el.getAttribute('map')]})
+      })
     })
   },
   async loadTextures() {
@@ -260,10 +322,12 @@ AFRAME.registerComponent('material-pack', {
     this.system.activateMaterialMask(this)
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = true
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(true)
+    this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', true)
   },
   deactivateMask() {
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
+    this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
   },
   fillMaterial() {
     Compositor.el.setAttribute('material', 'shader', 'standard')
@@ -295,6 +359,7 @@ AFRAME.registerComponent('material-pack', {
       }
       else
       {
+        if (!this.data[ENABLED_MAP[map]]) continue;
         layer = Compositor.component.layers.find(l => l.mode === map)
       }
       if (!layer)
@@ -316,6 +381,12 @@ AFRAME.registerComponent('material-pack', {
       canvas = layer.frame(Compositor.component.currentFrame)
 
       tmpCtx.drawImage(this.maps[map], 0, 0, tmpCanvas.width, tmpCanvas.height,)
+      if (!this.data[ENABLED_MAP[map]])
+      {
+        // tmpCtx.globalCompositeOperation = 'color'
+        tmpCtx.drawImage(maskCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height,)
+        // tmpCtx.globalCompositeOperation = 'source-in'
+      }
       let ctx = canvas.getContext('2d')
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
       if (canvas.touch) canvas.touch()
