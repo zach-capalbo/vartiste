@@ -9,6 +9,7 @@ import {Pool} from './pool.js'
 AFRAME.registerSystem('manipulator', {
   init() {
     this.postManipulationCallbacks = []
+    this.tick = AFRAME.utils.throttleTick(this.tick, 5000, this)
   },
   postManipulation(el) {
     if (!this.postManipulationCallbacks.length) return
@@ -29,6 +30,9 @@ AFRAME.registerSystem('manipulator', {
   removeConstraint(el, constraintFn) {
     if (!el.manipulatorConstraints) el.manipulatorConstraints = []
     el.manipulatorConstraints.splice(el.manipulatorConstraints.indexOf(constraintFn), 1)
+  },
+  tick(t, dt) {
+    this.el.emit('refreshobjects')
   }
 })
 

@@ -93,6 +93,7 @@ Util.registerComponentSystem('material-pack-system', {
       let el = document.createElement('a-entity')
       packContainer.append(el)
       el.setAttribute('material-pack', `pack: ${packName}`)
+      el.setAttribute('rotation', '-15 0 0')
       el.setAttribute('position', `${x * this.xSpacing} -${y * this.ySpacing} 0`)
       this.loadedPacks[packName] = el
       if (++x === this.colCount) {
@@ -229,10 +230,22 @@ Util.registerComponentSystem('material-pack-system', {
   }
 })
 
+// Avoid garbage
+const ENABLED_MAP = {'src': 'srcEnabled'}
+for (let m of HANDLED_MAPS)
+{
+  ENABLED_MAP[m] = m + "Enabled"
+}
+
 AFRAME.registerComponent('material-pack', {
   schema: {
     pack: {type: 'string'},
     applyMask: {default: false},
+
+    srcEnabled: {default: true},
+    normalMapEnabled: {default: true},
+    metalnessMapEnabled: {default: true},
+    roughnessMapEnabled: {default: true},
   },
   events: {
     click: function(e) {
@@ -250,6 +263,11 @@ AFRAME.registerComponent('material-pack', {
     Util.whenLoaded(this.view, () => {
       if (this.data.pack) this.loadTextures()
       this.el.children[0].setAttribute('frame', 'name', this.data.pack)
+    })
+    this.el.querySelectorAll('.map-row > *[icon-button]').forEach(el => {
+      Util.whenLoaded(el, () => {
+        el.setAttribute('toggle-button', {target: this.el, component: 'material-pack', property: ENABLED_MAP[el.getAttribute('map')]})
+      })
     })
   },
   async loadTextures() {
@@ -304,10 +322,12 @@ AFRAME.registerComponent('material-pack', {
     this.system.activateMaterialMask(this)
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = true
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(true)
+    this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', true)
   },
   deactivateMask() {
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
+    this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
   },
   fillMaterial() {
     Compositor.el.setAttribute('material', 'shader', 'standard')
@@ -339,6 +359,7 @@ AFRAME.registerComponent('material-pack', {
       }
       else
       {
+        if (!this.data[ENABLED_MAP[map]]) continue;
         layer = Compositor.component.layers.find(l => l.mode === map)
       }
       if (!layer)
@@ -360,6 +381,12 @@ AFRAME.registerComponent('material-pack', {
       canvas = layer.frame(Compositor.component.currentFrame)
 
       tmpCtx.drawImage(this.maps[map], 0, 0, tmpCanvas.width, tmpCanvas.height,)
+      if (!this.data[ENABLED_MAP[map]])
+      {
+        // tmpCtx.globalCompositeOperation = 'color'
+        tmpCtx.drawImage(maskCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height,)
+        // tmpCtx.globalCompositeOperation = 'source-in'
+      }
       let ctx = canvas.getContext('2d')
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
       if (canvas.touch) canvas.touch()

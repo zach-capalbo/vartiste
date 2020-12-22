@@ -101,3 +101,34 @@ AFRAME.registerComponent('shelf', {
     }
   }
 });
+
+AFRAME.registerComponent('expandable-shelf', {
+  dependencies: ['shelf'],
+  schema: {
+    extraWidth: {default: 0.0},
+    extraHeight: {default: 1.0},
+    expanded: {default: false},
+    expansionSelector: {default: '.expanded'}
+  },
+  init() {
+    this.expanded = false;
+    this.el.querySelectorAll(this.data.expansionSelector).forEach(el => {
+      el.setAttribute('visible', this.expanded)
+    })
+  },
+  update() {
+    if (this.data.expanded === this.expanded) return;
+    let {height, width} = this.el.getAttribute('shelf')
+    if (this.data.expanded) {
+      this.el.setAttribute('shelf', 'height', height + this.data.extraHeight)
+      this.el.setAttribute('shelf', 'offset', `0 -${this.data.extraHeight / 2} 0`)
+      this.el.querySelectorAll(this.data.expansionSelector).forEach(el => el.setAttribute('visible', true))
+    } else {
+      this.el.setAttribute('shelf', 'height', height - this.data.extraHeight)
+      this.el.setAttribute('shelf', 'offset', `0 0 0`)
+      this.el.querySelectorAll(this.data.expansionSelector).forEach(el => el.setAttribute('visible', false))
+    }
+
+    this.expanded = this.data.expanded
+  }
+})
