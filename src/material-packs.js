@@ -3,7 +3,7 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 
-window.Undo = Undo
+const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -64,7 +64,7 @@ Util.registerComponentSystem('material-pack-system', {
     })
 
     this.defaultMap = {};
-    for (let map of ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'])
+    for (let map of HANDLED_MAPS)
     {
       let canvas = document.createElement('canvas')
       canvas.width = 24
@@ -109,7 +109,6 @@ Util.registerComponentSystem('material-pack-system', {
     let itemsToRemove = []
     let attr = {}
     let hasAttr = false
-    let promises = []
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
@@ -128,33 +127,78 @@ Util.registerComponentSystem('material-pack-system', {
         console.warn("Ignoring displacement map for the time being")
         continue;
       }
-      promises.push(img.decode())
       attr[map] = img
       hasAttr = true
     }
     if (hasAttr) {
-      attr.shader = 'standard'
-      let el = document.createElement('a-entity')
-      let packContainer = this.packRootEl.querySelector('.pack-container')
-      packContainer.append(el)
-      el.setAttribute('material-pack', '')
-      el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
-      if (++this.x === this.colCount)
-      {
-        this.x = 0;
-        this.y++;
-      }
-      Promise.all(promises).then(() => {
-        Util.whenLoaded(el, () => {
-          el.components['material-pack'].view.setAttribute('material', attr)
-          delete attr.shader
-          el.components['material-pack'].maps = attr
-        })
-      })
+      this.addMaterialPack(attr)
       return true
     }
 
     return false
+  },
+  addMaterialPack(attr) {
+    let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
+    attr.shader = 'standard'
+    let el = document.createElement('a-entity')
+    let packContainer = this.packRootEl.querySelector('.pack-container')
+    packContainer.append(el)
+    el.setAttribute('material-pack', '')
+    el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
+    if (++this.x === this.colCount)
+    {
+      this.x = 0;
+      this.y++;
+    }
+    promises.push(Util.whenLoaded(el))
+    Promise.all(promises).then(() => {
+      Util.whenLoaded(el, () => {
+        el.components['material-pack'].view.setAttribute('material', attr)
+        delete attr.shader
+        el.components['material-pack'].maps = attr
+      })
+    })
+  },
+  addPacksFromObjects(obj) {
+    function fakeImgFromImageBitmap(img) {
+      if (!('tagName' in img))
+      {
+        img.tagName = 'IMG'
+      }
+      if (!('id' in img))
+      [
+        img.id = ""
+      ]
+    }
+    let bitmapToImage = (bmp) => {
+      let canvas = this.tmpCanvas()
+      let ctx = this.tmpCtx()
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+      let img = new Image();
+      img.src = canvas.toDataURL()
+      return img
+    }
+    obj.traverse(o => {
+      if (!o.material || o.material.type === 'MeshBasicMaterial') return;
+
+      let hasAttr = false
+      let attr = {}
+      for (let m of HANDLED_MAPS)
+      {
+        if (!o.material[m] || !o.material[m].image) continue;
+        attr[m] = bitmapToImage(o.material[m].image)
+        hasAttr = true
+      }
+      if (o.material.map && o.material.map.image) {
+        attr.src = bitmapToImage(o.material.map.image)
+        hasAttr = true
+      }
+      if (hasAttr) {
+        console.log("Creating mateiral pack", attr)
+        this.addMaterialPack(attr)
+      }
+    })
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
