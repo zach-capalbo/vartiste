@@ -31,9 +31,9 @@ AFRAME.registerComponent('settings-shelf', {
       this.el.querySelector('.project-name').setAttribute('text', {value: this.el.sceneEl.systems['settings-system'].projectName})
     })
 
-    this.el.sceneEl.addEventListener('open-popup', e => {
-      this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
-    })
+    // this.el.sceneEl.addEventListener('open-popup', e => {
+    //   this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
+    // })
 
     this.el.sceneEl.addEventListener('stabilizationchanged', e => {
       this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 0.4)

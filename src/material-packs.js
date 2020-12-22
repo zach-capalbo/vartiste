@@ -77,13 +77,13 @@ Util.registerComponentSystem('material-pack-system', {
     this.colCount = 3
     this.xSpacing = 1.1
     this.ySpacing = 1.5
+    this.x = 0
+    this.y = 0
   },
   loadPacks() {
     this.packRootEl.removeEventListener('summoned', this.loadPacks)
     let packContainer = this.packRootEl.querySelector('.pack-container')
     let rc = require.context('./material-packs/', true, /.*\.jpg/)
-    let x = 0
-    let y = 0
 
     for (let fileName of rc.keys())
     {
@@ -94,15 +94,13 @@ Util.registerComponentSystem('material-pack-system', {
       packContainer.append(el)
       el.setAttribute('material-pack', `pack: ${packName}`)
       el.setAttribute('rotation', '-15 0 0')
-      el.setAttribute('position', `${x * this.xSpacing} -${y * this.ySpacing} 0`)
+      el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
       this.loadedPacks[packName] = el
-      if (++x === this.colCount) {
-        x = 0
-        y++
+      if (++this.x === this.colCount) {
+        this.x = 0
+        this.y++
       }
     }
-    this.x = x
-    this.y = y
   },
   interceptFile(items)
   {
@@ -144,7 +142,9 @@ Util.registerComponentSystem('material-pack-system', {
     let el = document.createElement('a-entity')
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)
+    el.classList.add("user")
     el.setAttribute('material-pack', '')
+    el.setAttribute('rotation', '-15 0 0')
     el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
     if (++this.x === this.colCount)
     {
