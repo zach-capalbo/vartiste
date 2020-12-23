@@ -154,6 +154,11 @@ Util.registerComponentSystem('material-pack-system', {
     promises.push(Util.whenLoaded(el))
     Promise.all(promises).then(() => {
       Util.whenLoaded(el, () => {
+        if (attr.emissiveMap)
+        {
+          attr.emissive = attr.emissiveMap
+          delete attr.emissiveMap
+        }
         el.components['material-pack'].view.setAttribute('material', attr)
         delete attr.shader
         el.components['material-pack'].maps = attr
