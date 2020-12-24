@@ -95,6 +95,9 @@ AFRAME.registerComponent('brush-editor', {
     this.interceptFile = this.interceptFile.bind(this)
 
     Util.whenLoaded(this.el.sceneEl, () => {
+      let img = new Image();
+      img.src = BrushList[0].previewSrc
+      this.setImage(img)
       if (this.el.getAttribute('visible'))
       {
         this.el.sceneEl.systems['file-upload'].fileInterceptors.push(this.interceptFile)
@@ -106,8 +109,8 @@ AFRAME.registerComponent('brush-editor', {
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
-      if (item.kind !== 'file') continue
-      let file = item.getAsFile()
+      if (item.kind && item.kind !== 'file') continue
+      let file = (item instanceof File) ? item : item.getAsFile()
       let isImage = item.type ? /image\//.test(item.type) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
       if (!isImage) continue;
 
@@ -123,6 +126,12 @@ AFRAME.registerComponent('brush-editor', {
       return true
     }
     return false
+  },
+  useCanvas() {
+    let img = new Image();
+    Compositor.component.quickDraw()
+    img.src = Compositor.component.preOverlayCanvas.toDataURL()
+    this.setImage(img);
   },
   setImage(img) {
     console.log("Setting image")
@@ -144,8 +153,23 @@ AFRAME.registerComponent('brush-editor', {
       opts[opt] = this.data[opt]
     }
 
-    this.image.width = 64
-    this.image.height = 64
+    if (this.data.requireMovement)
+    {
+      opts.minMovement = 1.0
+    }
+
+    // this.image.width = 64
+    // this.image.height = 64
+    if (this.image.width > this.image.height)
+    {
+      opts.width = 24
+      opts.height = 24 * this.image.height / this.image.width
+    }
+    else
+    {
+      opts.height = 24
+      opts.width = 24 * this.image.width / this.image.height
+    }
 
     let brush = new Brush[this.data.type](shortid.generate(), this.image, opts)
     return brush

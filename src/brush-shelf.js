@@ -31,6 +31,16 @@ AFRAME.registerComponent('brush-shelf', {
     }
   },
   addBrush(brush) {
+    if (this.nextTimeExpand)
+    {
+      if (this.el.querySelector('.brushes').children.length > 4)
+      {
+        let extra = this.el.querySelector('.brushes').children.length - 4
+        this.el.setAttribute('shelf', 'height', 3.5 + extra * 0.6)
+        this.el.setAttribute('shelf', 'offset', `0 ${- extra * 0.6 / 2} 0`)
+      }
+      this.nextTimeExpand = false
+    }
     let button = document.createElement('a-entity')
     let idx = BrushList.indexOf(brush)
 
@@ -53,6 +63,7 @@ AFRAME.registerComponent('brush-shelf', {
       this.brushRow = document.createElement('a-entity')
       this.brushRow.setAttribute('position', `0 ${-0.6 * this.el.querySelector('.brushes').children.length} 0`)
       this.el.querySelector('.brushes').append(this.brushRow)
+      this.nextTimeExpand = true
     }
   },
   toggleRotationAction() {

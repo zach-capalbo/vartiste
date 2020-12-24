@@ -5,10 +5,11 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closable: true; hi
       a-entity icon-button="#asset-brush" tooltip="Image Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: ImageBrush"
       a-entity icon-button="#asset-resize" tooltip="Stretch Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: StretchBrush"
     a-entity icon-row=""
-      a-entity icon-button="#asset-folder-open-outline" tooltip="Open Image"
+      a-entity icon-button="#asset-folder-open-outline" tooltip="Open Image" system-click-action="system: file-upload; action: browse"
+      a-entity icon-button="#asset-arrow-left" tooltip="Use canvas as brush" click-action="useCanvas"
       / Use current layer
       / Use current composition
-      a-entity text="value: Or drag and drop it here; width: 2.2; wrapCount: 25; anchor: left" position="0.24 0 0"
+      a-entity text="value: Or drag and drop an image here; width: 1.930; wrapCount: 20.340; anchor: left" position="0.73 0 0"
     a-entity.image-brush icon-row=""
       a-entity icon-button="#asset-brightness-4" tooltip="Use Image Darkness" toggle-button="target: #brush-editor; component: brush-editor; property: textured"
       a-entity icon-button="#asset-transition" tooltip="Connected Strokes" toggle-button="target: #brush-editor; component: brush-editor; property: connected"

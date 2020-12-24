@@ -367,7 +367,17 @@ class ImageBrush extends ProceduralBrush{
       image.decoding = 'sync'
       image.loading = 'eager'
       if (!image.src) image.src = require(`./brushes/${name}.png`)
-      let {width, height} = image
+      let width, height;
+      if ('width' in options && 'height' in options) {
+        width = options.width
+        height = options.height
+      }
+      else
+      {
+        width = image.width
+        height = image.height
+      }
+
 
       super(baseid, Object.assign({drawEdges: true}, options, {width, height}))
 
@@ -753,15 +763,15 @@ class StretchBrush extends LineBrush {
       name = options.name
     }
     else if ('width' in options && 'height' in options) {
-      image = new Image(options.width, options.height)
+      image = new Image()
     }
     else
     {
       image = new Image()
     }
 
-    this.width = 48
-    this.height = 48
+    this.width = options.width
+    this.height = options.height
     this.outlineScale = 5
 
     image.decoding = 'sync'

@@ -515,6 +515,13 @@ Util.registerComponentSystem('file-upload', {
         console.log("length", e.dataTransfer.files.length)
       }
     }
+
+    this.inputEl = document.createElement('input')
+    this.inputEl.setAttribute('type', "file")
+    // this.inputEl.setAttribute('accept', ".vartiste")
+    this.inputEl.style="display: none"
+    this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
+    document.body.append(this.inputEl)
   },
   handleFile(file, {itemType, positionIdx} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
@@ -587,5 +594,22 @@ Util.registerComponentSystem('file-upload', {
   },
   handleURL(url, {positionIdx} = {}) {
     this.handleFile(new URLFileAdapter(url))
+  },
+  handleBrowse(e) {
+    let items = Array.from(this.inputEl.files)
+    console.log("browse items", items)
+
+    for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+    {
+      if (this.fileInterceptors[i](items)) return;
+    }
+
+    for (let item of items)
+    {
+      this.handleFile(item, {itemType: item.type})
+    }
+  },
+  browse() {
+    this.inputEl.click()
   },
 })
