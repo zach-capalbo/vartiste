@@ -6,3 +6,5 @@ a-entity position="-1.5 1.35 0"
   a-entity click-action="decreaseBrushSize" icon-button="#asset-chevron-down" tooltip="Decrease Brush Size"
   a-entity click-action="clearLayer" icon-button="#asset-delete" tooltip="Clear Active Layer"
 a-entity.brushes position="-1.5 0.55 0"
+a-entity position="-4 0.0 0"
+  ==partial('./brush-editor.html.slm')

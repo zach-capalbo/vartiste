@@ -542,3 +542,68 @@ AFRAME.registerComponent('icon-row', {
     this.el.object3D.position.y -= (0.4 + 0.1) * indexId
   }
 })
+
+AFRAME.registerComponent('radio-button', {
+  schema: {
+    value: {type: 'string'},
+    target: {type: 'selector'},
+    component: {type: 'string'},
+    property: {type: 'string'}
+  },
+  events: {
+    click: function() {
+      if (this.data.target)
+      {
+        if (this.data.property)
+        {
+          this.data.target.setAttribute(this.data.component, {[this.data.property]: this.data.value})
+        }
+        else
+        {
+          this.data.target.setAttribute(this.data.component, this.data.value)
+        }
+      }
+      else if (this.data.system)
+      {
+        this.el.sceneEl.systems[this.data.system].data[this.data.property] = this.data.value
+        this.setToggle(true)
+      }
+    }
+  },
+  update(oldData) {
+    if (this.data.target !== oldData.target)
+    {
+      if (oldData.target)
+      {
+        oldData.target.removeEventListener('componentchanged', this.componentchangedlistener)
+      }
+
+      if (this.data.target)
+      {
+        this.componentchangedlistener = (e) => {
+          if (e.detail.name === this.data.component)
+          {
+            this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
+          }
+        }
+        this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
+
+        Util.whenLoaded([this.el, this.data.target], () => {
+          this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
+        })
+      }
+    }
+  },
+  setToggle(value) {
+    this.data.toggled = value
+    if (value)
+    {
+      this.el.addState(STATE_TOGGLED)
+      this.el.components['icon-button'].updateStateColor()
+    }
+    else
+    {
+      this.el.removeState(STATE_TOGGLED)
+    }
+  }
+})
