@@ -1,4 +1,4 @@
-a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closable: true; hideOnly: true" brush-editor="" propogate-grab="" rotation="0 0 0" visible="true"
+a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closable: true; hideOnly: true" brush-editor="" propogate-grab="" rotation="0 0 0" visible="false"
   a-plane.preview width="0.65" height="0.65" position="1.25 1.13 0.005" frame="pinnable: false; closable: false; grabbable: false" material="transparent: true; npot: true"
   a-entity position="-1.5 1.35 0"
     a-entity icon-row=""

@@ -66,7 +66,7 @@ AFRAME.registerComponent('brush-editor', {
     dragRotate: {default: true, passthrough: true},
     hqBlending: {default: false, passthrough: true},
 
-    requireMovement: {default: true},
+    requireMovement: {default: false},
   },
   events: {
     componentchanged: function(e) {
