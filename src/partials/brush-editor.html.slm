@@ -19,6 +19,6 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closable: true; hi
       / Hq blending?
     a-entity icon-row=""
       a-entity icon-button="#asset-plus-box-outline" tooltip="Add Brush" click-action="addBrush"
-      /a-entity icon-button="#asset-floppy" tooltip="Download Brush" click-action="downloadBrush"
+      a-entity icon-button="#asset-floppy" tooltip="Download Brushes" click-action="saveAll"
       /a-entity icon-button="#asset-archive-arrow-down-outline" tooltip="Download all custom brushes" click-action="addBrush"
     / Tooltip / Name

@@ -587,6 +587,14 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
+    if (/\.(vartiste-brushes)$/i.test(file.name))
+    {
+      file.text().then(t => {
+        this.el.sceneEl.systems['brush-system'].addUserBrushes(JSON.parse(t))
+      })
+      return
+    }
+
     file.text().then(t => {
       console.log("Texted")
       settings.load(t)

@@ -50,6 +50,12 @@ AFRAME.registerSystem('brush-system', {
       new Brush.StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
     ].filter(b => !b.invalid))
+  },
+  addUserBrushes(brushes) {
+    let brushShelf = document.querySelector('*[brush-shelf]').components['brush-shelf']
+    for (let b of brushes) {
+      brushShelf.addBrush(Brush.Brush.fullRestore(b))
+    }
   }
 })
 
@@ -172,9 +178,19 @@ AFRAME.registerComponent('brush-editor', {
     }
 
     let brush = new Brush[this.data.type](shortid.generate(), this.image, opts)
+    brush.user = true
     return brush
   },
   addBrush() {
     document.querySelector('*[brush-shelf]').components['brush-shelf'].addBrush(this.createBrush())
+  },
+  saveAll() {
+    let brushes = []
+    for (let brush of BrushList) {
+      if (!brush.user) continue;
+      brushes.push(brush.fullStore())
+    }
+    let encoded = encodeURIComponent(JSON.stringify(brushes))
+    this.el.sceneEl.systems['settings-system'].download("data:application/x-binary," + encoded, {extension: "vartiste-brushes"}, "User created brushes")
   }
 })

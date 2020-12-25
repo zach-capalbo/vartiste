@@ -8,6 +8,7 @@ class Brush {
   static schema() {
     return {
       baseid: {type: 'string'},
+      user: {default: false},
       color: {type: 'color'},
       opacity: {default: 1.0},
       scale: {default: 1.0},
@@ -21,7 +22,8 @@ class Brush {
       'baseid',
       'color',
       'opacity',
-      'scale'
+      'scale',
+      'user'
     ]
     this.unenumerableAttrs = {}
   }
@@ -54,7 +56,56 @@ class Brush {
 
     return brush
   }
+  fullStore() {
+    let obj = {
+      _class: this.constructor.name
+    }
+    let schema = this.constructor.schema()
+    for (let a in schema)
+    {
+      if (a in this) {
+        if ('store' in schema[a])
+        {
+          obj[a] = schema[a].store.call(this, this[a])
+        }
+        else
+        {
+          obj[a] = this[a]
+        }
+      }
+    }
+    return obj
+  }
+
+  static fullRestore(_obj) {
+    let constructor = constructors[_obj._class]
+    let obj = {}
+    let schema = constructor.schema()
+    for (let a in schema)
+    {
+      if (a in _obj)
+      {
+        if ('restore' in schema[a])
+        {
+          obj[a] = schema[a].restore(_obj[a])
+        }
+        else
+        {
+          obj[a] = _obj[a]
+        }
+      }
+      else
+      {
+        obj[a] = schema[a].default
+      }
+    }
+    console.log("Passing", obj)
+    let brush = new constructor(obj)
+    return brush
+  }
 }
+
+window.Brush = Brush
 
 class ProceduralBrush extends Brush {
   static schema() {
@@ -85,6 +136,7 @@ class ProceduralBrush extends Brush {
     invertScale=false,
     minMovement=undefined,
     tooltip=undefined,
+    user=false,
     ...options} = {})
   {
     super(baseid);
@@ -106,6 +158,7 @@ class ProceduralBrush extends Brush {
     this.invertScale = invertScale
     this.minMovement = minMovement
     this.tooltip = tooltip
+    this.user = user
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -344,13 +397,29 @@ class ProceduralBrush extends Brush {
 class ImageBrush extends ProceduralBrush{
   static schema() {
     return Object.assign({
-      src: {type: 'map'}
+      textured: {default: false},
+      image: {
+        type: 'map',
+        store: (img) => img.src,
+        restore: (src) => {
+          let img = new Image()
+          img.src = src;
+          return img
+        }
+      }
     }, super.schema())
   }
   constructor(baseid, name, options = {}) {
     let image;
 
-    if (name instanceof Image)
+    if (name === undefined) {
+      options = baseid
+      baseid = options.baseid
+      name = options.name
+      image = options.image
+      console.log("Restoring", baseid, name, image)
+    }
+    else if (name instanceof Image)
     {
       image = name
       name = baseid
@@ -745,19 +814,50 @@ class LineBrush extends Brush
 }
 
 class StretchBrush extends LineBrush {
+  static schema() {
+    return Object.assign({
+      switchbackAngle: {default: 140},
+      textured: {default: false},
+      width: {default: 48},
+      height: {default: 48},
+      image: {
+        type: 'map',
+        store: (img) => img.src,
+        restore: (src) => {
+          let img = new Image()
+          img.src = src;
+          return img
+        }
+      }
+    }, super.schema())
+  }
   constructor(baseid, name, {
     switchbackAngle = 140,
+    user = false,
     ...options} = {})
   {
+    let image
+    if (name === undefined)
+    {
+      options = baseid
+      baseid = options.baseid
+      name = options.name
+      image = options.image
+      console.log("Restoring", options, baseid, name, image)
+    }
+
     super(baseid, options)
+    this.user = user;
 
     let {textured} = options
 
     this.switchbackAngle = switchbackAngle
 
-    let image
 
-    if (name instanceof Image)
+    if (image)
+    {
+    }
+    else if (name instanceof Image)
     {
       image = name
       name = options.name
@@ -914,4 +1014,5 @@ class StretchBrush extends LineBrush {
   }
 }
 
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
+const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
+export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};;
