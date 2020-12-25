@@ -104,6 +104,11 @@ Util.registerComponentSystem('material-pack-system', {
   },
   interceptFile(items)
   {
+    let hidden = false;
+    this.packRootEl.object3D.traverseAncestors(o => {
+      if (!o.visible) hidden = true
+    })
+    if (hidden) return false;
     console.log("Intercepting files for material", items)
     let itemsToRemove = []
     let attr = {}
