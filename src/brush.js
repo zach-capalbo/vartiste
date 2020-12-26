@@ -417,7 +417,6 @@ class ImageBrush extends ProceduralBrush{
       baseid = options.baseid
       name = options.name
       image = options.image
-      console.log("Restoring", baseid, name, image)
     }
     else if (name instanceof Image)
     {
@@ -455,6 +454,7 @@ class ImageBrush extends ProceduralBrush{
         this.tooltip = Util.titleCase(name.replace(/[\_\-\.]/g, " "))
       }
 
+      this.textured = options.textured
       this.image = image
       this.previewSrc = image
       this.image.decode().then(() => this.updateBrush()).catch(e => {
