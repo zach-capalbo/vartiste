@@ -936,6 +936,7 @@ AFRAME.registerComponent('selection-box-tool', {
     boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}},
     selector: {type: 'string', default: '.clickable, .canvas'},
     grabElements: {default: true},
+    grabVertices: {default: false},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
   },
@@ -1059,6 +1060,13 @@ AFRAME.registerComponent('selection-box-tool', {
       this.grabbers[target.object3D.uuid] = obj
       this.grabbed[obj.uuid] = target
       this.grabberId[obj.uuid] = obj
+
+      if (this.grabVertices)
+      {
+        let grabChild = new THREE.Object3D
+        target.object3D.add(grabChild)
+        this.grabChildren[obj.uuid] = grabChild
+      }
     }
     if (Object.values(this.grabbed).length > 0) {
       Undo.collect(() => {

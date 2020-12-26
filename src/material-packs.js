@@ -104,6 +104,11 @@ Util.registerComponentSystem('material-pack-system', {
   },
   interceptFile(items)
   {
+    let hidden = false;
+    this.packRootEl.object3D.traverseAncestors(o => {
+      if (!o.visible) hidden = true
+    })
+    if (hidden) return false;
     console.log("Intercepting files for material", items)
     let itemsToRemove = []
     let attr = {}
@@ -154,6 +159,11 @@ Util.registerComponentSystem('material-pack-system', {
     promises.push(Util.whenLoaded(el))
     Promise.all(promises).then(() => {
       Util.whenLoaded(el, () => {
+        if (attr.emissiveMap)
+        {
+          attr.emissive = attr.emissiveMap
+          delete attr.emissiveMap
+        }
         el.components['material-pack'].view.setAttribute('material', attr)
         delete attr.shader
         el.components['material-pack'].maps = attr

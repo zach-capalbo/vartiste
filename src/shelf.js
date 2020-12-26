@@ -130,5 +130,6 @@ AFRAME.registerComponent('expandable-shelf', {
     }
 
     this.expanded = this.data.expanded
+    this.el.sceneEl.emit('refreshobjects')
   }
 })

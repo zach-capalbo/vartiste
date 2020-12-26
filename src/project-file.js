@@ -3,6 +3,7 @@ import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
 import {addImageReferenceViewer} from './file-upload.js'
 import {Util} from './util.js'
+import {BrushList} from './brush-list.js'
 const FILE_VERSION = 2
 class ProjectFile {
   static update(obj) {
@@ -24,6 +25,7 @@ class ProjectFile {
     if (!('backgroundColor' in obj)) obj.backgroundColor = '#333'
     if (!('tools' in obj)) obj.tools = []
     if (!('exportJPEG' in obj)) obj.exportJPEG = false
+    if (!('userBrushes' in obj)) obj.userBrushes = []
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -171,6 +173,8 @@ class ProjectFile {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
     }
 
+    settings.el.sceneEl.systems['brush-system'].addUserBrushes(obj.userBrushes)
+
     for (let tool of obj.tools)
     {
       let el = document.createElement('a-entity')
@@ -295,6 +299,13 @@ class ProjectFile {
     }
     obj.environment.showFloor = document.querySelector('#environment-place').getAttribute('visible')
     obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
+
+    obj.userBrushes = []
+
+    for (let brush of BrushList) {
+      if (!brush.user) continue;
+      obj.userBrushes.push(brush.fullStore())
+    }
 
     obj.tools = []
 
