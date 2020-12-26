@@ -99,7 +99,6 @@ class Brush {
         obj[a] = schema[a].default
       }
     }
-    console.log("Passing", obj)
     let brush = new constructor(obj)
     return brush
   }
@@ -843,11 +842,10 @@ class StretchBrush extends LineBrush {
       baseid = options.baseid
       name = options.name
       image = options.image
-      console.log("Restoring", options, baseid, name, image)
     }
 
     super(baseid, options)
-    this.user = user;
+    this.user = options.user;
 
     let {textured} = options
 
