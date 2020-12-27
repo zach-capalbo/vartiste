@@ -100,6 +100,8 @@ AFRAME.registerComponent('camera-tool', {
     autoCamera: {default: true},
     near: {default: 0.1},
     far: {default: 10},
+    preview: {default: true},
+    previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0}
   },
   events: {
@@ -143,13 +145,16 @@ AFRAME.registerComponent('camera-tool', {
 
       this.camera = camera
 
-      let body = document.createElement('a-box')
-      body.setAttribute('depth', depth)
-      body.setAttribute('width', cameraWidth)
-      body.setAttribute('height', height / width * cameraWidth)
+      let body = document.createElement('a-entity')
+      // body.setAttribute('depth', depth)
+      // body.setAttribute('width', cameraWidth)
+      // body.setAttribute('height', height / width * cameraWidth)
+      body.setAttribute('gltf-model', '#asset-camera-body')
+      body.setAttribute('scale', `${cameraWidth / 1.15} ${cameraWidth / 1.15} ${cameraWidth / 1.15}`)
       body.setAttribute('propogate-grab', "")
       body.setAttribute('position', `0 0 ${-depth / 2 - 0.001}`)
-      body.setAttribute('material', 'src:#asset-shelf')
+      body.setAttribute('material', 'src:#asset-shelf; metalness: 0.4; roughness: 0.6')
+      body.setAttribute('apply-material-to-mesh', '')
       body.classList.add('clickable')
       this.el.append(body)
 
@@ -202,7 +207,6 @@ AFRAME.registerComponent('camera-tool', {
         farLever.setAttribute('tooltip', 'Adjust Far Plane')
         farLever.setAttribute('tooltip-style', 'rotation: 0 0 0; scale: 0.5 0.5 0.5')
         this.el.append(farLever)
-
       }
 
       Compositor.el.addEventListener('resized', (e) => {
@@ -215,6 +219,8 @@ AFRAME.registerComponent('camera-tool', {
         if (this.helper) this.helper.update()
       })
     })
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.previewThrottle, this)
   },
   takePicture() {
     console.log("Taking picture")
@@ -236,6 +242,24 @@ AFRAME.registerComponent('camera-tool', {
     {
       this.el.setAttribute('action-tooltips', 'trigger: Take Picture')
     }
+
+    if (this.data.autoCamera && this.data.preview && !this.preview)
+    {
+      let cameraWidth = 0.3
+      let preview = document.createElement('a-entity')
+      preview.setAttribute('geometry', `primitive: plane; width: ${cameraWidth}; height: ${cameraWidth / this.camera.aspect}`)
+      preview.setAttribute('position', `0 -${cameraWidth / 2} 0`)
+      preview.setAttribute('frame', 'closable: false; pinnable: false')
+      let previewCanvas = document.createElement('canvas')
+      previewCanvas.width = 256
+      previewCanvas.height = previewCanvas.width * this.camera.aspect
+      this.previewCanvas = previewCanvas
+      this.previewCtx = previewCanvas.getContext('2d')
+      this.previewCtx.fillStyle = '#333'
+      this.preview = preview
+      preview.setAttribute('material', {src: previewCanvas, npot: true})
+      this.el.append(preview)
+    }
   },
   createLockedClone() {
     let clone = document.createElement('a-entity')
@@ -246,6 +270,18 @@ AFRAME.registerComponent('camera-tool', {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
     })
   },
+  tick(t,dt) {
+    if (!this.preview) return;
+    if (!(this.el.is("grabbed") || this.el.is('cursor-hovered'))) return;
+
+    this.previewCtx.fillRect(0, 0, this.previewCanvas.width, this.previewCanvas.height)
+    this.el.sceneEl.emit("startsnap", {source: this.el})
+    this.helper.visible = false
+    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.previewCanvas)
+    this.helper.visible = true
+    this.el.sceneEl.emit("endsnap", {source: this.el})
+    this.preview.getObject3D('mesh').material.map.needsUpdate = true
+  }
 })
 
 AFRAME.registerSystem('spray-can-tool', {
