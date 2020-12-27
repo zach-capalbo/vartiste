@@ -247,7 +247,15 @@ AFRAME.registerComponent('camera-tool', {
     {
       let cameraWidth = 0.3
       let preview = document.createElement('a-entity')
-      preview.setAttribute('geometry', `primitive: plane; width: ${cameraWidth}; height: ${cameraWidth / this.camera.aspect}`)
+
+      if (this.data.orthographic)
+      {
+        preview.setAttribute('geometry', `primitive: plane; width: ${cameraWidth}; height: ${cameraWidth / (this.camera.right - this.camera.left) * (this.camera.top - this.camera.bottom)}`)
+      }
+      else
+      {
+        preview.setAttribute('geometry', `primitive: plane; width: ${cameraWidth}; height: ${cameraWidth / this.camera.aspect}`)
+      }
       preview.setAttribute('position', `0 -${cameraWidth / 2} 0`)
       preview.setAttribute('frame', 'closable: false; pinnable: false')
       let previewCanvas = document.createElement('canvas')
@@ -273,6 +281,15 @@ AFRAME.registerComponent('camera-tool', {
   tick(t,dt) {
     if (!this.preview) return;
     if (!(this.el.is("grabbed") || this.el.is('cursor-hovered'))) return;
+
+    if (this.data.orthographic)
+    {
+      Util.ensureSize(this.previewCanvas, 255, 255 / (this.camera.right - this.camera.left) * (this.camera.top - this.camera.bottom))
+    }
+    else
+    {
+      Util.ensureSize(this.previewCanvas, 256, 256 * this.camera.aspect)
+    }
 
     this.previewCtx.fillRect(0, 0, this.previewCanvas.width, this.previewCanvas.height)
     this.el.sceneEl.emit("startsnap", {source: this.el})
