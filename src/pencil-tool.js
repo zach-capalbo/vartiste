@@ -1109,3 +1109,18 @@ AFRAME.registerComponent('selection-box-tool', {
     }
   }
 })
+
+AFRAME.registerComponent('dynamic-pencil-weight', {
+  tick(t, dt) {
+    if (!this.el.is("grabbed")) return;
+    let intersection = this.el.components.raycaster.intersections[0]
+    if (!intersection) {
+      this.el.components['manipulator-weight'].data.weight = 0
+      return
+    }
+    let far = this.el.components['pencil-tool'].calcFar()
+    let ratio = intersection.distance / far
+    this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(Math.exp(ratio), Math.exp(0), Math.exp(1.0), 1.0, 0.1)
+    console.log("Setting weight", this.el.components['manipulator-weight'].data.weight)
+  }
+})

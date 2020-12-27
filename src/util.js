@@ -94,6 +94,16 @@ class VARTISTEUtil {
     return destination
   }
 
+  // Resizes canvas only if it is not already `width` x `height` (Changing a
+  // canvas size sometimes clears the canvas)
+  ensureSize(canvas, width, height) {
+    if (canvas.width !== width || canvas.height !== height)
+    {
+      canvas.width = width
+      canvas.height = height
+    }
+  }
+
   // Moves `obj` (`THREE.Object3D`) to the same spot as `target` (`THREE.Object3D`), accounting for the various matrix
   // transformations and parentages to get it there.
   positionObject3DAtTarget(obj, target, {scale, transformOffset, transformRoot} = {}) {
