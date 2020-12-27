@@ -102,7 +102,9 @@ AFRAME.registerComponent('camera-tool', {
     far: {default: 10},
     preview: {default: true},
     previewThrottle: {default: 500},
-    aspectAdjust: {default: 1.0}
+    aspectAdjust: {default: 1.0},
+    newFrameOnCapture: {default: false},
+    newLayerOnCapture: {default: false},
   },
   events: {
     click: function(e) {
@@ -224,6 +226,14 @@ AFRAME.registerComponent('camera-tool', {
   },
   takePicture() {
     console.log("Taking picture")
+    if (this.data.newLayerOnCapture)
+    {
+      Compositor.component.addLayer()
+    }
+    else if (this.data.newFrameOnCapture)
+    {
+      Compositor.component.addFrameAfter()
+    }
     let targetCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
     Undo.pushCanvas(targetCanvas)
     this.el.sceneEl.emit("startsnap", {source: this.el})
@@ -268,6 +278,32 @@ AFRAME.registerComponent('camera-tool', {
       preview.setAttribute('material', {src: previewCanvas, npot: true})
       this.el.append(preview)
     }
+
+    if (this.data.autoCamera)
+    {
+      let row = document.createElement('a-entity')
+      row.setAttribute('scale', '0.1 0.1 0.1')
+      row.setAttribute('position', `-0.11 0 -0.01`)
+      row.addEventListener('click', function(e) {
+        e.stopPropagation()
+        e.preventDefault()
+        return true
+      })
+      this.el.append(row)
+
+      for (let [icon, prop, tip] of [
+        ['#asset-plus-box-outline', 'newLayerOnCapture', "New Layer On Capture"],
+        ['#asset-arrow-right', 'newFrameOnCapture', "New Frame On Capture"],
+      ])
+      {
+        let button = document.createElement('a-entity')
+        row.append(button)
+        button.setAttribute('icon-button', icon)
+        button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: prop})
+        button.setAttribute('tooltip', tip)
+      }
+    }
+    this.activate = function(){};
   },
   createLockedClone() {
     let clone = document.createElement('a-entity')
