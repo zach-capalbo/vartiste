@@ -325,6 +325,24 @@ AFRAME.registerComponent('light-tool', {
         light.setAttribute('light', AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light')))
       }
 
+      let colorButton = document.createElement('a-entity')
+      this.el.append(colorButton)
+      colorButton.setAttribute('scale', '0.3 0.3 0.3')
+      colorButton.setAttribute('position', '0 0 0.58')
+      colorButton.setAttribute('button-style', `color: white`)
+      colorButton.setAttribute('icon-button', '')
+      colorButton.setAttribute('tooltip', 'Set Color')
+
+      colorButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        light.setAttribute('light', 'color', this.el.sceneEl.systems['paint-system'].data.color)
+        colorButton.setAttribute('button-style', 'color', this.el.sceneEl.systems['paint-system'].data.color)
+
+        return true;
+      })
+
       this.el.sceneEl.emit('refreshobjects')
     },
     click: function() {
