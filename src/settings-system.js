@@ -5,6 +5,7 @@ import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import Pako from 'pako'
 
 import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
@@ -12,6 +13,7 @@ Util.registerComponentSystem('settings-system', {
   schema: {
     addReferences: {default: false},
     exportJPEG: {default: false},
+    compressProject: {default: true},
   },
   init() {
     console.log("Starting settings")
@@ -110,9 +112,19 @@ Util.registerComponentSystem('settings-system', {
   async saveAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
     let saveObj = await ProjectFile.save({compositor})
-    let encoded = encodeURIComponent(JSON.stringify(saveObj))
+    let json = JSON.stringify(saveObj)
+    if (this.data.compressProject)
+    {
+      let data = Pako.deflate(json)
+      this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
+    }
+    else
+    {
+      let encoded = encodeURIComponent(json)
+      this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
+    }
 
-    this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
+
 
     document.getElementById('composition-view').emit('updatemesh')
   },

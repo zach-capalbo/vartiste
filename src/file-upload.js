@@ -3,6 +3,7 @@ import shortid from 'shortid'
 import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
+import Pako from 'pako'
 
 class URLFileAdapter {
   constructor(url) {
@@ -595,8 +596,18 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
+    if (/\.vartistez$/i.test(file.name))
+    {
+      file.arrayBuffer().then(b => {
+        let inflated = Pako.inflate(b)
+        inflated = (new TextDecoder("utf-8")).decode(inflated)
+        settings.load(inflated)
+      })
+      .catch(e => console.error("Couldn't load", e))
+      return
+    }
+
     file.text().then(t => {
-      console.log("Texted")
       settings.load(t)
     }).catch(e => console.error("Couldn't load", e))
   },
