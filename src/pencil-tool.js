@@ -1110,6 +1110,7 @@ AFRAME.registerComponent('selection-box-tool', {
   }
 })
 
+const easing = (x) => Math.log(x + 1);
 AFRAME.registerComponent('dynamic-pencil-weight', {
   tick(t, dt) {
     if (!this.el.is("grabbed")) return;
@@ -1120,7 +1121,7 @@ AFRAME.registerComponent('dynamic-pencil-weight', {
     }
     let far = this.el.components['pencil-tool'].calcFar()
     let ratio = intersection.distance / far
-    this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(Math.exp(ratio), Math.exp(0), Math.exp(1.0), 1.0, 0.1)
+    this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(easing(ratio), easing(0), easing(1.0), 0.999, 0.1)
     console.log("Setting weight", this.el.components['manipulator-weight'].data.weight)
   }
 })
