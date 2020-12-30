@@ -618,8 +618,10 @@ Util.registerComponentSystem('file-upload', {
     if (/\.vartistez$/i.test(file.name))
     {
       file.arrayBuffer().then(b => {
+        console.time('decompressProject')
         let inflated = Pako.inflate(b)
         inflated = (new TextDecoder("utf-8")).decode(inflated)
+        console.timeEnd('decompressProject')
         settings.load(inflated)
       })
       .catch(e => console.error("Couldn't load", e))

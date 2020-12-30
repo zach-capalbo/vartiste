@@ -37,13 +37,17 @@ let config = {
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
-      { test: /gallery.*\.vartiste$/,
+      { test: /gallery.*\.vartistez?$/,
         use: [{
           loader: 'file-loader',
           options: {
             name: 'gallery/[name].[ext]'
           }
         }]
+      },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: "worker-loader" },
       },
       {
         test: /ai-models.*json/,
