@@ -4,6 +4,7 @@ import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 import Pako from 'pako'
+import JSZip from 'jszip'
 
 class URLFileAdapter {
   constructor(url) {
@@ -596,6 +597,24 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
+    if (/\.zip$/i.test(file.name))
+    {
+      file.arrayBuffer().then(async (b) => {
+        let zip = new JSZip();
+        zip = await zip.loadAsync(b)
+        console.log("New zip", zip)
+        for (let fileName in zip.files)
+        {
+          console.log("Handling", fileName)
+          let blob = await zip.file(fileName).async('blob')
+          console.log("Got blob", blob)
+          this.handleFile()
+        }
+      })
+
+      return;
+    }
+
     if (/\.vartistez$/i.test(file.name))
     {
       file.arrayBuffer().then(b => {
@@ -607,9 +626,15 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    file.text().then(t => {
-      settings.load(t)
-    }).catch(e => console.error("Couldn't load", e))
+    if (/\.vartiste$/i.test(file.name))
+    {
+      file.text().then(t => {
+        settings.load(t)
+      }).catch(e => console.error("Couldn't load", e))
+      return;
+    }
+
+    console.warn("Unknown file", file.name)
   },
   handleURL(url, {positionIdx} = {}) {
     this.handleFile(new URLFileAdapter(url))

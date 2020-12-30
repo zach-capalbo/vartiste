@@ -124,8 +124,6 @@ Util.registerComponentSystem('settings-system', {
       this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
     }
 
-
-
     document.getElementById('composition-view').emit('updatemesh')
   },
   getPreview({width=64, height=64} = {}) {

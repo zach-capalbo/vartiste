@@ -9,7 +9,7 @@ import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
-    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@latest/dist/profiles"},
+    url: {default: "https://cdn.jsdelivr.net/npm/@webxr-input-profiles/assets@latest/dist/profiles"},
 
     // If true, it will attempt to disable the built-in A-Frame tracked control
     // systems
