@@ -305,6 +305,7 @@ AFRAME.registerComponent('icon-button', {
     this.tick = AFRAME.utils.throttleTick(this.tick, 80, this)
   },
   update(oldData) {
+    if (!this.el.attached) throw new Error("Not attached!")
     if (this.system.faceMaterials[this.data])
     {
       this.el.getObject3D('mesh').material = this.system.faceMaterials[this.data]

@@ -37,6 +37,7 @@ AFRAME.registerComponent('shelf', {
     }
   },
   init() {
+    if (!this.el.attached) throw new Error("Not attached!")
     var container = document.createElement("a-entity")
     container.innerHTML = shelfHtml
     container.querySelectorAll('.clickable').forEach((e) => e['redirect-grab'] = this.el)

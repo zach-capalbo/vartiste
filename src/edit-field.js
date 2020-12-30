@@ -227,12 +227,8 @@ AFRAME.registerComponent('popup-button', {
     }
     this.editButton = editButton
 
+
     let popup = document.createElement('a-entity')
-    this.popup = popup
-
-    popup.setAttribute('position', '0 0 0.1')
-    popup.setAttribute('visible', 'false')
-
     if (!this.el.hasAttribute('icon-button'))
     {
       this.el.append(popup)
@@ -240,6 +236,11 @@ AFRAME.registerComponent('popup-button', {
     else {
       this.el.parentEl.append(popup)
     }
+
+    this.popup = popup
+
+    popup.setAttribute('position', '0 0 0.1')
+    popup.setAttribute('visible', 'false')
 
     popup.addEventListener('click', e => {
       if (!e.target.hasAttribute('popup-action')) return
@@ -261,12 +262,24 @@ AFRAME.registerComponent('popup-button', {
     }
     if (this.data.popup !== oldData.popup && !this.data.deferred)
     {
-      this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      console.debug("Resetting popup HTML", this.data.popup, oldData.popup)
+      for (let c of this.popup.children) {
+        this.popup.remove(c)
+      }
+      let child = document.createElement('a-entity')
+      this.popup.append(child)
+      child.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      this.popupLoaded = true
     }
     if (!this.popupLoaded && !this.data.deferred)
     {
-      console.log("Initing popup", this.data.deferred, this.data);
-      this.popup.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      console.debug("Initing popup", this.data.deferred, this.data);
+      for (let c of this.popup.children) {
+        this.popup.remove(c)
+      }
+      let child = document.createElement('a-entity')
+      this.popup.append(child)
+      child.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
       this.popupLoaded = true
     }
   },
