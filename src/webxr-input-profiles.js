@@ -145,7 +145,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     highlightButtonPresses: {default: false},
 
     // Color to set a button to when it is pressed
-    highlightColor: {type: 'color', default: new THREE.Color('#33b889')}
+    highlightColor: {type: 'color', default: '#33b889'}
   },
   events: {
     object3dset: function(e) {

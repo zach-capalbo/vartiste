@@ -1,4 +1,5 @@
 var acorn = require("acorn");
+var escodegen = require('escodegen');
 
 function parseToMarkdown(txt, {filename, sourceBaseURL})
 {
@@ -59,6 +60,40 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
       return 'string'
   }
 
+  const codeGenOpts = {
+    format: {
+      newline: ' ',
+      indent: {style: ''},
+    }
+  }
+  function formatSchemaDefault(entry, type)
+  {
+    switch (type)
+    {
+      case 'float':
+      case 'number':
+      case 'string':
+      case 'color':
+      case 'bool':
+      case 'int':
+      case 'boolean':
+      case 'map':
+      case 'selector':
+        return entry.default.value
+      case 'vec2':
+      case 'vec3':
+      case 'vec4':
+        try {
+          return entry.default.arguments.map(a => a.raw).join("&nbsp;&nbsp;")
+        } catch (e) {
+          return escodegen.generate(entry.default, codeGenOpts)
+        }
+
+      default:
+        return escodegen.generate(entry.default, codeGenOpts)
+    }
+  }
+
   function schemaToTable(schema)
   {
       if (!schema) return
@@ -84,9 +119,10 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
           row = []
 
+          let type = entry.type ? entry.type.value : inferType(entry)
           row.push(prop.key.name)
-          row.push(entry.type ? entry.type.value : inferType(entry))
-          row.push(entry.default ? entry.default.value : "")
+          row.push(type)
+          row.push(entry.default ? formatSchemaDefault(entry, type) : "")
 
           let comment = formatCommentForTable(commentForLocation(prop.loc))
 

@@ -5,7 +5,7 @@ AFRAME.registerComponent('cable-connector', {
   schema: {
     target: {type: 'selector'},
     numLinks: {default: 24},
-    color: {type: 'color', default: 0x333333},
+    color: {type: 'color', default: '#333333'},
     lineWidth: {default: 0.01},
   },
   init() {

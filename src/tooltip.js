@@ -51,9 +51,9 @@ AFRAME.registerComponent('tooltip-style', {
   dependencies: ["tooltip"],
   multiple: true,
   schema: {
-    offset: {type: 'vec3', default: '0 0 0'},
-    scale: {type: 'vec3', default: '1 1 1'},
-    rotation: {type: 'vec3', default: '0 0 0'},
+    offset: {type: 'vec3', default: new THREE.Vector3(0, 0, 0)},
+    scale: {type: 'vec3', default: new THREE.Vector3(1, 1, 1)},
+    rotation: {type: 'vec3', default: new THREE.Vector3(0, 0, 0)},
     wrapCount: {default: 10}
   },
   update(oldData) {

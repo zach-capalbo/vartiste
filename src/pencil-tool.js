@@ -84,8 +84,8 @@ AFRAME.registerComponent('pencil-tool', {
     enabled: {default: true},
 
     locked: {default: false},
-    brush: {default: undefined, type: 'string'},
-    paintSystemData: {default: undefined, type: 'string'},
+    brush: {default: undefined, type: 'string', parse: o => o},
+    paintSystemData: {default: undefined, type: 'string', parse: o => o},
     lockedColor: {type: 'color'}
   },
   events: {

@@ -2,7 +2,7 @@ AFRAME.registerComponent('lathe', {
   schema: {
     speed: {default: 1.0},
     enabled: {default: true},
-    rotationAxis: {type: 'vec3', default: '0 1 0'}
+    rotationAxis: {type: 'vec3', default: new THREE.Vector3(0, 1, 0)}
   },
   init() {
   },

@@ -366,8 +366,8 @@ AFRAME.registerComponent('spray-can-tool', {
     projector: {default: false},
     canvasSize: {type: 'vec2', default: {x: 64, y: 64}},
 
-    brush: {default: undefined, type: 'string'},
-    paintSystemData: {default: undefined, type: 'string'},
+    brush: {default: undefined, type: 'string', parse: o => o},
+    paintSystemData: {default: undefined, type: 'string', parse: o => o},
     lockedColor: {type: 'color'}
   },
   events: {
