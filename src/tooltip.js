@@ -60,7 +60,7 @@ AFRAME.registerComponent('tooltip-style', {
     Util.whenLoaded(this.el, () => {
       let component = this.el.components[this.attrName.replace("-style", "")]
       if (!component) {
-        console.warn("No tooltip component yet", this.attrName)
+        // console.warn("No tooltip component yet", this.attrName)
         Util.callLater(this.update.bind(this, oldData))
         return
       }

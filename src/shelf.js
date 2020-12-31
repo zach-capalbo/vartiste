@@ -11,7 +11,7 @@ AFRAME.registerComponent('shelf', {
     height: {default: 3},
 
     // Background & grabber offset relative to contents
-    offset: {type: 'vec3', default: new THREE.Vector3(0, 0, 0)},
+    offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
 
     //  Enables the [frame](#frame) component for the shelf when true
     frame: {default: true},

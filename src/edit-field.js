@@ -5,7 +5,7 @@ AFRAME.registerSystem('edit-field', {
   schema: {
     // Controls the global scaling of the edit field pop-ups. Applied on top of
     // any individual edit-field popup scaling properties
-    popupScale: {type: 'vec3', default: new THREE.Vector3(1, 1, 1)}
+    scale: {type: 'vec3', default: new THREE.Vector3(1, 1, 1)}
   }
 })
 

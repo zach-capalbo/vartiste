@@ -427,6 +427,9 @@ var STATES = {
 //    </a-entity>
 AFRAME.registerComponent('webxr-laser', {
   dependencies: ['raycaster'],
+  schema: {
+    type: 'string'
+  },
   events: {
     webxrcontrollerset: function(e) {
       this.el.components.raycaster.data.enabled = true;

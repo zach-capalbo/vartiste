@@ -75,6 +75,27 @@ class VARTISTEUtil {
     return awaitLoadingSingle(entity)
   }
 
+  whenComponentInitialized(entity, component, fn) {
+    if (!fn) {
+      return new Promise((r, e) => this.whenComponentReady(entity, component, r))
+    }
+
+    if (entity.component && entity.component.initialized) {
+      fn();
+      return;
+    }
+
+    let listener = function(e) {
+      if ((e.detail.id && e.detail.id === component)
+        || (e.detail.id === undefined && e.detail.name === component))
+      {
+        entity.removeEventListener('componentinitialized', listener)
+        fn();
+      }
+    }
+    entity.addEventListener('componentinitialized', listener)
+  }
+
   // Copies `matrix` into `obj`'s (a `THREE.Object3D`) `matrix`, and decomposes
   // it to `obj`'s position, rotation, and scale
   applyMatrix(matrix, obj) {
