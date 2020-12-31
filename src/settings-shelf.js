@@ -90,7 +90,7 @@ AFRAME.registerComponent('settings-shelf', {
     ctx.fillRect(0,0,width,height)
     compositor.addLayer(1)
   },
-  resampleAction(e, {resample = true, ...opts} = {}) {
+  resampleAction(e, {resample = true, size, ...opts} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     if (e.target.hasAttribute('size'))
@@ -98,6 +98,10 @@ AFRAME.registerComponent('settings-shelf', {
       var {width, height} = AFRAME.utils.styleParser.parse(e.target.getAttribute('size'))
       width = parseInt(width)
       height = parseInt(height)
+    }
+    else if (size)
+    {
+      var {width, height} = size
     }
     else
     {
@@ -112,6 +116,9 @@ AFRAME.registerComponent('settings-shelf', {
   },
   resizeCanvasAction(e) {
     this.resampleAction(e, {resample: false, resizeLayers: false})
+  },
+  resizeCanvasToCurrentLayerAction(e) {
+    this.resampleAction(e, {resample: false, resizeLayers: false, size: Compositor.component.activeLayer})
   },
   toggleShadingAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
@@ -216,7 +223,9 @@ AFRAME.registerComponent('load-shelf', {
 AFRAME.registerComponent('lag-tooltip', {
   schema: {
     color: {type: 'color', default: '#eaa'},
-    initialTime: {default: 10 * 1000}
+    initialTime: {default: 10 * 1000},
+    uiShownMessage: {default: 'Slowdown detected. Click button to toggle UI'},
+    uiHiddenMessage: {default: 'Slowdown still detected. See documentation for performance tips.'},
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, 300, this)
@@ -225,10 +234,26 @@ AFRAME.registerComponent('lag-tooltip', {
     container.setAttribute('geometry', 'primitive: plane; height: 0.5; width: 0')
     container.setAttribute('material', {color: this.data.color, shader: 'flat'})
     container.setAttribute('position', '-1 0 0')
-    container.setAttribute('text', `color: #000; width: 1; align: left; value: Slowdown detected. Click button to toggle UI; wrapCount: 15`)
+    container.setAttribute('text', `color: #000; width: 1; align: left; value: ${this.data.uiShownMessage}; wrapCount: 15`)
     container.setAttribute('visible', false)
     this.el.append(container)
     this.container = container
+    this.uiroot = document.querySelector('#ui')
+    this.uiroot.addEventListener('componentchanged', (e) => {
+      if (e.detail.name === 'visible')
+      {
+        if (this.uiroot.getAttribute('visible'))
+        {
+          this.container.setAttribute('text', 'value', this.data.uiShownMessage)
+        }
+        else
+        {
+          Compositor.component.slowCount = 0
+          this.shownT = -2000
+          this.container.setAttribute('text', 'value', this.data.uiHiddenMessage)
+        }
+      }
+    })
     // container.classList.add('clickable')
     this.shownT = 0
   },
@@ -241,6 +266,14 @@ AFRAME.registerComponent('lag-tooltip', {
         if (t - this.shownT > 2000)
         {
           this.container.object3D.visible = false
+          if (this.uiroot.getAttribute('visible'))
+          {
+            this.container.setAttribute('text', 'value', this.data.uiShownMessage)
+          }
+          else
+          {
+            this.container.setAttribute('text', 'value', this.data.uiHiddenMessage)
+          }
           this.el.setAttribute('button-style', 'color', '#abe')
           this.el.components['icon-button'].setColor('#abe')
         }

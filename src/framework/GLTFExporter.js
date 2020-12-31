@@ -739,8 +739,6 @@ THREE.GLTFExporter.prototype = {
 			var mimeType = format === THREE.RGBAFormat ? options.mimeType : 'image/jpeg';
 			var key = mimeType + ":flipY/" + flipY.toString();
 
-			console.log("Exporitng", image, mimeType)
-
 			if ( cachedImages[ key ] !== undefined ) {
 
 				return cachedImages[ key ];

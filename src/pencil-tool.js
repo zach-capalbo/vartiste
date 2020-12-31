@@ -69,7 +69,7 @@ AFRAME.registerSystem('pencil-tool', {
 })
 
 AFRAME.registerComponent('pencil-tool', {
-  dependencies: ['grab-activate', 'six-dof-tool', 'hand-draw-tool'],
+  dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
     throttle: {type: 'int', default: 30},
     scaleTip: {type: 'boolean', default: true},
@@ -84,8 +84,8 @@ AFRAME.registerComponent('pencil-tool', {
     enabled: {default: true},
 
     locked: {default: false},
-    brush: {default: undefined, type: 'string'},
-    paintSystemData: {default: undefined, type: 'string'},
+    brush: {default: undefined, type: 'string', parse: o => o},
+    paintSystemData: {default: undefined, type: 'string', parse: o => o},
     lockedColor: {type: 'color'}
   },
   events: {
@@ -130,17 +130,18 @@ AFRAME.registerComponent('pencil-tool', {
         systemData = Object.assign({}, this.el.sceneEl.systems['paint-system'].data)
       }
       let brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
-      console.log("Restoring brush", brush)
+      // console.log("Restoring brush", brush)
+      console.log("Restoring brush", brush.constructor.name, brush.baseid)
       lockedSystem = {
         data: systemData,
         brush
       }
 
-      Util.whenLoaded(this.el, () => {
+      Util.whenComponentInitialized(this.el, 'hand-draw-tool', () => {
         this.el.components['hand-draw-tool'].system = lockedSystem
       })
 
-      this.el.setAttribute('six-dof-tool', 'locked', true)
+      // this.el.setAttribute('six-dof-tool', 'lockedClone', true)
     }
 
     let radius = this.data.radius
@@ -249,17 +250,15 @@ AFRAME.registerComponent('pencil-tool', {
     brushPreview.setAttribute('rotation', '-90 180 0')
     brushPreview.setAttribute('position', `0 ${cylinderHeight / 2 + 0.0001} 0`)
 
-
-
-    this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
     this.el.object3D.up.set(0, 0, 1)
 
-    this.el.setAttribute('hand-draw-tool', "")
     this.el.setAttribute('grab-options', "showHand: false")
 
     // Pre-activation
+    this.el.setAttribute('raycaster', `objects: .canvas; showLine: false; direction: 0 -1 0; origin: 0 -${cylinderHeight / 2} 0; far: ${tipHeight}`)
     this.raycasterTick = this.el.components.raycaster.tock
     this.el.components.raycaster.tock = function() {}
+    this.el.setAttribute('hand-draw-tool', "")
 
   },
   update(oldData) {
@@ -1110,6 +1109,7 @@ AFRAME.registerComponent('selection-box-tool', {
   }
 })
 
+const easing = (x) => Math.log(x + 1);
 AFRAME.registerComponent('dynamic-pencil-weight', {
   tick(t, dt) {
     if (!this.el.is("grabbed")) return;
@@ -1120,7 +1120,7 @@ AFRAME.registerComponent('dynamic-pencil-weight', {
     }
     let far = this.el.components['pencil-tool'].calcFar()
     let ratio = intersection.distance / far
-    this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(Math.exp(ratio), Math.exp(0), Math.exp(1.0), 1.0, 0.1)
+    this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(easing(ratio), easing(0), easing(1.0), 0.999, 0.1)
     console.log("Setting weight", this.el.components['manipulator-weight'].data.weight)
   }
 })

@@ -5,6 +5,10 @@ import {ProjectFile} from './project-file.js'
 import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import Pako from 'pako'
+import CompressionWorker from './compression.worker.js'
+
+window.CompressionWorker = CompressionWorker
 
 import {CanvasRecorder} from './canvas-recorder.js'
 import Dexie from 'dexie'
@@ -12,6 +16,7 @@ Util.registerComponentSystem('settings-system', {
   schema: {
     addReferences: {default: false},
     exportJPEG: {default: false},
+    compressProject: {default: true},
   },
   init() {
     console.log("Starting settings")
@@ -110,11 +115,34 @@ Util.registerComponentSystem('settings-system', {
   async saveAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
     let saveObj = await ProjectFile.save({compositor})
-    let encoded = encodeURIComponent(JSON.stringify(saveObj))
-
-    this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
-
     document.getElementById('composition-view').emit('updatemesh')
+    let json = JSON.stringify(saveObj)
+    if (this.data.compressProject)
+    {
+      console.time('compressProject')
+      let data
+      let worker = new CompressionWorker();
+      try {
+        data = await new Promise((r, e) => {
+          worker.onmessage = (message) => {
+            r(message.data)
+          }
+          worker.onerror = e;
+          worker.postMessage(json)
+        })
+      }
+      finally
+      {
+        worker.terminate();
+      }
+      console.timeEnd('compressProject')
+      this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
+    }
+    else
+    {
+      let encoded = encodeURIComponent(json)
+      this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
+    }
   },
   getPreview({width=64, height=64} = {}) {
     let compositor = Compositor.component

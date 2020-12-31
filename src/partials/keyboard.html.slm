@@ -1,4 +1,4 @@
-a-entity shelf="width: 5; frame: false" _scale="0.05 0.05 0.05"
+a-entity shelf="width: 5; frame: false"
   a-entity position="-2 0.68 0"
     - for (let k of "qwertyuiop")
       a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4"

@@ -100,7 +100,7 @@ class ButtonMaps {
     this.buttons = this.buttons.concat(Object.keys(map))
   }
   install(where) {
-    console.log("Buttons", this.buttons, where)
+    // console.log("Buttons", this.buttons, where)
 
     let buttonsToInstall = new Set(this.buttons)
 
@@ -192,25 +192,25 @@ AFRAME.registerComponent('action-tooltips', {
   multiple: true,
   schema: {
     // Tooltip for moving the joystick up and down
-    'updown': {type: 'string', default: null},
+    updown: {type: 'string', default: null, parse: (o) => o},
 
     // Tooltip for moving the joystick left and right
-    'leftright': {type: 'string', default: null},
+    leftright: {type: 'string', default: null, parse: (o) => o},
 
     // Tooltip for pressing the "a" button or equivalent
-    'a': {type: 'string', default: null},
+    a: {type: 'string', default: null, parse: (o) => o},
 
     // Tooltip for pressing the "b" button or equivalent
-    'b': {type: 'string', default: null},
+    b: {type: 'string', default: null, parse: (o) => o},
 
     // Tooltip for pulling the trigger or equivalent
-    'trigger': {type: 'string', default: null},
+    trigger: {type: 'string', default: null, parse: (o) => o},
 
     // Tooltip for squeezing the grip or equivalent
-    'grip': {type: 'string', default: null},
+    grip: {type: 'string', default: null, parse: (o) => o},
 
     // Shelf to refer to for more options
-    shelf: {type: 'string', default: null},
+    shelf: {type: 'string', default: null, parse: (o) => o},
   }
 })
 
@@ -219,7 +219,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
   dependencies: ['raycaster', 'action-tooltips'],
   schema: {
     throttle: {default: 150},
-    position: {type: 'vec3', default: `-0.006549004823841076 -0.11940164556557662 0.10084264804121343`}
+    position: {type: 'vec3', default: new THREE.Vector3(-0.006549004823841076, -0.11940164556557662, 0.10084264804121343)}
   },
   init() {
     let container = document.createElement('a-entity')

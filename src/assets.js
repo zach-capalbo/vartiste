@@ -113,6 +113,8 @@ window.AFRAME.registerElement('vartiste-assets', {
             this.load()
           })
         }
+
+        this.emit('vartisteassetsadded')
       }
     },
     load: {
@@ -152,11 +154,9 @@ window.AFRAME.registerElement('vartiste-assets', {
           parent.load()
         })
 
-        console.log("Waiting", this.waitingFor)
+        // console.log("Waiting", this.waitingFor)
 
         return
-
-
       }
     }
   })

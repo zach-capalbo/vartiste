@@ -1,0 +1,6 @@
+#loading-page
+  .bottom-bar
+    h1 Loading VARTISTE
+    .loading-bar
+      .loading-progress
+    p Please be patient. This may take a while.

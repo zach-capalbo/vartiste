@@ -16,5 +16,5 @@ a-entity shelf="height: 1.5; name: Layer / Node Control Panel" node-control-pane
       a-entity click-action="newNode" new-node-type="NetworkOutputNode" icon-button="#asset-cube-send" tooltip="New Multidraw Broadcast Node"
       a-entity click-action="newNode" new-node-type="NetworkInputNode" icon-button="#asset-resize" tooltip="New Multidraw Receiver Node"
   a-entity position="0 1.7 0"
-    a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab All Nodes"
+    a-sphere.clickable.globe-control radius="0.6" material="wireframe: true; shader: matcap" tooltip="Grab All Nodes"
     a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"

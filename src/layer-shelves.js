@@ -35,7 +35,7 @@ AFRAME.registerComponent("layer-shelves", {
   },
   addLayerShelf(layer) {
     let layerIdx = Compositor.component.layers.indexOf(layer)
-    console.log("Adding shelf for", layer, layerIdx)
+    console.log("Adding shelf for", layer.id, layerIdx)
     var container = document.createElement('a-entity')
     container.layer = layer
 
@@ -93,7 +93,7 @@ AFRAME.registerComponent("layer-shelves", {
     this.el.prepend(container)
   },
   addNodeShelf(node) {
-    console.log("Adding shelf for ", node)
+    console.log("Adding shelf for ", node.id)
     let container = document.createElement('a-entity')
     container.node = node
 
@@ -232,12 +232,12 @@ AFRAME.registerComponent("layer-shelves", {
       let outputNodeShelf = this.shelves[connection.to.id]
       if (!outputNodeShelf) continue
 
-      console.log("Rebuilding connection", outputNodeShelf)
+      console.log("Rebuilding connection", connection.type, connection.to.id)//, outputNodeShelf)
 
       Util.whenLoaded([outputNodeShelf, shelf], () => {
         let toNodeInput = Array.from(shelf.querySelectorAll('*[node-input]')).find(el => {
           let input = el.getAttribute('node-input')
-          console.log("Checking input", input, connection)
+          console.log("Checking input", `${input.type}:${input.index}`, `${connection.type}:${connection.index}`)
           return input.type === connection.type && input.index == connection.index
         })
         outputNodeShelf.querySelector('*[node-output]').components['node-output'].formConnectionTo(undefined, toNodeInput)

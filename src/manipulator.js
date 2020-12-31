@@ -733,7 +733,7 @@ AFRAME.registerComponent('lever', {
     gripRadius: {default: 0.07},
 
     // **[min, max]** Range of motion in degrees for the handle. Min and max should be between 0 and 180
-    angleRange: {type: 'vec2', default: '30 150'},
+    angleRange: {type: 'vec2', default: new THREE.Vector2(30, 150)},
 
     // Tick throttle
     throttle: {default: 10},
@@ -743,7 +743,7 @@ AFRAME.registerComponent('lever', {
 
     // **[top, bottom]** Output range of the values. The lever angle will be mapped to this range
     // when moved
-    valueRange: {type: 'vec2', default: '0 1'},
+    valueRange: {type: 'vec2', default: new THREE.Vector2(0, 1)},
 
     // [Optional] If specified, the lever will update the component property of `target` (as specified by the lever's `component` and `property` properties)
     target: {type: 'selector'},

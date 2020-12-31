@@ -9,7 +9,7 @@ import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles
 AFRAME.registerSystem('webxr-input-profiles', {
   schema: {
     // Base URL for the profiles and assets from the @webxr-input-profiles/assets package
-    url: {default: "https://unpkg.com/@webxr-input-profiles/assets@latest/dist/profiles"},
+    url: {default: "https://cdn.jsdelivr.net/npm/@webxr-input-profiles/assets@latest/dist/profiles"},
 
     // If true, it will attempt to disable the built-in A-Frame tracked control
     // systems
@@ -145,7 +145,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     highlightButtonPresses: {default: false},
 
     // Color to set a button to when it is pressed
-    highlightColor: {type: 'color', default: new THREE.Color('#33b889')}
+    highlightColor: {type: 'color', default: '#33b889'}
   },
   events: {
     object3dset: function(e) {
@@ -427,6 +427,9 @@ var STATES = {
 //    </a-entity>
 AFRAME.registerComponent('webxr-laser', {
   dependencies: ['raycaster'],
+  schema: {
+    type: 'string'
+  },
   events: {
     webxrcontrollerset: function(e) {
       this.el.components.raycaster.data.enabled = true;

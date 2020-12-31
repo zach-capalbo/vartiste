@@ -246,8 +246,8 @@ class ProceduralBrush extends Brush {
     let ctx = this.overlayCanvas.getContext("2d")
     let {width, height} = this
 
-    if (width <= 0 || height <= 0) return
-    if (ctx.canvas.width <= 0 || ctx.canvas.height <= 0) return
+    if (width <= 1 || height <= 1) return
+    if (ctx.canvas.width <= 1 || ctx.canvas.height <= 1) return
 
     if (this.hqBlending)
     {

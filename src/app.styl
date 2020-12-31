@@ -90,3 +90,41 @@ header
   top: 10%
   max-height: 90%
   overflow-y: auto
+
+#loading-page
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: 99
+  background-color: #cccccc
+  background-image: url("./static/images/loading.webp")
+  background-position: center /* Center the image */
+  background-repeat: no-repeat /* Do not repeat the image */
+  background-size: cover
+  color: white
+  .loading-bar
+    width: 80%
+    height: 10px
+    border-radius: 10px
+    border: 1px solid white
+    transform: translateX(10%)
+    box-shadow: 0 0 5px 5px #3b3666
+    .loading-progress
+      width: 0%
+      height: 100%
+      border-radius: 10px
+      // background-color: #e1c7f2//rgba(255, 0, 0, 0.5)
+      background: linear-gradient(#fcf7ff, #e1c7f2, #3b3666)
+
+.bottom-bar
+  position: absolute
+  bottom: 0
+  left: 50%
+  width: 50%
+  transform: translateX(-50%)
+  background-color: rgba(44, 44, 44, 0.3)
+  border-radius: 5px
+  text-align: center
+  font-size: 175%

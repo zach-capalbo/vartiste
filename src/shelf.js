@@ -11,13 +11,16 @@ AFRAME.registerComponent('shelf', {
     height: {default: 3},
 
     // Background & grabber offset relative to contents
-    offset: {type: 'vec3', default: '0 0 0'},
+    offset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
 
     //  Enables the [frame](#frame) component for the shelf when true
     frame: {default: true},
     closeable: {default: false},
     hideOnly: {default: true},
     pinnable: {default: true},
+
+    // alias for closeable because I can't spell
+    closable: {default: undefined, parse: o => o},
 
     grabRoot: {default: true},
 
@@ -37,6 +40,7 @@ AFRAME.registerComponent('shelf', {
     }
   },
   init() {
+    if (!this.el.attached) throw new Error("Not attached!")
     var container = document.createElement("a-entity")
     container.innerHTML = shelfHtml
     container.querySelectorAll('.clickable').forEach((e) => e['redirect-grab'] = this.el)
@@ -63,7 +67,14 @@ AFRAME.registerComponent('shelf', {
       // this.el.setAttribute('billboard', "")
     }
   },
-  update() {
+  update(oldData) {
+    // Ack....
+    if (this.data.closable !== undefined)
+    {
+      console.warn("shelf.closable will clobber shelf.closeable")
+      this.data.closeable = this.data.closable
+    }
+
     if (this.container.hasLoaded)
     {
       this.container.querySelector('.bg').setAttribute('geometry', {width: this.data.width, height: this.data.height})

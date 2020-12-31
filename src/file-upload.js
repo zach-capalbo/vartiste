@@ -3,6 +3,8 @@ import shortid from 'shortid'
 import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
+import Pako from 'pako'
+import JSZip from 'jszip'
 
 class URLFileAdapter {
   constructor(url) {
@@ -516,6 +518,27 @@ Util.registerComponentSystem('file-upload', {
       }
     }
 
+    document.onpaste = (event) => {
+      console.log("Paste", event);
+      var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+      {
+        if (this.fileInterceptors[i](items)) return;
+      }
+      if (items) {
+        for (let item of items)
+        {
+          if (item.kind !== 'file') continue
+
+          let file = item.getAsFile()
+
+          console.log("dropping", item.type, item.kind, file.name)
+
+          this.handleFile(file, {itemType: item.type})
+        }
+      }
+    }
+
     this.inputEl = document.createElement('input')
     this.inputEl.setAttribute('type', "file")
     // this.inputEl.setAttribute('accept', ".vartiste")
@@ -595,10 +618,46 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    file.text().then(t => {
-      console.log("Texted")
-      settings.load(t)
-    }).catch(e => console.error("Couldn't load", e))
+    if (/\.zip$/i.test(file.name))
+    {
+      file.arrayBuffer().then(async (b) => {
+        let zip = new JSZip();
+        zip = await zip.loadAsync(b)
+        console.log("New zip", zip)
+        for (let fileName in zip.files)
+        {
+          console.log("Handling", fileName)
+          let blob = await zip.file(fileName).async('blob')
+          console.log("Got blob", blob)
+          this.handleFile()
+        }
+      })
+
+      return;
+    }
+
+    if (/\.vartistez$/i.test(file.name))
+    {
+      file.arrayBuffer().then(b => {
+        console.time('decompressProject')
+        let inflated = Pako.inflate(b)
+        inflated = (new TextDecoder("utf-8")).decode(inflated)
+        console.timeEnd('decompressProject')
+        settings.load(inflated)
+      })
+      .catch(e => console.error("Couldn't load", e))
+      return
+    }
+
+    if (/\.vartiste$/i.test(file.name))
+    {
+      file.text().then(t => {
+        settings.load(t)
+      }).catch(e => console.error("Couldn't load", e))
+      return;
+    }
+
+    console.warn("Unknown file", file.name)
   },
   handleURL(url, {positionIdx} = {}) {
     this.handleFile(new URLFileAdapter(url))

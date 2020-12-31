@@ -16,3 +16,9 @@
     li: a href="#" click-action="saveGLB" Attempt to export the GLB file
     li: a href="#" click-action="saveLayers" Attempt to export each layer as a PNG
     li: a href="#" click-action="dismiss" Ignore. This is not actually a crash
+
+  h2 Error Information
+  p Here is some technical information about why this crash occurred
+  p: a href="https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=Crash" Click here to report this bug
+
+  code#crash-stack-trace

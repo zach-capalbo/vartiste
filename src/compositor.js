@@ -886,7 +886,7 @@ AFRAME.registerComponent('compositor', {
         let img = new Image
         let canvasData = obj.canvases[i][j]
         img.src = canvasData
-        console.log("Loaded Layer", layer, j, obj.canvases[i].length)
+        console.log("Loaded Layer", j, layer.id)//, layer, j, obj.canvases[i].length)
         await delay()
         while (j >= layer.frames.length)
         {

@@ -14,10 +14,10 @@ const devMode = !production
 let config = {
   mode: devMode ? "development" : "production",
   devtool: devMode ? 'inline-cheap-module-source-map' : undefined,
-  devServer: {
+  devServer: devMode ? {
     contentBase: './dist',
     disableHostCheck: true,
-  },
+  } : undefined,
   output: {
     filename: '[name].bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
@@ -37,13 +37,17 @@ let config = {
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
-      { test: /gallery.*\.vartiste$/,
+      { test: /gallery.*\.vartistez?$/,
         use: [{
           loader: 'file-loader',
           options: {
             name: 'gallery/[name].[ext]'
           }
         }]
+      },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: "worker-loader" },
       },
       {
         test: /ai-models.*json/,
@@ -68,7 +72,7 @@ let config = {
           }
         }]
       },
-      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr)$/i,
+      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr|webp)$/i,
         use: [
           {
             loader: 'url-loader',

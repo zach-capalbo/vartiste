@@ -168,7 +168,7 @@ AFRAME.registerSystem('icon-button', {
     new THREE.GLTFLoader().load(document.getElementById('asset-button').getAttribute('src'), (gltf) => {
       let scaleMatrix = new THREE.Matrix4().makeScale(this.width, this.width, this.depth - 0.005)
       this.geometry = gltf.scene.getObjectByProperty('type', 'Mesh').geometry
-      this.geometry.applyMatrix(scaleMatrix)
+      this.geometry.applyMatrix4(scaleMatrix)
     })
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width - 0.01, this.width - 0.01)
     this.colorManagement = this.el.getAttribute('renderer').colorManagement;
@@ -305,6 +305,7 @@ AFRAME.registerComponent('icon-button', {
     this.tick = AFRAME.utils.throttleTick(this.tick, 80, this)
   },
   update(oldData) {
+    if (!this.el.attached) throw new Error("Not attached!")
     if (this.system.faceMaterials[this.data])
     {
       this.el.getObject3D('mesh').material = this.system.faceMaterials[this.data]
@@ -405,6 +406,9 @@ AFRAME.registerComponent('toggle-button', {
     component: {type: 'string'},
     // Which property to toggle
     property: {type: 'string'},
+
+    // Not recommended due to lack of update events. Can be used instead of component
+    system: {type: 'string'},
 
     // State of being toggled, when not using target and component
     toggled: {type: 'boolean', default: false}
