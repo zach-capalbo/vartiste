@@ -82,6 +82,12 @@ AFRAME.registerShader('matcap', {
     this.rendererSystem.applyColorCorrection(this.materialData.emissive);
     this.material = new THREE.MeshMatcapMaterial(this.materialData);
 
+    if (data.wireframe)
+    {
+      this.material.wireframe = data.wireframe
+      this.material.wireframeLinewidth = data.wireframeLinewidth
+    }
+
     utils.material.updateMap(this, data);
     if (data.normalMap) { utils.material.updateDistortionMap('normal', this, data); }
     if (data.displacementMap) { utils.material.updateDistortionMap('displacement', this, data); }
@@ -125,8 +131,8 @@ function getMaterialData (data, materialData) {
 
   materialData.fog = data.fog;
 
-  materialData.wireframe = data.wireframe;
-  materialData.wireframeLinewidth = data.wireframeLinewidth;
+  // materialData.wireframe = data.wireframe;
+  // materialData.wireframeLinewidth = data.wireframeLinewidth;
 
   if (data.normalMap) { materialData.normalScale = data.normalScale; }
 

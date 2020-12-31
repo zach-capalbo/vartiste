@@ -19,6 +19,9 @@ AFRAME.registerComponent('shelf', {
     hideOnly: {default: true},
     pinnable: {default: true},
 
+    // alias for closeable because I can't spell
+    closable: {default: undefined, parse: o => o},
+
     grabRoot: {default: true},
 
     // If this shelf is summoned by a popup button. (Will be set automatically
@@ -64,7 +67,14 @@ AFRAME.registerComponent('shelf', {
       // this.el.setAttribute('billboard', "")
     }
   },
-  update() {
+  update(oldData) {
+    // Ack....
+    if (this.data.closable !== undefined)
+    {
+      console.warn("shelf.closable will clobber shelf.closeable")
+      this.data.closeable = this.data.closable
+    }
+
     if (this.container.hasLoaded)
     {
       this.container.querySelector('.bg').setAttribute('geometry', {width: this.data.width, height: this.data.height})

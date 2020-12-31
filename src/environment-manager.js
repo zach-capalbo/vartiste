@@ -381,7 +381,7 @@ AFRAME.registerComponent('light-bauble', {
     this.el.append(sun)
     sun.classList.add('clickable')
     sun['redirect-grab'] = this.el
-    sun.setAttribute('geometry', 'primitive: sphere; segments: width: 8; segmentsHeight: 8; radius: 0.5')
+    sun.setAttribute('geometry', 'primitive: sphere; segmentsWidth: 8; segmentsHeight: 8; radius: 0.5')
     sun.setAttribute('material', 'shader: matcap; color: #ffffe3')
     this.sun = sun
   },
