@@ -185,7 +185,7 @@ AFRAME.registerComponent('quick-gallery', {
     click: function(e) {
 
       let loadName = e.target.getAttribute('quick-load')
-      console.log("Quick Load Button", e.target, loadName)
+      console.log("Clicked Quick Load Button", e.target, loadName)
       if (!loadName) return
 
       this.el.sceneEl.systems['file-upload'].handleURL(require(`./gallery/${loadName}.vartiste`))
@@ -197,7 +197,6 @@ AFRAME.registerComponent('quick-gallery', {
       if (!entry.quickLoad) continue
       let img = document.createElement('img')
       img.src = require(`resize-loader?200!./gallery/${entry.name}.png`)
-      console.log("Gallery Entry", img)
       let button = document.createElement('a-entity')
       button.setAttribute('icon-button', img)
       button.setAttribute('tooltip', `Quick Start ${entry.displayName}`)

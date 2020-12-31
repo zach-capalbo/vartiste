@@ -100,7 +100,7 @@ class ButtonMaps {
     this.buttons = this.buttons.concat(Object.keys(map))
   }
   install(where) {
-    console.log("Buttons", this.buttons, where)
+    // console.log("Buttons", this.buttons, where)
 
     let buttonsToInstall = new Set(this.buttons)
 

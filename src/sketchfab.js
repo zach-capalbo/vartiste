@@ -27,7 +27,6 @@ AFRAME.registerSystem('sketchfab', {
     delete this.token
   },
   loggedIn() {
-    console.log("Token", this.token)
     return typeof this.token !== 'undefined'
   },
   async upload() {
