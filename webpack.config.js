@@ -14,10 +14,10 @@ const devMode = !production
 let config = {
   mode: devMode ? "development" : "production",
   devtool: devMode ? 'inline-cheap-module-source-map' : undefined,
-  devServer: {
+  devServer: devMode ? {
     contentBase: './dist',
     disableHostCheck: true,
-  },
+  } : undefined,
   output: {
     filename: '[name].bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
