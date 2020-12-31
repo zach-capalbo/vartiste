@@ -72,7 +72,7 @@ let config = {
           }
         }]
       },
-      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr)$/i,
+      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr|webp)$/i,
         use: [
           {
             loader: 'url-loader',

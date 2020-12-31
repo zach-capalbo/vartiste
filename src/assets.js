@@ -113,6 +113,8 @@ window.AFRAME.registerElement('vartiste-assets', {
             this.load()
           })
         }
+
+        this.emit('vartisteassetsadded')
       }
     },
     load: {

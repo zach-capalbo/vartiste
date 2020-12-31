@@ -103,6 +103,7 @@ AFRAME.registerComponent('camera-tool', {
     preview: {default: true},
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
+    captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download'], default: 'overlay'},
     newFrameOnCapture: {default: false},
     newLayerOnCapture: {default: false},
   },

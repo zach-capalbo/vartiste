@@ -2,6 +2,8 @@
 // require('aframe-environment-component')
 // require('aframe-leap-hands');
 
+require('./loading-page')
+
 require('./framework/fix-text-autoscaling-logging.js')
 require('./framework/GLTFExporter.js')
 // require('./framework/valve-index-controls.js')
