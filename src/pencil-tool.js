@@ -130,7 +130,8 @@ AFRAME.registerComponent('pencil-tool', {
         systemData = Object.assign({}, this.el.sceneEl.systems['paint-system'].data)
       }
       let brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
-      console.log("Restoring brush", brush)
+      // console.log("Restoring brush", brush)
+      console.log("Restoring brush", brush.constructor.name, brush.baseid)
       lockedSystem = {
         data: systemData,
         brush

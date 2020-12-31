@@ -44,7 +44,7 @@ AFRAME.registerComponent('node-output', {
 
     this.el.addEventListener('unsnapped', e => {
       let {grabber} = e.detail
-      console.log("Usnapping grabber", grabber, grabber.is('grabbed'))
+      console.log("Usnapping grabber")//, grabber, grabber.is('grabbed'))
       grabber.object3D.position.set(0, 0, 0)
       grabber.snappedTo = undefined
 
@@ -115,7 +115,7 @@ AFRAME.registerComponent('node-output', {
   },
   formConnectionTo(grabber, snapped) {
     if (typeof grabber === "undefined") grabber = this.grabber
-    console.log("Forming connection", grabber, snapped)
+    console.log("Forming connection")//, grabber, snapped)
     let oldSnapped = grabber.snappedTo
     grabber.snappedTo = snapped
     if (oldSnapped) oldSnapped.emit('unsnapped', {snapped: this.el, grabber})
