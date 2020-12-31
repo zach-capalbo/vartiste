@@ -518,6 +518,27 @@ Util.registerComponentSystem('file-upload', {
       }
     }
 
+    document.onpaste = (event) => {
+      console.log("Paste", event);
+      var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+      {
+        if (this.fileInterceptors[i](items)) return;
+      }
+      if (items) {
+        for (let item of items)
+        {
+          if (item.kind !== 'file') continue
+
+          let file = item.getAsFile()
+
+          console.log("dropping", item.type, item.kind, file.name)
+
+          this.handleFile(file, {itemType: item.type})
+        }
+      }
+    }
+
     this.inputEl = document.createElement('input')
     this.inputEl.setAttribute('type', "file")
     // this.inputEl.setAttribute('accept', ".vartiste")

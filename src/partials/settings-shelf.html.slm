@@ -34,5 +34,6 @@ a-entity position="-1.6 -1.2 0"
   - for (let i = 0; i < 4; ++i)
     a-entity icon-button="" visible="false"
   a-entity icon-button="#asset-archive-arrow-down-outline" tooltip="Standard Sizes" popup-button="popup: standard-sizes; autoScale: true"
+  a-entity click-action="resizeCanvasToCurrentLayer" icon-button="#asset-arrow-all"  tooltip="Resize Canvas to Current Layer"
 a-entity position="0.1 -1.2 0"
   /a-entity.message text="width: 3.8; wrapCount: 48; align: left"

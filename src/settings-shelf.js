@@ -90,7 +90,7 @@ AFRAME.registerComponent('settings-shelf', {
     ctx.fillRect(0,0,width,height)
     compositor.addLayer(1)
   },
-  resampleAction(e, {resample = true, ...opts} = {}) {
+  resampleAction(e, {resample = true, size, ...opts} = {}) {
     let compositor = document.getElementById('canvas-view').components.compositor;
 
     if (e.target.hasAttribute('size'))
@@ -98,6 +98,10 @@ AFRAME.registerComponent('settings-shelf', {
       var {width, height} = AFRAME.utils.styleParser.parse(e.target.getAttribute('size'))
       width = parseInt(width)
       height = parseInt(height)
+    }
+    else if (size)
+    {
+      var {width, height} = size
     }
     else
     {
@@ -112,6 +116,9 @@ AFRAME.registerComponent('settings-shelf', {
   },
   resizeCanvasAction(e) {
     this.resampleAction(e, {resample: false, resizeLayers: false})
+  },
+  resizeCanvasToCurrentLayerAction(e) {
+    this.resampleAction(e, {resample: false, resizeLayers: false, size: Compositor.component.activeLayer})
   },
   toggleShadingAction() {
     let compositor = document.getElementById('canvas-view').components.compositor;
