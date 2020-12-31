@@ -34,9 +34,25 @@ AFRAME.registerSystem('crash-handler', {
     })
 
     this.handleCrash = this._handleCrash
+    this.crashCount = 0
 
-    let oldRender = this.el.sceneEl.render;
-    this.el.sceneEl.render = () => { try { oldRender(); } catch (e) {this._handleCrash(e)} }
+    this.oldRender = this.el.sceneEl.render;
+    this.renderFn = ((...args) => {
+        try {
+          this.oldRender.call(this.el.sceneEl, ...args);
+          this.crashCount = 0
+        } catch (e) {
+          this._handleCrash(e)
+          if (this.crashCount++ > 5)
+          {
+            throw e;
+          }
+        }
+    }).bind(this)
+    Object.defineProperty(this.el.sceneEl, 'render', {
+      get: () => this.renderFn,
+      set: (r) => this.oldRender = r,
+    })
   },
   tick(t, dt) {
     this.numberOfBygoneTicks = 0
@@ -62,7 +78,6 @@ AFRAME.registerSystem('crash-handler', {
     this.noticeDiv.classList.remove("hidden")
     this.hasCrashed = true
     this.crashShown = true
-
     this.handleCrash = function() {};
   },
   clearCrash() {
