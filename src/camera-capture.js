@@ -104,8 +104,6 @@ AFRAME.registerComponent('camera-tool', {
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
     captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download'], default: 'overlay'},
-    newFrameOnCapture: {default: false},
-    newLayerOnCapture: {default: false},
   },
   events: {
     click: function(e) {
@@ -227,22 +225,37 @@ AFRAME.registerComponent('camera-tool', {
   },
   takePicture() {
     console.log("Taking picture")
-    if (this.data.newLayerOnCapture)
+    if (this.data.captureType === 'newLayer')
     {
       Compositor.component.addLayer()
     }
-    else if (this.data.newFrameOnCapture)
+    else if (this.data.captureType === 'newFrame')
     {
       Compositor.component.addFrameAfter()
     }
-    let targetCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
-    Undo.pushCanvas(targetCanvas)
+    let targetCanvas
+    if (this.data.captureType === 'download')
+    {
+      targetCanvas = document.createElement('canvas')
+      targetCanvas.width = Compositor.component.width
+      targetCanvas.height = Compositor.component.height
+    }
+    else
+    {
+      targetCanvas = Compositor.component.activeLayer.frame(Compositor.component.currentFrame)
+      Undo.pushCanvas(targetCanvas)
+    }
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
     this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})
+    if (this.data.captureType === 'download')
+    {
+      let settings = this.el.sceneEl.systems['settings-system']
+      settings.download(targetCanvas.toDataURL(settings.imageURLType(), settings.compressionQuality()), {extension: settings.imageExtension(), suffix: "snapshot"}, "Snapshot")
+    }
   },
   activate() {
     var helper = new THREE.CameraHelper( this.camera );
@@ -293,14 +306,16 @@ AFRAME.registerComponent('camera-tool', {
       this.el.append(row)
 
       for (let [icon, prop, tip] of [
-        ['#asset-plus-box-outline', 'newLayerOnCapture', "New Layer On Capture"],
-        ['#asset-arrow-right', 'newFrameOnCapture', "New Frame On Capture"],
+        ['#asset-brush', 'overlay', "Overlay Current Layer"],
+        ['#asset-plus-box-outline', 'newLayer', "New Layer On Capture"],
+        ['#asset-arrow-right', 'newFrame', "New Frame On Capture"],
+        ['#asset-floppy', 'download', "Download Snapshot"]
       ])
       {
         let button = document.createElement('a-entity')
         row.append(button)
         button.setAttribute('icon-button', icon)
-        button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: prop})
+        button.setAttribute('radio-button', {target: this.el, component: 'camera-tool', property: 'captureType', value: prop})
         button.setAttribute('tooltip', tip)
       }
     }
