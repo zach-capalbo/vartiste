@@ -538,6 +538,88 @@ AFRAME.registerComponent('skeletonator', {
       this.nodesFromBones()
     }
   },
+  skinFromDistance() {
+    console.log("Skin From Distance")
+    for (let mesh of this.meshes)
+    {
+      console.log("Skinning", mesh.name)
+      let positions = mesh.geometry.attributes.position
+      let pos = new THREE.Vector3()
+      let boneWorld = new THREE.Vector3()
+
+      var skinIndices = [];
+      var skinWeights = [];
+
+      let bones = mesh.skeleton.bones
+
+      let rootBone = Math.max(bones.indexOf(mesh.parent), 0)
+
+      console.log("Root Bone", rootBone)
+
+      for (let vi = 0; vi < positions.count; vi ++ )
+      {
+        pos.fromBufferAttribute(positions, vi)
+        mesh.localToWorld(pos)
+
+        let topFour = [
+          {idx: rootBone, weight: 999},
+          {idx: rootBone, weight: 999},
+          {idx: rootBone, weight: 999},
+          {idx: rootBone, weight: 999},
+        ]
+
+        for (let i in bones)
+        {
+          let bone = bones[i]
+          boneWorld.copy(bone.position)
+          bone.localToWorld(boneWorld)
+
+          let dist = pos.distanceTo(boneWorld)
+
+          if (isNaN(dist))
+          {
+            console.log("NAN", boneWorld, pos, bone)
+          }
+
+          if (dist < topFour[3].weight)
+          {
+            topFour[3].idx = i
+            topFour[3].weight = dist
+            topFour.sort((a,b) => (a.weight - b.weight))
+          }
+        }
+
+        topFour[0].weight = 1.0 / topFour[0].weight
+        topFour[1].weight = 1.0 / (2 * topFour[1].weight)
+        topFour[2].weight = 0
+        topFour[3].weight = 0
+
+        let norm = topFour[0].weight + topFour[1].weight + topFour[2].weight + topFour[3].weight
+
+        // norm = 1;
+
+        //
+        // if (norm < 1.0)
+        // {
+        //   topFour[3].idx = rootBone
+        //   topFour[3].weight = 1.0 - norm
+        //   norm = 1.0
+        // }
+
+        if (topFour[1].weight == 0) topFour[1].idx = 0
+        if (topFour[2].weight == 0) topFour[2].idx = 0
+        if (topFour[3].weight == 0) topFour[3].idx = 0
+
+        skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
+        skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
+      }
+
+      mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
+      mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
+      mesh.geometry.attributes.skinIndex.needsUpdate = true
+      mesh.geometry.attributes.skinWeight.needsUpdate = true
+    }
+  },
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
 
@@ -1002,6 +1084,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   skinFromNodes() {
     this.el.skeletonator.skinFromNodes()
+  },
+  skinFromDistance() {
+    this.el.skeletonator.skinFromDistance()
   },
   nodesFromSkin() {
     this.el.skeletonator.nodesFromSkin()
