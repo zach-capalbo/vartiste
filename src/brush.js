@@ -120,6 +120,7 @@ class ProceduralBrush extends Brush {
       drawEdges: {default: false},
       invertScale: {default: false},
       minMovement: {type: 'float', default: undefined},
+      mode: {default: 'source-over'},
     }, super.schema())
   }
   constructor(baseid, {
@@ -136,6 +137,7 @@ class ProceduralBrush extends Brush {
     minMovement=undefined,
     tooltip=undefined,
     user=false,
+    mode='source-over',
     ...options} = {})
   {
     super(baseid);
@@ -158,6 +160,7 @@ class ProceduralBrush extends Brush {
     this.minMovement = minMovement
     this.tooltip = tooltip
     this.user = user
+    this.mode = mode
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -329,6 +332,8 @@ class ProceduralBrush extends Brush {
     }
 
     ctx.save()
+
+    ctx.globalCompositeOperation = this.mode
 
     if (this.distanceBased)
     {
@@ -709,6 +714,7 @@ class LineBrush extends Brush
 {
   constructor(baseid, {
     tooltip=undefined,
+    mode="source-over",
     previewSrc
   } = {}) {
     super(baseid)
@@ -716,6 +722,7 @@ class LineBrush extends Brush
     this.opacity = 1.0
     this.tooltip = tooltip
     this.outlineScale = 1
+    this.mode = mode
 
     if (previewSrc)
     {
@@ -769,6 +776,7 @@ class LineBrush extends Brush
     this.solo = false
     if (!this.lineData.startPoint && this.lineData.endPoint) return
     ctx.save()
+    ctx.globalCompositeOperation = this.mode
     ctx.beginPath()
     ctx.moveTo(this.lineData.startPoint.x, this.lineData.startPoint.y)
     ctx.lineTo(this.lineData.endPoint.x, this.lineData.endPoint.y)
@@ -819,6 +827,7 @@ class StretchBrush extends LineBrush {
       textured: {default: false},
       width: {default: 48},
       height: {default: 48},
+      mode: {default: 'source-over'},
       image: {
         type: 'map',
         store: (img) => img.src,
@@ -958,6 +967,7 @@ class StretchBrush extends LineBrush {
 
     let oldAlpha = ctx.globalAlpha
     ctx.globalAlpha = Math.sqrt(this.opacity)
+    ctx.globalCompositeOperation = this.mode
     ctx.drawImage(this.uvStretcher.canvas,
       0, 0, this.uvStretcher.canvas.width, this.uvStretcher.canvas.height,
       0, 0, ctx.canvas.width, ctx.canvas.height)

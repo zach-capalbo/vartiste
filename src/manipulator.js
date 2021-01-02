@@ -97,6 +97,9 @@ AFRAME.registerComponent('manipulator', {
     // Logs debug messages to the console
     printUpdates: {type: 'boolean', default: false},
 
+    // Grab button toggles rather than grip / release
+    grabToggleTimeout: {default: 200},
+
     rotateByDefault: {default: false},
   },
   pool(name, type) {
@@ -324,7 +327,14 @@ AFRAME.registerComponent('manipulator', {
       e.stopPropagation()
     }
 
+    if (this.el.is('grabbing') && this.grabToggleLocked) {
+      this.readyToRelease = true
+    }
+
     if (this.el.is('grabbing')) return
+    this.readyToRelease = false
+
+    this.gripClosedTime = this.el.sceneEl.time
 
     if (this.data.useRay)
     {
@@ -364,6 +374,12 @@ AFRAME.registerComponent('manipulator', {
     }
   },
   onGripOpen() {
+    if (this.el.sceneEl.time - this.gripClosedTime < this.data.grabToggleTimeout)
+    {
+      this.grabToggleLocked = true;
+      return;
+    }
+
     this.stopGrab()
 
     if (this.data.printUpdates)

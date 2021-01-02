@@ -65,8 +65,11 @@ AFRAME.registerComponent('brush-editor', {
 
     name: {default: "New Brush"},
 
-    // ImageBrush
+    // Common
     textured: {default: false, passthrough: true},
+    mode: {default: 'source-over', passthrough: true},
+
+    // ImageBrush
     connected: {default: true, passthrough: true},
     autoRotate: {default: false, passthrough: true},
     dragRotate: {default: true, passthrough: true},
@@ -94,6 +97,11 @@ AFRAME.registerComponent('brush-editor', {
         this[e.target.getAttribute('click-action')](e)
         e.stopPropagation()
         return true;
+      }
+      else if (e.target.hasAttribute('layer-mode'))
+      {
+        this.el.setAttribute('brush-editor', 'mode', e.target.getAttribute('layer-mode'))
+        e.target.emit('popupaction', 'close')
       }
     }
   },
@@ -145,7 +153,8 @@ AFRAME.registerComponent('brush-editor', {
     this.el.querySelector('.preview').setAttribute('material', 'src', img)
   },
   update(oldData) {
-    this.el.querySelector('.image-brush').setAttribute('visible', this.data.type === 'ImageBrush')
+    this.el.querySelectorAll('.image-brush').forEach(el => el.setAttribute('visible', this.data.type === 'ImageBrush'))
+    this.el.querySelectorAll('.stretch-brush').forEach(el => el.setAttribute('visible', this.data.type === 'StretchBrush'))
   },
   createBrush() {
     if (!this.image) {
