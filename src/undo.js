@@ -141,6 +141,10 @@ class UndoStack {
   // running into a single undo operation, such that if `undo()` is called, it
   // will undo all of them at once.
   collect(f) {
+    if (!this.pushAllowed) {
+      return f();
+    }
+
     var realStack = this.stack
     var realMaxSize = this.maxSize
 
