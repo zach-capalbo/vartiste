@@ -6,7 +6,7 @@ THREE.BufferGeometry.prototype.fromGeometry = function(g) {
   }
   return o.call(this, g)
 }
-// 
+//
 // let originalBufferGeometry = THREE.BufferGeometry
 //
 // THREE.BufferGeometry = function BufferGeometry() {
@@ -35,3 +35,8 @@ THREE.BufferGeometry.prototype.fromGeometry = function(g) {
 // }
 //
 // Object.assign(THREE.BufferGeometry.prototype, originalBufferGeometry.prototype)
+
+// Bypass warning for now
+THREE.Matrix4.prototype.getInverse = function(mat) {
+  return this.copy(mat).invert();
+}

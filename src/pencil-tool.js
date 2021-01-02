@@ -995,7 +995,7 @@ AFRAME.registerComponent('selection-box-tool', {
       this.stopGrab()
     }
   },
-  startGrab() {
+  selectObjects() {
     let objects = document.querySelectorAll(this.data.selector)
     if (!this.data.grabElements)
     {
@@ -1006,6 +1006,10 @@ AFRAME.registerComponent('selection-box-tool', {
       }
       objects = newObjects.map(o => { return {object3D: o}})
     }
+    return objects
+  },
+  startGrab() {
+    let objects = this.selectObjects();
     this.grabbers = {}
     this.grabbed = {}
     this.grabberId = {}

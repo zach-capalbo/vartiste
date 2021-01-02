@@ -78,6 +78,7 @@ require('./animation-3d')
 require('./webxr-input-profiles')
 require('./material-packs')
 require('./brush-editor')
+require('./ik-solving')
 // require('./text')
 
 require('./app.styl')
