@@ -79,6 +79,7 @@ require('./webxr-input-profiles')
 require('./material-packs')
 require('./brush-editor')
 require('./ik-solving')
+require('./xr-controllers')
 // require('./text')
 
 require('./app.styl')
