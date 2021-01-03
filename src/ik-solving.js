@@ -1,15 +1,41 @@
 import {Util} from './util.js'
-import { IK, IKChain, IKJoint, IKBallConstraint, IKHelper } from 'three-ik';
+import { IK, IKChain, IKJoint, IKBallConstraint, IKHelper } from './framework/three-ik.js';
+import {setZForward} from './framework/three-ik-axis-util.js'
 // import * as THREEIK from 'three-ik'
 // window.THREEIK = THREEIK
 
 Util.registerComponentSystem('ik-solving', {
   init() {
 
+  },
+  setZForward(el) {
+    if (el) {
+      el.object3D.traverse(o => {
+        if (o.isSkinnedMesh && o.material.skinning)
+        {
+          setZForward(o.skeleton.bones[0])
+          o.bind(o.skeleton)//, o.bindMatrix)
+        }
+      })
+      return
+    }
+
+    for (let mesh of Skeletonator.meshes)
+    {
+      mesh.pose()
+      setZForward(mesh.skeleton.bones[0])
+      mesh.bind(mesh.skeleton)//, mesh.bindMatrix)
+      // Skeletonator.bakeSkeleton()
+    }
+
+    for (let handle of Object.values(Skeletonator.boneToHandle))
+    {
+      handle.components['bone-handle'].resetToBone()
+    }
   }
 })
 
-const constraints = [];//[new THREE.IKBallConstraint(90)];
+const constraints = [new THREE.IKBallConstraint(180)];
 AFRAME.registerComponent('ik-handle-tool', {
   dependencies: ['selection-box-tool'],
   schema: {
@@ -58,6 +84,7 @@ AFRAME.registerComponent('ik-handle-tool', {
       this.originalStartGrab = this.startGrab;
       this.startGrab = function() {
         console.log("IK Start Grab")
+        this.zCorrectedEls = new Set();
         this.originalStartGrab();
         let allBones = new Set();
         this.ikBones.clear();
@@ -93,9 +120,17 @@ AFRAME.registerComponent('ik-handle-tool', {
         delete this.ik;
         for (let helper of this.ikHelpers)
         {
-          helper.remove();
+          helper.parent.remove(helper);
         }
         this.ikHelpers.length = 0;
+      };
+
+      this.preprocessContainedTarget = function (target) {
+        if (this.zCorrectedEls.has(target.object3D.el)) return;
+
+        this.el.sceneEl.systems['ik-solving'].setZForward(target.object3D.el);
+
+        this.zCorrectedEls.add(target.object3D.el)
       };
 
       this._tick = (function(t, dt) {
@@ -104,6 +139,16 @@ AFRAME.registerComponent('ik-handle-tool', {
 
         if (this.ik) {
           this.ik.solve();
+
+          for (let bone of this.ikBones)
+          {
+            let originalPos = this.pool('opos', THREE.Vector3)
+            originalPos.copy(bone.position)
+
+            Util.positionObject3DAtTarget(bone, this.grabbers[bone.uuid])
+            bone.position.copy(originalPos)
+            bone.matrix.compose(bone.position, bone.quaternion, bone.scale)
+          }
 
           if (typeof Skeletonator !== 'undefined')
           {

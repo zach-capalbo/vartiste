@@ -942,6 +942,7 @@ AFRAME.registerComponent("bone-handle", {
     this.trackParentConstraint = this.trackParentConstraint.bind(this)
     this.positioningHelper = new THREE.Object3D
     this.el.sceneEl.object3D.add(this.positioningHelper)
+    // this.el.bone.add(new THREE.AxesHelper(2))
   },
   tick(t,dt) {
     let indicator = this.el.getObject3D('mesh')
@@ -1055,15 +1056,47 @@ AFRAME.registerComponent("skeletonator-control-panel", {
       this.el.skeletonator.boneTracks[bone.name] = {}
     }
   },
+  setZForward() {
+    this.bakeSkeleton()
+    this.el.sceneEl.stystems['ik-solving'].setZForward()
+    this.bakeSkeleton()
+  },
   bakeSkeleton(newSkeleton = false) {
     let bones = []
     Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
 
     for (let mesh of this.el.skeletonator.meshes)
     {
+      let deletedIdxs = []
+      let sortedBones = mesh.skeleton.bones;
+      for (let i = 0; i < sortedBones.length; ++i)
+      {
+        if (bones.indexOf(sortedBones[i]) < 0)
+        {
+          console.warn("Deleting bones may mess up skin index")
+          deletedIdxs.push(i)
+          continue;
+        }
+      }
+
+      for (let bone of bones)
+      {
+        if (sortedBones.indexOf(bone) < 0)
+        {
+          if (deletedIdxs.length)
+          {
+            sortedBones[deletedIdxs.pop()] = bone
+          }
+          else
+          {
+            sortedBones.push(bone)
+          }
+        }
+      }
+
       mesh.updateMatrixWorld()
-      mesh.bind(new THREE.Skeleton(bones
-        , bones.map(b => {
+      mesh.bind(new THREE.Skeleton(sortedBones
+        , sortedBones.map(b => {
         let idx = mesh.skeleton.bones.indexOf(b)
         if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
         let m = new THREE.Matrix4() // Don't pool this one, it's copied

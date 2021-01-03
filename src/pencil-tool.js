@@ -1008,6 +1008,7 @@ AFRAME.registerComponent('selection-box-tool', {
     }
     return objects
   },
+  preprocessContainedTarget(target) {},
   startGrab() {
     let objects = this.selectObjects();
     this.grabbers = {}
@@ -1048,6 +1049,8 @@ AFRAME.registerComponent('selection-box-tool', {
         }
         if (!contained) continue
       }
+
+      this.preprocessContainedTarget(target)
 
       if (this.data.duplicateOnGrab)
       {
