@@ -40,6 +40,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
     if (!xrSession) {
       this.referenceSpace = undefined;
       this.controllers = [];
+      this.motionControllers.clear();
       if (this.oldControllersLength > 0) {
         this.oldControllersLength = 0;
         this.el.emit('controllersupdated', undefined, false);

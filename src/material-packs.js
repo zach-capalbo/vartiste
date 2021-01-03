@@ -214,6 +214,19 @@ Util.registerComponentSystem('material-pack-system', {
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
     Compositor.el.setAttribute('material', 'shader', 'standard')
+    if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
+    {
+      Undo.collect(() => {
+        Undo.pushCanvas(Compositor.drawableCanvas)
+        Undo.push(() => {
+          if (this.activeMaterialMask)
+          {
+            this.activeMaterialMask.deactivateMask()
+            this.activeMaterialMask = undefined
+          }
+        })
+      })
+    }
   },
   tmpCanvas() {
     if (!this._tmpCanvas)
@@ -399,6 +412,7 @@ AFRAME.registerComponent('material-pack', {
       }
       let ctx = canvas.getContext('2d')
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
+      layer.touch()
       if (canvas.touch) canvas.touch()
       layer.needsUpdate = true
     }
@@ -407,6 +421,11 @@ AFRAME.registerComponent('material-pack', {
 
     Compositor.component.activateLayer(startingActiveLayer)
     this.isApplying = false
+
+    Undo.push(() => {
+      if (this.activeMaterialMask) this.activeMaterialMask.deactivateMask()
+      this.activeMaterialMask = undefined
+    })
   },
 })
 

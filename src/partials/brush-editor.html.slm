@@ -18,6 +18,8 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
       a-entity icon-button="#asset-rotate-3d-variant" tooltip="Auto Rotate" toggle-button="target: #brush-editor; component: brush-editor; property: autoRotate"
       /a-entity icon-button="#asset-transition" tooltip="Dithered Blending" toggle-button="target: #brush-editor; component: brush-editor; property: hqBlending"
     a-entity icon-row=""
+      a-entity popup-button="popup: mode-shelf; deferred: true; tooltip: Change brush blend mode; scale: 0.3 0.3 0.3" icon-button="#asset-blur-linear"
+    a-entity icon-row=""
       a-entity icon-button="#asset-plus-box-outline" tooltip="Add Brush" click-action="addBrush"
       a-entity icon-button="#asset-floppy" tooltip="Download Brushes" click-action="saveAll"
       /a-entity icon-button="#asset-archive-arrow-down-outline" tooltip="Download all custom brushes" click-action="addBrush"
