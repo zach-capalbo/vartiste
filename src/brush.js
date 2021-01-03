@@ -333,7 +333,10 @@ class ProceduralBrush extends Brush {
 
     ctx.save()
 
-    ctx.globalCompositeOperation = this.mode
+    if (!eraser)
+    {
+      ctx.globalCompositeOperation = this.mode
+    }
 
     if (this.distanceBased)
     {
