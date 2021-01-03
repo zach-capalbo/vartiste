@@ -267,6 +267,10 @@ AFRAME.registerComponent('popup-button', {
         this.popup.remove(c)
       }
       let child = document.createElement('a-entity')
+      for (let c of this.popup.children)
+      {
+        this.popup.removeChild(c)
+      }
       this.popup.append(child)
       child.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
       this.popupLoaded = true
