@@ -1058,7 +1058,7 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   setZForward() {
     this.bakeSkeleton()
-    this.el.sceneEl.stystems['ik-solving'].setZForward()
+    this.el.sceneEl.systems['ik-solving'].setZForward()
     this.bakeSkeleton()
   },
   bakeSkeleton(newSkeleton = false) {

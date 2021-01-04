@@ -18,4 +18,5 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
   a-entity position="-1.5 1.1 0" icon-row=""
     a-entity icon-button="#asset-web" system-click-action="system: user-media; action: showDesktop" tooltip="Show Desktop"
     a-entity icon-button="#asset-video-vintage" system-click-action="system: user-media; action: showCamera" tooltip="Show Webcam"
+    a-entity icon-button="#asset-hand-right" system-click-action="system: xr-controllers-only; action: enterSession" tooltip="Use VR Controllers with Desktop Display"
   a-entity position="0 -1.1 0" text="value: *Experimental Tools*; width: 3; wrapCount: 40"
