@@ -93,6 +93,7 @@ AFRAME.registerComponent('ik-handle-tool', {
           allBones.add(bone.object3D)
         }
 
+        this.ik = new IK();
         for (let bone of allBones)
         {
           let p = bone.parent
@@ -108,8 +109,10 @@ AFRAME.registerComponent('ik-handle-tool', {
           if (!isRoot) continue;
 
           this.ikBones.add(bone)
-          this.ik = new IK();
+        }
 
+        for (let bone of this.ikBones)
+        {
           this.createIK(bone, {target: this.grabbers[bone.uuid]});
         }
       };
