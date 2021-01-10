@@ -116,16 +116,19 @@ Util.registerComponentSystem('artist-root', {
     targetObj.updateMatrixWorld()
 
     cameraObj.getWorldDirection(cameraWorld)
-    cameraWorld.y = 0
-    cameraWorld.normalize()
-
-    let rotationMatrix = this.pool('rotMat', THREE.Matrix4)
-
-    let forward = this.pool('forward', THREE.Vector3)
-    forward.set(0, 0, 1)
-
-    console.log("wd", cameraWorld, cameraWorld.angleTo(forward))
-    targetObj.rotateY(cameraWorld.angleTo(forward))
+    let spherical = new THREE.Spherical();
+    spherical.setFromCartesianCoords(cameraWorld.x, cameraWorld.y, cameraWorld.z)
+    targetObj.rotation.y = - spherical.theta
+    // cameraWorld.y = 0
+    // cameraWorld.normalize()
+    //
+    // let rotationMatrix = this.pool('rotMat', THREE.Matrix4)
+    //
+    // let forward = this.pool('forward', THREE.Vector3)
+    // forward.set(0, 0, 1)
+    //
+    // console.log("wd", cameraWorld, cameraWorld.angleTo(forward))
+    // targetObj.rotateY(cameraWorld.angleTo(forward))
   },
 
   // Shows the prompt
