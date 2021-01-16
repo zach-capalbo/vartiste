@@ -59,7 +59,7 @@ AFRAME.registerSystem('paint-system', {
     this.brush.changeColor(this.data.color)
     this.brush.changeScale(this.data.brushScale)
     this.brush.changeOpacity(this.data.opacity)
-    this.el.emit('brushchanged', {brush: this.brush})
+    this.el.emit('brushchanged', {brush: this.brush, index})
   },
 
   // Sets whether the brush should be able to rotate while drawing

@@ -66,6 +66,14 @@ AFRAME.registerComponent('brush-shelf', {
       this.nextTimeExpand = true
     }
   },
+  deleteLastBrush() {
+    let lastButton = Array.from(this.el.querySelectorAll('*[brush-idx]')).slice(-1)[0]
+    lastButton.remove()
+    BrushList.pop()
+  },
+  hideBrushAt(idx) {
+    this.el.querySelector(`*[brush-idx="${idx}"]`).setAttribute('visible', false)
+  },
   toggleRotationAction() {
     this.system.setRotateBrush(!this.system.data.rotateBrush)
   },

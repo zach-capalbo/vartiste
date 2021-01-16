@@ -14,7 +14,7 @@ Util.registerComponentSystem('material-pack-system', {
       this.activeMaterialMask = undefined
     },
     startdrawing: function(e) {
-      if (!this.activeMaterialMask || !Undo.enabled) return
+      if (!this.activeMaterialMask || !Undo.enabled || this.oldUndo) return
       this.oldUndo = Undo.pushCanvas
       this.undid = true
       Undo.pushCanvas = () => {
@@ -38,6 +38,7 @@ Util.registerComponentSystem('material-pack-system', {
       if (!this.undid) return
       Undo.pushAllowed = true
       Undo.pushCanvas = this.oldUndo
+      delete this.oldUndo
       this.undid = false
     }
   },

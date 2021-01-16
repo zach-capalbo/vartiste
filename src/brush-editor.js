@@ -117,6 +117,20 @@ AFRAME.registerComponent('brush-editor', {
         this.el.sceneEl.systems['file-upload'].fileInterceptors.push(this.interceptFile)
       }
     })
+
+    this.el.sceneEl.addEventListener('brushchanged', (e) => {
+      let brush = e.detail.brush
+      if (brush.previewSrc instanceof Image)
+      {
+        this.setImage(brush.previewSrc)
+      }
+      else
+      {
+        let img = new Image();
+        img.src = brush.previewSrc
+        this.setImage(img)
+      }
+    })
   },
   interceptFile(items)
   {
@@ -191,15 +205,37 @@ AFRAME.registerComponent('brush-editor', {
     return brush
   },
   addBrush() {
-    document.querySelector('*[brush-shelf]').components['brush-shelf'].addBrush(this.createBrush())
+    let brush = this.createBrush()
+    document.querySelector('*[brush-shelf]').components['brush-shelf'].addBrush(brush)
+    this.el.sceneEl.systems['paint-system'].selectBrush(BrushList.length - 1)
   },
   saveAll() {
     let brushes = []
     for (let brush of BrushList) {
       if (!brush.user) continue;
+      if (brush.deleted) continue;
       brushes.push(brush.fullStore())
     }
     let encoded = encodeURIComponent(JSON.stringify(brushes))
     this.el.sceneEl.systems['settings-system'].download("data:application/x-binary," + encoded, {extension: "vartiste-brushes"}, "User created brushes")
+  },
+  deleteBrush() {
+    let brush = this.el.sceneEl.systems['paint-system'].brush
+    if (!brush.user) return
+
+    let idx = BrushList.indexOf(brush)
+    if (idx < 0) return;
+
+    let brushShelf = document.querySelector('*[brush-shelf]').components['brush-shelf'];
+
+    brush.deleted = true
+    if (idx === BrushList.length - 1)
+    {
+      brushShelf.deleteLastBrush()
+    }
+    else
+    {
+      brushShelf.hideBrushAt(idx)
+    }
   }
 })
