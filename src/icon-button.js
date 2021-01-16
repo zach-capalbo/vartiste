@@ -33,7 +33,7 @@ AFRAME.registerComponent('button-style', {
   }
 })
 
-const [
+export const [
   STATE_NORMAL,
   STATE_HOVERED,
   STATE_PRESSED,
