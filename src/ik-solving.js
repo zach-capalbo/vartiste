@@ -181,6 +181,18 @@ AFRAME.registerComponent('ik-handle-tool', {
           ikchain.add(
             new IKJoint(boneChain[i], {constraints}),
             { target: i === boneChain.length - 1 ? target : null});
+
+          if (i === boneChain.length - 1) break;
+
+          for (let c of boneChain[i].children)
+          {
+            if (!c.isBone) continue;
+            if (boneChain.indexOf(c) >= 0) continue;
+
+            ikchain.add(
+              new IKJoint(c, {constraints: []})
+            )
+          }
         }
 
         console.log("Created IK Chain for", bone, ikchain, target)

@@ -1,5 +1,6 @@
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
+import {STATE_TOGGLED} from './icon-button.js'
 
 const BRUSHES_PER_ROW = 8
 AFRAME.registerComponent('brush-shelf', {
@@ -18,6 +19,22 @@ AFRAME.registerComponent('brush-shelf', {
       {
         let idx = e.target.getAttribute('brush-idx')
         this.system.selectBrush(idx)
+      }
+    })
+
+    this.el.sceneEl.addEventListener('brushchanged', (e) => {
+      let brush = e.detail.brush
+      let idx = e.detail.index
+      for (let button of this.el.querySelectorAll('*[brush-idx]'))
+      {
+        if (button.getAttribute('brush-idx') == idx)
+        {
+          button.addState(STATE_TOGGLED)
+        }
+        else
+        {
+          button.removeState(STATE_TOGGLED)
+        }
       }
     })
 
@@ -65,6 +82,14 @@ AFRAME.registerComponent('brush-shelf', {
       this.el.querySelector('.brushes').append(this.brushRow)
       this.nextTimeExpand = true
     }
+  },
+  deleteLastBrush() {
+    let lastButton = Array.from(this.el.querySelectorAll('*[brush-idx]')).slice(-1)[0]
+    lastButton.remove()
+    BrushList.pop()
+  },
+  hideBrushAt(idx) {
+    this.el.querySelector(`*[brush-idx="${idx}"]`).setAttribute('visible', false)
   },
   toggleRotationAction() {
     this.system.setRotateBrush(!this.system.data.rotateBrush)

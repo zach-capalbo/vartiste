@@ -4,6 +4,8 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
     a-entity icon-row=""
       a-entity icon-button="#asset-brush" tooltip="Image Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: ImageBrush"
       a-entity icon-button="#asset-resize" tooltip="Stretch Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: StretchBrush"
+      a-entity position="3.4 0 0"
+        a-entity icon-button="#asset-delete" tooltip="Delete Brush" click-action="deleteBrush"
     a-entity icon-row=""
       a-entity icon-button="#asset-folder-open-outline" tooltip="Open Image" system-click-action="system: file-upload; action: browse"
       a-entity icon-button="#asset-arrow-left" tooltip="Use canvas as brush" click-action="useCanvas"
