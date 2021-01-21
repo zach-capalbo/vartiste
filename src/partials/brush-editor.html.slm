@@ -8,7 +8,7 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
         a-entity icon-button="#asset-delete" tooltip="Delete Brush" click-action="deleteBrush"
     a-entity icon-row=""
       a-entity icon-button="#asset-folder-open-outline" tooltip="Open Image" system-click-action="system: file-upload; action: browse"
-      a-entity icon-button="#asset-arrow-left" tooltip="Use canvas as brush" click-action="useCanvas"
+      a-entity icon-button="#asset-arrow-left" tooltip="Use active layer as brush" click-action="useLayer"
       / Use current layer
       / Use current composition
       a-entity text="value: Or drag and drop an image here; width: 1.930; wrapCount: 20.340; anchor: left" position="0.73 0 0"

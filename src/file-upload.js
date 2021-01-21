@@ -15,6 +15,10 @@ class URLFileAdapter {
     let resp = await fetch(this.url)
     return await resp.text()
   }
+  async arrayBuffer() {
+    let resp = await fetch(this.url)
+    return await resp.arrayBuffer()
+  }
 }
 
 export function toSrcString(file) {

@@ -66,7 +66,7 @@ class DownloadSorter {
     this.projects = ls(`${destination}/*`).map(d => Project.fromDirectory(d))
   }
   createCandidateProjects() {
-    let candidates = ls(`${this.source}/*.vartiste`)
+    let candidates = ls(`${this.source}/*.vartiste`).concat(ls(`${this.source}/*.vartistez`))
     for (let candidate of candidates)
     {
       if (!this.projects.some(p => p.shouldOwn(candidate.full)))
@@ -86,7 +86,9 @@ class DownloadSorter {
 
     const CANDIDATE_FORMATS = [
       "vartiste",
+      "vartistez",
       "png",
+      "jpg",
       "webm",
       "glb"
     ]
