@@ -161,6 +161,11 @@ AFRAME.registerComponent('brush-editor', {
     img.src = Compositor.component.preOverlayCanvas.toDataURL()
     this.setImage(img);
   },
+  useLayer() {
+    let img = new Image();
+    img.src = Compositor.drawableCanvas.toDataURL()
+    this.setImage(img)
+  },
   setImage(img) {
     console.log("Setting image")
     this.image = img
