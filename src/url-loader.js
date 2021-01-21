@@ -15,8 +15,7 @@ AFRAME.registerSystem('url-loader', {
       ctx.font = "58px Arial";
       ctx.fillText("Loading...", ctx.canvas.width / 2 - 40, ctx.canvas.height / 2)
 
-      let f = await fetch(url)
-      await this.el.systems['settings-system'].load(await f.text())
+      this.el.systems['file-upload'].handleURL(url)
 
       if (compositor.layers.some(l => l.frames.length > 1))
       {
