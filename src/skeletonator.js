@@ -141,6 +141,8 @@ AFRAME.registerComponent('skeletonator', {
 
     this.skeletonHelper = new THREE.SkeletonHelper(this.rootBone)
     this.el.sceneEl.object3D.add(this.skeletonHelper)
+
+    Util.whenLoaded(Object.values(this.boneToHandle), () => this.updateHandles())
   },
   update(oldData)
   {
@@ -538,88 +540,6 @@ AFRAME.registerComponent('skeletonator', {
       this.nodesFromBones()
     }
   },
-  skinFromDistance() {
-    console.log("Skin From Distance")
-    for (let mesh of this.meshes)
-    {
-      console.log("Skinning", mesh.name)
-      let positions = mesh.geometry.attributes.position
-      let pos = new THREE.Vector3()
-      let boneWorld = new THREE.Vector3()
-
-      var skinIndices = [];
-      var skinWeights = [];
-
-      let bones = mesh.skeleton.bones
-
-      let rootBone = Math.max(bones.indexOf(mesh.parent), 0)
-
-      console.log("Root Bone", rootBone)
-
-      for (let vi = 0; vi < positions.count; vi ++ )
-      {
-        pos.fromBufferAttribute(positions, vi)
-        mesh.localToWorld(pos)
-
-        let topFour = [
-          {idx: rootBone, weight: 999},
-          {idx: rootBone, weight: 999},
-          {idx: rootBone, weight: 999},
-          {idx: rootBone, weight: 999},
-        ]
-
-        for (let i in bones)
-        {
-          let bone = bones[i]
-          boneWorld.copy(bone.position)
-          bone.localToWorld(boneWorld)
-
-          let dist = pos.distanceTo(boneWorld)
-
-          if (isNaN(dist))
-          {
-            console.log("NAN", boneWorld, pos, bone)
-          }
-
-          if (dist < topFour[3].weight)
-          {
-            topFour[3].idx = i
-            topFour[3].weight = dist
-            topFour.sort((a,b) => (a.weight - b.weight))
-          }
-        }
-
-        topFour[0].weight = 1.0 / topFour[0].weight
-        topFour[1].weight = 1.0 / (2 * topFour[1].weight)
-        topFour[2].weight = 0
-        topFour[3].weight = 0
-
-        let norm = topFour[0].weight + topFour[1].weight + topFour[2].weight + topFour[3].weight
-
-        // norm = 1;
-
-        //
-        // if (norm < 1.0)
-        // {
-        //   topFour[3].idx = rootBone
-        //   topFour[3].weight = 1.0 - norm
-        //   norm = 1.0
-        // }
-
-        if (topFour[1].weight == 0) topFour[1].idx = 0
-        if (topFour[2].weight == 0) topFour[2].idx = 0
-        if (topFour[3].weight == 0) topFour[3].idx = 0
-
-        skinIndices.push(topFour[0].idx, topFour[1].idx, topFour[2].idx, topFour[3].idx)
-        skinWeights.push(topFour[0].weight / norm, topFour[1].weight / norm, topFour[2].weight / norm, topFour[3].weight / norm)
-      }
-
-      mesh.geometry.setAttribute( 'skinIndex', new THREE.Uint16BufferAttribute( skinIndices, 4 ) );
-      mesh.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeights, 4 ) );
-      mesh.geometry.attributes.skinIndex.needsUpdate = true
-      mesh.geometry.attributes.skinWeight.needsUpdate = true
-    }
-  },
   keyframe(bone) {
     let frameIdx = this.currentFrameIdx()
 
@@ -942,7 +862,6 @@ AFRAME.registerComponent("bone-handle", {
     this.trackParentConstraint = this.trackParentConstraint.bind(this)
     this.positioningHelper = new THREE.Object3D
     this.el.sceneEl.object3D.add(this.positioningHelper)
-    // this.el.bone.add(new THREE.AxesHelper(2))
   },
   tick(t,dt) {
     let indicator = this.el.getObject3D('mesh')
@@ -977,9 +896,10 @@ AFRAME.registerComponent("bone-handle", {
   {
     if (this.el.is("grabbed")) return
 
-    this.el.bone.matrix.decompose(this.el.object3D.position,
-                                  this.el.object3D.rotation,
-                                  this.el.object3D.scale)
+    Util.positionObject3DAtTarget(this.el.object3D, this.el.bone)
+    // this.el.bone.matrix.decompose(this.el.object3D.position,
+    //                               this.el.object3D.rotation,
+    //                               this.el.object3D.scale)
   },
   trackParentConstraint()
   {
@@ -1056,47 +976,15 @@ AFRAME.registerComponent("skeletonator-control-panel", {
       this.el.skeletonator.boneTracks[bone.name] = {}
     }
   },
-  setZForward() {
-    this.bakeSkeleton()
-    this.el.sceneEl.systems['ik-solving'].setZForward()
-    this.bakeSkeleton()
-  },
   bakeSkeleton(newSkeleton = false) {
     let bones = []
     Compositor.meshRoot.traverse(b => { if (b.type === 'Bone') bones.push(b) })
 
     for (let mesh of this.el.skeletonator.meshes)
     {
-      let deletedIdxs = []
-      let sortedBones = mesh.skeleton.bones;
-      for (let i = 0; i < sortedBones.length; ++i)
-      {
-        if (bones.indexOf(sortedBones[i]) < 0)
-        {
-          console.warn("Deleting bones may mess up skin index")
-          deletedIdxs.push(i)
-          continue;
-        }
-      }
-
-      for (let bone of bones)
-      {
-        if (sortedBones.indexOf(bone) < 0)
-        {
-          if (deletedIdxs.length)
-          {
-            sortedBones[deletedIdxs.pop()] = bone
-          }
-          else
-          {
-            sortedBones.push(bone)
-          }
-        }
-      }
-
       mesh.updateMatrixWorld()
-      mesh.bind(new THREE.Skeleton(sortedBones
-        , sortedBones.map(b => {
+      mesh.bind(new THREE.Skeleton(bones
+        , bones.map(b => {
         let idx = mesh.skeleton.bones.indexOf(b)
         if (b === this.el.skeletonator.rootBone || b === mesh.parent) return mesh.skeleton.boneInverses[idx]
         let m = new THREE.Matrix4() // Don't pool this one, it's copied
@@ -1117,9 +1005,6 @@ AFRAME.registerComponent("skeletonator-control-panel", {
   },
   skinFromNodes() {
     this.el.skeletonator.skinFromNodes()
-  },
-  skinFromDistance() {
-    this.el.skeletonator.skinFromDistance()
   },
   nodesFromSkin() {
     this.el.skeletonator.nodesFromSkin()

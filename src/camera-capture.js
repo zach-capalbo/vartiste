@@ -874,7 +874,8 @@ AFRAME.registerComponent('eye-drop-tool', {
   }
 })
 
-AFRAME.registerComponent('spectator-camera', {
+// Spectator camera using pixel copying
+AFRAME.registerComponent('slow-spectator-camera', {
   dependencies: ['grab-activate'],
   schema: {
     fps: {default: 15},
@@ -931,5 +932,53 @@ AFRAME.registerComponent('spectator-camera', {
     // renderer.xr.enabled = wasXREnabled
     //
     // renderer.setRenderTarget(oldTarget)
+  }
+})
+
+const [
+  SPECTATOR_NONE,
+  SPECTATOR_MIRROR,
+  SPECTATOR_CAMERA
+] = [
+  "SPECTATOR_NONE",
+  "SPECTATOR_MIRROR",
+  "SPECTATOR_CAMERA"
+];
+
+Util.registerComponentSystem('spectator-camera-system', {
+  schema: {
+    state: {type: 'string', default: SPECTATOR_NONE},
+    camera: {type: 'selector', default: '#camera'}
+  },
+  init() {
+    this.gl = this.el.sceneEl.canvas.getContext('webgl2')
+    this.fakeNotSceneProxy = new Proxy({}, {
+      get: (target, prop, receiver) => {
+        if (prop === "isScene") {
+          return false;
+        }
+        return Reflect.get(this.el.sceneEl.object3D, prop, receiver);
+      }
+    })
+  },
+  tock(t,dt) {
+    if (!this.el.sceneEl.renderer.xr.enabled) return;
+
+    if (this.data.state !== SPECTATOR_NONE)
+    {
+      let autoUpdate = this.el.sceneEl.object3D.autoUpdate
+      let gl = this.gl
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+      let camera = this.data.state === SPECTATOR_MIRROR ? this.el.sceneEl.camera : this.data.camera.getObject3D('camera')
+
+      // this.el.sceneEl.renderer.xr.enabled = false
+      this.el.sceneEl.object3D.autoUpdate = false
+      this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
+      this.el.sceneEl.object3D.autoUpdate = autoUpdate
+      // this.el.sceneEl.renderer.xr.enabled = true
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.el.sceneEl.renderer.xr.getSession().renderState.baseLayer.framebuffer)
+    }
   }
 })
