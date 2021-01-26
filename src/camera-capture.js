@@ -2,6 +2,7 @@ import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
+import {CAMERA_LAYERS} from './layer-modes.js'
 
 AFRAME.registerSystem('camera-capture', {
   getTempCanvas() {
@@ -192,6 +193,13 @@ AFRAME.registerComponent('camera-tool', {
 
         let farLever = document.createElement('a-entity')
         farLever.setAttribute('lever', `axis: z; valueRange: 10 0.1; initialValue: ${this.data.far}`)
+        if (this.data.far === 10)
+        {
+          let value = this.el.sceneEl.camera.far
+          this.data.far = value
+          this.camera.far = value
+          this.camera.updateProjectionMatrix()
+        };
         farLever.addEventListener('anglechanged', e => {
           let {value} = e.detail
           if (e.detail.percent <= 0.1)
@@ -223,11 +231,16 @@ AFRAME.registerComponent('camera-tool', {
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.previewThrottle, this)
   },
+  update(oldData) {
+    if (this.data.captureType !== oldData.captureType && this.data.captureType === 'spectator')
+    {
+      this.toggleSpectator()
+    }
+  },
   takePicture() {
     console.log("Taking picture")
     if (this.data.captureType === 'spectator')
     {
-      this.toggleSpectator()
       return;
     }
 
@@ -424,7 +437,7 @@ AFRAME.registerComponent('spray-can-tool', {
       this.sprayCanTool = self
 
       let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
-      camera.layers.mask = 2
+      camera.layers.set(CAMERA_LAYERS.SPRAY_PAINT_MASK)
       this.el.object3D.add(camera)
       this.camera = camera
 
@@ -573,7 +586,7 @@ AFRAME.registerComponent('spray-can-tool', {
         if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
         {
           o.material = shaderMaterial
-          o.layers.mask = 3
+          o.layers.enable(CAMERA_LAYERS.SPRAY_PAINT_MASK)
         }
       })
 
@@ -581,8 +594,8 @@ AFRAME.registerComponent('spray-can-tool', {
       document.getElementById('world-root').object3D.traverse(o => {
         if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
         {
-          if (!(o.layers.mask & 2)) {
-            o.layers.mask |= 4
+          if (!(o.layers.test(this.camera.layers))) {
+            o.layers.enable(CAMERA_LAYERS.PROJECTOR_MASK)
           }
         }
       })
@@ -613,9 +626,9 @@ AFRAME.registerComponent('spray-can-tool', {
     let projectorData
     if (this.data.projector)
     {
-      this.camera.layers.mask = 4
+      this.camera.layers.set(CAMERA_LAYERS.PROJECTOR_MASK)
       projectorData = this.captureToCanvas(this.camera, this.projectorCanvas, this.projectorData).data
-      this.camera.layers.mask = 2
+      this.camera.layers.set(CAMERA_LAYERS.SPRAY_PAINT_MASK)
     }
 
     if (targetCanvas.width !== finalDestinationCanvas.width || targetCanvas.height !== finalDestinationCanvas.height)
@@ -968,7 +981,7 @@ Util.registerComponentSystem('spectator-camera', {
     Pool.init(this)
     this.gl = this.el.sceneEl.canvas.getContext('webgl2')
     this.cameraVR = new THREE.ArrayCamera()
-    this.cameraVR.layers.enable(1)
+    this.cameraVR.layers.enable(CAMERA_LAYERS.LEFT_EYE)
     this.cameraVR.cameras.length = 1
     this.fakeNotSceneProxy = new Proxy({}, {
       get: (target, prop, receiver) => {
@@ -1013,6 +1026,7 @@ Util.registerComponentSystem('spectator-camera', {
 
       // camera.near = this.el.sceneEl.camera.near
       camera.far = this.el.sceneEl.camera.far
+      camera.aspect = this.el.sceneEl.canvas.width / this.el.sceneEl.canvas.height
       camera.updateProjectionMatrix()
 
       let worldMat = this.pool('worldMat', THREE.Matrix4)
@@ -1040,7 +1054,7 @@ Util.registerComponentSystem('spectator-camera', {
 
         cameraVR.cameras[0].viewport.z = this.el.sceneEl.canvas.width
         cameraVR.cameras[0].viewport.w = this.el.sceneEl.canvas.height
-        gl.viewport(cameraVR.cameras[0].viewport.x, cameraVR.cameras[0].viewport.y, cameraVR.cameras[0].viewport.z / 1, cameraVR.cameras[0].viewport.w / 1)
+        gl.viewport(0, 0, cameraVR.cameras[0].viewport.z / 1, cameraVR.cameras[0].viewport.w / 1)
         window.lastViewport = cameraVR.cameras[0].viewport
         this.cameraVR.projectionMatrix.copy(projMat)
         return cameraVR
