@@ -103,7 +103,7 @@ AFRAME.registerComponent('camera-tool', {
     preview: {default: true},
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
-    captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download'], default: 'overlay'},
+    captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
   },
   events: {
     click: function(e) {
@@ -225,6 +225,12 @@ AFRAME.registerComponent('camera-tool', {
   },
   takePicture() {
     console.log("Taking picture")
+    if (this.data.captureType === 'spectator')
+    {
+      this.toggleSpectator()
+      return;
+    }
+
     if (this.data.captureType === 'newLayer')
     {
       Compositor.component.addLayer()
@@ -309,7 +315,8 @@ AFRAME.registerComponent('camera-tool', {
         ['#asset-brush', 'overlay', "Overlay Current Layer"],
         ['#asset-plus-box-outline', 'newLayer', "New Layer On Capture"],
         ['#asset-arrow-right', 'newFrame', "New Frame On Capture"],
-        ['#asset-floppy', 'download', "Download Snapshot"]
+        ['#asset-floppy', 'download', "Download Snapshot"],
+        ['#asset-camera', 'spectator', "Spectator Camera"]
       ])
       {
         let button = document.createElement('a-entity')
@@ -329,6 +336,12 @@ AFRAME.registerComponent('camera-tool', {
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
     })
+  },
+  toggleSpectator() {
+    let system = this.el.sceneEl.systems['spectator-camera']
+
+    system.data.camera = this.camera
+    system.data.state = SPECTATOR_CAMERA
   },
   tick(t,dt) {
     if (!this.preview) return;
@@ -945,13 +958,18 @@ const [
   "SPECTATOR_CAMERA"
 ];
 
-Util.registerComponentSystem('spectator-camera-system', {
+Util.registerComponentSystem('spectator-camera', {
   schema: {
     state: {type: 'string', default: SPECTATOR_NONE},
-    camera: {type: 'selector', default: '#camera'}
+    camera: {type: 'selector', default: '#camera'},
+    throttle: {default: 0}
   },
   init() {
+    Pool.init(this)
     this.gl = this.el.sceneEl.canvas.getContext('webgl2')
+    this.cameraVR = new THREE.ArrayCamera()
+    this.cameraVR.layers.enable(1)
+    this.cameraVR.cameras.length = 1
     this.fakeNotSceneProxy = new Proxy({}, {
       get: (target, prop, receiver) => {
         if (prop === "isScene") {
@@ -961,8 +979,15 @@ Util.registerComponentSystem('spectator-camera-system', {
       }
     })
   },
-  tock(t,dt) {
+  update(oldData) {
+    this.tock = AFRAME.utils.throttleTick(this._tock, this.data.throttle, this)
+  },
+  tock(t,dt) {},
+  _tock(t,dt) {
     if (!this.el.sceneEl.renderer.xr.enabled) return;
+
+    let xrSession = this.el.sceneEl.renderer.xr.getSession();
+    if (!xrSession) return;
 
     if (this.data.state !== SPECTATOR_NONE)
     {
@@ -970,15 +995,58 @@ Util.registerComponentSystem('spectator-camera-system', {
       let gl = this.gl
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-      let camera = this.data.state === SPECTATOR_MIRROR ? this.el.sceneEl.camera : this.data.camera.getObject3D('camera')
+      let renderer = this.el.sceneEl.renderer
 
-      // this.el.sceneEl.renderer.xr.enabled = false
+      let camera
+      if (this.data.state === SPECTATOR_MIRROR)
+      {
+        camera = this.el.sceneEl.camera
+      }
+      else
+      {
+        camera = this.data.camera.isCamera ? this.data.camera : this.data.camera.getObject3D('camera')
+      }
+
+      // camera.viewport = camera.viewport || new THREE.Vector4()
+      let originalCameras = renderer.xr.getCamera(camera).cameras
+      if (originalCameras.length === 0) return;
+
+      camera.near = this.el.sceneEl.camera.near
+      camera.far = this.el.sceneEl.camera.far
+
+      let worldMat = this.pool('worldMat', THREE.Matrix4)
+      worldMat.copy(camera.matrixWorld)
+
+      let getCamera = renderer.xr.getCamera;
+      renderer.xr.getCamera = () => {
+        let cameraVR = getCamera(camera)
+        cameraVR.cameras = [cameraVR.cameras[0]]
+        // cameraVR.cameras[0].matrix.identity()
+        cameraVR.matrix.identity()
+        cameraVR.matrixWorld.copy(worldMat)
+        cameraVR.matrixWorldInverse.copy(worldMat).invert()
+        cameraVR.cameras[0].matrixWorld.copy(worldMat)
+        cameraVR.cameras[0].matrixWorldInverse.copy(worldMat).invert()
+        // camera.viewport = originalCameras[0].viewport
+        // this.cameraVR.near = camera.near
+        // this.cameraVR.far = camera.far
+        // this.cameraVR.cameras[0] = camera
+        // this.cameraVR.matrix.copy(camera.matrix)
+        cameraVR.cameras[0].projectionMatrix.copy(camera.projectionMatrix)
+        this.cameraVR.projectionMatrix.copy(camera.projectionMatrix)
+        return cameraVR
+      };
+
+      // this.el.sceneEl.renderer.xr.isPresenting  = false
       this.el.sceneEl.object3D.autoUpdate = false
       this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
       this.el.sceneEl.object3D.autoUpdate = autoUpdate
-      // this.el.sceneEl.renderer.xr.enabled = true
+      // this.el.sceneEl.renderer.xr.isPresenting  = true
 
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.el.sceneEl.renderer.xr.getSession().renderState.baseLayer.framebuffer)
+      renderer.xr.getCamera = getCamera
+      renderer.xr.getCamera(camera).cameras = originalCameras
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
     }
   }
 })
