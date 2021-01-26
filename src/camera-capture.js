@@ -1011,11 +1011,15 @@ Util.registerComponentSystem('spectator-camera', {
       let originalCameras = renderer.xr.getCamera(camera).cameras
       if (originalCameras.length === 0) return;
 
-      camera.near = this.el.sceneEl.camera.near
+      // camera.near = this.el.sceneEl.camera.near
       camera.far = this.el.sceneEl.camera.far
+      camera.updateProjectionMatrix()
 
       let worldMat = this.pool('worldMat', THREE.Matrix4)
       worldMat.copy(camera.matrixWorld)
+
+      let projMat = this.pool('projMat', THREE.Matrix4)
+      projMat.copy(camera.projectionMatrix)
 
       let getCamera = renderer.xr.getCamera;
       renderer.xr.getCamera = () => {
@@ -1032,8 +1036,13 @@ Util.registerComponentSystem('spectator-camera', {
         // this.cameraVR.far = camera.far
         // this.cameraVR.cameras[0] = camera
         // this.cameraVR.matrix.copy(camera.matrix)
-        cameraVR.cameras[0].projectionMatrix.copy(camera.projectionMatrix)
-        this.cameraVR.projectionMatrix.copy(camera.projectionMatrix)
+        cameraVR.cameras[0].projectionMatrix.copy(projMat)
+
+        cameraVR.cameras[0].viewport.z = this.el.sceneEl.canvas.width
+        cameraVR.cameras[0].viewport.w = this.el.sceneEl.canvas.height
+        gl.viewport(cameraVR.cameras[0].viewport.x, cameraVR.cameras[0].viewport.y, cameraVR.cameras[0].viewport.z / 1, cameraVR.cameras[0].viewport.w / 1)
+        window.lastViewport = cameraVR.cameras[0].viewport
+        this.cameraVR.projectionMatrix.copy(projMat)
         return cameraVR
       };
 
