@@ -6,7 +6,7 @@ export const MAP_FROM_FILENAME = {
   'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
   'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
-  'metalnessMap': [/(\b|_)metal(ness|l?ic)?(map)?(\b|_)/i],
+  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
   'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
   'matcap': [/(\b|_)matcap(\b|_)/i]
 }
@@ -73,27 +73,6 @@ class VARTISTEUtil {
     if (Array.isArray(entity)) return awaitLoadingAll(entity)
     if (fn) return whenLoadedSingle(entity, fn)
     return awaitLoadingSingle(entity)
-  }
-
-  whenComponentInitialized(entity, component, fn) {
-    if (!fn) {
-      return new Promise((r, e) => this.whenComponentReady(entity, component, r))
-    }
-
-    if (entity.component && entity.component.initialized) {
-      fn();
-      return;
-    }
-
-    let listener = function(e) {
-      if ((e.detail.id && e.detail.id === component)
-        || (e.detail.id === undefined && e.detail.name === component))
-      {
-        entity.removeEventListener('componentinitialized', listener)
-        fn();
-      }
-    }
-    entity.addEventListener('componentinitialized', listener)
   }
 
   // Copies `matrix` into `obj`'s (a `THREE.Object3D`) `matrix`, and decomposes
@@ -348,25 +327,13 @@ class VARTISTEUtil {
     return result
   }
 
-  // Returns true if `canvas` has no pixels with an alpha less than 1.0 (255)
+  // Returns true if `canvas` has no pixels with an alpha less than 1.0
   isCanvasFullyOpaque(canvas) {
     let ctx = canvas.getContext('2d')
     let data = ctx.getImageData(0, 0, canvas.width, canvas.height)
     for (let i = 3; i < data.data.length; i += 4)
     {
       if (data.data[i] < 255) return false
-    }
-
-    return true
-  }
-
-  // Returns true if `canvas` has no pixels with an alpha greater than 0.0
-  isCanvasFullyTransparent(canvas) {
-    let ctx = canvas.getContext('2d')
-    let data = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    for (let i = 3; i < data.data.length; i += 4)
-    {
-      if (data.data[i] > 0) return false
     }
 
     return true

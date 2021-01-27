@@ -4,6 +4,62 @@ import {Undo} from './undo.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
+AFRAME.registerSystem('camera-layers', {
+  init() {
+    this.CAMERA_LAYERS = CAMERA_LAYERS;
+    this.camera_layers = {}
+    for (let [name, val] of Object.entries(CAMERA_LAYERS))
+    {
+      this.camera_layers[name.toLowerCase().replace(/\_/g, '-')] = val
+    }
+
+    Util.whenLoaded(this.el, () => {
+      this.el.sceneEl.camera.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+    })
+  }
+})
+
+AFRAME.registerComponent('camera-layers', {
+  schema: {
+    layers: {type: 'array', default: ["default"]},
+    throttle: {default: 500},
+  },
+  events: {
+    object3dset: function() { this.refresh(); },
+    'child-attached': function() { this.refresh(); }
+  },
+  update(oldData) {
+    this.tick = AFRAME.utils.throttleTick(this.refresh, this.data.tick, this)
+    let layers = this.el.object3D.layers
+    layers.mask = 0
+    for (let layer of this.data.layers)
+    {
+      let number = parseInt(layer)
+
+      if (isNaN(number))
+      {
+        number = this.system.camera_layers[layer]
+        if (isNaN(number))
+        {
+          console.error('No such layer', number)
+          return
+        }
+      }
+
+      layers.enable(number)
+    }
+    this.refresh()
+  },
+  refresh() {
+    this.el.object3D.traverse(o => {
+      o.layers.mask = this.el.object3D.layers.mask
+    })
+  },
+  tick(t,dt) {
+    this.refresh()
+  }
+})
+
 AFRAME.registerSystem('camera-capture', {
   getTempCanvas() {
     let {width, height} = Compositor.component;
@@ -280,6 +336,14 @@ AFRAME.registerComponent('camera-tool', {
     var helper = new THREE.CameraHelper( this.camera );
     this.helper = helper
     this.el.sceneEl.object3D.add( helper );
+    this.helper.layers.disable(0)
+    this.helper.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+    this.helper.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+    this.helper.traverse(o => {
+      o.layers.disable(0)
+      o.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+      o.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+    })
 
     if ((this.el.getAttribute('action-tooltips').trigger || "Summon ").startsWith("Summon"))
     {
@@ -980,9 +1044,7 @@ Util.registerComponentSystem('spectator-camera', {
   init() {
     Pool.init(this)
     this.gl = this.el.sceneEl.canvas.getContext('webgl2')
-    this.cameraVR = new THREE.ArrayCamera()
-    this.cameraVR.layers.enable(CAMERA_LAYERS.LEFT_EYE)
-    this.cameraVR.cameras.length = 1
+
     this.fakeNotSceneProxy = new Proxy({}, {
       get: (target, prop, receiver) => {
         if (prop === "isScene") {
@@ -1026,7 +1088,7 @@ Util.registerComponentSystem('spectator-camera', {
 
       // camera.near = this.el.sceneEl.camera.near
       camera.far = this.el.sceneEl.camera.far
-      camera.aspect = this.el.sceneEl.canvas.width / this.el.sceneEl.canvas.height
+      // camera.aspect = this.el.sceneEl.canvas.width / this.el.sceneEl.canvas.height
       camera.updateProjectionMatrix()
 
       let worldMat = this.pool('worldMat', THREE.Matrix4)
@@ -1045,6 +1107,8 @@ Util.registerComponentSystem('spectator-camera', {
         cameraVR.matrixWorldInverse.copy(worldMat).invert()
         cameraVR.cameras[0].matrixWorld.copy(worldMat)
         cameraVR.cameras[0].matrixWorldInverse.copy(worldMat).invert()
+        cameraVR.cameras[0].layers.enable(CAMERA_LAYERS.SPECTATOR)
+        cameraVR.cameras[0].layers.disable(CAMERA_LAYERS.LEFT_EYE)
         // camera.viewport = originalCameras[0].viewport
         // this.cameraVR.near = camera.near
         // this.cameraVR.far = camera.far
@@ -1056,7 +1120,8 @@ Util.registerComponentSystem('spectator-camera', {
         cameraVR.cameras[0].viewport.w = this.el.sceneEl.canvas.height
         gl.viewport(0, 0, cameraVR.cameras[0].viewport.z / 1, cameraVR.cameras[0].viewport.w / 1)
         window.lastViewport = cameraVR.cameras[0].viewport
-        this.cameraVR.projectionMatrix.copy(projMat)
+
+        cameraVR.layers.enable(CAMERA_LAYERS.SPECTATOR)
         return cameraVR
       };
 
@@ -1066,8 +1131,11 @@ Util.registerComponentSystem('spectator-camera', {
       this.el.sceneEl.object3D.autoUpdate = autoUpdate
       // this.el.sceneEl.renderer.xr.isPresenting  = true
 
+      originalCameras[0].layers.disable(CAMERA_LAYERS.SPECTATOR)
+      originalCameras[0].layers.enable(CAMERA_LAYERS.LEFT_EYE)
       renderer.xr.getCamera = getCamera
       renderer.xr.getCamera(camera).cameras = originalCameras
+
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
     }
