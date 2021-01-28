@@ -2,6 +2,63 @@ import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
+import {CAMERA_LAYERS} from './layer-modes.js'
+
+AFRAME.registerSystem('camera-layers', {
+  init() {
+    this.CAMERA_LAYERS = CAMERA_LAYERS;
+    this.camera_layers = {}
+    for (let [name, val] of Object.entries(CAMERA_LAYERS))
+    {
+      this.camera_layers[name.toLowerCase().replace(/\_/g, '-')] = val
+    }
+
+    Util.whenLoaded(this.el, () => {
+      this.el.sceneEl.camera.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+    })
+  }
+})
+
+AFRAME.registerComponent('camera-layers', {
+  schema: {
+    layers: {type: 'array', default: ["default"]},
+    throttle: {default: 500},
+  },
+  events: {
+    object3dset: function() { this.refresh(); },
+    'child-attached': function() { this.refresh(); }
+  },
+  update(oldData) {
+    this.tick = AFRAME.utils.throttleTick(this.refresh, this.data.tick, this)
+    let layers = this.el.object3D.layers
+    layers.mask = 0
+    for (let layer of this.data.layers)
+    {
+      let number = parseInt(layer)
+
+      if (isNaN(number))
+      {
+        number = this.system.camera_layers[layer]
+        if (isNaN(number))
+        {
+          console.error('No such layer', number)
+          return
+        }
+      }
+
+      layers.enable(number)
+    }
+    this.refresh()
+  },
+  refresh() {
+    this.el.object3D.traverse(o => {
+      o.layers.mask = this.el.object3D.layers.mask
+    })
+  },
+  tick(t,dt) {
+    this.refresh()
+  }
+})
 
 AFRAME.registerSystem('camera-capture', {
   getTempCanvas() {
@@ -103,7 +160,7 @@ AFRAME.registerComponent('camera-tool', {
     preview: {default: true},
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
-    captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download'], default: 'overlay'},
+    captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
   },
   events: {
     click: function(e) {
@@ -192,6 +249,13 @@ AFRAME.registerComponent('camera-tool', {
 
         let farLever = document.createElement('a-entity')
         farLever.setAttribute('lever', `axis: z; valueRange: 10 0.1; initialValue: ${this.data.far}`)
+        if (this.data.far === 10)
+        {
+          let value = this.el.sceneEl.camera.far
+          this.data.far = value
+          this.camera.far = value
+          this.camera.updateProjectionMatrix()
+        };
         farLever.addEventListener('anglechanged', e => {
           let {value} = e.detail
           if (e.detail.percent <= 0.1)
@@ -223,8 +287,19 @@ AFRAME.registerComponent('camera-tool', {
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.previewThrottle, this)
   },
+  update(oldData) {
+    if (this.data.captureType !== oldData.captureType && this.data.captureType === 'spectator')
+    {
+      this.toggleSpectator()
+    }
+  },
   takePicture() {
     console.log("Taking picture")
+    if (this.data.captureType === 'spectator')
+    {
+      return;
+    }
+
     if (this.data.captureType === 'newLayer')
     {
       Compositor.component.addLayer()
@@ -261,6 +336,14 @@ AFRAME.registerComponent('camera-tool', {
     var helper = new THREE.CameraHelper( this.camera );
     this.helper = helper
     this.el.sceneEl.object3D.add( helper );
+    this.helper.layers.disable(0)
+    this.helper.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+    this.helper.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+    this.helper.traverse(o => {
+      o.layers.disable(0)
+      o.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+      o.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+    })
 
     if ((this.el.getAttribute('action-tooltips').trigger || "Summon ").startsWith("Summon"))
     {
@@ -289,7 +372,7 @@ AFRAME.registerComponent('camera-tool', {
       this.previewCtx = previewCanvas.getContext('2d')
       this.previewCtx.fillStyle = '#333'
       this.preview = preview
-      preview.setAttribute('material', {src: previewCanvas, npot: true})
+      preview.setAttribute('material', {src: previewCanvas, npot: true, side: 'double'})
       this.el.append(preview)
     }
 
@@ -309,7 +392,8 @@ AFRAME.registerComponent('camera-tool', {
         ['#asset-brush', 'overlay', "Overlay Current Layer"],
         ['#asset-plus-box-outline', 'newLayer', "New Layer On Capture"],
         ['#asset-arrow-right', 'newFrame', "New Frame On Capture"],
-        ['#asset-floppy', 'download', "Download Snapshot"]
+        ['#asset-floppy', 'download', "Download Snapshot"],
+        ['#asset-camera', 'spectator', "Spectator Camera"]
       ])
       {
         let button = document.createElement('a-entity')
@@ -329,6 +413,12 @@ AFRAME.registerComponent('camera-tool', {
     Util.whenLoaded(clone, () => {
       Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
     })
+  },
+  toggleSpectator() {
+    let system = this.el.sceneEl.systems['spectator-camera']
+
+    system.data.camera = this.camera
+    system.data.state = SPECTATOR_CAMERA
   },
   tick(t,dt) {
     if (!this.preview) return;
@@ -411,7 +501,7 @@ AFRAME.registerComponent('spray-can-tool', {
       this.sprayCanTool = self
 
       let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
-      camera.layers.mask = 2
+      camera.layers.set(CAMERA_LAYERS.SPRAY_PAINT_MASK)
       this.el.object3D.add(camera)
       this.camera = camera
 
@@ -560,7 +650,7 @@ AFRAME.registerComponent('spray-can-tool', {
         if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
         {
           o.material = shaderMaterial
-          o.layers.mask = 3
+          o.layers.enable(CAMERA_LAYERS.SPRAY_PAINT_MASK)
         }
       })
 
@@ -568,8 +658,8 @@ AFRAME.registerComponent('spray-can-tool', {
       document.getElementById('world-root').object3D.traverse(o => {
         if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
         {
-          if (!(o.layers.mask & 2)) {
-            o.layers.mask |= 4
+          if (!(o.layers.test(this.camera.layers))) {
+            o.layers.enable(CAMERA_LAYERS.PROJECTOR_MASK)
           }
         }
       })
@@ -600,9 +690,9 @@ AFRAME.registerComponent('spray-can-tool', {
     let projectorData
     if (this.data.projector)
     {
-      this.camera.layers.mask = 4
+      this.camera.layers.set(CAMERA_LAYERS.PROJECTOR_MASK)
       projectorData = this.captureToCanvas(this.camera, this.projectorCanvas, this.projectorData).data
-      this.camera.layers.mask = 2
+      this.camera.layers.set(CAMERA_LAYERS.SPRAY_PAINT_MASK)
     }
 
     if (targetCanvas.width !== finalDestinationCanvas.width || targetCanvas.height !== finalDestinationCanvas.height)
@@ -874,7 +964,8 @@ AFRAME.registerComponent('eye-drop-tool', {
   }
 })
 
-AFRAME.registerComponent('spectator-camera', {
+// Spectator camera using pixel copying
+AFRAME.registerComponent('slow-spectator-camera', {
   dependencies: ['grab-activate'],
   schema: {
     fps: {default: 15},
@@ -931,5 +1022,140 @@ AFRAME.registerComponent('spectator-camera', {
     // renderer.xr.enabled = wasXREnabled
     //
     // renderer.setRenderTarget(oldTarget)
+  }
+})
+
+const [
+  SPECTATOR_NONE,
+  SPECTATOR_MIRROR,
+  SPECTATOR_CAMERA
+] = [
+  "SPECTATOR_NONE",
+  "SPECTATOR_MIRROR",
+  "SPECTATOR_CAMERA"
+];
+
+// WebXR compatible spectator camera. Can be set to one of three states:
+//
+// 1. `SPECTATOR_NONE` - Default state. No specator camera, and uses A-Frame's
+// default behavior.
+// 2. `SPECTATOR_MIRROR` - Mirror's the VR user's left-eye display to the main
+// A-FRAME canvas
+// 3. `SPECTATOR_CAMERA` - Displays a view from a stationary camera. (Specified
+// by the `camera` property)
+Util.registerComponentSystem('spectator-camera', {
+  schema: {
+    // Current operating state
+    state: {type: 'string', default: SPECTATOR_NONE, oneOf: [SPECTATOR_NONE, SPECTATOR_CAMERA, SPECTATOR_MIRROR]},
+    // Camera to use when state is `SPECTATOR_CAMERA`
+    camera: {type: 'selector', default: '#camera'},
+    // Use this to throttle spectator rendering for performance or other reasons
+    throttle: {default: 0}
+  },
+  init() {
+    Pool.init(this)
+    this.gl = this.el.sceneEl.canvas.getContext('webgl2')
+
+    this.fakeNotSceneProxy = new Proxy({}, {
+      get: (target, prop, receiver) => {
+        if (prop === "isScene") {
+          return false;
+        }
+        return Reflect.get(this.el.sceneEl.object3D, prop, receiver);
+      }
+    })
+  },
+  update(oldData) {
+    this.tock = AFRAME.utils.throttleTick(this._tock, this.data.throttle, this)
+  },
+  tock(t,dt) {},
+  _tock(t,dt) {
+    if (!this.el.sceneEl.renderer.xr.enabled) return;
+
+    let xrSession = this.el.sceneEl.renderer.xr.getSession();
+    if (!xrSession) return;
+
+    if (this.data.state === SPECTATOR_MIRROR)
+    {
+      let autoUpdate = this.el.sceneEl.object3D.autoUpdate
+      let gl = this.gl
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+      let camera = this.el.sceneEl.camera
+      this.el.sceneEl.object3D.autoUpdate = false
+      this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
+      this.el.sceneEl.object3D.autoUpdate = autoUpdate
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.el.sceneEl.renderer.xr.getSession().renderState.baseLayer.framebuffer)
+
+    }
+    if (this.data.state === SPECTATOR_CAMERA)
+    {
+      let autoUpdate = this.el.sceneEl.object3D.autoUpdate
+      let gl = this.gl
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+      let renderer = this.el.sceneEl.renderer
+
+      let camera
+      if (this.data.state === SPECTATOR_MIRROR)
+      {
+        camera = this.el.sceneEl.camera
+      }
+      else
+      {
+        camera = this.data.camera.isCamera ? this.data.camera : this.data.camera.getObject3D('camera')
+      }
+
+      // camera.viewport = camera.viewport || new THREE.Vector4()
+      let originalCameras = renderer.xr.getCamera(camera).cameras
+      if (originalCameras.length === 0) return;
+
+      // camera.near = this.el.sceneEl.camera.near
+      camera.far = this.el.sceneEl.camera.far
+      // camera.aspect = this.el.sceneEl.canvas.width / this.el.sceneEl.canvas.height
+      camera.updateProjectionMatrix()
+
+      let worldMat = this.pool('worldMat', THREE.Matrix4)
+      worldMat.copy(camera.matrixWorld)
+
+      let projMat = this.pool('projMat', THREE.Matrix4)
+      projMat.copy(camera.projectionMatrix)
+
+      // Hack into the THREE rendering loop to reset the camera, otherwise it
+      // tracks head rotation
+      let getCamera = renderer.xr.getCamera;
+      renderer.xr.getCamera = () => {
+        let cameraVR = getCamera(camera)
+        cameraVR.cameras = [cameraVR.cameras[0]]
+
+        cameraVR.matrix.identity()
+        cameraVR.matrixWorld.copy(worldMat)
+        cameraVR.matrixWorldInverse.copy(worldMat).invert()
+        cameraVR.cameras[0].matrixWorld.copy(worldMat)
+        cameraVR.cameras[0].matrixWorldInverse.copy(worldMat).invert()
+        cameraVR.cameras[0].layers.enable(CAMERA_LAYERS.SPECTATOR)
+        cameraVR.cameras[0].layers.disable(CAMERA_LAYERS.LEFT_EYE)
+
+        cameraVR.cameras[0].projectionMatrix.copy(projMat)
+
+        cameraVR.cameras[0].viewport.z = this.el.sceneEl.canvas.width
+        cameraVR.cameras[0].viewport.w = this.el.sceneEl.canvas.height
+        gl.viewport(0, 0, cameraVR.cameras[0].viewport.z / 1, cameraVR.cameras[0].viewport.w / 1)
+        window.lastViewport = cameraVR.cameras[0].viewport
+
+        cameraVR.layers.enable(CAMERA_LAYERS.SPECTATOR)
+        return cameraVR
+      };
+
+      this.el.sceneEl.object3D.autoUpdate = false
+      this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
+      this.el.sceneEl.object3D.autoUpdate = autoUpdate
+
+      originalCameras[0].layers.disable(CAMERA_LAYERS.SPECTATOR)
+      originalCameras[0].layers.enable(CAMERA_LAYERS.LEFT_EYE)
+      renderer.xr.getCamera = getCamera
+      renderer.xr.getCamera(camera).cameras = originalCameras
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
+    }
   }
 })

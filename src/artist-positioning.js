@@ -234,3 +234,22 @@ AFRAME.registerComponent('artist-shadow', {
     this.el.object3D.position.y = 0.01
   }
 })
+
+AFRAME.registerComponent('position-at-target', {
+  schema: {
+    target: {type: 'selector'},
+    throttle: {default: 0},
+  },
+  update(oldData) {
+    this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
+  },
+  tick(t,dt) {},
+  _tick(t,dt) {
+    if (!this.data.target) return
+    if (this.data.target.hasAttribute('camera') && this.data.target.getAttribute('camera').active) {
+      Util.positionObject3DAtTarget(this.el.object3D, Util.cameraObject3D())
+      return
+    }
+    Util.positionObject3DAtTarget(this.el.object3D, this.data.target.object3D)
+  }
+})

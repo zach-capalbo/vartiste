@@ -57,6 +57,7 @@ async function addDocumentation(src)
   require('./scalable-raycaster')
   require('./webxr-input-profiles')
   require('./xr-controllers')
+  require('./camera-capture')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))
