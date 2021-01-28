@@ -372,7 +372,7 @@ AFRAME.registerComponent('camera-tool', {
       this.previewCtx = previewCanvas.getContext('2d')
       this.previewCtx.fillStyle = '#333'
       this.preview = preview
-      preview.setAttribute('material', {src: previewCanvas, npot: true})
+      preview.setAttribute('material', {src: previewCanvas, npot: true, side: 'double'})
       this.el.append(preview)
     }
 
@@ -1035,10 +1035,21 @@ const [
   "SPECTATOR_CAMERA"
 ];
 
+// WebXR compatible spectator camera. Can be set to one of three states:
+//
+// 1. `SPECTATOR_NONE` - Default state. No specator camera, and uses A-Frame's
+// default behavior.
+// 2. `SPECTATOR_MIRROR` - Mirror's the VR user's left-eye display to the main
+// A-FRAME canvas
+// 3. `SPECTATOR_CAMERA` - Displays a view from a stationary camera. (Specified
+// by the `camera` property)
 Util.registerComponentSystem('spectator-camera', {
   schema: {
-    state: {type: 'string', default: SPECTATOR_NONE},
+    // Current operating state
+    state: {type: 'string', default: SPECTATOR_NONE, oneOf: [SPECTATOR_NONE, SPECTATOR_CAMERA, SPECTATOR_MIRROR]},
+    // Camera to use when state is `SPECTATOR_CAMERA`
     camera: {type: 'selector', default: '#camera'},
+    // Use this to throttle spectator rendering for performance or other reasons
     throttle: {default: 0}
   },
   init() {
@@ -1064,7 +1075,19 @@ Util.registerComponentSystem('spectator-camera', {
     let xrSession = this.el.sceneEl.renderer.xr.getSession();
     if (!xrSession) return;
 
-    if (this.data.state !== SPECTATOR_NONE)
+    if (this.data.state === SPECTATOR_MIRROR)
+    {
+      let autoUpdate = this.el.sceneEl.object3D.autoUpdate
+      let gl = this.gl
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+      let camera = this.el.sceneEl.camera
+      this.el.sceneEl.object3D.autoUpdate = false
+      this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
+      this.el.sceneEl.object3D.autoUpdate = autoUpdate
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.el.sceneEl.renderer.xr.getSession().renderState.baseLayer.framebuffer)
+
+    }
+    if (this.data.state === SPECTATOR_CAMERA)
     {
       let autoUpdate = this.el.sceneEl.object3D.autoUpdate
       let gl = this.gl
@@ -1097,11 +1120,13 @@ Util.registerComponentSystem('spectator-camera', {
       let projMat = this.pool('projMat', THREE.Matrix4)
       projMat.copy(camera.projectionMatrix)
 
+      // Hack into the THREE rendering loop to reset the camera, otherwise it
+      // tracks head rotation
       let getCamera = renderer.xr.getCamera;
       renderer.xr.getCamera = () => {
         let cameraVR = getCamera(camera)
         cameraVR.cameras = [cameraVR.cameras[0]]
-        // cameraVR.cameras[0].matrix.identity()
+
         cameraVR.matrix.identity()
         cameraVR.matrixWorld.copy(worldMat)
         cameraVR.matrixWorldInverse.copy(worldMat).invert()
@@ -1109,11 +1134,7 @@ Util.registerComponentSystem('spectator-camera', {
         cameraVR.cameras[0].matrixWorldInverse.copy(worldMat).invert()
         cameraVR.cameras[0].layers.enable(CAMERA_LAYERS.SPECTATOR)
         cameraVR.cameras[0].layers.disable(CAMERA_LAYERS.LEFT_EYE)
-        // camera.viewport = originalCameras[0].viewport
-        // this.cameraVR.near = camera.near
-        // this.cameraVR.far = camera.far
-        // this.cameraVR.cameras[0] = camera
-        // this.cameraVR.matrix.copy(camera.matrix)
+
         cameraVR.cameras[0].projectionMatrix.copy(projMat)
 
         cameraVR.cameras[0].viewport.z = this.el.sceneEl.canvas.width
@@ -1125,17 +1146,14 @@ Util.registerComponentSystem('spectator-camera', {
         return cameraVR
       };
 
-      // this.el.sceneEl.renderer.xr.isPresenting  = false
       this.el.sceneEl.object3D.autoUpdate = false
       this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
       this.el.sceneEl.object3D.autoUpdate = autoUpdate
-      // this.el.sceneEl.renderer.xr.isPresenting  = true
 
       originalCameras[0].layers.disable(CAMERA_LAYERS.SPECTATOR)
       originalCameras[0].layers.enable(CAMERA_LAYERS.LEFT_EYE)
       renderer.xr.getCamera = getCamera
       renderer.xr.getCamera(camera).cameras = originalCameras
-
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
     }
