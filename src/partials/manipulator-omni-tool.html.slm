@@ -1,0 +1,12 @@
+a-entity.grab-root shelf="name: Manipulator Omnitool" scale="0.3 0.3 0.3"
+  a-entity icon-row="" position="-1.5 1.0 0"
+    a-entity icon-button="#asset-hand-right" tooltip="Weighted" toggle-button=""
+    a-entity icon-button="#asset-rotate-orbit" tooltip="Reset Orientation"
+    a-entity icon-button="#asset-nudge-brush" tooltip="Summon"
+    a-entity icon-button="#asset-bed" tooltip="Freeze" click-action="freeze"
+    a-entity icon-button="#asset-cube-send" tooltip="unFreeze" click-action="unfreeze"
+  a-entity scale="2 2 2"
+  a-entity
+    a-entity set-target="lever" position="0 -1.5 0" lever="handleLength: 1.5; gripRadius: 0.1; target: #canvas-view; component: rotation; property: y; valueRange: 90 -90" rotation="0 0 -90"
+    a-entity set-target="lever" position="-2 0 0" lever="axis: z; handleLength: 1.5; gripRadius: 0.1; target: #canvas-view; component: rotation; property: x; valueRange: -90 90"
+    a-entity set-target="lever" position="2 0 0" lever="axis: x; handleLength: 1.5; gripRadius: 0.1; target: #canvas-view; component: rotation; property: z; valueRange: 90 -90"

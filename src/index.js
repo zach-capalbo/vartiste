@@ -80,6 +80,7 @@ require('./material-packs')
 require('./brush-editor')
 require('./ik-solving')
 require('./xr-controllers')
+require('./manipulator-omni-tool')
 // require('./text')
 
 require('./app.styl')

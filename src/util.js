@@ -273,6 +273,9 @@ class VARTISTEUtil {
     return val
   }
 
+  // Resolves all the manipulator grap redirections on `targetEl` and returns
+  // the final element that should actually be grabbed when `targetEl` is
+  // grabbed.
   resolveGrabRedirection(targetEl) {
     let target = targetEl
     for (let redirection = targetEl['redirect-grab']; redirection; redirection = target['redirect-grab'])
@@ -358,7 +361,7 @@ class VARTISTEUtil {
     }
   }
 
-  fillDefaultCanvasForMap(canvas, map)
+  fillDefaultCanvasForMap(canvas, map, {replace = false} = {})
   {
     let shouldFill = false
     let ctx = canvas.getContext('2d')
@@ -385,7 +388,7 @@ class VARTISTEUtil {
       if (shouldFill)
       {
         Undo.pushCanvas(canvas)
-        ctx.globalCompositeOperation = 'destination-over'
+        ctx.globalCompositeOperation = replace ? 'source-over' : 'destination-over'
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.globalCompositeOperation = 'source-over'
       }

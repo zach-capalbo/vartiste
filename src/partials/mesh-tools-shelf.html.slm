@@ -15,6 +15,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
     a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Add UV Unwrap Bounding Box" system-click-action="system: uv-unwrapper; action: createBoundingBox"
     a-entity icon-button="#asset-check-outline" tooltip="Unwrap" system-click-action="system: uv-unwrapper; action: unwrap"
     a-entity icon-button="#asset-close" tooltip="Clear UV Shapes" system-click-action="system: uv-unwrapper; action: clearShapes"
+    a-entity icon-button="#asset-eye" tooltip="Toggle UV Shape Visibility" toggle-button="target: a-scene; component: uv-unwrapper; property: shapesVisible"
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-lead-pencil" tooltip="Draw UV lines" system-click-action="system: uv-unwrapper; action: drawUVs"
     a-entity icon-button="#asset-resize" tooltip="Subdivide Mesh" system-click-action="system: mesh-tools; action: subdivide"

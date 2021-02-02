@@ -332,6 +332,57 @@ AFRAME.registerComponent('camera-tool', {
       settings.download(targetCanvas.toDataURL(settings.imageURLType(), settings.compressionQuality()), {extension: settings.imageExtension(), suffix: "snapshot"}, "Snapshot")
     }
   },
+  takeMaterialPicture() {
+    let originalMaterials = new Map()
+    this.el.sceneEl.object3D.traverseVisible(o => {
+      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.type === "MeshStandardMaterial" || o.material.type === "MeshMatcapMaterial")) {
+        originalMaterials.set(o, o.material)
+      }
+    })
+
+    for (let [o, m] of originalMaterials.entries())
+    {
+      o.material = new THREE.MeshBasicMaterial({color: m.color, map: m.map, side: m.side, transparent: m.transparent})
+    }
+
+    this.takePicture()
+
+    const HANDLED_MAPS = [
+      {map: 'metalnessMap', value: 'metalness'},
+      {map: 'roughnessMap', value: 'roughness'},
+      {map: 'normalMap', value: 'normalScale'},]
+
+    for (let {map, value} of HANDLED_MAPS)
+    {
+      let layer = Compositor.component.layers.find(l => l.mode === map)
+      if (!layer)
+      {
+        if (this.maps[map].id.startsWith('default-')) continue;
+
+        layer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(0, {layer})
+        Compositor.component.setLayerBlendMode(layer, map)
+      }
+      Compositor.component.activateLayer(layer)
+      Util.fillDefaultCanvasForMap(layer.frame(Compositor.component.currentFrame), map, {replace: true})
+
+      for (let [o, m] of originalMaterials.entries())
+      {
+        o.material = new THREE.MeshBasicMaterial({color: new THREE.Color(m[value]), map: m[map], side: m.side, transparent: m.transparent,
+          visible: m.type === 'MeshStandardMaterial' || (map === 'normalMap' && m.type === 'MeshMatcapMaterial')
+        })
+      }
+
+      this.takePicture()
+
+      layer.touch()
+    }
+
+    for (let [o, m] of originalMaterials.entries())
+    {
+      o.material = m
+    }
+  },
   activate() {
     var helper = new THREE.CameraHelper( this.camera );
     this.helper = helper
