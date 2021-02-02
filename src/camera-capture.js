@@ -1,6 +1,7 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
+import {Layer} from './layer.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
@@ -357,8 +358,6 @@ AFRAME.registerComponent('camera-tool', {
       let layer = Compositor.component.layers.find(l => l.mode === map)
       if (!layer)
       {
-        if (this.maps[map].id.startsWith('default-')) continue;
-
         layer = new Layer(Compositor.component.width, Compositor.component.height)
         Compositor.component.addLayer(0, {layer})
         Compositor.component.setLayerBlendMode(layer, map)
@@ -1121,6 +1120,8 @@ Util.registerComponentSystem('spectator-camera', {
   },
   tock(t,dt) {},
   _tock(t,dt) {
+    if (!navigator.xr) return
+    if (!this.el.sceneEl.renderer.xr) return;
     if (!this.el.sceneEl.renderer.xr.enabled) return;
 
     let xrSession = this.el.sceneEl.renderer.xr.getSession();
