@@ -162,10 +162,18 @@ AFRAME.registerComponent('camera-tool', {
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
     captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
+    captureMaterial: {default: false},
   },
   events: {
     click: function(e) {
-      this.takePicture()
+      if (this.data.captureMaterial)
+      {
+        this.takeMaterialPicture()
+      }
+      else
+      {
+        this.takePicture()
+      }
     },
     activate: function() { this.activate() },
     stateadded: function(e) {
@@ -335,9 +343,14 @@ AFRAME.registerComponent('camera-tool', {
   },
   takeMaterialPicture() {
     let originalMaterials = new Map()
+    let colorOnlyMaterials = new Map()
     this.el.sceneEl.object3D.traverseVisible(o => {
       if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.type === "MeshStandardMaterial" || o.material.type === "MeshMatcapMaterial")) {
         originalMaterials.set(o, o.material)
+      }
+      else if (o.material)
+      {
+        colorOnlyMaterials.set(o, o.material)
       }
     })
 
@@ -347,6 +360,11 @@ AFRAME.registerComponent('camera-tool', {
     }
 
     this.takePicture()
+
+    for (let o of colorOnlyMaterials.keys())
+    {
+      o.visible = false
+    }
 
     const HANDLED_MAPS = [
       {map: 'metalnessMap', value: 'metalness'},
@@ -367,9 +385,26 @@ AFRAME.registerComponent('camera-tool', {
 
       for (let [o, m] of originalMaterials.entries())
       {
-        o.material = new THREE.MeshBasicMaterial({color: new THREE.Color(m[value]), map: m[map], side: m.side, transparent: m.transparent,
-          visible: m.type === 'MeshStandardMaterial' || (map === 'normalMap' && m.type === 'MeshMatcapMaterial')
-        })
+        if (map === "normalMap")
+        {
+          o.material = new THREE.MeshNormalMaterial({
+            normalMap: m.normalMap,
+            normalMapType: m.normalMapType,
+            normalScale: m.normalScale,
+            side: m.side,
+            transparent: m.transparent,
+          })
+        }
+        else
+        {
+          o.material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(m[value], m[value], m[value]),
+            map: m[map],
+            side: m.side,
+            transparent: m.transparent,
+            visible: m.type === 'MeshStandardMaterial'
+          })
+        }
       }
 
       this.takePicture()
@@ -380,6 +415,11 @@ AFRAME.registerComponent('camera-tool', {
     for (let [o, m] of originalMaterials.entries())
     {
       o.material = m
+    }
+
+    for (let o of colorOnlyMaterials.keys())
+    {
+      o.visible = true
     }
   },
   activate() {
@@ -429,6 +469,7 @@ AFRAME.registerComponent('camera-tool', {
     if (this.data.autoCamera)
     {
       let row = document.createElement('a-entity')
+      row.setAttribute('icon-row', '')
       row.setAttribute('scale', '0.1 0.1 0.1')
       row.setAttribute('position', `-0.11 0 -0.01`)
       row.addEventListener('click', function(e) {
@@ -452,6 +493,22 @@ AFRAME.registerComponent('camera-tool', {
         button.setAttribute('radio-button', {target: this.el, component: 'camera-tool', property: 'captureType', value: prop})
         button.setAttribute('tooltip', tip)
       }
+
+      row = document.createElement('a-entity')
+      this.el.append(row)
+      row.setAttribute('scale', '0.1 0.1 0.1')
+      row.setAttribute('position', `-0.11 -0.05 -0.01`)
+      row.addEventListener('click', function(e) {
+        e.stopPropagation()
+        e.preventDefault()
+        return true
+      })
+
+      let button = document.createElement('a-entity')
+      row.append(button)
+      button.setAttribute('icon-button', '#asset-brightness-4')
+      button.setAttribute('tooltip', 'Capture Material Textures')
+      button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'captureMaterial'})
     }
     this.activate = function(){};
   },
