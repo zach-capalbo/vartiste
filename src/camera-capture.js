@@ -409,6 +409,11 @@ AFRAME.registerComponent('camera-tool', {
 
       this.takePicture()
 
+      if (map === "normalMap")
+      {
+        this.el.sceneEl.systems['canvas-fx'].applyFX('swizzle')
+      }
+
       layer.touch()
     }
 
