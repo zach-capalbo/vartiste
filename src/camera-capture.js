@@ -342,6 +342,7 @@ AFRAME.registerComponent('camera-tool', {
     }
   },
   takeMaterialPicture() {
+    let startingActiveLayer = Compositor.component.activeLayer
     let originalMaterials = new Map()
     let colorOnlyMaterials = new Map()
     this.el.sceneEl.object3D.traverseVisible(o => {
@@ -381,14 +382,14 @@ AFRAME.registerComponent('camera-tool', {
         Compositor.component.setLayerBlendMode(layer, map)
       }
       Compositor.component.activateLayer(layer)
-      Util.fillDefaultCanvasForMap(layer.frame(Compositor.component.currentFrame), map, {replace: true})
+      Util.fillDefaultCanvasForMap(layer.frame(Compositor.component.currentFrame), map, {replace: !this.keepExistingMaterials})
 
       for (let [o, m] of originalMaterials.entries())
       {
         if (map === "normalMap")
         {
           o.material = new THREE.MeshNormalMaterial({
-            normalMap: m.normalMap,
+            normalMap: m.normalMap || null,
             normalMapType: m.normalMapType,
             normalScale: m.normalScale,
             side: m.side,
@@ -405,6 +406,11 @@ AFRAME.registerComponent('camera-tool', {
             visible: m.type === 'MeshStandardMaterial'
           })
         }
+      }
+
+      if (this.keepExistingMaterials && map === 'normalMap')
+      {
+        this.el.sceneEl.systems['canvas-fx'].applyFX('swizzle')
       }
 
       this.takePicture()
@@ -426,6 +432,8 @@ AFRAME.registerComponent('camera-tool', {
     {
       o.visible = true
     }
+
+    Compositor.component.activateLayer(startingActiveLayer)
   },
   activate() {
     var helper = new THREE.CameraHelper( this.camera );
@@ -582,6 +590,7 @@ AFRAME.registerComponent('spray-can-tool', {
   schema: {
     locked: {default: false},
     projector: {default: false},
+    materialProjector: {default: false},
     canvasSize: {type: 'vec2', default: {x: 64, y: 64}},
 
     brush: {default: undefined, type: 'string', parse: o => o},
@@ -630,6 +639,8 @@ AFRAME.registerComponent('spray-can-tool', {
       this.captureToCanvas = self.captureToCanvas
       self.updateBrushSize = self.updateBrushSize.bind(this)
       this.updateBrushSize = self.updateBrushSize
+
+      this.keepExistingMaterials = true
 
       this.wasDrawing = false
 
@@ -950,11 +961,19 @@ AFRAME.registerComponent('spray-can-tool', {
     if (!this.el.is("grabbed")) return
     if (!this.el.grabbingManipulator) return
     if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
+
     if (!initialWasDrawing)
     {
       Undo.pushCanvas(Compositor.drawableCanvas)
     }
-    this.takePicture()
+    if (this.data.materialProjector)
+    {
+      this.el.components['camera-tool'].takeMaterialPicture()
+    }
+    else
+    {
+      this.takePicture()
+    }
     this.wasDrawing = true
   },
   createLockedClone() {
