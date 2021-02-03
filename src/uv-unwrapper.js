@@ -7,10 +7,17 @@ Util.registerComponentSystem('uv-unwrapper', {
     autoClear: {default: false},
     margin: {default: 0.00},
     autoDraw: {default: false},
+    shapesVisible: {default: true},
   },
   init() {
     Pool.init(this)
     this.shapes = []
+    this.shapeContainer = document.createElement('a-entity')
+    this.el.append(this.shapeContainer)
+    this.el.setAttribute('visible', 'true')
+  },
+  update(oldData) {
+    this.shapeContainer.setAttribute('visible', this.data.shapesVisible)
   },
   clearShapes() {
     for (let shape of this.shapes)
@@ -48,7 +55,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     cube.setAttribute('geometry', `width: ${size.x}; height: ${size.y}; depth: ${size.z}`)
     cube.classList.add('clickable')
 
-    this.el.append(cube)
+    this.shapeContainer.append(cube)
     this.shapes.push(cube)
   },
   createCube() {
@@ -80,7 +87,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     cube.setAttribute('axis-handles', '')
     cube.classList.add('clickable')
 
-    this.el.append(cube)
+    this.shapeContainer.append(cube)
     this.shapes.push(cube)
   },
   createCylinder() {
@@ -103,7 +110,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     sphere.setAttribute('material', 'wireframe: true; shader: matcap')
     sphere.setAttribute('axis-handles', '')
     sphere.classList.add('clickable')
-    this.el.append(sphere)
+    this.shapeContainer.append(sphere)
 
     let handle = document.createElement('a-entity')
     handle.setAttribute('axis-handle', 'axis: y')
@@ -122,7 +129,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     sphere.setAttribute('material', 'wireframe: true; shader: matcap')
     sphere.setAttribute('axis-handles', '')
     sphere.classList.add('clickable')
-    this.el.append(sphere)
+    this.shapeContainer.append(sphere)
 
     this.shapes.push(sphere)
   },

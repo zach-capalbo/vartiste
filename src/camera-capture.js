@@ -1,6 +1,7 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
+import {Layer} from './layer.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
@@ -161,10 +162,18 @@ AFRAME.registerComponent('camera-tool', {
     previewThrottle: {default: 500},
     aspectAdjust: {default: 1.0},
     captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
+    captureMaterial: {default: false},
   },
   events: {
     click: function(e) {
-      this.takePicture()
+      if (this.data.captureMaterial)
+      {
+        this.takeMaterialPicture()
+      }
+      else
+      {
+        this.takePicture()
+      }
     },
     activate: function() { this.activate() },
     stateadded: function(e) {
@@ -332,6 +341,87 @@ AFRAME.registerComponent('camera-tool', {
       settings.download(targetCanvas.toDataURL(settings.imageURLType(), settings.compressionQuality()), {extension: settings.imageExtension(), suffix: "snapshot"}, "Snapshot")
     }
   },
+  takeMaterialPicture() {
+    let originalMaterials = new Map()
+    let colorOnlyMaterials = new Map()
+    this.el.sceneEl.object3D.traverseVisible(o => {
+      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.type === "MeshStandardMaterial" || o.material.type === "MeshMatcapMaterial")) {
+        originalMaterials.set(o, o.material)
+      }
+      else if (o.material)
+      {
+        colorOnlyMaterials.set(o, o.material)
+      }
+    })
+
+    for (let [o, m] of originalMaterials.entries())
+    {
+      o.material = new THREE.MeshBasicMaterial({color: m.color, map: m.map, side: m.side, transparent: m.transparent})
+    }
+
+    this.takePicture()
+
+    for (let o of colorOnlyMaterials.keys())
+    {
+      o.visible = false
+    }
+
+    const HANDLED_MAPS = [
+      {map: 'metalnessMap', value: 'metalness'},
+      {map: 'roughnessMap', value: 'roughness'},
+      {map: 'normalMap', value: 'normalScale'},]
+
+    for (let {map, value} of HANDLED_MAPS)
+    {
+      let layer = Compositor.component.layers.find(l => l.mode === map)
+      if (!layer)
+      {
+        layer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(0, {layer})
+        Compositor.component.setLayerBlendMode(layer, map)
+      }
+      Compositor.component.activateLayer(layer)
+      Util.fillDefaultCanvasForMap(layer.frame(Compositor.component.currentFrame), map, {replace: true})
+
+      for (let [o, m] of originalMaterials.entries())
+      {
+        if (map === "normalMap")
+        {
+          o.material = new THREE.MeshNormalMaterial({
+            normalMap: m.normalMap,
+            normalMapType: m.normalMapType,
+            normalScale: m.normalScale,
+            side: m.side,
+            transparent: m.transparent,
+          })
+        }
+        else
+        {
+          o.material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(m[value], m[value], m[value]),
+            map: m[map],
+            side: m.side,
+            transparent: m.transparent,
+            visible: m.type === 'MeshStandardMaterial'
+          })
+        }
+      }
+
+      this.takePicture()
+
+      layer.touch()
+    }
+
+    for (let [o, m] of originalMaterials.entries())
+    {
+      o.material = m
+    }
+
+    for (let o of colorOnlyMaterials.keys())
+    {
+      o.visible = true
+    }
+  },
   activate() {
     var helper = new THREE.CameraHelper( this.camera );
     this.helper = helper
@@ -379,6 +469,7 @@ AFRAME.registerComponent('camera-tool', {
     if (this.data.autoCamera)
     {
       let row = document.createElement('a-entity')
+      row.setAttribute('icon-row', '')
       row.setAttribute('scale', '0.1 0.1 0.1')
       row.setAttribute('position', `-0.11 0 -0.01`)
       row.addEventListener('click', function(e) {
@@ -402,6 +493,22 @@ AFRAME.registerComponent('camera-tool', {
         button.setAttribute('radio-button', {target: this.el, component: 'camera-tool', property: 'captureType', value: prop})
         button.setAttribute('tooltip', tip)
       }
+
+      row = document.createElement('a-entity')
+      this.el.append(row)
+      row.setAttribute('scale', '0.1 0.1 0.1')
+      row.setAttribute('position', `-0.11 -0.05 -0.01`)
+      row.addEventListener('click', function(e) {
+        e.stopPropagation()
+        e.preventDefault()
+        return true
+      })
+
+      let button = document.createElement('a-entity')
+      row.append(button)
+      button.setAttribute('icon-button', '#asset-brightness-4')
+      button.setAttribute('tooltip', 'Capture Material Textures')
+      button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'captureMaterial'})
     }
     this.activate = function(){};
   },
@@ -1070,6 +1177,8 @@ Util.registerComponentSystem('spectator-camera', {
   },
   tock(t,dt) {},
   _tock(t,dt) {
+    if (!navigator.xr) return
+    if (!this.el.sceneEl.renderer.xr) return;
     if (!this.el.sceneEl.renderer.xr.enabled) return;
 
     let xrSession = this.el.sceneEl.renderer.xr.getSession();

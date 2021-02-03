@@ -3,6 +3,7 @@ import {Undo} from './undo.js'
 import {Pool} from './pool.js'
 import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
 import {THREED_MODES} from './layer-modes.js'
+import './framework/TessellateModifier'
 
 Util.registerComponentSystem('mesh-tools', {
   init()  {
@@ -19,6 +20,15 @@ Util.registerComponentSystem('mesh-tools', {
       if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
       {
         o.geometry.fromGeometry(mod.modify(o.geometry))
+      }
+    })
+  },
+  tessalate() {
+    let mod = new THREE.TessellateModifier(0.01)
+    Compositor.meshRoot.traverse(o => {
+      if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+      {
+        o.geometry = mod.modify(o.geometry)
       }
     })
   },
@@ -325,14 +335,15 @@ AFRAME.registerComponent('hide-mesh-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
     mode: {oneOf: ["delete", "hide", "emit"], default: "hide"},
-    far: {default: 0.6}
+    far: {default: 0.6},
+    objects: {default: '.canvas, .reference-glb'}
   },
   events: {
     stateadded: function(e) {
       if (e.detail === 'grabbed') {
         if (!this.el.hasAttribute('raycaster'))
         {
-          this.el.setAttribute('raycaster', `objects: .canvas, .reference-glb; showLine: true; direction: 0 1 0; origin: 0 0 0; far: ${this.data.far}; lineColor: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
+          this.el.setAttribute('raycaster', `objects: ${this.data.objects}; showLine: true; direction: 0 1 0; origin: 0 0 0; near: 0.4; far: ${this.data.far}; lineColor: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
           this.el.setAttribute('scalable-raycaster', "")
 
         }
@@ -432,3 +443,5 @@ AFRAME.registerComponent('mesh-fill-tool', {
     if (destinationCanvas.touch) destinationCanvas.touch()
   }
 })
+
+AFRAME.registerComponent('scissors-tool', {})

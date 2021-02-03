@@ -698,7 +698,7 @@ AFRAME.registerComponent('compositor', {
           layer.draw(ctx, this.currentFrame)
           continue
         }
-        if (layer.needsUpdate === false) {
+        if (layer.needsUpdate === false && layer.updateTime < this.drawnT) {
           modesUsed.add(layer.mode)
         }
         if (material.type !== "MeshStandardMaterial" && material.type !== "MeshMatcapMaterial") continue
@@ -740,7 +740,7 @@ AFRAME.registerComponent('compositor', {
           material[layer.mode].image = layerCanvas
           material[layer.mode].needsUpdate = true
         }
-        else if (layer.active || layer.needsUpdate)
+        else if (layer.active || layer.needsUpdate || layer.updateTime >= this.drawnT)
         {
           material[layer.mode].needsUpdate = true
         }

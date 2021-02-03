@@ -76,10 +76,11 @@ and contributions, both code-wise and documentation-wise are welcome.
 ```html
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>VARTISTE Toolkit Demo</title>
   <script src="https://aframe.io/releases/1.1.0/aframe.js"></script>
-
+  <!-- <script src="https://aframe.io/releases/1.0.4/aframe.js"></script> -->
   <!-- You can specify components / systems, or files to exclude from being registered -->
   <script>VARTISTE_TOOLKIT = {
       /*excludeComponents: ["frame"], */ // Will exclude "frame" component
@@ -88,13 +89,14 @@ and contributions, both code-wise and documentation-wise are welcome.
       /*includeFiles: ['icon-button'], */ // Will include *only* the components found in  aframe-vartiste-toolkit source file 'icon-button.js'
       /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
     }</script>
-
-  <!--Just include the toolkit js file from a CDN-->
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
+  <!--Just include the toolkit js file-->
+  <script src="/vartiste-toolkit.js"></script>
+  <link rel="icon" href="/assets/favicon.png">
 </head>
+
 <body>
-  <a-scene icon-button="shader: matcap" renderer="colorManagement: true;  physicallyCorrectLights: true">
-    <a-assets>
+  <a-scene icon-button="shader: matcap" renderer="colorManagement: true; physicallyCorrectLights: true" xr-controllers-only="addUseControllerButton: true" spectator-camera="camera: #spectator-camera; state: SPECTATOR_CAMERA">
+    <a-assets timeout="600000">
       <canvas height="768" id="draw-canvas-asset" width="1024"></canvas>
 
       <!-- You can easily load your own HDRI if you want! -->
@@ -129,7 +131,7 @@ and contributions, both code-wise and documentation-wise are welcome.
       <a-entity class="grab-root" shelf="">
         <!--icon-buttons position themselves in a row automatically. So we just
         position this outer entity where we want the row to start-->
-        <a-entity position="-1.5 1.1 0">
+        <a-entity position="-1.5 1.1 0" icon-row="">
           <!--Simply pass an asset to icon-button, and boom, you've got an icon
           button that responds to a wide range of clicks-->
           <a-entity icon-button="#asset-eye" onclick="alert('click')" tooltip="Run Javascript onclick handler"></a-entity>
@@ -165,7 +167,7 @@ and contributions, both code-wise and documentation-wise are welcome.
         </a-entity>
 
         <!-- You can make interactables, like this lever -->
-        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.7" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
+        <a-entity lever="valueRange: 2 0; target: a-sky; component: hdri-environment; property: exposure; initialValue: 0.724" position="-1.621 -0.917 0" scale="2 2 2" tooltip="Adjust Lighting"></a-entity>
       </a-entity>
     </a-entity>
 
@@ -188,7 +190,10 @@ and contributions, both code-wise and documentation-wise are welcome.
     <a-sphere class="clickable"
               constrain-to-sphere=""
               manipulator-weight="type: slow; weight: 0.9"
+              grab-options="undoable: true"
               material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
+
+    <a-entity id="spectator-camera" camera="" position="2 1 1" rotation="0 80 0" camera-layers="layers: spectator"></a-entity>
   </a-scene>
 </body>
 </html>
