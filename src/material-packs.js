@@ -317,6 +317,11 @@ AFRAME.registerComponent('material-pack', {
 
       promises.push(new Promise(r => img.onload = r))
       attr[map] = img
+
+      if (map === 'metalnessMap')
+      {
+        attr["metalness"] = 1
+      }
     }
 
     await Promise.all(promises)

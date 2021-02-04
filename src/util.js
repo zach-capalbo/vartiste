@@ -342,6 +342,17 @@ class VARTISTEUtil {
     return true
   }
 
+  isCanvasFullyTransparent(canvas) {
+    let ctx = canvas.getContext('2d')
+    let data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    for (let i = 3; i < data.data.length; i += 4)
+    {
+      if (data.data[i] > 0) return false
+    }
+
+    return true
+  }
+
   callLater(fn) {
     return new Promise((r, e) => {
       window.setTimeout(() => {
