@@ -357,7 +357,13 @@ AFRAME.registerComponent('camera-tool', {
 
     for (let [o, m] of originalMaterials.entries())
     {
-      o.material = new THREE.MeshBasicMaterial({color: m.color, map: m.map, side: m.side, transparent: m.transparent})
+      o.material = new THREE.MeshBasicMaterial({
+        color: m.color,
+        map: m.map,
+        side: m.side,
+        transparent: m.transparent,
+        opacity: m.opacity,
+      })
     }
 
     this.takePicture()
@@ -403,6 +409,7 @@ AFRAME.registerComponent('camera-tool', {
             map: m[map],
             side: m.side,
             transparent: m.transparent,
+            opacity: m.opacity,
             visible: m.type === 'MeshStandardMaterial'
           })
         }
@@ -660,6 +667,7 @@ AFRAME.registerComponent('spray-can-tool', {
     (function(self) {
       let updateProjector = false
       this.data.projector = self.data.projector
+      this.data.materialProjector = self.data.materialProjector
 
       if (this.data.projector)
       {
@@ -786,6 +794,18 @@ AFRAME.registerComponent('spray-can-tool', {
           }
         }
       })
+
+      if (this.data.materialProjector)
+      {
+        Compositor.meshRoot.traverse(o =>
+          {
+            if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
+            {
+              o.material = shaderMaterial
+              o.layers.disable(CAMERA_LAYERS.PROJECTOR_MASK)
+            }
+          })
+      }
     }
 
     // this.cameraCanvas.clearRect(0, 0, this.cameraCanvas.width, this.cameraCanvas.height)
