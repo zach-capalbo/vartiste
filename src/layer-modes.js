@@ -58,6 +58,7 @@ const FX = [
   'show-uv',
   'srgb-to-linear',
   'linear-to-srgb',
+  'swizzle',
 ]
 
 const CAMERA_LAYERS = {
