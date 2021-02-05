@@ -30,4 +30,5 @@ a-entity#artist-root position="0 0 0"
               webxr-laser="hand: ${hand}; hideTrackingMesh: true; originSpace: gripSpace; fallbackToLaserControls: true; highlightButtonPresses: false"
               _leap-hand="hand: ${hand}; pinchButton: pinch"
               _hand-helper="hand: ${hand}"
+              xbox-controller="enabled: ${hand === 'right'}"
             ]
