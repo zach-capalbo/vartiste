@@ -6,7 +6,7 @@ export const MAP_FROM_FILENAME = {
   'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
   'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
-  'metalnessMap': [/(\b|_)metal(ness|ic)?(map)?(\b|_)/i],
+  'metalnessMap': [/(\b|_)metal(ness|l?ic)?(map)?(\b|_)/i],
   'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
   'matcap': [/(\b|_)matcap(\b|_)/i]
 }

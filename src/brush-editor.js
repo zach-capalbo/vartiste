@@ -61,7 +61,7 @@ AFRAME.registerSystem('brush-system', {
 
 AFRAME.registerComponent('brush-editor', {
   schema: {
-    type: {oneOf: ['ImageBrush', 'StretchBrush'], default: 'ImageBrush'},
+    type: {oneOf: ['ImageBrush', 'StretchBrush', 'FxBrush'], default: 'ImageBrush'},
 
     name: {default: "New Brush"},
 
@@ -172,7 +172,7 @@ AFRAME.registerComponent('brush-editor', {
     this.el.querySelector('.preview').setAttribute('material', 'src', img)
   },
   update(oldData) {
-    this.el.querySelectorAll('.image-brush').forEach(el => el.setAttribute('visible', this.data.type === 'ImageBrush'))
+    this.el.querySelectorAll('.image-brush').forEach(el => el.setAttribute('visible', this.data.type === 'ImageBrush' || this.data.type === 'FxBrush'))
     this.el.querySelectorAll('.stretch-brush').forEach(el => el.setAttribute('visible', this.data.type === 'StretchBrush'))
   },
   createBrush() {
@@ -203,6 +203,11 @@ AFRAME.registerComponent('brush-editor', {
     {
       opts.height = 24
       opts.width = 24 * this.image.width / this.image.height
+    }
+
+    if (this.data.type === 'FxBrush')
+    {
+      opts.baseBrush = new Brush.ImageBrush(shortid.generate(), this.image, opts)
     }
 
     let brush = new Brush[this.data.type](shortid.generate(), this.image, opts)

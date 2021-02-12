@@ -4,6 +4,7 @@ import {Undo} from './undo.js'
 import {Layer} from './layer.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
+import { RayTracingRenderer } from 'ray-tracing-renderer'
 
 AFRAME.registerSystem('camera-layers', {
   init() {
@@ -123,6 +124,111 @@ AFRAME.registerSystem('camera-capture', {
     let ctx = targetTempCanvas.getContext('2d')
 
     renderer.render(this.el.sceneEl.object3D, camera);
+
+    let data = ctx.getImageData(0, 0, targetTempCanvas.width, targetTempCanvas.height)
+
+    renderer.readRenderTargetPixels(newTarget, 0, 0, targetTempCanvas.width, targetTempCanvas.height, data.data)
+
+    ctx.putImageData(data, 0, 0)
+
+    let destCtx = canvas.getContext('2d')
+
+    destCtx.translate(0, canvas.height)
+    destCtx.scale(1, -1)
+    destCtx.drawImage(targetTempCanvas, 0, 0, canvas.width, canvas.height)
+    destCtx.scale(1, -1)
+    destCtx.translate(0, -canvas.height)
+
+    renderer.xr.enabled = wasXREnabled
+
+    renderer.setRenderTarget(oldTarget)
+    newTarget.dispose()
+    return canvas
+  },
+  raytraceToCanvas(camera, canvas) {
+    if (!canvas) {
+      canvas = this.getTempCanvas()
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    }
+
+    let renderer = this.el.sceneEl.renderer
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+
+    let oldTarget = renderer.getRenderTarget()
+
+    let {width, height} = canvas
+
+    let targetTempCanvas = this.getTargetTempCanvas()
+
+    let newTarget = new THREE.WebGLRenderTarget(targetTempCanvas.width, targetTempCanvas.height)
+
+    newTarget.texture.encoding = renderer.outputEncoding
+    renderer.setRenderTarget(newTarget)
+
+    let ctx = targetTempCanvas.getContext('2d')
+
+    // renderer.render(this.el.sceneEl.object3D, camera);
+    // let tracer = new OrayTracingRenderer.Renderer(renderer, new THREE.Vector2(targetTempCanvas.width, targetTempCanvas.height))
+    // tracer.resetFrame()
+    //
+
+
+    let rcanvas = document.createElement('canvas')
+    rcanvas.width = 640
+    rcanvas.height = 480
+    let tracer = new RayTracingRenderer({canvas: rcanvas})
+    tracer.setSize(640, 480)
+    tracer.sync(this.el.sceneEl.time)
+    tracer.renderWhenOffFocus = true
+    tracer.maxHardwareUsage = true
+    tracer.needsUpdate = true
+    tracer.onSampleRendered = (sample, t) => {
+      console.log("Sample Rendered!!", sample, t)
+      Util.debugCanvas(tracer.domElement)
+    };
+    try {
+        let interval;
+        interval = window.setInterval(() => {
+          let originalMaterials = new Map()
+          this.el.sceneEl.object3D.traverse(o => {
+            if (o.material && o.material.type !== 'MeshStandardMaterial') {
+              o.visible = false
+              originalMaterials.set(o, o.material)
+              // o.material = new OrayTracingRenderer.Material({baseMaterial: o.material})
+              o.material = new THREE.MeshStandardMaterial()
+            }
+          })
+
+          try {
+            let w = console.warn
+            console.warn = function() {};
+            tracer.render(this.el.sceneEl.object3D, camera)
+            console.warn = w;
+        } finally {
+
+          for (let [o, m] of originalMaterials.entries())
+          {
+            o.visible = true
+            o.material = m
+          }
+
+          if (tracer.getTotalSamplesRendered() > 128)
+          {
+            window.clearInterval(interval)
+            Util.debugCanvas(tracer.domElement)
+          }
+        }
+
+      }, 10)
+        window.tracer = tracer
+    } catch (e) {
+      console.error(e)
+      return
+    }
+
+
+    ctx.drawImage(tracer.domElement, 0, 0)
 
     let data = ctx.getImageData(0, 0, targetTempCanvas.width, targetTempCanvas.height)
 
@@ -332,6 +438,7 @@ AFRAME.registerComponent('camera-tool', {
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
     this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+    // this.el.sceneEl.systems['camera-capture'].raytraceToCanvas(this.camera, targetCanvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})

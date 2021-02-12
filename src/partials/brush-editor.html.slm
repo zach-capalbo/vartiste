@@ -4,6 +4,7 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
     a-entity icon-row=""
       a-entity icon-button="#asset-brush" tooltip="Image Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: ImageBrush"
       a-entity icon-button="#asset-resize" tooltip="Stretch Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: StretchBrush"
+      /a-entity icon-button="#asset-blur-linear" tooltip="FX Brush" radio-button="target: #brush-editor; component: brush-editor; property: type; value: FxBrush"
       a-entity position="3.4 0 0"
         a-entity icon-button="#asset-delete" tooltip="Delete Brush" click-action="deleteBrush"
     a-entity icon-row=""
@@ -12,15 +13,19 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
       / Use current layer
       / Use current composition
       a-entity text="value: Or drag and drop an image here; width: 1.930; wrapCount: 20.340; anchor: left" position="0.73 0 0"
-    a-entity.image-brush icon-row=""
-      a-entity icon-button="#asset-brightness-4" tooltip="Use Image Color Multiplier" toggle-button="target: #brush-editor; component: brush-editor; property: textured"
-      a-entity icon-button="#asset-transition" tooltip="Connected Strokes" toggle-button="target: #brush-editor; component: brush-editor; property: connected"
-      a-entity icon-button="#asset-hand-right" tooltip="Require Movement" toggle-button="target: #brush-editor; component: brush-editor; property: requireMovement"
-      a-entity icon-button="#asset-cube-send" tooltip="Rotation Follows Movement" toggle-button="target: #brush-editor; component: brush-editor; property: dragRotate"
-      a-entity icon-button="#asset-rotate-3d-variant" tooltip="Auto Rotate" toggle-button="target: #brush-editor; component: brush-editor; property: autoRotate"
+    a-entity icon-row=""
+      a-entity.image-brush
+        a-entity icon-button="#asset-brightness-4" tooltip="Use Image Color Multiplier" toggle-button="target: #brush-editor; component: brush-editor; property: textured"
+        a-entity icon-button="#asset-transition" tooltip="Connected Strokes" toggle-button="target: #brush-editor; component: brush-editor; property: connected"
+        a-entity icon-button="#asset-hand-right" tooltip="Require Movement" toggle-button="target: #brush-editor; component: brush-editor; property: requireMovement"
+        a-entity icon-button="#asset-cube-send" tooltip="Rotation Follows Movement" toggle-button="target: #brush-editor; component: brush-editor; property: dragRotate"
+        a-entity icon-button="#asset-rotate-3d-variant" tooltip="Auto Rotate" toggle-button="target: #brush-editor; component: brush-editor; property: autoRotate"
+      a-entity.stretch-brush
+        a-entity icon-button="#asset-brightness-4" tooltip="Use Image Color Multiplier" toggle-button="target: #brush-editor; component: brush-editor; property: textured"
       /a-entity icon-button="#asset-transition" tooltip="Dithered Blending" toggle-button="target: #brush-editor; component: brush-editor; property: hqBlending"
     a-entity icon-row=""
       a-entity popup-button="popup: mode-shelf; deferred: true; tooltip: Change brush blend mode; scale: 0.3 0.3 0.3" icon-button="#asset-blur-linear"
+      /a-entity icon-button="#asset-blur-linear" popup-button="popup: fx-popup; "
     a-entity icon-row=""
       a-entity icon-button="#asset-plus-box-outline" tooltip="Add Brush" click-action="addBrush"
       a-entity icon-button="#asset-floppy" tooltip="Download Brushes" click-action="saveAll"

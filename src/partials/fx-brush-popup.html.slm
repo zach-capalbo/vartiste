@@ -1,0 +1,14 @@
+- const {BRUSH_FX} = require('./layer-modes.js')
+a-entity shelf="width: 5; height: 4; closeable: true" scale="0.05 0.05 0.05"
+  - var modeListIndex = 0
+  a-entity position="-1.5 1.5 0"
+    - var i = 0
+    - var x = 0
+    - var rows = 6
+    - for (let mode of BRUSH_FX)
+      - if (i === rows)
+        - i = 0
+        - x++
+      a-entity position="${(x * 1.5).toString()} ${- i++ * 0.5} 0"
+        a-entity node-fx=mode icon-button="#asset-blur-linear" scale="0.7 0.7 1" position="-0.7 0 0" hidden-tooltip=mode
+        a-entity text="value: ${mode}; width: 1; wrapCount: 15"

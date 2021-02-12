@@ -7,12 +7,14 @@ const [
   STATE_COLOR,
   STATE_HDRI,
   STATE_SKYBOX,
-  STATE_PRESET
+  STATE_PRESET,
+  STATE_ENVIROPACK,
 ] = [
   "STATE_COLOR",
   "STATE_HDRI",
   "STATE_SKYBOX",
-  "STATE_PRESET"
+  "STATE_PRESET",
+  "STATE_ENVIROPACK",
 ]
 
 Util.registerComponentSystem('environment-manager', {
@@ -66,7 +68,7 @@ Util.registerComponentSystem('environment-manager', {
     this.state = newState;
   },
   canInstallSkybox() {
-    return this.state !== STATE_HDRI
+    return this.state !== STATE_HDRI && this.state !== STATE_ENVIROPACK
   },
   installSkybox(skybox, level) {
     let skyEl = document.getElementsByTagName('a-sky')[0]
@@ -241,6 +243,14 @@ Util.registerComponentSystem('environment-manager', {
     this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
     this.substate = 'preset-hdri'
+  },
+  useEnviropack(pack) {
+    this.switchState(STATE_ENVIROPACK)
+    this.substate = pack;
+    document.querySelector('a-sky').setAttribute('enviropack', 'preset', pack)
+    this.uninstallState = () => {
+      document.querySelector('a-sky').removeAttribute('enviropack')
+    };
   },
   reset() {
     this.switchState(STATE_COLOR)
