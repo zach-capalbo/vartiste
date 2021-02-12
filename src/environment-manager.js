@@ -249,7 +249,6 @@ Util.registerComponentSystem('environment-manager', {
     this.substate = pack;
     document.querySelector('a-sky').setAttribute('enviropack', 'preset', pack)
     this.uninstallState = () => {
-      document.querySelector('a-sky').setAttribute('enviropack', "")
       document.querySelector('a-sky').removeAttribute('enviropack')
     };
   },

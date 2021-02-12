@@ -200,6 +200,8 @@ AFRAME.registerComponent('popup-button', {
     // Scale for the popup when shown
     scale: {type: 'vec3', default: new THREE.Vector3(1, 1, 1)},
 
+    offset: {type: 'vec3', default: new THREE.Vector3(0, 0, 0.1)},
+
     autoScale: {default: false},
 
     // If true, the popup entity will not be loaded until the button is clicked
@@ -239,7 +241,7 @@ AFRAME.registerComponent('popup-button', {
 
     this.popup = popup
 
-    popup.setAttribute('position', '0 0 0.1')
+    popup.setAttribute('position', this.data.offset)
     popup.setAttribute('visible', 'false')
 
     popup.addEventListener('click', e => {
@@ -307,7 +309,7 @@ AFRAME.registerComponent('popup-button', {
         })
       })
     }
-    popup.setAttribute('position', '0 0 0.1')
+    popup.setAttribute('position', this.data.offset)
     popup.object3D.updateMatrixWorld()
 
     if (!this.data.autoScale)

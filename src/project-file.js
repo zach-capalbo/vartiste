@@ -108,6 +108,10 @@ class ProjectFile {
       hdriTexture.needsUpdate = true
       environmentManager.installHDREnvironment(hdriTexture)
     }
+    else if (obj.environment.state === 'STATE_ENVIROPACK')
+    {
+      environmentManager.useEnviropack(obj.environment.substate)
+    }
 
     document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
 
@@ -291,6 +295,13 @@ class ProjectFile {
           width: environmentManager.hdriTexture.image.width,
           height: environmentManager.hdriTexture.image.height
         }
+      }
+    }
+    else if (environmentManager.state == 'STATE_ENVIROPACK')
+    {
+      obj.environment = {
+        state: 'STATE_ENVIROPACK',
+        substate: environmentManager.substate
       }
     }
     else
