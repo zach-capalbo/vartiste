@@ -68,7 +68,7 @@ Util.registerComponentSystem('environment-manager', {
     this.state = newState;
   },
   canInstallSkybox() {
-    return this.state !== STATE_HDRI
+    return this.state !== STATE_HDRI && this.state !== STATE_ENVIROPACK
   },
   installSkybox(skybox, level) {
     let skyEl = document.getElementsByTagName('a-sky')[0]
