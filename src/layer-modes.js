@@ -61,6 +61,11 @@ const FX = [
   'swizzle',
 ]
 
+const BRUSH_FX = [
+  'blur',
+  'nudge',
+]
+
 const CAMERA_LAYERS = {
     DEFAULT: 0,
     LEFT_EYE: 1,

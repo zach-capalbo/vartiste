@@ -437,8 +437,8 @@ AFRAME.registerComponent('camera-tool', {
     }
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
-    // this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
-    this.el.sceneEl.systems['camera-capture'].raytraceToCanvas(this.camera, targetCanvas)
+    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+    // this.el.sceneEl.systems['camera-capture'].raytraceToCanvas(this.camera, targetCanvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})
