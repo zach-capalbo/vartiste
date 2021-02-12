@@ -241,7 +241,7 @@ AFRAME.registerComponent('popup-button', {
 
     this.popup = popup
 
-    popup.setAttribute('position', this.data.offset)
+    popup.setAttribute('position', '0 0 0.1')
     popup.setAttribute('visible', 'false')
 
     popup.addEventListener('click', e => {
@@ -309,7 +309,7 @@ AFRAME.registerComponent('popup-button', {
         })
       })
     }
-    popup.setAttribute('position', this.data.offset)
+    popup.object3D.position.copy(this.data.offset)
     popup.object3D.updateMatrixWorld()
 
     if (!this.data.autoScale)
