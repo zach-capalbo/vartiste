@@ -407,6 +407,22 @@ class VARTISTEUtil {
       return shouldFill
   }
 
+  whenComponentInitialized(el, component, fn) {
+    if (el && el[component] && el[component].initialized) {
+      return fn()
+    }
+
+    return new Promise((r, e) => {
+      let listener = (e) => {
+        if (e.detail.name === component) {
+          el.removeEventListener('componentinitialized', listener);
+          r();
+        }
+      };
+      el.addEventListener('componentinitialized', listener)
+    })
+  }
+
   // recursiveBoundingBox(object, {box = undefined} = {})
   // {
   //   if (!box) box = new THREE.Box3
