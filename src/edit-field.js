@@ -353,3 +353,47 @@ AFRAME.registerComponent('not-frustum-culled', {
     this.el.object3D.frustumCulled = false
   }
 })
+
+AFRAME.registerComponent('v-bind', {
+  multiple: true,
+  schema: {
+    target: {type: 'selector'},
+    component: {type: 'string'},
+    property: {type: 'string'},
+
+    source: {type: 'selector'},
+    sourceComponent: {type: 'string'},
+    sourceProperty: {type: 'string'},
+  },
+  init() {
+    this.handleUpdate = this.handleUpdate.bind(this)
+  },
+  update(oldData) {
+    let source = this.data.source || this.el.sceneEl
+
+    if (source !== this.source)
+    {
+      console.log("Changing source", source)
+      if (this.source)
+      {
+        this.source.removeEventListener('componentchanged', this.handleUpdate)
+      }
+      source.addEventListener('componentchanged', this.handleUpdate)
+      this.source = source
+    }
+    this.forceUpdate()
+  },
+  handleUpdate(e) {
+    console.log("Handling update")
+    if (e.detail.name === this.data.sourceComponent)
+    {
+      this.forceUpdate()
+    }
+  },
+  forceUpdate() {
+    let val = this.data.source.getAttribute(this.data.sourceComponent)
+    val = this.data.sourceProperty ? val[this.data.sourceProperty] : val
+    let target = this.data.target || this.el
+    target.setAttribute(this.data.component, this.data.property ? this.data.property : val, this.data.property ? val : undefined)
+  }
+})

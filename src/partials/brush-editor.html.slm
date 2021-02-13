@@ -25,6 +25,7 @@ a-entity#brush-editor shelf="name: Brush Editor; height: 3.5; closeable: true; h
       /a-entity icon-button="#asset-transition" tooltip="Dithered Blending" toggle-button="target: #brush-editor; component: brush-editor; property: hqBlending"
     a-entity icon-row=""
       a-entity popup-button="popup: mode-shelf; deferred: true; tooltip: Change brush blend mode; scale: 0.3 0.3 0.3" icon-button="#asset-blur-linear"
+      a-entity text="value: source-over; width: 1.5; wrapCount: 20; anchor: left" position="0.3 0 0" v-bind="source: #brush-editor; sourceComponent: brush-editor; sourceProperty: mode; component: text; property: value"
       /a-entity icon-button="#asset-blur-linear" popup-button="popup: fx-popup; "
     a-entity icon-row=""
       a-entity icon-button="#asset-plus-box-outline" tooltip="Add Brush" click-action="addBrush"
