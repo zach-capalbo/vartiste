@@ -414,8 +414,10 @@ class VARTISTEUtil {
 
     return new Promise((r, e) => {
       let listener = (e) => {
+        console.log("Initialized", e.detail)
         if (e.detail.name === component) {
           el.removeEventListener('componentinitialized', listener);
+          if (fn) fn();
           r();
         }
       };

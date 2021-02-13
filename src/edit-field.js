@@ -373,7 +373,6 @@ AFRAME.registerComponent('v-bind', {
 
     if (source !== this.source)
     {
-      console.log("Changing source", source)
       if (this.source)
       {
         this.source.removeEventListener('componentchanged', this.handleUpdate)
@@ -384,7 +383,6 @@ AFRAME.registerComponent('v-bind', {
     this.forceUpdate()
   },
   handleUpdate(e) {
-    console.log("Handling update")
     if (e.detail.name === this.data.sourceComponent)
     {
       this.forceUpdate()
