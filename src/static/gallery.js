@@ -24,7 +24,7 @@ class Gallery {
       entry.setAttribute('href', "index.html?load=" + require(`../gallery/${name}.vartistez`))
 
       try {
-        entry.querySelector('.preview').setAttribute('src', require(`resize-loader?200!../gallery/${name}.png`))
+        entry.querySelector('.preview').setAttribute('src', require(`../gallery/${name}.png`))
       }
       catch(e)
       {
