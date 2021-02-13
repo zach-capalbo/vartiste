@@ -196,7 +196,7 @@ AFRAME.registerComponent('quick-gallery', {
     {
       if (!entry.quickLoad) continue
       let img = document.createElement('img')
-      img.src = require(`resize-loader?200!./gallery/${entry.name}.png`)
+      img.src = require(`./gallery/${entry.name}.png`)
       let button = document.createElement('a-entity')
       button.setAttribute('icon-button', img)
       button.setAttribute('tooltip', `Quick Start ${entry.displayName}`)

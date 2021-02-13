@@ -755,10 +755,13 @@ AFRAME.registerComponent('compositor', {
             material.bumpScale = Math.pow(layer.opacity, 2.2)
           break
           case "emissiveMap":
-            material.emissive.r = 1
-            material.emissive.g = 1
-            material.emissive.b = 1
-            material.emissiveIntensity = layer.opacity
+            if (material.emissive)
+            {
+              material.emissive.r = 1
+              material.emissive.g = 1
+              material.emissive.b = 1
+              material.emissiveIntensity = layer.opacity
+            }
             break
           case "normalMap":
             material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)

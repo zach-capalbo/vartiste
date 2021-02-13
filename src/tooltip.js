@@ -104,3 +104,13 @@ AFRAME.registerComponent('hidden-tooltip', {
     this.el.setAttribute('tooltip', this.data)
   }
 })
+
+// Makes the tooltip visible before the first time it's hovered
+AFRAME.registerComponent('previsible-tooltip', {
+  init() {
+    Util.whenComponentInitialized(this.el, 'tooltip', () => {
+      console.log("Popping up previs")
+      this.el.components['tooltip'].popup()
+    })
+  }
+})

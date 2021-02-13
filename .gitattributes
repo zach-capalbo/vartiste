@@ -4,3 +4,4 @@ src/ai-models/** filter=lfs diff=lfs merge=lfs -text
 chromium/*.zip filter=lfs diff=lfs merge=lfs -text
 src/material-packs/* filter=lfs diff=lfs merge=lfs -text
 src/material-packs/** filter=lfs diff=lfs merge=lfs -text
+*.vartistez filter=lfs diff=lfs merge=lfs -text
