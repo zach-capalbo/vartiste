@@ -1308,7 +1308,7 @@ Util.registerComponentSystem('spectator-camera', {
     // Camera to use when state is `SPECTATOR_CAMERA`
     camera: {type: 'selector', default: '#camera'},
     // Use this to throttle spectator rendering for performance or other reasons
-    throttle: {default: 0}
+    throttle: {default: 20}
   },
   init() {
     Pool.init(this)
@@ -1322,6 +1322,8 @@ Util.registerComponentSystem('spectator-camera', {
         return Reflect.get(this.el.sceneEl.object3D, prop, receiver);
       }
     })
+
+    this.lightMap = new Map();
   },
   update(oldData) {
     this.tock = AFRAME.utils.throttleTick(this._tock, this.data.throttle, this)
@@ -1349,6 +1351,14 @@ Util.registerComponentSystem('spectator-camera', {
     }
     if (this.data.state === SPECTATOR_CAMERA)
     {
+      this.el.sceneEl.object3D.traverseVisible(o => {
+        if (o.isLight && o.shadow && o.shadow.autoUpdate)
+        {
+            this.lightMap.set(o, true)
+            o.shadow.autoUpdate = false
+        }
+      })
+
       let autoUpdate = this.el.sceneEl.object3D.autoUpdate
       let gl = this.gl
       gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -1416,6 +1426,13 @@ Util.registerComponentSystem('spectator-camera', {
       renderer.xr.getCamera(camera).cameras = originalCameras
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
+
+      for (let o of this.lightMap.keys())
+      {
+        o.shadow.autoUpdate = true
+      }
+
+      this.lightMap.clear()
     }
   }
 })
