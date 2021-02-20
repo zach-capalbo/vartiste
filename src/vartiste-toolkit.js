@@ -24,6 +24,7 @@ window.VARTISTE_TOOLKIT = Object.assign({
     "./close-circle-outline.png",
     "./reset-orientation.jpg",
     "./button.glb",
+    "./headset.glb",
     "./lead-pencil.png"
   ]
 }, window.VARTISTE_TOOLKIT || {})
