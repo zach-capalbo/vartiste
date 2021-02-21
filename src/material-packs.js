@@ -463,6 +463,11 @@ AFRAME.registerComponent('material-pack', {
         // tmpCtx.globalCompositeOperation = 'color'
         tmpCtx.drawImage(maskCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height,)
         // tmpCtx.globalCompositeOperation = 'source-in'
+
+        if (repeat > 1)
+        {
+          tmpCtx.globalCompositeOperation = 'source-atop'
+        }
       }
       let ctx = canvas.getContext('2d')
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
