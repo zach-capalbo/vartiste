@@ -4,6 +4,8 @@ a-entity.view.clickable.grab-root frame="closable: false; outline: false; pinnab
       a-entity icon-row=""
         a-entity icon-button="#asset-format-color-fill" tooltip="Fill Material" click-action="fillMaterial"
         a-entity icon-button="#asset-transition-masked" tooltip="Draw with Material" click-action="activateMask" toggle-button=""
+        a-entity icon-button="#asset-chevron-up" tooltip="Increase Repeat" click-action="increaseRepeat"
+        a-entity icon-button="#asset-chevron-down" tooltip="Decrease Repeat" click-action="decreaseRepeat"
       a-entity.expanded.map-row icon-row=""
         a-entity icon-button="#asset-brush" tooltip="Use Material Color" map="src"
         a-entity icon-button="#asset-arrow-collapse-left" tooltip="Draw Normal Map" map="normalMap"
