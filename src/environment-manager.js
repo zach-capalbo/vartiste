@@ -247,9 +247,17 @@ Util.registerComponentSystem('environment-manager', {
   useEnviropack(pack) {
     this.switchState(STATE_ENVIROPACK)
     this.substate = pack;
+    var originalLights = []
+    document.querySelectorAll('*[light]').forEach(l => {
+      originalLights.push([l, l.components.light.data.intensity])
+      l.setAttribute('light', {intensity: 0})
+    })
     document.querySelector('a-sky').setAttribute('enviropack', 'preset', pack)
     this.uninstallState = () => {
       document.querySelector('a-sky').removeAttribute('enviropack')
+      for (let [l, i] of originalLights) {
+        l.setAttribute('light', {intensity: i})
+      }
     };
   },
   reset() {
