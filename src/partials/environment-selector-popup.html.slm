@@ -3,7 +3,7 @@ a-entity shelf="width: 3; height: 4; closeable: true" scale="0.05 0.05 0.05"
     a-entity icon-row=""
       a-entity icon-button="#asset-brightness-4" tooltip="Colorful space (old preset)" system-click-action="system: environment-manager; action: usePresetHDRI" popup-action="close"
       a-entity text="value: colorful space; width: 1.5; anchor: left; wrapCount: 15" position="0.3 0 0"
-    - for preset of ['tankfarm', 'sandstone', 'autumn', 'winter', 'interior']
+    - for preset of ['tankfarm', 'sandstone', 'autumn', 'winter', 'interior', 'night']
       a-entity icon-row=""
         a-entity icon-button="#asset-brightness-4" popup-action="close" tooltip="Use ${preset} environment" onclick="this.sceneEl.systems['environment-manager'].useEnviropack('${preset}')"
         a-entity text="value: ${preset}; width: 1.5; anchor: left; wrapCount: 15" position="0.3 0 0"
