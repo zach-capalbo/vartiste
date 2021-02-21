@@ -265,6 +265,7 @@ AFRAME.registerComponent('material-pack', {
   schema: {
     pack: {type: 'string'},
     applyMask: {default: false},
+    repeat: {default: 1},
 
     srcEnabled: {default: true},
     normalMapEnabled: {default: true},
@@ -277,6 +278,9 @@ AFRAME.registerComponent('material-pack', {
       let action = e.target.getAttribute('click-action')
       if (!(action in this)) return
       this[action](e);
+    },
+    materialtextureloaded: function (e) {
+      this.updateRepeat()
     }
   },
   init() {
@@ -293,6 +297,33 @@ AFRAME.registerComponent('material-pack', {
         el.setAttribute('toggle-button', {target: this.el, component: 'material-pack', property: ENABLED_MAP[el.getAttribute('map')]})
       })
     })
+  },
+  update(oldData) {
+    if (this.repeat !== oldData.repeat) {
+      this.updateRepeat()
+    }
+  },
+  updateRepeat() {
+    if (!this.maps) return;
+    if (!this.view) return;
+
+    let material = this.view.components.material.material;
+    for (let map of ["map"].concat(HANDLED_MAPS))
+    {
+      if (!material[map]) continue;
+      material[map].repeat.set(this.data.repeat, this.data.repeat)
+      material[map].wrapT = THREE.RepeatWrapping
+      material[map].wrapS = THREE.RepeatWrapping
+      material[map].needsUpdate = true
+    }
+  },
+  increaseRepeat() {
+    this.data.repeat = THREE.Math.clamp(this.data.repeat + 1, 1, 50)
+    this.updateRepeat()
+  },
+  decreaseRepeat() {
+    this.data.repeat = THREE.Math.clamp(this.data.repeat - 1, 1, 50)
+    this.updateRepeat()
   },
   async loadTextures() {
     let promises = []
@@ -334,6 +365,8 @@ AFRAME.registerComponent('material-pack', {
       if (map in this.maps) continue;
       this.maps[map] = this.system.defaultMap[map]
     }
+
+    this.updateRepeat()
   },
   activateMask(e) {
     if (this.system.activeMaterialMask === this)
@@ -374,7 +407,8 @@ AFRAME.registerComponent('material-pack', {
     tmpCtx.globalCompositeOperation = 'copy'
     tmpCtx.drawImage(maskCanvas, 0, 0)
 
-    tmpCtx.globalCompositeOperation = 'source-in'
+    // Source atop messes something up with the alpha. Need to figure out eventually
+    tmpCtx.globalCompositeOperation = this.data.repeat === 1 ? 'source-in' : 'source-atop'
 
     let startingActiveLayer = Compositor.component.activeLayer
 
@@ -409,12 +443,31 @@ AFRAME.registerComponent('material-pack', {
       }
       canvas = layer.frame(Compositor.component.currentFrame)
 
-      tmpCtx.drawImage(this.maps[map], 0, 0, tmpCanvas.width, tmpCanvas.height,)
+      let repeat = this.data.repeat;
+      let repeatXIncrement = Math.round(tmpCanvas.width / repeat);
+      let repeatYIncrement = tmpCanvas.height / repeat;
+      for (let y = 0; y < repeat; ++y)
+      {
+        for (let x = 0; x < repeat; ++x)
+        {
+          tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
+        }
+      }
+
       if (!this.data[ENABLED_MAP[map]])
       {
+        if (repeat > 1)
+        {
+          tmpCtx.globalCompositeOperation = 'source-in'
+        }
         // tmpCtx.globalCompositeOperation = 'color'
         tmpCtx.drawImage(maskCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height,)
         // tmpCtx.globalCompositeOperation = 'source-in'
+
+        if (repeat > 1)
+        {
+          tmpCtx.globalCompositeOperation = 'source-atop'
+        }
       }
       let ctx = canvas.getContext('2d')
       ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
