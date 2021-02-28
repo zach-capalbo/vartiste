@@ -50,6 +50,28 @@ let config = {
         use: { loader: "worker-loader" },
       },
       {
+        test: /wasm.*\.wasm/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: '[path][name].[contenthash].[ext]'
+          }
+        }]
+      },
+      {
+        test: /wasm.*\.js/,
+        type: 'javascript/auto',
+        use: [{
+          loader: "script-loader",
+          // options: {
+          //   esModule: false,
+          //   name: '[path][name].[contenthash].[ext]'
+          // }
+        }]
+      },
+      {
         test: /ai-models.*json/,
         type: 'javascript/auto',
         use: [{

@@ -176,7 +176,8 @@ AFRAME.registerSystem('icon-button', {
     this.blankFaceMaterial = new THREE.MeshBasicMaterial({
       transparent: true,
       opacity: 0,
-      alphaTest: 0.01
+      alphaTest: 0.01,
+      toneMapped: false
     })
     this.faceMaterials = {}
 
@@ -184,7 +185,7 @@ AFRAME.registerSystem('icon-button', {
 
     if (this.data.shader === 'matcap')
     {
-      this.bgMaterial = new THREE.MeshMatcapMaterial()
+      this.bgMaterial = new THREE.MeshMatcapMaterial({toneMapped: false})
       this.bgMaterial.matcap = new THREE.Texture()
       this.bgMaterial.matcap.image = this.data.matcap
       this.bgMaterial.matcap.encoding = THREE.LinearEncoding
@@ -196,7 +197,7 @@ AFRAME.registerSystem('icon-button', {
     }
     else
     {
-      this.bgMaterial = new THREE.MeshBasicMaterial()
+      this.bgMaterial = new THREE.MeshBasicMaterial({toneMapped: false})
     }
 
     this.tmpColor = new THREE.Color()
@@ -321,6 +322,8 @@ AFRAME.registerComponent('icon-button', {
         shader: this.system.data.iconShader,
         opacity: this.data === "" ? 0.0 : 1.0
       })
+
+      this.el.components.material.material.toneMapped = false
 
       if (!((this.data instanceof HTMLImageElement) || this.data.startsWith("data")))
       {
