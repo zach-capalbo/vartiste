@@ -118,6 +118,17 @@
               material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
 
     <a-entity id="spectator-camera" camera="" position="2 1 1" rotation="0 80 0" camera-layers="layers: spectator"></a-entity>
+
+
+    <a-box material="shader: standard; color: white" width="0.3" height="0.3" depth="0.3"
+           position="-2.276 0.3 0.165"
+           physx-body="type: static"></a-box>
+    <a-entity icon-button="#asset-nudge-brush" system-click-action="system: physx; action: startPhysX" position="-2.105 0.3 0.151" rotation="0 90 0" scale="0.6 0.6 0.6"></a-entity>
+    <a-entity gltf-model="#asset-hand"
+              preactivate-tooltip="Press Start Physics below!"
+              position="-2.276 1 0.165"
+              class="clickable"
+              physx-body="type: dynamic"></a-entity
   </a-scene>
 </body>
 </html>
