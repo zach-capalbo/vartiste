@@ -5,7 +5,9 @@ if (typeof PHYSX == 'undefined')
   require('./wasm/physx.release.js')
 }
 
+// Extra utility functions for dealing with PhysX
 const PhysXUtil = {
+    // Gets the world position transform of the given object3D in PhysX format
     object3DPhysXTransform: (() => {
       let pos = new THREE.Vector3();
       let quat = new THREE.Quaternion();
@@ -28,6 +30,8 @@ const PhysXUtil = {
         }
       }
     })(),
+
+  // Converts a THREE.Matrix4 into a PhysX transform
   matrixToTransform: (() => {
       let pos = new THREE.Vector3();
       let quat = new THREE.Quaternion();
@@ -52,6 +56,8 @@ const PhysXUtil = {
         }
       }
     })(),
+
+  // Converts an arry of layer numbers to an integer bitmask
   layersToMask: (() => {
     let layers = new THREE.Layers();
     return function(layerArray) {
@@ -66,15 +72,42 @@ const PhysXUtil = {
 };
 
 let PhysX
+
+// Implements the a physics system using an emscripten compiled PhysX engine.
+// For a complete example of how to use this, you can see the
+// [aframe-vartiste-toolkit Physics
+// Playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html)
 AFRAME.registerSystem('physx', {
   schema: {
+    // Amount of time to wait after loading before starting the physics. Can be
+    // useful if there is still some things loading or initializing elsewhere in
+    // the scene
     delay: {default: 5000},
+
+    // Throttle for running the physics simulation. On complex scenes, you can
+    // increase this to avoid dropping video frames
     throttle: {default: 10},
+
+    // If true, the PhysX will automatically be loaded and started. If false,
+    // you will have to call `startPhysX()` manually to load and start the
+    // physics engine
     autoLoad: {default: false},
+
+    // Simulation speed multiplier. Increase or decrease to speed up or slow
+    // down simulation time
     speed: {default: 1.0},
+
+    // URL for the PhysX WASM bundle. If blank, it will be auto-located based on
+    // the VARTISTE toolkit include path
     wasmUrl: {default: ""},
+
+    // If true, sets up a default scene with a ground plane and bounding
+    // cylinder.
+    useDefaultScene: {default: true},
   },
   init() {
+    this.PhysXUtil = PhysXUtil;
+
     this.objects = new Map();
     this.shapeMap = new Map();
     this.worldHelper = new THREE.Object3D();
@@ -108,6 +141,7 @@ AFRAME.registerSystem('physx', {
 
     return path
   },
+  // Loads PhysX and starts the simulation
   async startPhysX() {
     this.running = true;
     let self = this;
@@ -116,7 +150,6 @@ AFRAME.registerSystem('physx', {
     PhysX = PHYSX({
         locateFile(path) {
           if (path.endsWith('.wasm')) {
-            // return 'https://cdn.jsdelivr.net/npm/physx-js@0.3.0/dist/physx.release.wasm'
             return self.findWasm()
           }
           return path
@@ -134,7 +167,7 @@ AFRAME.registerSystem('physx', {
     self.el.emit('physx-started', {})
   },
   startPhysXScene() {
-    console.log("Starting PhysX", PhysX, PhysX.PxDefaultAllocator)
+    console.info("Starting PhysX scene")
     const foundation = PhysX.PxCreateFoundation(
       PhysX.PX_PHYSICS_VERSION,
       new PhysX.PxDefaultAllocator(),
@@ -227,8 +260,12 @@ AFRAME.registerSystem('physx', {
         PhysX.PxShapeFlag.eSIMULATION_SHAPE.value
     )
     this.defaultFilterData = new PhysX.PxFilterData(1, 1, 0, 0)
-    this.createGroundPlane()
-    this.createBoundingCylinder()
+
+    if (this.data.useDefaultScene)
+    {
+      this.createGroundPlane()
+      this.createBoundingCylinder()
+    }
 
 
     this.defaultTarget.setAttribute('physx-body', 'type', 'static')
@@ -353,29 +390,117 @@ AFRAME.registerSystem('physx', {
   }
 })
 
+// Controls physics properties for individual shapes or rigid bodies. You can
+// set this either on an entity with the `phyx-body` component, or on a shape or
+// model contained in an entity with the `physx-body` component. If it's set on
+// a `physx-body`, it will be the default material for all shapes in that body.
+// If it's set on an element containing geometry or a model, it will be the
+// material used for that shape only.
 AFRAME.registerComponent('physx-material', {
   schema: {
     staticFriction: {default: 0.2},
     dynamicFriction: {default: 0.2},
     restitution: {default: 0.2},
 
+    // Which collision layers this shape is present on
     collisionLayers: {default: [1], type: 'array'},
+    // Array containing all layers that this shape should collide with
     collidesWithLayers: {default: [1,2,3,4], type: 'array'},
 
-    // Set if >= 0
+    // If >= 0, this will set the PhysX contact offset, indicating how far away
+    // from the shape simulation contact events should begin.
     contactOffset: {default: -1.0},
+
+    // If >= 0, this will set the PhysX rest offset
     restOffset: {default: -1.0},
   }
 })
 
+// Turns an entity into a PhysX rigid body. This is the main component for
+// creating physics objects.
+//
+// **Types**
+//
+// There are 3 types of supported rigid bodies. The type can be set by using the
+// `type` proeprty, but once initialized cannot be changed.
+//
+// - `dynamic` objects are objects that will have physics simulated on them. The
+//   entity's world position, scale, and rotation will be used as the starting
+//   condition for the simulation, however once the simulation starts the
+//   entity's position and rotation will be replaced each frame with the results
+//   of the simulation.
+// - `static` objects are objects that cannot move. They cab be used to create
+//   collidable objects for `dynamic` objects, or for anchor points for joints.
+// - `kinematic` objects are objects that can be moved programmatically, but
+//   will not be moved by the simulation. They can however, interact with and
+//   collide with dynamic objects. Each frame, the entity's `object3D` will be
+//   used to set the position and rotation for the simulation object.
+//
+// **Shapes**
+//
+// When the component is initialized, and on the `object3dset` event, all
+// visible meshes that are descendents of this entity will have shapes created
+// for them. Each individual mesh will have its own convex hull automatically
+// generated for it. This means you can have reasonably accurate collision
+// meshes both from building up shapes with a-frame geometry primitives, and
+// from importing 3D models.
+//
+// Visible meshes can be excluded from this shape generation process by setting
+// the `physx-no-collision` attribute on the corresponding `a-entity` element.
+// Invisible meshes can be included into this shape generation process by
+// settingt the `physx-hidden-collision` attribute on the corresponding
+// `a-entity` element. This can be especially useful when using an external tool
+// (like [Blender V-HACD](https://github.com/andyp123/blender_vhacd)) to create
+// a low-poly convex collision mesh for a high-poly or concave mesh. This leads
+// to this pattern for such cases:
+//
+// ```
+//    <a-entity physx-body="type: dynamic">
+//      <a-entity gltf-model="HighPolyOrConcaveURL.gltf" physx-no-collision=""></a-entity>
+//      <a-entity gltf-model="LowPolyConvexURL.gltf" physx-hidden-collision="" visible="false"></a-entity>
+//    </a-entity>
+// ```
+//
+// Note, in such cases that if you are setting material properties on individual
+// shapes, then the property should go on the collision mesh entity
+//
+// **Use with the [Manipulator](#manipulator) component**
+//
+// If a dynamic entity is grabbed by the [Manipulator](#manipulator) component,
+// it will temporarily become a kinematic object. This means that collisions
+// will no longer impede its movement, and it will track the manipulator
+// exactly, (subject to any manipulator constraints, such as
+// [`manipulator-weight`](#manipulator-weight)). If you would rather have the
+// object remain dynamic, you will need to [redirect the grab](#redirect-grab)
+// to a `physx-joint` instead, or even easier, use the
+// [`dual-wieldable`](#dual-wieldable) component.
+//
+// As soon as the dynamic object is released, it will revert back to a dynamic
+// object. Objects with the type `kinematic` will remain kinematic.
+//
+// Static objects should not be moved. If a static object can be the target of a
+// manipulator grab, it should be `kinematic` instead.
 AFRAME.registerComponent('physx-body', {
   dependencies: ['physx-material'],
   schema: {
+    // **[dynamic, static, kinematic]** Type of the rigid body to create
     type: {default: 'dynamic', oneOf: ['dynamic', 'static', 'kinematic']},
+
+    // Total mass of the body
     mass: {default: 1.0},
+
+    // If > 0, will set the rigid body's angular damping
     angularDamping: {default: 0.0},
+
+    // If > 0, will set the rigid body's linear damping
     linearDamping: {default: 0.0},
+
+    // If set to `true`, it will emit `contactbegin` and `contactend` events
+    // when collisions occur
     emitCollisionEvents: {default: false},
+
+    // If set to `true`, the object will receive extra attention by the
+    // simulation engine (at a performance cost).
     highPrecision: {default: false},
   },
   events: {
@@ -438,7 +563,6 @@ AFRAME.registerComponent('physx-body', {
       this.rigidBody.setLinearDamping(this.data.linearDamping)
       if (this.data.highPrecision)
       {
-        console.log("Setting", this.el, "as high precision")
         this.rigidBody.setSolverIterationCounts(4, 2);
         this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_CCD, true)
       }
@@ -568,6 +692,7 @@ AFRAME.registerComponent('physx-body', {
     return shapes
     // return physics.createShape(geometry, material, false, flags)
   },
+  // Turns gravity on and off
   toggleGravity() {
     this.rigidBody.setActorFlag(PhysX.PxActorFlag.eDISABLE_GRAVITY, !this.floating)
     this.floating = !this.floating
@@ -588,26 +713,61 @@ AFRAME.registerComponent('physx-body', {
   }
 })
 
-
+// Creates a PhysX joint between an ancestor rigid body and a target rigid body.
+//
+// The physx-joint is designed to be used either on or within an entity with the
+// `physx-body` component. For instance:
+//
+// ```
+// <a-entity physx-body="type: dynamic">
+//   <a-entity physx-joint="target: #other-body" position="1 0 0"></a-entity>
+// </a-entity>
+// ```
+//
+// The position and rotation of the `physx-joint` will be used to create the
+// corresponding PhysX joint object. Multiple joints can be created on a body,
+// and multiple joints can target a body.
+//
+// **Note:** Constraints are not fully implemented yet. It is best to refer to
+// the source code until work on constraints is completed to see what's
+// supported.
 AFRAME.registerComponent('physx-joint', {
   multiple: true,
   schema: {
+    // Rigid body joint type to use. See the [NVIDIA PhysX joint
+    // documentation](https://gameworksdocs.nvidia.com/PhysX/4.0/documentation/PhysXGuide/Manual/Joints.html)
+    // for details on each type
     type: {default: "Spherical", oneOf: ["Fixed", "Spherical", "Distance", "Revolute", "Prismatic", "D6"]},
+
+    // Target object. Must be an entity having the `physx-body` component
     target: {type: 'selector'},
 
+    // NYI. Do not use
     softFixed: {default: false},
 
+    // If true, constrains movement
     constrainToLimits: {default: false},
 
+    // Constrains swinging movement. First element is the yAngle, second is
+    // zAngle
     limitCone: {type: 'vec2'},
+
+    // Limit twist. Vector components represent min and max angle
     limitTwist: {type: 'vec2'},
 
+    // Limit linear movement. Vector components represent min and max distance
     limitX: {type: 'vec2'},
+    // Limit linear movement. Vector components represent min and max distance
     limitY: {type: 'vec2'},
+    // Limit linear movement. Vector components represent min and max distance
     limitZ: {type: 'vec2'},
 
+    // Spring damping for soft constraints
     damping: {default: 0.0},
+    // Spring restitution for soft constraints
     restitution: {default: 0.0},
+    // If greater than 0, will make this joint a soft constraint, and use a
+    // spring force model
     stiffness: {default: 0.0},
   },
   init() {
@@ -745,7 +905,30 @@ AFRAME.registerComponent('physx-joint', {
   }
 })
 
+// Allows a dynamic object to be manipulated by more than one manipulator at
+// once (e.g., by both hands). The object should have the `clickable` class, or
+// clickable descendents should have the `propogate-grab` attribute set. Joints
+// will automatically be created and destroyed at grab sites, and will use
+// "wobbly sword" physics constraints.
+//
+// This is the easiest way to create non-kinematic grabbing.
+AFRAME.registerComponent('dual-wieldable', {
+  init() {
+    let target = document.createElement('a-entity')
+    this.el.parentEl.append(target)
 
+    if (this.el.hasAttribute('manipulator-weight'))
+    {
+      target.setAttribute('manipulator-weight', this.el.getAttribute('manipulator-weight'))
+    }
+
+    target.setAttribute('dual-wield-target', {target: this.el})
+    this.el.setAttribute('redirect-grab', target)
+    this.el.classList.add('grab-root')
+  }
+})
+
+// Helper component for facilitating [`dual-wieldable`](#dual-wieldable)
 AFRAME.registerComponent('dual-wield-target', {
   schema: {
     numberOfJoints: {default: 2},
@@ -873,14 +1056,28 @@ AFRAME.registerSystem('contact-sound', {
   }
 })
 
+// Plays a sound when a `physx-body` has a collision.
 AFRAME.registerComponent('contact-sound', {
   dependencies: ['physx-body'],
   schema: {
+    // Sound file location or asset
     src: {type: 'string'},
+
+    // Minimum total impulse to play the sound
     impulseThreshold: {default: 0.01},
+
+    // NYI
     maxDistance: {default: 10.0},
+    // NYI
     maxDuration: {default: 5.0},
+
+    // Delay after start of scene before playing sounds. Useful to avoid a
+    // zillion sounds playing as objects initially settle on the ground
     startDelay: {default: 6000},
+
+    // If `true`, the sound will be positioned at the weighted averaged location
+    // of all contact points. Contact points are weighted by impulse amplitude.
+    // If `false`, the sound will be positioned at the entity's origin.
     positionAtContact: {default: false},
   },
   events: {

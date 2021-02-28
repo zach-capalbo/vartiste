@@ -58,6 +58,7 @@ async function addDocumentation(src)
   require('./webxr-input-profiles')
   require('./xr-controllers')
   require('./camera-capture')
+  require('./physics')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> console.log("All loaded"))
