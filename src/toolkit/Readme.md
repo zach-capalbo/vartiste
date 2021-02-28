@@ -195,7 +195,7 @@ and contributions, both code-wise and documentation-wise are welcome.
 
     <a-entity id="spectator-camera" camera="" position="2 1 1" rotation="0 80 0" camera-layers="layers: spectator"></a-entity>
 
-    <!-- The toolkit also includes a PhysX-backed physics engine, with lots of nifty utilities -->
+    <!-- The toolkit also includes a PhysX-backed physics engine, with lots of nifty utilities. See https://glitch.com/edit/#!/fascinated-hip-period?path=index.html for a full demo! -->
     <a-box material="shader: standard; color: white" width="0.3" height="0.3" depth="0.3"
            position="-2.276 0.3 0.165"
            physx-body="type: static"></a-box>

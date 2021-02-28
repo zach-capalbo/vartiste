@@ -77,6 +77,8 @@ let PhysX
 // For a complete example of how to use this, you can see the
 // [aframe-vartiste-toolkit Physics
 // Playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html)
+// It is also helpful to refer to the [NVIDIA PhysX
+// documentation](https://gameworksdocs.nvidia.com/PhysX/4.0/documentation/PhysXGuide/Manual/Index.html)
 AFRAME.registerSystem('physx', {
   schema: {
     // Amount of time to wait after loading before starting the physics. Can be
