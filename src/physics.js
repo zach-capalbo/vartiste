@@ -81,9 +81,13 @@ const PhysXUtil = {
 let PhysX
 
 // Implements the a physics system using an emscripten compiled PhysX engine.
+//
+// This system is built around [my fork](https://github.com/zach-capalbo/PhysX) of PhysX, built using the [Docker Wrapper](https://github.com/ashconnell/physx-js). To see what's exposed to JavaScript, see [PxWebBindings.cpp](https://github.com/zach-capalbo/PhysX/blob/emscripten_wip/physx/source/physxwebbindings/src/PxWebBindings.cpp)
+//
 // For a complete example of how to use this, you can see the
 // [aframe-vartiste-toolkit Physics
 // Playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html)
+//
 // It is also helpful to refer to the [NVIDIA PhysX
 // documentation](https://gameworksdocs.nvidia.com/PhysX/4.0/documentation/PhysXGuide/Manual/Index.html)
 AFRAME.registerSystem('physx', {
@@ -113,12 +117,21 @@ AFRAME.registerSystem('physx', {
     // If true, sets up a default scene with a ground plane and bounding
     // cylinder.
     useDefaultScene: {default: true},
+
+    // NYI
+    wrapBounds: {default: false},
+
+    groundCollisionLayers: {default: [2]},
+
+    groundCollisionMask: {default: [1,2,3,4]}
   },
   init() {
     this.PhysXUtil = PhysXUtil;
 
     this.objects = new Map();
     this.shapeMap = new Map();
+    this.jointMap = new Map();
+    this.boundaryShapes = new Set();
     this.worldHelper = new THREE.Object3D();
     this.el.object3D.add(this.worldHelper);
     this.tock = AFRAME.utils.throttleTick(this.tock, this.data.throttle, this)
@@ -235,7 +248,13 @@ AFRAME.registerSystem('physx', {
       onContactPersist: () => {},
       onTriggerBegin: () => {},
       onTriggerEnd: () => {},
-      onConstraintBreak: () => {},
+      onConstraintBreak: (joint) => {
+        let component = this.jointMap.get(joint.$$.ptr);
+
+        if (!component) return;
+
+        component.el.emit('constraintbreak', {})
+      },
     });
     let tolerance = new PhysX.PxTolerancesScale();
     // tolerance.length /= 10;
@@ -287,7 +306,7 @@ AFRAME.registerSystem('physx', {
     let material = this.physics.createMaterial(0.8, 0.8, 0.1);
 
     const shape = this.physics.createShape(geometry, material, false, this.defaultActorFlags)
-    shape.setQueryFilterData(this.defaultFilterData)
+    shape.setQueryFilterData(new PhysX.PxFilterData(PhysXUtil.layersToMask(this.data.groundCollisionLayers), PhysXUtil.layersToMask(this.data.groundCollisionMask), 0, 0))
     shape.setSimulationFilterData(this.defaultFilterData)
         const transform = {
       translation: {
@@ -343,6 +362,7 @@ AFRAME.registerSystem('physx', {
           z: quat.z,
         },
       }
+      this.boundaryShapes.add(shape.$$.ptr)
       let body = this.physics.createRigidStatic(transform)
       body.attachShape(shape)
       this.scene.addActor(body, null)
@@ -379,6 +399,9 @@ AFRAME.registerSystem('physx', {
   },
   registerShape(shape, component) {
     this.shapeMap.set(shape.$$.ptr, component);
+  },
+  registerJoint(joint, component) {
+    this.jointMap.set(joint.$$.ptr, component);
   },
   tock(t, dt) {
     if (t < this.data.delay) return
@@ -730,6 +753,10 @@ AFRAME.registerComponent('physx-body', {
   }
 })
 
+AFRAME.registerComponent('physx-joint-driver', {
+
+})
+
 // Creates a PhysX joint between an ancestor rigid body and a target rigid body.
 //
 // The physx-joint is designed to be used either on or within an entity with the
@@ -762,7 +789,7 @@ AFRAME.registerComponent('physx-joint', {
     // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
     breakForce: {type: 'vec2', default: {x: -1, y: -1}},
 
-    // NYI. Do not use
+    // When used with a D6 type, sets up a "soft" fixed joint. E.g., for grabbing things
     softFixed: {default: false},
 
     // If true, constrains movement
@@ -826,6 +853,8 @@ AFRAME.registerComponent('physx-joint', {
     if (this.joint) {
       this.joint.release();
       this.joint = null;
+      this.bodyEl.components['physx-body'].rigidBody.wakeUp()
+      if (this.data.target.components['physx-body'].rigidBody.wakeUp) this.data.target.components['physx-body'].rigidBody.wakeUp()
     }
   },
   update() {
@@ -836,6 +865,8 @@ AFRAME.registerComponent('physx-joint', {
         this.joint.setBreakForce(this.data.breakForce.x, this.data.breakForce.y);
     }
 
+    if (this.el.hasAttribute('phsyx-custom-constraint')) return;
+
     switch (this.data.type)
     {
       case 'Spherical':
@@ -844,9 +875,9 @@ AFRAME.registerComponent('physx-joint', {
         if (this.data.constrainToLimits)
         {
           let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
-          cone.setDamping(this.data.damping)
-          cone.setStiffness(this.data.stiffness)
-          cone.setRestitution(this.data.restitution)
+          cone.damping = this.data.damping
+          cone.stiffness = this.data.stiffness
+          cone.restitution = this.data.restitution
           this.joint.setLimitCone(cone);
         }
       }
@@ -855,7 +886,6 @@ AFRAME.registerComponent('physx-joint', {
       {
         if (this.data.softFixed)
         {
-          console.log("Setting softFixed")
           this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eFREE)
           this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eFREE)
           this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eFREE)
@@ -864,10 +894,10 @@ AFRAME.registerComponent('physx-joint', {
           this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eFREE)
 
           let drive = new PhysX.PxD6JointDrive;
-          drive.setStiffness(10000);
-          drive.setDamping(500);
+          drive.stiffness = 1000;
+          drive.damping = 500;
           drive.forceLimit = 1000;
-          drive.setAccelerationFlag(true);
+          drive.setAccelerationFlag(false);
           this.joint.setDrive(PhysX.PxD6Drive.eX, drive);
           this.joint.setDrive(PhysX.PxD6Drive.eY, drive);
           this.joint.setDrive(PhysX.PxD6Drive.eZ, drive);
@@ -898,9 +928,9 @@ AFRAME.registerComponent('physx-joint', {
             this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLIMITED)
 
             let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
-            cone.setDamping(this.data.damping)
-            cone.setStiffness(this.data.stiffness)
-            cone.setRestitution(this.data.restitution)
+            cone.damping = this.data.damping
+            cone.stiffness = this.data.stiffness
+            cone.restitution = this.data.restitution
             this.joint.setSwingLimit(cone)
           }
           else if (this.data.limitCone.x < 0 && this.data.limitCone.y < 0)
@@ -953,7 +983,9 @@ AFRAME.registerComponent('physx-joint', {
                                                          this.bodyEl.components['physx-body'].rigidBody, thisTransform,
                                                          this.data.target.components['physx-body'].rigidBody, targetTransform,
                                                         )
+    this.system.registerJoint(this.joint, this)
     this.update();
+    this.el.emit('physx-jointcreated', this.joint)
   }
 })
 
@@ -980,12 +1012,53 @@ AFRAME.registerComponent('dual-wieldable', {
   }
 })
 
+AFRAME.registerSystem('dual-wield-target', {
+  schema: {
+    movementEvents: {default: ['teleported']},
+  },
+  init() {
+    this.handleMovement = this.handleMovement.bind(this);
+
+    for (let event of this.data.movementEvents) {
+      this.el.addEventListener(event, this.handleMovement)
+    }
+  },
+  handleMovement(e) {
+    let oldWorldPosition = new THREE.Vector3
+    let oldWorldRotation = new THREE.Quaternion
+    let newWorldPosition = new THREE.Vector3
+    this.el.querySelectorAll('*[dual-wield-target]').forEach(el => {
+      if (!el.components) return;
+
+      let component = el.components['dual-wield-target'];
+      if (!component.data.target.is(component.data.grabbedState)) return;
+
+      let activeJoint = component.joints.find(j => j.is("grabbed"))
+      if (!activeJoint) return;
+
+      let oldTransform = activeJoint.components['physx-body'].rigidBody.getGlobalPose()
+      oldWorldPosition.copy(oldTransform.translation)
+
+      activeJoint.object3D.getWorldPosition(newWorldPosition)
+      newWorldPosition.sub(oldWorldPosition)
+
+      console.log("Teleporting diff", newWorldPosition)
+
+      component.data.target.object3D.position.add(newWorldPosition)
+      component.data.target.components['physx-body'].resetBodyPose()
+    })
+  }
+})
+
 // Helper component for facilitating [`dual-wieldable`](#dual-wieldable)
 AFRAME.registerComponent('dual-wield-target', {
   schema: {
     numberOfJoints: {default: 2},
     target: {type: 'selector'},
     wobblySword: {default: false},
+
+    // State to set on target when grabbed via constraint
+    grabbedState: {default: 'wielded'},
   },
   events: {
     stateadded: function(e) {
@@ -1083,6 +1156,15 @@ AFRAME.registerComponent('dual-wield-target', {
     {
       this.setMultiHandParameters()
     }
+
+    if (grabbedCount > 0)
+    {
+      this.data.target.addState(this.data.grabbedState)
+    }
+    else
+    {
+      this.data.target.removeState(this.data.grabbedState)
+    }
   },
   setSingleHandParameters() {
     for (let joint of this.joints)
@@ -1095,12 +1177,11 @@ AFRAME.registerComponent('dual-wield-target', {
                                   limitCone: {x: 0.001, y: 0.001},
                                   stiffness: 1000, damping: 100, restitution: 0,
                                   limitTwist: {x: 0, y: 0},
-                                                //breakForce: {x: 10, y: 10}
                                  })
         }
         else
         {
-          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target, softFixed: true})
+          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target, softFixed: true, breakForce: {x: 10, y: 10}})
         }
       }
     }

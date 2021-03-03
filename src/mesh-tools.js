@@ -405,6 +405,9 @@ AFRAME.registerComponent('hide-mesh-tool', {
 })
 
 AFRAME.registerComponent('mesh-fill-tool', {
+  schema: {
+    autoDilate: {default: true},
+  },
   events: {
     meshtool: function(e) {
       this.fillMesh(e.detail.object)
@@ -443,6 +446,11 @@ AFRAME.registerComponent('mesh-fill-tool', {
                   0, 0, destinationCanvas.width, destinationCanvas.height)
 
     // window.setTimeout(() => this.el.sceneEl.systems['canvas-fx'].applyFX("dilate"), 100)
+
+    if (this.data.autoDilate)
+    {
+      this.el.sceneEl.systems['canvas-fx'].applyFX('dilate')
+    }
 
     if (destinationCanvas.touch) destinationCanvas.touch()
   }
