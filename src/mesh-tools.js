@@ -335,15 +335,17 @@ AFRAME.registerComponent('hide-mesh-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
     mode: {oneOf: ["delete", "hide", "emit"], default: "hide"},
-    far: {default: 0.6},
+    far: {default: 1.6},
     objects: {default: '.canvas, .reference-glb'}
   },
   events: {
     stateadded: function(e) {
       if (e.detail === 'grabbed') {
+        console.log("Grabbing mesh tool")
         if (!this.el.hasAttribute('raycaster'))
         {
-          this.el.setAttribute('raycaster', `objects: ${this.data.objects}; showLine: true; direction: 0 1 0; origin: 0 0 0; near: 0.4; far: ${this.data.far}; lineColor: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
+          console.log("setting raycaster", this.data.objects)
+          this.el.setAttribute('raycaster', `objects: ${this.data.objects}; showLine: true; direction: 0 1 0; origin: 0 0 0; near: 0.0; far: ${this.data.far}; lineColor: ${this.data.mode === 'delete' ? 'red' : 'yellow'}`)
           this.el.setAttribute('scalable-raycaster', "")
 
         }
@@ -354,6 +356,7 @@ AFRAME.registerComponent('hide-mesh-tool', {
       if (e.detail === 'grabbed') this.el.components.raycaster.pause()
     },
     click: function(e) {
+      console.log("Checking intersections",  this.el.components.raycaster.intersections)
       for (let intersection of this.el.components.raycaster.intersections)
       {
         console.log("Checking",  intersection)
@@ -411,6 +414,7 @@ AFRAME.registerComponent('mesh-fill-tool', {
     this.el.setAttribute('hide-mesh-tool', 'mode', 'emit')
   },
   fillMesh(mesh) {
+    console.log("Filling mesh")
     let destinationCanvas = Compositor.drawableCanvas
     if (!this.proc)
     {

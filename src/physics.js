@@ -1,8 +1,15 @@
 /* global AFRAME, PHYSX, THREE, VARTISTE */
 
+// Note: This file is part of the aframe-vartiste-toolkit, so you don't need to include this if you're using the toolkit
+
 if (typeof PHYSX == 'undefined')
 {
   require('./wasm/physx.release.js')
+}
+
+if (typeof VARTISTE == 'undefined')
+{
+  const {Pool} = require('./pool.js')
 }
 
 // Extra utility functions for dealing with PhysX
@@ -228,6 +235,7 @@ AFRAME.registerSystem('physx', {
       onContactPersist: () => {},
       onTriggerBegin: () => {},
       onTriggerEnd: () => {},
+      onConstraintBreak: () => {},
     });
     let tolerance = new PhysX.PxTolerancesScale();
     // tolerance.length /= 10;
@@ -548,7 +556,11 @@ AFRAME.registerComponent('physx-body', {
     this.el.setAttribute('grab-options', 'scalable', false)
 
     this.kinematicMove = this.kinematicMove.bind(this)
-    this.el.sceneEl.systems['button-caster'].install(['bbutton'])
+    if (this.el.sceneEl.systems['button-caster'])
+    {
+      this.el.sceneEl.systems['button-caster'].install(['bbutton'])
+    }
+
     if (this.el.sceneEl.systems.manipulator)
     {
         // this.el.sceneEl.systems.manipulator.installConstraint(this.kinematicMove)
@@ -699,6 +711,9 @@ AFRAME.registerComponent('physx-body', {
     this.rigidBody.setActorFlag(PhysX.PxActorFlag.eDISABLE_GRAVITY, !this.floating)
     this.floating = !this.floating
   },
+  resetBodyPose() {
+    this.rigidBody.setGlobalPose(PhysXUtil.object3DPhysXTransform(this.el.object3D), true)
+  },
   kinematicMove() {
     this.rigidBody.setKinematicTarget(PhysXUtil.object3DPhysXTransform(this.el.object3D))
   },
@@ -743,6 +758,9 @@ AFRAME.registerComponent('physx-joint', {
 
     // Target object. Must be an entity having the `physx-body` component
     target: {type: 'selector'},
+
+    // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
+    breakForce: {type: 'vec2', default: {x: -1, y: -1}},
 
     // NYI. Do not use
     softFixed: {default: false},
@@ -813,6 +831,11 @@ AFRAME.registerComponent('physx-joint', {
   update() {
     if (!this.joint) return;
 
+    if (this.data.breakForce.x >= 0 && this.data.breakForce.y >= 0)
+    {
+        this.joint.setBreakForce(this.data.breakForce.x, this.data.breakForce.y);
+    }
+
     switch (this.data.type)
     {
       case 'Spherical':
@@ -830,49 +853,76 @@ AFRAME.registerComponent('physx-joint', {
       break;
       case 'D6':
       {
-        let llimit = () => {
-          let l = new PhysX.PxJointLinearLimitPair(new PhysX.PxTolerancesScale(), -0.01, 0.01);
-          l.siffness = 0.9;
-          return l
-        }
-
-        // this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eLIMITED)
-        // this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eLIMITED)
-        // this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eLIMITED)
-        // this.joint.setLinearLimit(PhysX.PxD6Axis.eX, llimit())
-        // this.joint.setLinearLimit(PhysX.PxD6Axis.eY, llimit())
-        // this.joint.setLinearLimit(PhysX.PxD6Axis.eZ, llimit())
-
-        if (this.data.limitCone.x > 0 && this.data.limitCone.y > 0)
+        if (this.data.softFixed)
         {
-          this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLIMITED)
-          this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLIMITED)
-
-          let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
-          cone.setDamping(this.data.damping)
-          cone.setStiffness(this.data.stiffness)
-          cone.setRestitution(this.data.restitution)
-          this.joint.setSwingLimit(cone)
-        }
-        else if (this.data.limitCone.x < 0 && this.data.limitCone.y < 0)
-        {
+          console.log("Setting softFixed")
+          this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eFREE)
+          this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eFREE)
+          this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eFREE)
           this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eFREE)
           this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eFREE)
-        }
-        else
-        {
-          this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLOCKED)
-          this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLOCKED)
-        }
+          this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eFREE)
 
-        if (this.data.limitTwist.x !== 0 && this.data.limitTwist.y !== 0)
-        {
-          this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLIMITED)
-          this.joint.setTwistLimit(new PhysX.PxJointAngularLimitPair(this.data.limitTwist.x, this.data.limitTwist.y))
+          let drive = new PhysX.PxD6JointDrive;
+          drive.setStiffness(10000);
+          drive.setDamping(500);
+          drive.forceLimit = 1000;
+          drive.setAccelerationFlag(true);
+          this.joint.setDrive(PhysX.PxD6Drive.eX, drive);
+          this.joint.setDrive(PhysX.PxD6Drive.eY, drive);
+          this.joint.setDrive(PhysX.PxD6Drive.eZ, drive);
+          // this.joint.setDrive(PhysX.PxD6Drive.eSWING, drive);
+          // this.joint.setDrive(PhysX.PxD6Drive.eTWIST, drive);
+          this.joint.setDrive(PhysX.PxD6Drive.eSLERP, drive);
+          this.joint.setDrivePosition({translation: {x: 0, y: 0, z: 0}, rotation: {w: 1, x: 0, y: 0, z: 0}}, true)
+          this.joint.setDriveVelocity({x: 0.0, y: 0.0, z: 0.0}, {x: 0, y: 0, z: 0}, true);
         }
         else
         {
-          this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLOCKED)
+          let llimit = () => {
+            let l = new PhysX.PxJointLinearLimitPair(new PhysX.PxTolerancesScale(), -0.01, 0.01);
+            l.siffness = 0.9;
+            return l
+          }
+
+          // this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eLIMITED)
+          // this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eLIMITED)
+          // this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eLIMITED)
+          // this.joint.setLinearLimit(PhysX.PxD6Axis.eX, llimit())
+          // this.joint.setLinearLimit(PhysX.PxD6Axis.eY, llimit())
+          // this.joint.setLinearLimit(PhysX.PxD6Axis.eZ, llimit())
+
+          if (this.data.limitCone.x > 0 && this.data.limitCone.y > 0)
+          {
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLIMITED)
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLIMITED)
+
+            let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
+            cone.setDamping(this.data.damping)
+            cone.setStiffness(this.data.stiffness)
+            cone.setRestitution(this.data.restitution)
+            this.joint.setSwingLimit(cone)
+          }
+          else if (this.data.limitCone.x < 0 && this.data.limitCone.y < 0)
+          {
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eFREE)
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eFREE)
+          }
+          else
+          {
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLOCKED)
+            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLOCKED)
+          }
+
+          if (this.data.limitTwist.x !== 0 && this.data.limitTwist.y !== 0)
+          {
+            this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLIMITED)
+            this.joint.setTwistLimit(new PhysX.PxJointAngularLimitPair(this.data.limitTwist.x, this.data.limitTwist.y))
+          }
+          else
+          {
+            this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLOCKED)
+          }
         }
       }
       break;
@@ -935,6 +985,7 @@ AFRAME.registerComponent('dual-wield-target', {
   schema: {
     numberOfJoints: {default: 2},
     target: {type: 'selector'},
+    wobblySword: {default: false},
   },
   events: {
     stateadded: function(e) {
@@ -957,12 +1008,21 @@ AFRAME.registerComponent('dual-wield-target', {
 
           manipulator.offset.set(0, 0, 0)
           VARTISTE.Util.positionObject3DAtTarget(el.object3D, manipulator.endPoint)
+          el.components['physx-body'].resetBodyPose()
 
-          el.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
-                                          limitCone: {x: 0.004, y: 0.004},
-                                          stiffness: 100, damping: 100, restitution: 0,
-                                          limitTwist: {x: -0.04, y: 0.04},
-                                         })
+          if (el.hasAttribute('manipulator-weight'))
+          {
+            el.components['manipulator-weight'].lastPos.copy(el.object3D.position)
+            el.components['manipulator-weight'].lastRot.copy(el.object3D.quaternion)
+          }
+
+          el.setAttribute('physx-joint', 'type: D6')
+
+          // el.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
+          //                                 limitCone: {x: 0.004, y: 0.004},
+          //                                 stiffness: 100, damping: 100, restitution: 0,
+          //                                 limitTwist: {x: -0.04, y: 0.04},
+          //                                })
           this.updateHandParameters();
         })
       }
@@ -1000,6 +1060,7 @@ AFRAME.registerComponent('dual-wield-target', {
       // joint.append(vis)
       // vis.setAttribute('geometry', 'primitive: sphere; radius: 0.05')
       // vis.setAttribute('physx-no-collision')
+
       this.joints.push(joint)
     }
     this.el['redirect-grab'] = this.joints[0]
@@ -1028,11 +1089,19 @@ AFRAME.registerComponent('dual-wield-target', {
     {
       if (joint.hasAttribute('physx-joint'))
       {
-          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
+        if (this.data.wobblySword)
+        {
+            joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
                                   limitCone: {x: 0.001, y: 0.001},
                                   stiffness: 1000, damping: 100, restitution: 0,
                                   limitTwist: {x: 0, y: 0},
+                                                //breakForce: {x: 10, y: 10}
                                  })
+        }
+        else
+        {
+          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target, softFixed: true})
+        }
       }
     }
   },
@@ -1041,11 +1110,18 @@ AFRAME.registerComponent('dual-wield-target', {
     {
       if (joint.hasAttribute('physx-joint'))
       {
+        if (this.data.wobblySword)
+        {
           joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
                                   limitCone: {x: Math.PI/2, y: Math.PI/2},
                                   stiffness: 0.5, damping: 1, restitution: 0,
                                   limitTwist: {x: -Math.PI/2, y: Math.PI/2},
                                  })
+        }
+        else
+        {
+          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target, softFixed: true})
+        }
       }
     }
   }
