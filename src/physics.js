@@ -75,7 +75,26 @@ const PhysXUtil = {
       }
       return layers.mask;
     };
-  })()
+  })(),
+
+  axisArrayToEnums: function(axes) {
+    let enumAxes = []
+    for (let axis of axes)
+    {
+      if (axis === 'swing') {
+        enumAxes.push(PhysX.PxD6Axis.eSWING1)
+        enumAxes.push(PhysX.PxD6Axis.eSWING2)
+        continue
+      }
+      let enumKey = `e${axis.toUpperCase()}`
+      if (!(enumKey in PhysX.PxD6Axis))
+      {
+        console.warn(`Unknown axis ${axis} (PxD6Axis::${enumKey})`)
+      }
+      this.enumAxes.push(PhysX.PxD6Axis[enumKey])
+    }
+    return enumAxes;
+  }
 };
 
 let PhysX
@@ -753,8 +772,211 @@ AFRAME.registerComponent('physx-body', {
   }
 })
 
-AFRAME.registerComponent('physx-joint-driver', {
 
+AFRAME.registerComponent('physx-joint-driver', {
+  dependencies: ['physx-joint'],
+  multiple: true,
+  schema: {
+    axes: {type: 'array'},
+    stiffness: {default: 1.0},
+    damping: {default: 1.0},
+    forceLimit: {default: 3.4028234663852885981170418348452e+38},
+    useAcceleration: {default: true},
+    linearVelocity: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+    angularVelocity: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+    lockOtherAxes: {default: false},
+    slerpRotation: {default: true},
+  },
+  events: {
+    'physx-jointcreated': function(e) {
+      this.setJointDriver()
+    }
+  },
+  init() {
+    this.el.setAttribute('phsyx-custom-constraint', "")
+  },
+  setJointDriver() {
+    if (!this.enumAxes) this.update();
+    if (this.el.components['physx-joint'].data.type !== 'D6') {
+      console.warn("Only D6 joint drivers supported at the moment")
+      return;
+    }
+
+    let PhysX = this.el.sceneEl.systems.physx.PhysX;
+    this.joint = this.el.components['physx-joint'].joint
+
+    if (this.data.lockOtherAxes)
+    {
+      this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eLOCKED)
+      this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eLOCKED)
+      this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eLOCKED)
+      this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLOCKED)
+      this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLOCKED)
+      this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLOCKED)
+    }
+
+    for (let enumKey of this.enumAxes)
+    {
+      this.joint.setMotion(enumKey, PhysX.PxD6Motion.eFREE)
+    }
+
+    let drive = new PhysX.PxD6JointDrive;
+    drive.stiffness = this.data.stiffness;
+    drive.damping = this.data.damping;
+    drive.forceLimit = this.data.forceLimit;
+    drive.setAccelerationFlag(this.data.useAcceleration);
+
+    for (let axis of this.driveAxes)
+    {
+      this.joint.setDrive(axis, drive);
+    }
+
+    console.log("Setting joint driver", this.driveAxes, this.enumAxes)
+
+    this.joint.setDrivePosition({translation: {x: 0, y: 0, z: 0}, rotation: {w: 1, x: 0, y: 0, z: 0}}, true)
+
+    this.joint.setDriveVelocity(this.data.linearVelocity, this.data.angularVelocity, true);
+  },
+  update(oldData) {
+    if (!PhysX) return;
+
+    this.enumAxes = []
+    for (let axis of this.data.axes)
+    {
+      if (axis === 'swing') {
+        this.enumAxes.push(PhysX.PxD6Axis.eSWING1)
+        this.enumAxes.push(PhysX.PxD6Axis.eSWING2)
+        continue
+      }
+      let enumKey = `e${axis.toUpperCase()}`
+      if (!(enumKey in PhysX.PxD6Axis))
+      {
+        console.warn(`Unknown axis ${axis} (PxD6Axis::${enumKey})`)
+      }
+      this.enumAxes.push(PhysX.PxD6Axis[enumKey])
+    }
+
+    this.driveAxes = []
+
+    for (let axis of this.data.axes)
+    {
+      if (axis === 'swing') {
+        if (this.data.slerpRotation)
+        {
+          this.driveAxes.push(PhysX.PxD6Drive.eSLERP)
+        }
+        else
+        {
+          this.driveAxes.push(PhysX.PxD6Drive.eSWING)
+        }
+        continue
+      }
+
+      if (axis === 'twist' && this.data.slerpRotation) {
+        this.driveAxes.push(PhysX.PxD6Drive.eSLERP)
+        continue;
+      }
+
+      let enumKey = `e${axis.toUpperCase()}`
+      if (!(enumKey in PhysX.PxD6Drive))
+      {
+        console.warn(`Unknown axis ${axis} (PxD6Axis::${enumKey})`)
+      }
+      this.driveAxes.push(PhysX.PxD6Drive[enumKey])
+    }
+  }
+})
+
+AFRAME.registerComponent('physx-joint-constraint', {
+  multiple: true,
+  schema: {
+    lockedAxes: {type: 'array'},
+    constrainedAxes: {type: 'array'},
+    freeAxes: {type: 'array'},
+
+    linearLimit: {type: 'vec2'},
+    limitCone: {type: 'vec2'},
+    twistLimit: {type: 'vec2'},
+
+    // Spring damping for soft constraints
+    damping: {default: 0.0},
+    // Spring restitution for soft constraints
+    restitution: {default: 0.0},
+    // If greater than 0, will make this joint a soft constraint, and use a
+    // spring force model
+    stiffness: {default: 0.0},
+  },
+  events: {
+    'physx-jointcreated': function(e) {
+      this.setJointConstraint()
+    }
+  },
+  init() {
+    this.el.setAttribute('phsyx-custom-constraint', "")
+  },
+  setJointConstraint() {
+    if (this.el.components['physx-joint'].data.type !== 'D6') {
+      console.warn("Only D6 joint constraints supported at the moment")
+      return;
+    }
+
+    if (!this.constrainedAxes) this.update();
+
+    let joint = this.el.components['physx-joint'].joint;
+
+    let llimit = () => {
+      let l = new PhysX.PxJointLinearLimitPair(new PhysX.PxTolerancesScale(), this.data.linearLimit.x, this.data.linearLimit.y);
+      l.siffness = this.data.stiffness;
+      l.damping = this.data.damping;
+      l.restitution = this.data.restitution;
+      return l
+    }
+
+    for (let axis of this.freeAxes)
+    {
+      joint.setMotion(axis, PhysX.PxD6Motion.eFREE)
+    }
+
+    for (let axis of this.lockedAxes)
+    {
+      joint.setMotion(axis, PhysX.PxD6Motion.eLOCKED)
+    }
+
+    for (let axis of this.constrainedAxes)
+    {
+      if (axis === PhysX.PxD6Axis.eX || axis === PhysX.PxD6Axis.eY || axis === PhysX.PxD6Axis.eZ)
+      {
+        joint.setMotion(axis, PhysX.PxD6Motion.eLIMITED)
+        joint.setLinearLimit(axis, llimit())
+        continue;
+      }
+
+      if (axis === PhysX.eTWIST)
+      {
+        joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLIMITED)
+        let pair = new PhysX.PxJointAngularLimitPair(this.data.limitTwist.x, this.data.limitTwist.y)
+        pair.stiffness = this.data.stiffness
+        pair.damping = this.data.damping
+        pair.restitution = this.data.restitution
+        joint.setTwistLimit(pair)
+        continue;
+      }
+
+      joint.setMotion(axis, PhysX.PxD6Motion.eLIMITED)
+      let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
+      cone.damping = this.data.damping
+      cone.stiffness = this.data.stiffness
+      cone.restitution = this.data.restitution
+      joint.setSwingLimit(cone)
+    }
+  },
+  update(oldData) {
+    if (!PhysX) return;
+
+    this.constrainedAxes = PhysXUtil.axisArrayToEnums(this.data.constrainedAxes)
+    this.lockedAxes = PhysXUtil.axisArrayToEnums(this.data.lockedAxes)
+    this.freeAxes = PhysXUtil.axisArrayToEnums(this.data.freeAxes)
+  }
 })
 
 // Creates a PhysX joint between an ancestor rigid body and a target rigid body.
@@ -789,33 +1011,19 @@ AFRAME.registerComponent('physx-joint', {
     // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
     breakForce: {type: 'vec2', default: {x: -1, y: -1}},
 
+    removeElOnBreak: {default: false},
+
+    collideWithTarget: {default: false},
+
     // When used with a D6 type, sets up a "soft" fixed joint. E.g., for grabbing things
     softFixed: {default: false},
-
-    // If true, constrains movement
-    constrainToLimits: {default: false},
-
-    // Constrains swinging movement. First element is the yAngle, second is
-    // zAngle
-    limitCone: {type: 'vec2'},
-
-    // Limit twist. Vector components represent min and max angle
-    limitTwist: {type: 'vec2'},
-
-    // Limit linear movement. Vector components represent min and max distance
-    limitX: {type: 'vec2'},
-    // Limit linear movement. Vector components represent min and max distance
-    limitY: {type: 'vec2'},
-    // Limit linear movement. Vector components represent min and max distance
-    limitZ: {type: 'vec2'},
-
-    // Spring damping for soft constraints
-    damping: {default: 0.0},
-    // Spring restitution for soft constraints
-    restitution: {default: 0.0},
-    // If greater than 0, will make this joint a soft constraint, and use a
-    // spring force model
-    stiffness: {default: 0.0},
+  },
+  events: {
+    constraintbreak: function(e) {
+      if (this.data.removeElOnBreak) {
+        this.el.remove()
+      }
+    }
   },
   init() {
     this.system = this.el.sceneEl.systems.physx
@@ -865,23 +1073,12 @@ AFRAME.registerComponent('physx-joint', {
         this.joint.setBreakForce(this.data.breakForce.x, this.data.breakForce.y);
     }
 
+    this.joint.setConstraintFlag(PhysX.PxConstraintFlag.eCOLLISION_ENABLED, this.data.collideWithTarget)
+
     if (this.el.hasAttribute('phsyx-custom-constraint')) return;
 
     switch (this.data.type)
     {
-      case 'Spherical':
-      {
-        this.joint.setSphericalJointFlag(PhysX.PxSphericalJointFlag.eLIMIT_ENABLED, this.data.constrainToLimits)
-        if (this.data.constrainToLimits)
-        {
-          let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
-          cone.damping = this.data.damping
-          cone.stiffness = this.data.stiffness
-          cone.restitution = this.data.restitution
-          this.joint.setLimitCone(cone);
-        }
-      }
-      break;
       case 'D6':
       {
         if (this.data.softFixed)
@@ -906,53 +1103,6 @@ AFRAME.registerComponent('physx-joint', {
           this.joint.setDrive(PhysX.PxD6Drive.eSLERP, drive);
           this.joint.setDrivePosition({translation: {x: 0, y: 0, z: 0}, rotation: {w: 1, x: 0, y: 0, z: 0}}, true)
           this.joint.setDriveVelocity({x: 0.0, y: 0.0, z: 0.0}, {x: 0, y: 0, z: 0}, true);
-        }
-        else
-        {
-          let llimit = () => {
-            let l = new PhysX.PxJointLinearLimitPair(new PhysX.PxTolerancesScale(), -0.01, 0.01);
-            l.siffness = 0.9;
-            return l
-          }
-
-          // this.joint.setMotion(PhysX.PxD6Axis.eX, PhysX.PxD6Motion.eLIMITED)
-          // this.joint.setMotion(PhysX.PxD6Axis.eY, PhysX.PxD6Motion.eLIMITED)
-          // this.joint.setMotion(PhysX.PxD6Axis.eZ, PhysX.PxD6Motion.eLIMITED)
-          // this.joint.setLinearLimit(PhysX.PxD6Axis.eX, llimit())
-          // this.joint.setLinearLimit(PhysX.PxD6Axis.eY, llimit())
-          // this.joint.setLinearLimit(PhysX.PxD6Axis.eZ, llimit())
-
-          if (this.data.limitCone.x > 0 && this.data.limitCone.y > 0)
-          {
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLIMITED)
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLIMITED)
-
-            let cone = new PhysX.PxJointLimitCone(this.data.limitCone.x, this.data.limitCone.y)
-            cone.damping = this.data.damping
-            cone.stiffness = this.data.stiffness
-            cone.restitution = this.data.restitution
-            this.joint.setSwingLimit(cone)
-          }
-          else if (this.data.limitCone.x < 0 && this.data.limitCone.y < 0)
-          {
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eFREE)
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eFREE)
-          }
-          else
-          {
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING1, PhysX.PxD6Motion.eLOCKED)
-            this.joint.setMotion(PhysX.PxD6Axis.eSWING2, PhysX.PxD6Motion.eLOCKED)
-          }
-
-          if (this.data.limitTwist.x !== 0 && this.data.limitTwist.y !== 0)
-          {
-            this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLIMITED)
-            this.joint.setTwistLimit(new PhysX.PxJointAngularLimitPair(this.data.limitTwist.x, this.data.limitTwist.y))
-          }
-          else
-          {
-            this.joint.setMotion(PhysX.PxD6Axis.eTWIST, PhysX.PxD6Motion.eLOCKED)
-          }
         }
       }
       break;
@@ -1057,6 +1207,7 @@ AFRAME.registerComponent('dual-wield-target', {
     target: {type: 'selector'},
     wobblySword: {default: false},
 
+
     // State to set on target when grabbed via constraint
     grabbedState: {default: 'wielded'},
   },
@@ -1091,11 +1242,6 @@ AFRAME.registerComponent('dual-wield-target', {
 
           el.setAttribute('physx-joint', 'type: D6')
 
-          // el.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
-          //                                 limitCone: {x: 0.004, y: 0.004},
-          //                                 stiffness: 100, damping: 100, restitution: 0,
-          //                                 limitTwist: {x: -0.04, y: 0.04},
-          //                                })
           this.updateHandParameters();
         })
       }
@@ -1173,11 +1319,12 @@ AFRAME.registerComponent('dual-wield-target', {
       {
         if (this.data.wobblySword)
         {
-            joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
+            joint.setAttribute('physx-joint-constraint', {
                                   limitCone: {x: 0.001, y: 0.001},
                                   stiffness: 1000, damping: 100, restitution: 0,
                                   limitTwist: {x: 0, y: 0},
-                                 })
+            })
+            joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target})
         }
         else
         {
@@ -1193,11 +1340,13 @@ AFRAME.registerComponent('dual-wield-target', {
       {
         if (this.data.wobblySword)
         {
-          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target,
+          joint.setAttribute('physx-joint-constraint', {
+
                                   limitCone: {x: Math.PI/2, y: Math.PI/2},
                                   stiffness: 0.5, damping: 1, restitution: 0,
                                   limitTwist: {x: -Math.PI/2, y: Math.PI/2},
-                                 })
+          })
+          joint.setAttribute('physx-joint', {type: 'D6', target: this.data.target})
         }
         else
         {
@@ -1208,41 +1357,37 @@ AFRAME.registerComponent('dual-wield-target', {
   }
 })
 
-AFRAME.registerSystem('contact-sound', {
+AFRAME.registerSystem('physx-contact-event', {
   init() {
     this.worldHelper = new THREE.Object3D;
     this.el.sceneEl.object3D.add(this.worldHelper)
   }
 })
 
-// Plays a sound when a `physx-body` has a collision.
-AFRAME.registerComponent('contact-sound', {
+// Emits an event when a `physx-body` has a collision
+AFRAME.registerComponent('physx-contact-event', {
   dependencies: ['physx-body'],
   schema: {
-    // Sound file location or asset
-    src: {type: 'string'},
+  // Minimum total impulse threshold to emit the event
+  impulseThreshold: {default: 0.01},
 
-    // Minimum total impulse to play the sound
-    impulseThreshold: {default: 0.01},
+  // NYI
+  maxDistance: {default: 10.0},
+  // NYI
+  maxDuration: {default: 5.0},
 
-    // NYI
-    maxDistance: {default: 10.0},
-    // NYI
-    maxDuration: {default: 5.0},
+  // Delay after start of scene before emitting events. Useful to avoid a
+  // zillion events as objects initially settle on the ground
+  startDelay: {default: 6000},
 
-    // Delay after start of scene before playing sounds. Useful to avoid a
-    // zillion sounds playing as objects initially settle on the ground
-    startDelay: {default: 6000},
-
-    // If `true`, the sound will be positioned at the weighted averaged location
-    // of all contact points. Contact points are weighted by impulse amplitude.
-    // If `false`, the sound will be positioned at the entity's origin.
-    positionAtContact: {default: false},
+  // If `true`, the event detail will include a `positionWorld` property which contains the weighted averaged location
+  // of all contact points. Contact points are weighted by impulse amplitude.
+  positionAtContact: {default: false},
   },
   events: {
     contactbegin: function(e) {
       if (this.el.sceneEl.time < this.data.startDelay) return
-      let thisWorld = this.pool('thisWorld', THREE.Vector3);
+      let thisWorld = this.eventDetail.positionWorld;
       let cameraWorld = this.pool('cameraWorld', THREE.Vector3);
 
       let impulses = e.detail.impulses
@@ -1268,7 +1413,76 @@ AFRAME.registerComponent('contact-sound', {
         }
         thisWorld.multiplyScalar(1.0 / impulseSum)
         this.system.worldHelper.position.copy(thisWorld)
-        VARTISTE.Util.positionObject3DAtTarget(this.sound.object3D, this.system.worldHelper)
+        VARTISTE.Util.positionObject3DAtTarget(this.localHelper, this.system.worldHelper)
+        this.eventDetail.position.copy(this.localHelper.position)
+      }
+      else
+      {
+        thisWorld.set(0, 0, 0)
+        this.eventDetail.position.set(0, 0, 0)
+      }
+
+      this.eventDetail.impulse = impulseSum
+      this.eventDetail.contact = e.detail
+
+      this.el.emit('contactevent', this.eventDetail)
+    }
+  },
+  init() {
+    VARTISTE.Pool.init(this)
+
+    this.eventDetail = {
+      impulse: 0.0,
+      positionWorld: new THREE.Vector3(),
+      position: new THREE.Vector3(),
+      contact: null,
+    }
+
+    if (this.data.debug) {
+      let vis = document.createElement('a-entity')
+      vis.setAttribute('geometry', 'primitive: sphere; radius: 0.1')
+      vis.setAttribute('physx-no-collision', '')
+    }
+
+    this.localHelper = new THREE.Object3D();
+    this.el.object3D.add(this.localHelper)
+
+    this.el.setAttribute('physx-body', 'emitCollisionEvents', true)
+  },
+  remove() {
+    this.el.object3D.remove(this.localHelper)
+  }
+})
+
+// Plays a sound when a `physx-body` has a collision.
+AFRAME.registerComponent('physx-contact-sound', {
+  dependencies: ['physx-contact-event'],
+  schema: {
+    // Sound file location or asset
+    src: {type: 'string'},
+
+    // Minimum total impulse to play the sound
+    impulseThreshold: {default: 0.01},
+
+    // NYI
+    maxDistance: {default: 10.0},
+    // NYI
+    maxDuration: {default: 5.0},
+
+    // Delay after start of scene before playing sounds. Useful to avoid a
+    // zillion sounds playing as objects initially settle on the ground
+    startDelay: {default: 6000},
+
+    // If `true`, the sound will be positioned at the weighted averaged location
+    // of all contact points. Contact points are weighted by impulse amplitude.
+    // If `false`, the sound will be positioned at the entity's origin.
+    positionAtContact: {default: false},
+  },
+  events: {
+    contactevent: function(e) {
+      if (this.data.positionAtContact)
+      {
+        this.sound.object3D.position.copy(e.detail.position)
       }
 
       this.sound.components.sound.stopSound();
@@ -1276,15 +1490,61 @@ AFRAME.registerComponent('contact-sound', {
     },
   },
   init() {
-    VARTISTE.Pool.init(this)
-
     let sound = document.createElement('a-entity')
     this.el.append(sound)
     sound.setAttribute('sound', {src: this.data.src})
     this.sound = sound
 
-    // if (this.data.positionAtContact) sound.setAttribute('geometry', 'primitive: sphere; radius: 0.1')
-
     this.el.setAttribute('physx-body', 'emitCollisionEvents', true)
+  },
+  update(oldData) {
+    this.el.setAttribute('physx-contact-event', this.data)
+  }
+})
+
+AFRAME.registerComponent('gltf-entities', {
+  dependencies: ['gltf-model'],
+  schema: {
+    setId: {default: false},
+    idPrefix: {default: ""},
+  },
+  events: {
+    'model-loaded': function(e) {
+      this.setupEntities()
+    }
+  },
+  init() {},
+  setupEntities() {
+    let root = this.el.getObject3D('mesh')
+    if (!root) return;
+
+    this.setupObject(root, this.el)
+  },
+  setupObject(obj3d, currentRootEl)
+  {
+    if (obj3d.userData['a-entity']) {
+      let el = document.createElement('a-entity')
+      let attrs = obj3d.userData['a-entity']
+
+      // sanitize
+      el.innerHTML = attrs
+      el.innerHTML = `<a-entity ${el.innerText}></a-entity>`
+
+      el = el.children[0]
+
+      if (this.data.setId && obj3d.name)
+      {
+        el.id = `${this.data.idPrefix}${obj3d.name}`
+      }
+
+      currentRootEl.append(el)
+      VARTISTE.Util.whenLoaded(el, () => el.setObject3D('mesh', obj3d))
+      currentRootEl = el
+    }
+
+    for (let child of obj3d.children)
+    {
+      this.setupObject(child, currentRootEl)
+    }
   }
 })

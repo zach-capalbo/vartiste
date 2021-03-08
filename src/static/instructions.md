@@ -1,6 +1,6 @@
 # VARTISTE
 
-<img src="../assets/vartiste.png" class="logo">
+<img src="../assets/vartiste.png" class="logo" alt="VARTISTE logo">
 
 <a class="vartiste-url" href="https://vartiste.xyz">https://vartiste.xyz</a>
 
@@ -21,7 +21,7 @@ you can move your canvas around to get the perfect vantage point for editing.
 No more being tethered to a monitor or drawing tablet! It's even got a really
 cool node & FX compositing system available. Become a VR-Artíste today!
 
-<img src="./images/fullscreen.jpg" class="screenshot">
+<img src="./images/fullscreen.jpg" class="screenshot" alt="screenshot of drawing VARTISTE logo">
 
 VARTISTE also takes advantage of being a VR image editor, by allowing you to
 draw textures right onto your model! You can still use all of the features like
@@ -39,11 +39,6 @@ Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vart
 
 
 ## Tutorials
-
-Text Tutorials:
-
- - [Quick Start Guide: Pencil Sketching](guide.html#sketch)
- - _Gravity Sketch to VARTISTE_: **COMING SOON**
 
 There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/playlist?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0)
 
@@ -125,7 +120,7 @@ For Desktop Use: (Not the primary intended use, but it should still work)
 - Q: Move Up
 - E: Move Down
 
-<img src="globe.JPG" class="screenshot">
+<img src="sandstone.jpg" class="screenshot" alt="Drawing on a beach">
 
 ## Saving and loading
 
@@ -284,6 +279,8 @@ SteamVR ~or Oculus mode~ (Oculus flags don't currently seem to work with Chromiu
 This is a very early version of the software. It still needs a lot of love. If
 you encounter problems, you can [Submit an Issue Report](https://gitlab.com/zach-geek/vartiste/issues).
 If you feel inclined, you can also [Contribute code in the form of a Merge Request](https://gitlab.com/zach-geek/vartiste).
+
+<img src="moose.jpg" alt="Painting lipstick on a moose" class="screenshot">
 
 ## A-Frame VARTISTE Toolkit
 

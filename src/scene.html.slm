@@ -71,6 +71,8 @@ a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true
         a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
+      /a-entity position="0.03 1.0545312767040833 0.121"
+        /== partial('./partials/welcome-shelf.html.slm')
     a-entity#canvas-root
       a-entity#canvas-view.canvas[
         grab-options="undoable: true"
