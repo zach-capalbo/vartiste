@@ -24,6 +24,9 @@ header
 code, pre
   text-align: left
   font-family: 'Fira Mono', monospace
+pre code
+  font-size: small
+  overflow-x: auto
 
 pre
   background-color: #f0f0f0
@@ -77,3 +80,22 @@ hr
 
   p code
     white-space: pre-line
+
+.toc
+  width: fit-content
+  margin: auto
+  & > ul > li > a
+    font-size: 120%
+  & > ul > li > ul
+    font-size: 75%
+    margin-bottom: 1em
+  & > ul > li > ul > li
+    border-bottom: 1px dashed #ee
+    & > a
+      font-size: 120%
+      margin-right: 1.3em
+      color: inherit
+      font-weight: normal
+      text-decoration: none
+    & > .type
+      float: right

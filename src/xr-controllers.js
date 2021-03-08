@@ -8,11 +8,11 @@ const ENTER_CONROLLER_SVG = require('url-loader!./enter-controller.svg').default
 // structure:
 //
 //```
-//>     - a-entity camera=""
-//>         - a-entity id="hand-offset"
-//>           - a-entity id="hand-root"
-//>             - a-entity id="right-hand" webxr-motion-controller="hand:right"
-//>             - a-entity id="left-hand" webxr-motion-controller="hand:left"
+//     - a-entity camera=""
+//         - a-entity id="hand-offset"
+//           - a-entity id="hand-root"
+//             - a-entity id="right-hand" webxr-motion-controller="hand:right"
+//             - a-entity id="left-hand" webxr-motion-controller="hand:left"
 //```
 //
 // When the `enterSession` is called, a new xrSession will be created, though

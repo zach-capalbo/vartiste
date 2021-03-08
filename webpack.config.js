@@ -223,6 +223,11 @@ let toolkitDoc = Object.assign({
     entry: {
       toolkitDoc: `./src/docgen-entry.js`
     },
+    optimization: {
+      minimize: !devMode,
+      minimizer: minimizer(),
+      usedExports: true,
+    },
     plugins: [
       // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
       // new CleanWebpackPlugin(),
@@ -238,7 +243,7 @@ let toolkitDoc = Object.assign({
       rules: [
         {
           test: /\.js$/,
-          exclude: /(node_modules|bower_components|index\.js|docgen-entry)/,
+          exclude: /(node_modules|bower_components|index\.js|docgen-entry|doc-highlight.worker)/,
           use: [
             // {loader: 'file-loader', options: {
             //   esModule: false,
@@ -248,6 +253,10 @@ let toolkitDoc = Object.assign({
             {loader: 'markdown-loader', options: {gfm: true} },
             {loader: path.resolve('./docgen/docgen-loader.js')},
           ]
+        },
+        {
+          test: /\.worker\.js$/,
+          use: { loader: "worker-loader" },
         },
         {
           test: /\.html\.(slm|slim)$/,
@@ -261,6 +270,7 @@ let toolkitDoc = Object.assign({
         { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
         { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
         { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
+        { test: /\.(css)$/, loader: 'style-loader!css-loader'},
         {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr)$/i,
           use: [
             {

@@ -33,7 +33,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
         if (currentComment)
         {
-          comment.push(currentComment.text.trim())
+          comment.push(currentComment.text.replace(/\s/, ""))
           startLine = currentComment.loc.line || c.loc.start.line
         }
 
@@ -172,7 +172,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   {
     let comment = commentForLocation(expression.id.loc)
     // if (!comment) continue
-    comment = formatCommentForTable(comment)
+    // comment = formatCommentForTable(comment)
 
     let className = expression.id.name
 

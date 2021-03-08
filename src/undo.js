@@ -7,7 +7,7 @@ import {Util} from './util.js'
 // This works by pushing a function which undoes an action to the stack. Then
 // if needed, `undo()` can be called to call this undo function. E.g.
 //
-// ```
+//```js
 //    Undo.pushCanvas(myCanvas); // Save the state of the canvas before doing anything
 //    myCanvas.getContext('2d').fillRect(0, 0, myCanvas.width, myCanvas.height);
 //    displayCanvasToUser(myCanvas);
@@ -15,7 +15,7 @@ import {Util} from './util.js'
 //    {
 //        Undo.undo()
 //    }
-// ```
+//```
 //
 // Or
 //
