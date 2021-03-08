@@ -79,7 +79,9 @@ a-frame makes available; most things are components, which use systems when
 needed, and can be attached to entities pretty readily. Plenty of components
 also spawn their own children entities.
 
-Most things (but not everything) responds correctly to updates via
+There are a few notable exceptions in the form of utility classes, such as [`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes are exposed under the `VARTISTE` global variable. 
+
+Most components (but not all) respond correctly to updates via
 `setAttribute`; fewer things respond entirely correctly to `remove()` so if you
 run into issues, double check the docs here or the source.
 
@@ -124,8 +126,28 @@ instead.
 
 ## Interaction Components
 
+User interaction is built around laser-control-type raycasting. Interactive
+elements have the `clickable` HTML class set, which makes them visible to the
+raycasters. `click` events are emitted when these elements are clicked.
 
-## dependencies
+Every `clickable` entity, by default, can also be grabbed and moved. Grabbing
+and moving is handled via the [`manipulator`](#manipulator) component, which is installed on the user motion controllers or mouse controls. A lot more info can be found at the documentation for [`manipulator`](#manipulator)
+
+There's also a bunch of built-in constraints, which can be set on entities to
+restrict how they move when grabbed. For instance
+[`manipulator-weight`](#manipulator-weight) makes entities feel "heavy" by
+slowing down their movement when grabbed.
+
+## Other cool stuff
+
+There's lots of other nifty components and systems, for instance
+[`canvas-fx`](#canvas-fx), which lets you quickly apply special effects to a
+canvas, or [`glb-exporter`](#glb-exporter) which will let you download any
+arbitrary entity or `THREE.Object3D` as a glb file in a single function call.
+
+Ultimately, the best way to find out everything that's available is to read
+through these documents, play around with the examples and VARTISTE itself, and
+failing that to read the source code.
 
 ## Component Reference
 
@@ -135,7 +157,9 @@ that it is still under construction. The source code is available as well at
 [https://gitlab.com/zach-geek/vartiste](https://gitlab.com/zach-geek/vartiste),
 and contributions, both code-wise and documentation-wise are welcome.
 
-# Example Scene
+# Examples
+
+## Example Scene
 
 ```html
 <!DOCTYPE html>
@@ -283,6 +307,11 @@ and contributions, both code-wise and documentation-wise are welcome.
 </p>
 <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
 
+## Physics playground
+
+The [aframe-vartiste-toolkit physics playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html%3A1%3A0) is a good example of using the toolkit for things other than painting and drawing, and the best example of the [physics](#physics.js) components so far.
+
+# Source Code
 
 For information, you can also read through the source code:
 

@@ -245,7 +245,7 @@ let toolkitDoc = Object.assign({
             //   name: '[name].doc.html'
             // }},
             {loader: 'html-loader'},
-            {loader: 'markdown-loader' },
+            {loader: 'markdown-loader', options: {gfm: true} },
             {loader: path.resolve('./docgen/docgen-loader.js')},
           ]
         },

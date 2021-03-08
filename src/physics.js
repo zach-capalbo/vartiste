@@ -405,13 +405,40 @@ AFRAME.registerSystem('physx', {
     {
       body = this.physics.createRigidStatic(transform)
     }
+
+    let attemptToUseDensity = true;
+    let seenAnyDensity = false;
+    let densities = new PhysX.VectorPxReal()
     for (let shape of component.createShapes(this.physics, this.defaultActorFlags))
     {
       body.attachShape(shape)
+
+      if (isFinite(shape.density))
+      {
+        seenAnyDensity = true
+        densities.push_back(shape.density)
+      }
+      else
+      {
+        attemptToUseDensity = false
+
+        if (seenAnyDensity)
+        {
+          console.warn("Densities not set for all shapes. Will use total mass instead.", component.el)
+        }
+      }
     }
     if (type === 'dynamic' || type === 'kinematic') {
-      body.setMassAndUpdateInertia(component.data.mass)
+      if (attemptToUseDensity && seenAnyDensity)
+      {
+        console.log("Setting density vector", densities)
+        body.updateMassAndInertia(densities)
+      }
+      else {
+        body.setMassAndUpdateInertia(component.data.mass)
+      }
     }
+    densities.delete()
     this.scene.addActor(body, null)
     this.objects.set(component.el.object3D, body)
     component.rigidBody = body
@@ -453,6 +480,7 @@ AFRAME.registerComponent('physx-material', {
     staticFriction: {default: 0.2},
     dynamicFriction: {default: 0.2},
     restitution: {default: 0.2},
+    density: {type: 'number', default: NaN},
 
     // Which collision layers this shape is present on
     collisionLayers: {default: [1], type: 'array'},
@@ -695,6 +723,7 @@ AFRAME.registerComponent('physx-body', {
       shape.setRestOffset(materialData.restOffset)
     }
 
+    shape.density = materialData.density;
     this.system.registerShape(shape, this)
 
     return shape;

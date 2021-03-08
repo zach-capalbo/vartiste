@@ -58,6 +58,7 @@ async function addDocumentation(src)
   require('./webxr-input-profiles')
   require('./xr-controllers')
   require('./camera-capture')
+  require('./undo')
   require('./physics')
 })(addDocumentation)
 
