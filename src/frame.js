@@ -31,7 +31,8 @@ AFRAME.registerSystem('frame', {
   }
 })
 
-// A 2D border and buttons that go around an entity
+// A 2D border and buttons that go around an entity. One prominent use is in the
+// [`shelf`](#shelf) component.
 AFRAME.registerComponent("frame", {
   schema: {
     // If true, there's an X button to "close" (i.e., `remove()`) the entity

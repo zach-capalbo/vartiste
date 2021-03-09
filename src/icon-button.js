@@ -17,7 +17,11 @@ for (let k in DEFAULT_BUTTON_STYLE_SCHEMA) {
 
 // Allows you to set the styling for an `icon-button`.
 //
-// E.g.: `<a-entity icon-button="#my-icon" button-style="color: blue"></a-entity>`
+// E.g.:
+//
+// ```
+// <a-entity icon-button="#my-icon" button-style="color: blue"></a-entity>
+//```
 AFRAME.registerComponent('button-style', {
   schema: {
     color: {type: 'color', default: "#b6c5f2"},
@@ -154,10 +158,15 @@ function RoundEdgedBox(width, height, depth, radius, widthSegments, heightSegmen
 // moment, it is best not to change these values dynamically.
 AFRAME.registerSystem('icon-button', {
   schema: {
+    // **[flat, matcap, or stanadard]** Shader to use for the button geometry.
     shader: {default: 'matcap'},
+    // **[flat, matcap, or stanadard]** Shader to use for the button icon.
     iconShader: {default: 'flat'},
+    // If using matcap shader, which matcap to use
     matcap: {default: '#asset-matcap', type: 'map'},
+    // For use with standard shader
     metalness: {default: 0.3},
+    // For use with standard shader
     roughness: {default: 1.0}
   },
   init() {
@@ -213,6 +222,27 @@ AFRAME.registerSystem('icon-button', {
 // - `icon-button` has an implicit [`propogate-grab`](#propogate-grab), so
 //   placing them as children of a grabbable entity will automatically redirect
 //   grabs of the icon-button to the grabbable parent.
+//
+// Can be used wit [`icon-row`](#icon-row) for easy layouts. For instance,
+// the snippet:
+//
+//```
+//        <a-entity icon-row="">
+//          <a-entity icon-button="#asset-close"></a-entity>
+//          <a-entity icon-button="#asset-camera"></a-entity>
+//          <a-entity icon-button="" text="value: 3; color: #FFF; wrapCount: 3; align: center; width: 0.4"></a-entity>
+//        </a-entity>
+//        <a-entity icon-row="">
+//          <a-entity icon-button="#asset-chevron-up"></a-entity>
+//          <a-entity icon-button="#asset-brush"></a-entity>
+//          <a-entity icon-button="" button-style="color: green;"></a-entity>
+//          <a-entity icon-button="#asset-delete" button-style="color: red;"></a-entity>
+//        </a-entity>
+//```
+//
+// Will create the following:
+//
+// ![Two rows of buttons, all lined up nicely](./static/images/iconbuttonrow.png)
 AFRAME.registerComponent('icon-button', {
   dependencies: ['button-style'],
 
@@ -542,7 +572,7 @@ AFRAME.registerComponent('system-click-action', {
 
 // Automatically arrange multply rows of `icon-button`s. This will set its
 // y-position based on how many icon-rows there are before it in the parent
-// element.
+// element. See [`icon-button`](#icon-button) for an example.
 AFRAME.registerComponent('icon-row', {
   init() {
     let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
@@ -550,6 +580,10 @@ AFRAME.registerComponent('icon-row', {
   }
 })
 
+// A button which corresponds to one possible value of a target component
+// proerty. It is highlighted when the property is the value specified, and not
+// highlighted otherwise. When clicked, it sets the target property to the
+// specified value.
 AFRAME.registerComponent('radio-button', {
   schema: {
     value: {type: 'string'},

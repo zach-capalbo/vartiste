@@ -1179,6 +1179,27 @@ AFRAME.registerComponent('physx-joint-constraint', {
 // The position and rotation of the `physx-joint` will be used to create the
 // corresponding PhysX joint object. Multiple joints can be created on a body,
 // and multiple joints can target a body.
+//
+// **Stapler Example**
+//
+// Here's a simplified version of the stapler from the [physics playground demo]()
+//
+//```
+// <a-entity id="stapler">
+//   <a-entity id="stapler-top" physx-body="type: dynamic" class="grab-root">
+//     <a-entity class="clickable" propogate-grab="" gltf-part-plus="src: #asset-stapler; part: Top"></a-entity>
+//     <a-entity physx-joint="target: #stapler-bottom; type: Revolute; collideWithTarget: true" position="0 0.0254418 -3.7280"></a-entity>
+//   </a-entity>
+//   <a-entity id="stapler-bottom" gltf-part-plus="src: #asset-stapler; part: Bottom" physx-body="type: dynamic"></a-entity>
+// </a-entity>
+//```
+//
+// Notice the joint is created between the top part of the stapler (which
+// contains the joint) and the bottom part of the stapler at the position of the
+// `physx-joint` component's entitiy. This will be the pivot point for the
+// stapler's rotation.
+//
+// ![Stapler with joint highlighted](./static/images/staplerjoint.png)
 AFRAME.registerComponent('physx-joint', {
   multiple: true,
   schema: {
@@ -1726,6 +1747,8 @@ AFRAME.registerComponent('physx-contact-sound', {
 //             name: a-entity
 //             value: physx-material="density: 100" physx-contact-sound="src: #boom"
 //```
+//
+// ![Screenshot showing the structure in Blender](./static/images/blenderentities.png)
 //
 // This will turn into the following HTML (with `setId` set to `true`):
 //

@@ -107,6 +107,8 @@ Ultimately, the best way to find out everything that's available is to read
 through these documents, play around with the examples and VARTISTE itself, and
 failing that to read the source code.
 
+Also, VARTISTE uses a bunch of premade environments, these are packaged separately in the [aframe-enviropacks](https://www.npmjs.com/package/aframe-enviropacks) package.
+
 ## Assets
 
 Assets required for some of the basic component use are automatically included

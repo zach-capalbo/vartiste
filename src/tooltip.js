@@ -1,8 +1,16 @@
 import {Util} from './util.js'
 
-// Shows some text when hovered. Can be styled with
-// [tooltip-style](#tooltip-style). If [speech](#speech) is enabled, the tooltip
-// will be read with text-to-speech when hovered.
+// Shows some text when hovered by the mouse or controller laser pointer. Can be
+// styled with [tooltip-style](#tooltip-style). If [speech](#speech) is enabled,
+// the tooltip will be read with text-to-speech when hovered.
+//
+// Here's an [`icon-button`](#icon-button) with a tooltip:
+//
+// ```
+// <a-entity icon-button="#asset-close" tooltip="Close"></a-entity>
+// ```
+//
+// ![button with a tooltip](./static/images/tooltipbutton.png)
 AFRAME.registerComponent('tooltip', {
   // Text to show in the tooltip
   schema: {default: ""},
