@@ -55,7 +55,7 @@ VARTISTE has a quick-and-dirty user interface, focused around the [`icon-button`
 
 In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field) and [`lever`s](#lever) for providing input.
 
-All of these components are usually arranged on a (`shelf`)[#shelf] which provides a background and frame, and allows for easy closing or pinning to the a controller.
+All of these components are usually arranged on a [`shelf`](#shelf) which provides a background and frame, and allows for easy closing or pinning to the a controller.
 
 ## User Rig
 

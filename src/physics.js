@@ -101,7 +101,40 @@ let PhysX
 
 // Implements the a physics system using an emscripten compiled PhysX engine.
 //
-// This system is built around [my fork](https://github.com/zach-capalbo/PhysX) of PhysX, built using the [Docker Wrapper](https://github.com/ashconnell/physx-js). To see what's exposed to JavaScript, see [PxWebBindings.cpp](https://github.com/zach-capalbo/PhysX/blob/emscripten_wip/physx/source/physxwebbindings/src/PxWebBindings.cpp)
+//
+// If `autoLoad` is `true`, or when you call `startPhysX`, the `physx` system will
+// automatically load and initialize the physics system with reasonable defaults
+// and a ground plane. All you have to do is add [`physx-body`](#physx-body) to
+// the bodies that you want to be part of the simulation. The system will take
+// try to take care of things like collision meshes, position updates, etc
+// automatically.  The simplest physics scene looks something like:
+//
+//```
+// <a-scene physx="autoLoad: true">
+//  <a-assets><a-asset-item id="#mymodel" src="..."></a-asset-item></a-assets>
+//
+//  <a-box physx-body="type: static" color="green" position="0 0 -3"></a-box>
+//  <a-sphere physx-body="type: dynamic" position="0.4 2 -3" color="blue"></a-sphere>
+//  <a-entity physx-body="type: dynamic" position="0 5 -3" gltf-model="#mymodel"></a-entity>
+// </a-scene>
+//```
+//
+// If you want a little more control over how things behave, you can set the
+// [`physx-material`](#physx-material) component on the objects in your
+// simulation, or use [`physx-joint`s](#physx-joint),
+// [`physx-constraint`s](#physx-constraint) and [`physx-driver`s](#physx-driver)
+// to add some complexity to your scene.
+//
+// If you need more low-level control, the PhysX bindings are exposed through
+// the `PhysX` property of the system. So for instance, if you wanted to make
+// use of the [`PxCapsuleGeometry`](https://gameworksdocs.nvidia.com/PhysX/4.1/documentation/physxapi/files/classPxCapsuleGeometry.html)
+// in your own component, you would call:
+//
+//```
+//    let myGeometry = new this.el.sceneEl.PhysX.PxCapsuleGeometry(1.0, 2.0)
+//```
+//
+// The system uses [my fork](https://github.com/zach-capalbo/PhysX) of PhysX, built using the [Docker Wrapper](https://github.com/ashconnell/physx-js). To see what's exposed to JavaScript, see [PxWebBindings.cpp](https://github.com/zach-capalbo/PhysX/blob/emscripten_wip/physx/source/physxwebbindings/src/PxWebBindings.cpp)
 //
 // For a complete example of how to use this, you can see the
 // [aframe-vartiste-toolkit Physics
@@ -475,11 +508,35 @@ AFRAME.registerSystem('physx', {
 // a `physx-body`, it will be the default material for all shapes in that body.
 // If it's set on an element containing geometry or a model, it will be the
 // material used for that shape only.
+//
+// For instance, in the following scene fragment:
+//```
+// <a-entity id="bodyA" physx-body physx-material="staticFriction: 0.5">
+//   <a-box id="shape1" physx-material="staticFriction: 1.0"></a-box>
+//   <a-sphere id="shape2"></a-sphere>
+// </a-entity>
+// <a-cone id="bodyB" physx-body></a-cone>
+//```
+//
+// `shape1`, which is part of the `bodyA` rigid body, will have static friction
+// of 1.0, since it has a material set on it. `shape2`, which is also part of
+// the `bodyA` rigid body, will have a static friction of 0.5, since that is
+// the body default. `bodyB` will have the component default of 0.2, since it is
+// a separate body.
 AFRAME.registerComponent('physx-material', {
   schema: {
+    // Static friction
     staticFriction: {default: 0.2},
+    // Dynamic friction
     dynamicFriction: {default: 0.2},
+    // Restitution, or "bounciness"
     restitution: {default: 0.2},
+
+    // Density for the shape. If densities are specified for _all_ shapes in a
+    // rigid body, then the rigid body's mass properties will be automatically
+    // calculated based on the different densities. However, if density
+    // information is not specified for every shape, then the mass defined in
+    // the overarching [`physx-body`](#physx-body) will be used instead.
     density: {type: 'number', default: NaN},
 
     // Which collision layers this shape is present on
@@ -559,7 +616,8 @@ AFRAME.registerComponent('physx-material', {
 // object. Objects with the type `kinematic` will remain kinematic.
 //
 // Static objects should not be moved. If a static object can be the target of a
-// manipulator grab, it should be `kinematic` instead.
+// manipulator grab (or any other kind of movement), it should be `kinematic`
+// instead.
 AFRAME.registerComponent('physx-body', {
   dependencies: ['physx-material'],
   schema: {
@@ -610,9 +668,40 @@ AFRAME.registerComponent('physx-body', {
             this.rigidBody.detachShape(shape, false)
         }
 
-        for (let shape of this.createShapes(this.system.physics))
+        let attemptToUseDensity = true;
+        let seenAnyDensity = false;
+        let densities = new PhysX.VectorPxReal()
+        let component = this
+        let type = this.data.type
+        let body = this.rigidBody
+        for (let shape of component.createShapes(this.system.physics, this.system.defaultActorFlags))
         {
-          this.rigidBody.attachShape(shape)
+          body.attachShape(shape)
+
+          if (isFinite(shape.density))
+          {
+            seenAnyDensity = true
+            densities.push_back(shape.density)
+          }
+          else
+          {
+            attemptToUseDensity = false
+
+            if (seenAnyDensity)
+            {
+              console.warn("Densities not set for all shapes. Will use total mass instead.", component.el)
+            }
+          }
+        }
+        if (type === 'dynamic' || type === 'kinematic') {
+          if (attemptToUseDensity && seenAnyDensity)
+          {
+            console.log("Setting density vector", densities)
+            body.updateMassAndInertia(densities)
+          }
+          else {
+            body.setMassAndUpdateInertia(component.data.mass)
+          }
         }
       }
     },
@@ -801,19 +890,50 @@ AFRAME.registerComponent('physx-body', {
   }
 })
 
-
+// Creates a driver which exerts force to return the joint to the specified
+// (currently only the initial) position with the given velocity
+// characteristics.
+//
+// This can only be used on an entity with a `physx-joint` component. Currently
+// only supports **D6** joint type. E.g.
+//
+//```
+// <a-box physx-body>
+//    <a-entity position="0.2 0.3 0.4" rotation="0 90 0"
+//              physx-joint="type: D6; target: #other-body"
+//              physx-joint-driver="axes: swing, twist; stiffness: 30; angularVelocity: 3 3 0">
+//    </a-entity>
+// </a-box>
+//```
 AFRAME.registerComponent('physx-joint-driver', {
   dependencies: ['physx-joint'],
   multiple: true,
   schema: {
+    // Which axes the joint should operate on. Should be some combination of `x`, `y`, `z`, `twist`, `swing`
     axes: {type: 'array'},
+
+    // How stiff the drive should be
     stiffness: {default: 1.0},
+
+    // Damping to apply to the drive
     damping: {default: 1.0},
+
+    // Maximum amount of force used to get to the target position
     forceLimit: {default: 3.4028234663852885981170418348452e+38},
+
+    // If true, will operate directly on body acceleration rather than on force
     useAcceleration: {default: true},
+
+    // Target linear velocity relative to the joint
     linearVelocity: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+
+    // Targget angular velocity relative to the joint
     angularVelocity: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+
+    // If true, will automatically lock axes which are not being driven
     lockOtherAxes: {default: false},
+
+
     slerpRotation: {default: true},
   },
   events: {
@@ -916,15 +1036,52 @@ AFRAME.registerComponent('physx-joint-driver', {
   }
 })
 
+// Adds a constraint to a [`physx-joint`](#physx-joint). Currently only **D6**
+// joints are supported.
+//
+// Can only be used on an entity with the `physx-joint` component. You can set
+// multiple constraints per joint. Note that in order to specify attributes of
+// individual axes, you will need to use multiple constraints. For instance:
+//
+//```
+// <a-box physx-body>
+//   <a-entity physx-joint="type: D6"
+//             physx-joint-constraint__xz="constrainedAxes: x,z; linearLimit: -1 20"
+//             physx-joint-constraint__y="constrainedAxes: y; linearLimit: 0 3; stiffness: 3"
+//             physx-joint-constraint__rotation="lockedAxes: twist; swing"></a-entity>
+// </a-box>
+//```
+//
+// In the above example, the box will be able to move from -1 to 20 in both the
+// x and z direction. It will be able to move from 0 to 3 in the y direction,
+// but this will be a soft constraint, subject to spring forces if the box goes
+// past in the y direction. All rotation will be locked. (Note that since no
+// target is specified, it will use the scene default target, effectively
+// jointed to joint's initial position in the world)
 AFRAME.registerComponent('physx-joint-constraint', {
   multiple: true,
   schema: {
+    // Which axes are explicitly locked by this constraint and can't be moved at all.
+    // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
     lockedAxes: {type: 'array'},
+
+    // Which axes are constrained by this constraint. These axes can be moved within the set limits.
+    // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
     constrainedAxes: {type: 'array'},
+
+    // Which axes are explicitly freed by this constraint. These axes will not obey any limits set here.
+    // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
     freeAxes: {type: 'array'},
 
+    // Limit on linear movement. Only affects `x`, `y`, and `z` axes.
+    // First vector component is the minimum allowed position
     linearLimit: {type: 'vec2'},
+
+    // Two angles specifying a cone in which the joint is allowed to swing, like
+    // a pendulum.
     limitCone: {type: 'vec2'},
+
+    // Minimum and maximum angles that the joint is allowed to twist
     twistLimit: {type: 'vec2'},
 
     // Spring damping for soft constraints
@@ -1022,10 +1179,6 @@ AFRAME.registerComponent('physx-joint-constraint', {
 // The position and rotation of the `physx-joint` will be used to create the
 // corresponding PhysX joint object. Multiple joints can be created on a body,
 // and multiple joints can target a body.
-//
-// **Note:** Constraints are not fully implemented yet. It is best to refer to
-// the source code until work on constraints is completed to see what's
-// supported.
 AFRAME.registerComponent('physx-joint', {
   multiple: true,
   schema: {
@@ -1034,7 +1187,9 @@ AFRAME.registerComponent('physx-joint', {
     // for details on each type
     type: {default: "Spherical", oneOf: ["Fixed", "Spherical", "Distance", "Revolute", "Prismatic", "D6"]},
 
-    // Target object. Must be an entity having the `physx-body` component
+    // Target object. If specified, must be an entity having the `physx-body`
+    // component. If no target is specified, a scene default target will be
+    // used, essentially joining the joint to its initial position in the world.
     target: {type: 'selector'},
 
     // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
@@ -1042,6 +1197,8 @@ AFRAME.registerComponent('physx-joint', {
 
     removeElOnBreak: {default: false},
 
+    // If false, collision will be disabled between the rigid body containing
+    // the joint and the target rigid body.
     collideWithTarget: {default: false},
 
     // When used with a D6 type, sets up a "soft" fixed joint. E.g., for grabbing things
@@ -1232,10 +1389,14 @@ AFRAME.registerSystem('dual-wield-target', {
 // Helper component for facilitating [`dual-wieldable`](#dual-wieldable)
 AFRAME.registerComponent('dual-wield-target', {
   schema: {
+    // Max number of manipulators that can grab this
     numberOfJoints: {default: 2},
-    target: {type: 'selector'},
-    wobblySword: {default: false},
 
+    // The object that's actually being grabbed
+    target: {type: 'selector'},
+
+    // Alternate, "wobbly sword" constraint presets
+    wobblySword: {default: false},
 
     // State to set on target when grabbed via constraint
     grabbedState: {default: 'wielded'},
@@ -1393,7 +1554,11 @@ AFRAME.registerSystem('physx-contact-event', {
   }
 })
 
-// Emits an event when a `physx-body` has a collision
+// Emits a `contactevent` event when a collision meets the threshold.  This
+// should be set on an entity with the `physx-body` component. The event detail
+// will contain these fields:
+// - `impulse`: The summed impulse of at all contact points
+// - `contact`: The originating contact event
 AFRAME.registerComponent('physx-contact-event', {
   dependencies: ['physx-body'],
   schema: {
@@ -1531,11 +1696,61 @@ AFRAME.registerComponent('physx-contact-sound', {
   }
 })
 
+// Creates A-Frame entities from gltf custom properties.
+//
+// **WARNING** do not use this component with untrusted gltf models, since it
+// will let the model access arbitrary components.
+//
+// Should be set on an entity with the `gltf-model` component. Once the model is
+// loaded, this will traverse the object tree, and any objects containing user
+// data key `a-entity` will be turned into separate sub-entities. The user data
+// value for `a-entity` will be set as the attributes.
+//
+// For instance, say you export a model with the following kind of structure
+// from Blender (remembering to check "Include → Custom Properties"!):
+//
+//```
+//    - Empty1
+//      Custom Properties:
+//        name: a-entity
+//        value: physx-body="type: dynamic"
+//      Children:
+//        - Mesh1
+//          Custom Properties:
+//             name: a-entity
+//             value: physx-material="density: 30" class="clickable"
+//          Children:
+//            - Mesh2
+//        - Mesh3
+//           Custom Properties:
+//             name: a-entity
+//             value: physx-material="density: 100" physx-contact-sound="src: #boom"
+//```
+//
+// This will turn into the following HTML (with `setId` set to `true`):
+//
+//```
+// <a-entity id="Empty1" physx-body="type: dynamic"> <!-- getObject3D('mesh') returns Empty1 with no children -->
+//    <a-entity id="Mesh1" physx-material="density: 30" class="clickable"></a-entity> <!-- getObject3D('mesh') returns Mesh1 with Mesh2 as a child-->
+//    <a-entity id="Mesh3" physx-material="density: 100" physx-contact-sound="src: #boom"></a-entity> <!-- getObject3D('mesh') returns Mesh3 with no child-->
+// </a-entity>
+//```
 AFRAME.registerComponent('gltf-entities', {
   dependencies: ['gltf-model'],
   schema: {
+    // If true, will set created element's id based on the gltf object name
     setId: {default: false},
+    // If `setId` is true, this will be prepended to the gltf object name when setting the element id
     idPrefix: {default: ""},
+
+    // Automatically make entities clickable and propogate the grab (for use with [`manipulator`](#manipulator))
+    autoPropogateGrab: {default: true},
+
+    // Array of attribute names that should be copied from this entitiy to any new created entitity
+    copyAttributes: {type: 'array'},
+
+    // A list of names of attributes that are allowed to be set. Ignored if empty.
+    allowedAttributes: {type: 'array'},
   },
   events: {
     'model-loaded': function(e) {
@@ -1561,9 +1776,34 @@ AFRAME.registerComponent('gltf-entities', {
 
       el = el.children[0]
 
+      if (this.data.allowedAttributes.length)
+      {
+        for (let attr of el.attributes)
+        {
+          if (!this.data.allowedAttributes.includes(attr.name))
+          {
+            el.removeAttribute(attr.name)
+          }
+        }
+      }
+
       if (this.data.setId && obj3d.name)
       {
         el.id = `${this.data.idPrefix}${obj3d.name}`
+      }
+
+      for (let attribute of this.data.copyAttributes)
+      {
+        if (this.el.hasAttribute(attribute))
+        {
+          el.setAttribute(attribute, this.el.getAttribute(attribute))
+        }
+      }
+
+      if (this.data.autoPropogateGrab && this.el.classList.contains("clickable"))
+      {
+        el.setAttribute('propogate-grab', "")
+        el.classList.add("clickable")
       }
 
       currentRootEl.append(el)

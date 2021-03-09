@@ -2,8 +2,6 @@ require('./static/docs.styl')
 import HighlightWorker from './doc-highlight.worker.js'
 import 'highlight.js/styles/github.css'
 
-window.HighlightWorker = HighlightWorker
-
 document.querySelector('#readme').innerHTML = require('./toolkit/Readme.md')
 
 let contentPromises = []
@@ -111,5 +109,3 @@ Promise.all(contentPromises).then(a=> {
 
   console.log("All loaded")
 })
-
-window.hljs = require('highlight.js')

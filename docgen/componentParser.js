@@ -98,7 +98,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   {
       if (!schema) return
 
-      headers = ["Name", "Type", "Default", "Description"]
+      headers = ["Property", "Type", "Default", "Description"]
       lines = ["|" + headers.map(h => ` ${h} `).join("|") + "|"]
       lines.push("|" + headers.map(h => `---`).join("|") + "|")
 
