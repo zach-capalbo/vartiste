@@ -55,7 +55,6 @@ AFRAME.registerSystem = function (name, opt) {
 
 function checkFile (rawName) {
   let name = rawName.match(/\.?\/?(.*?)(\.?js)?$/)[1]
-  console.log("Checking", name, VARTISTE_TOOLKIT.includeFiles && !VARTISTE_TOOLKIT.includeFiles.includes(name))
   if (VARTISTE_TOOLKIT.includeFiles && !VARTISTE_TOOLKIT.includeFiles.includes(name)) return false;
   if (VARTISTE_TOOLKIT.excludeFiles.includes(name)) return false;
   return true;
