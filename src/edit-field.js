@@ -343,6 +343,8 @@ AFRAME.registerComponent('popup-button', {
   }
 })
 
+// Prevents this elements object or any descendent from being frustum culled.
+// Useful to prevent, e.g., disappearing skinned meshes or text fields.
 AFRAME.registerComponent('not-frustum-culled', {
   events: {
     object3dset: function(e) {
@@ -354,6 +356,8 @@ AFRAME.registerComponent('not-frustum-culled', {
   }
 })
 
+// Quick and dirty one-way-bind. Updates to `source`'s `sourceComponent`
+// `sourceProperty` are propogated to `target`'s `component` `property`
 AFRAME.registerComponent('v-bind', {
   multiple: true,
   schema: {

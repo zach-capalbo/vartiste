@@ -21,6 +21,94 @@ unpkg:
 Including the javascript file automatically registers the components and
 systems.
 
+# Toolkit Overview
+
+The *aframe-vartiste-toolkit* has a lot of stuff in it. It's built by exporting
+every little bit and piece of the [VARTISTE](https://vartiste.xyz) app, and so
+[VARTISTE](https://vartiste.xyz) and the [VARTISTE source
+code](https://gitlab.com/zach-geek/vartiste) are ultimately the best places to
+see what's available and how it works. Nonetheless, I've written some
+documentation as a best-spare-time-effort. Here's some of the key things to get you started.
+
+## Philosophy and Terms
+
+VARTISTE leans pretty heavily into the entity-component-system framework that
+a-frame makes available; most things are components, which use systems when
+needed, and can be attached to entities pretty readily. Plenty of components
+also spawn their own children entities.
+
+There are a few notable exceptions in the form of utility classes, such as [`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes are exposed under the `VARTISTE` global variable.
+
+Most components (but not all) respond correctly to updates via
+`setAttribute`; fewer things respond entirely correctly to `remove()` so if you
+run into issues, double check the docs here or the source.
+
+One extension to the ECS framework in VARTISTE is "component systems", created
+via [`VARTISTE.Util.registerComponentSystem`](#util.js). These are basically
+components for the `a-scene` which get automatically attached (like systems do).
+They have the full schema and update abilities of components, with the
+auto-attach convenience of systems. They are accessible via `sceneEl.systems` *and* `sceneEl.components`.
+
+## UI Components
+
+VARTISTE has a quick-and-dirty user interface, focused around the [`icon-button`](#icon-button), a button with an icon on it. These are usually collected into an [`icon-row`](#icon-row), where they're automatically layed-out horizontally. Most clickable things have a [`tooltip`](#tooltip), which also has the advantage of being able to be ready by the built-in [text-to-speech](#speech.js) system.
+
+In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field) and [`lever`s](#lever) for providing input.
+
+All of these components are usually arranged on a [`shelf`](#shelf) which provides a background and frame, and allows for easy closing or pinning to the a controller.
+
+## User Rig
+
+VARTISTE is based on a laser-pointer type interface. I've created a user rig
+layout based on the laser-pointer concept, and you can incorporate it all with
+just the [`vartiste-user-root`](#vartiste-user-root) component. Some of the things it includes:
+
+- Automatic "Press any key to reset orientation" when entering VR.
+- Cool "VR Goggles" that show up in the spectator camera (but not during normal
+  display)
+- Ultra leap hand tracking
+- [`hand-action-tooltip`](#hand-action-tooltip) context sensitive button help
+  tied to the controllers
+- WebXR controller-only mode. I.e., you can use you controllers without your
+  headset, but just displaying on the desktop. Uses the [`xr-controllers`](#xr-controllers.js) system
+- Controller motion smoothing by default. Really improves experiences for jumpy controllers (*cough*ReverbG2*cough*)
+
+Note this user rig uses the
+[`webxr-motion-controller`](#webxr-motion-controller) and
+[`webxr-laser`](#webxr-laser) components rather than the a-frame built-in
+`laser-controls`. I found the [webxr-input-profiles
+motion-controllers](https://github.com/immersive-web/webxr-input-profiles) to be
+more consistent and up-to-date than the components built into a-frame, so I
+built the [`webxr-input-profiles`](#webxr-input-profiles) systen to use that
+instead.
+
+## Interaction Components
+
+User interaction is built around laser-control-type raycasting. Interactive
+elements have the `clickable` HTML class set, which makes them visible to the
+raycasters. `click` events are emitted when these elements are clicked.
+
+Every `clickable` entity, by default, can also be grabbed and moved. Grabbing
+and moving is handled via the [`manipulator`](#manipulator) component, which is installed on the user motion controllers or mouse controls. A lot more info can be found at the documentation for [`manipulator`](#manipulator)
+
+There's also a bunch of built-in constraints, which can be set on entities to
+restrict how they move when grabbed. For instance
+[`manipulator-weight`](#manipulator-weight) makes entities feel "heavy" by
+slowing down their movement when grabbed.
+
+## Other cool stuff
+
+There's lots of other nifty components and systems, for instance
+[`canvas-fx`](#canvas-fx), which lets you quickly apply special effects to a
+canvas, or [`glb-exporter`](#glb-exporter) which will let you download any
+arbitrary entity or `THREE.Object3D` as a glb file in a single function call. There's even a PhysX-based [physics system](#physics.js)!
+
+Ultimately, the best way to find out everything that's available is to read
+through these documents, play around with the examples and VARTISTE itself, and
+failing that to read the source code.
+
+Also, VARTISTE uses a bunch of premade environments, these are packaged separately in the [aframe-enviropacks](https://www.npmjs.com/package/aframe-enviropacks) package.
+
 ## Assets
 
 Assets required for some of the basic component use are automatically included
@@ -63,7 +151,7 @@ aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the 
   `assetUrl/assets/####.###`. Use this option if you want to use webpack and
   have a custom public-facing URL
 
-# Component Reference
+## Component Reference
 
 The full API and component reference can be found at
 [https://vartiste.xyz/docs.html](https://vartiste.xyz/docs.html). Please note
@@ -71,7 +159,9 @@ that it is still under construction. The source code is available as well at
 [https://gitlab.com/zach-geek/vartiste](https://gitlab.com/zach-geek/vartiste),
 and contributions, both code-wise and documentation-wise are welcome.
 
-# Example Scene
+# Examples
+
+## Example Scene
 
 ```html
 <!DOCTYPE html>
@@ -219,6 +309,11 @@ and contributions, both code-wise and documentation-wise are welcome.
 </p>
 <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
 
+## Physics playground
+
+The [aframe-vartiste-toolkit physics playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html%3A1%3A0) is a good example of using the toolkit for things other than painting and drawing, and the best example of the [physics](#physics.js) components so far.
+
+# Source Code
 
 For information, you can also read through the source code:
 

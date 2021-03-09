@@ -1,0 +1,5 @@
+a-entity shelf="width: 5; height: 5; pinnable: false; closeable: true" scale="0.1 0.1 0.1"
+  a-entity position="0 2.3 0"
+    a-entity text="value: Welcome to VARTISTE; anchor: center; align: center; width: 2.9; wrapCount: 20"
+  a-entity position="-1.25 2.0 0"
+    a-entity icon-button="#asset-folder-open-outline"

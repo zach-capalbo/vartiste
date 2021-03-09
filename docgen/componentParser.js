@@ -33,7 +33,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
         if (currentComment)
         {
-          comment.push(currentComment.text.trim())
+          comment.push(currentComment.text.replace(/\s/, ""))
           startLine = currentComment.loc.line || c.loc.start.line
         }
 
@@ -98,7 +98,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   {
       if (!schema) return
 
-      headers = ["Name", "Type", "Default", "Description"]
+      headers = ["Property", "Type", "Default", "Description"]
       lines = ["|" + headers.map(h => ` ${h} `).join("|") + "|"]
       lines.push("|" + headers.map(h => `---`).join("|") + "|")
 
@@ -172,7 +172,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
   {
     let comment = commentForLocation(expression.id.loc)
     // if (!comment) continue
-    comment = formatCommentForTable(comment)
+    // comment = formatCommentForTable(comment)
 
     let className = expression.id.name
 

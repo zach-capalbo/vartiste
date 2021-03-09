@@ -422,10 +422,12 @@ var STATES = {
 //
 // Example:
 //
+//```html
 //    <a-entity id="rig" camera="">
 //        <a-entity id="right-hand" webxr-laser="hand: right"></a-entity>
 //        <a-entity id="left-hand" webxr-laser="hand: left"></a-entity>
 //    </a-entity>
+//```
 AFRAME.registerComponent('webxr-laser', {
   dependencies: ['raycaster'],
   schema: {

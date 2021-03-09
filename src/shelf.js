@@ -4,6 +4,23 @@ const {Util} = require('./util.js')
 // A moveable container for other components, consisting of a handlebar and a
 // wood-like background. You can create a mixin with the id `shelf-bg` or
 // `shelf-handle` to modify the background or handlebar, respectively.
+//
+// For instance,
+//
+//```
+// <a-entity shelf="name: Demo Shelf; closeable: true; pinnable: false">
+//   <a-entity icon-row="" position="-1.5 1 0">
+//     <a-entity icon-button="#asset-close"></a-entity>
+//     <a-entity icon-button="#asset-camera"></a-entity>
+//     <a-entity icon-button="" text="value: 3; color: #FFF; wrapCount: 3; align: center; width: 0.4"></a-entity>
+//   </a-entity>
+//   <a-entity text="value: This is a what a shelf looks like by default; width: 2.8; align: center; anchor: center"></a-entity>
+// </a-entity>
+//```
+//
+// Is displayed as:
+//
+// ![A sample picture of a shelf](./static/images/demoshelf.png)
 AFRAME.registerComponent('shelf', {
   dependencies: ['grab-activate', 'bypass-hidden-updates'],
   schema: {

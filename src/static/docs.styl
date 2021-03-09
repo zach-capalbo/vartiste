@@ -24,16 +24,23 @@ header
 code, pre
   text-align: left
   font-family: 'Fira Mono', monospace
+pre code
+  font-size: small
+  overflow-x: auto
 
 pre
   background-color: #f0f0f0
   padding 0.3em
   border-radius: 3px
+  overflow-x: auto
 
 #readme
   code, pre
     max-width: 100%
     overflow-x: auto
+  & > pre
+    max-height: 30em
+    border 1px solid #aaa
 
 hr
   border: 1px solid #eee
@@ -66,6 +73,8 @@ hr
     width 100%
     max-width 100%
     // transform: translate(-12.5%, 0)
+  thead
+    background-color: #fafafa
 
   tr:hover
 
@@ -74,3 +83,30 @@ hr
     padding 0.4em
     min-width: 8em
     word-wrap: break-word
+
+  p code
+    white-space: pre-line
+
+  p > img:only-child
+    margin: auto
+    display block
+
+.toc
+  width: -moz-fit-content
+  width: fit-content
+  margin: auto
+  & > ul > li > a
+    font-size: 120%
+  & > ul > li > ul
+    font-size: 75%
+    margin-bottom: 1em
+  & > ul > li > ul > li
+    border-bottom: 1px dashed #ee
+    & > a
+      font-size: 120%
+      margin-right: 1.3em
+      color: inherit
+      font-weight: normal
+      text-decoration: none
+    & > .type
+      float: right
