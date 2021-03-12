@@ -21,6 +21,17 @@ unpkg:
 Including the javascript file automatically registers the components and
 systems.
 
+**Note:** It is recommended to specify a version instead of using _latest_, in order to avoid unexpected changes. E.g:
+
+```html
+<html>
+<head>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.20.0/vartiste-toolkit.js"></script>
+</head>
+...
+</html>
+```
+
 # Toolkit Overview
 
 The *aframe-vartiste-toolkit* has a lot of stuff in it. It's built by exporting

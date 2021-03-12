@@ -65,6 +65,9 @@ async function addDocumentation(src)
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> {
+
+  document.querySelector('#blender-plugin-link').href = require('!!file-loader?name=vartiste_toolkit_entity_helper.[hash:hex:6].zip!./static/vartiste_toolkit_entity_helper.zip');
+
   let toc = document.createElement('ul')
   let lastH1List
   let entries = document.querySelectorAll('.docs h1, .docs h2')
