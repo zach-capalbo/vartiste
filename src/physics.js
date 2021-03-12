@@ -910,7 +910,7 @@ AFRAME.registerComponent('physx-joint-driver', {
   multiple: true,
   schema: {
     // Which axes the joint should operate on. Should be some combination of `x`, `y`, `z`, `twist`, `swing`
-    axes: {type: 'array'},
+    axes: {type: 'array', default: []},
 
     // How stiff the drive should be
     stiffness: {default: 1.0},
@@ -1063,15 +1063,15 @@ AFRAME.registerComponent('physx-joint-constraint', {
   schema: {
     // Which axes are explicitly locked by this constraint and can't be moved at all.
     // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
-    lockedAxes: {type: 'array'},
+    lockedAxes: {type: 'array', default: []},
 
     // Which axes are constrained by this constraint. These axes can be moved within the set limits.
     // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
-    constrainedAxes: {type: 'array'},
+    constrainedAxes: {type: 'array', default: []},
 
     // Which axes are explicitly freed by this constraint. These axes will not obey any limits set here.
     // Should be some combination of `x`, `y`, `z`, `twist`, `swing`
-    freeAxes: {type: 'array'},
+    freeAxes: {type: 'array', default: []},
 
     // Limit on linear movement. Only affects `x`, `y`, and `z` axes.
     // First vector component is the minimum allowed position
@@ -1552,7 +1552,6 @@ AFRAME.registerComponent('dual-wield-target', {
         if (this.data.wobblySword)
         {
           joint.setAttribute('physx-joint-constraint', {
-
                                   limitCone: {x: Math.PI/2, y: Math.PI/2},
                                   stiffness: 0.5, damping: 1, restitution: 0,
                                   limitTwist: {x: -Math.PI/2, y: Math.PI/2},
@@ -1758,6 +1757,17 @@ AFRAME.registerComponent('physx-contact-sound', {
 //    <a-entity id="Mesh3" physx-material="density: 100" physx-contact-sound="src: #boom"></a-entity> <!-- getObject3D('mesh') returns Mesh3 with no child-->
 // </a-entity>
 //```
+//
+// **Experimental Blender Plugin**
+//
+// ![Screenshot showing experimental blender plugin](./static/images/blenderplugin.png)
+//
+// I've written a small plugin for [Blender](https://www.blender.org/) which can
+// automatically set up a lot of the common properties for use in this physics
+// system. _Note that it is super experimental and under development. Make a
+// backup before using._
+//
+// **Download Blender Plugin:** <a id="blender-plugin-link">vartiste_toolkit_entity_helper.zip</a>
 AFRAME.registerComponent('gltf-entities', {
   dependencies: ['gltf-model'],
   schema: {
@@ -1830,7 +1840,13 @@ AFRAME.registerComponent('gltf-entities', {
       }
 
       currentRootEl.append(el)
-      VARTISTE.Util.whenLoaded(el, () => el.setObject3D('mesh', obj3d))
+      VARTISTE.Util.whenLoaded(el, () => {
+        el.setObject3D('mesh', obj3d)
+        obj3d.updateMatrix()
+        VARTISTE.Util.applyMatrix(obj3d.matrix, el.object3D)
+        obj3d.matrix.identity()
+        VARTISTE.Util.applyMatrix(obj3d.matrix, obj3d)
+      })
       currentRootEl = el
     }
 

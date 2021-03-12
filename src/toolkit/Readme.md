@@ -21,6 +21,17 @@ unpkg:
 Including the javascript file automatically registers the components and
 systems.
 
+**Note:** It is recommended to specify a version instead of using _latest_, in order to avoid unexpected changes. E.g:
+
+```html
+<html>
+<head>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.20.1/vartiste-toolkit.js"></script>
+</head>
+...
+</html>
+```
+
 # Toolkit Overview
 
 The *aframe-vartiste-toolkit* has a lot of stuff in it. It's built by exporting
@@ -180,7 +191,7 @@ and contributions, both code-wise and documentation-wise are welcome.
       /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
     }</script>
   <!--Just include the toolkit js file-->
-  <script src="/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
   <link rel="icon" href="/assets/favicon.png">
 </head>
 
