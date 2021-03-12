@@ -26,7 +26,7 @@ systems.
 ```html
 <html>
 <head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.20.0/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.20.1/vartiste-toolkit.js"></script>
 </head>
 ...
 </html>
@@ -191,7 +191,7 @@ and contributions, both code-wise and documentation-wise are welcome.
       /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
     }</script>
   <!--Just include the toolkit js file-->
-  <script src="/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
   <link rel="icon" href="/assets/favicon.png">
 </head>
 
