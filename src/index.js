@@ -108,3 +108,5 @@ document.addEventListener('keydown', e => {
 document.getElementById('got-it').addEventListener('click', e => {
   document.getElementById('need-help-notification').classList.add('hidden')
 })
+
+document.querySelector('a-scene').addEventListener('enter-vr', e => document.getElementById('need-help-notification').classList.add('hidden'))
