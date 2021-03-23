@@ -91,7 +91,7 @@ const PhysXUtil = {
       {
         console.warn(`Unknown axis ${axis} (PxD6Axis::${enumKey})`)
       }
-      this.enumAxes.push(PhysX.PxD6Axis[enumKey])
+      enumAxes.push(PhysX.PxD6Axis[enumKey])
     }
     return enumAxes;
   }
@@ -175,7 +175,9 @@ AFRAME.registerSystem('physx', {
 
     groundCollisionLayers: {default: [2]},
 
-    groundCollisionMask: {default: [1,2,3,4]}
+    groundCollisionMask: {default: [1,2,3,4]},
+
+    gravity: {type: 'vec3', default: {x: 0, y: -9.8, z: 0}},
   },
   init() {
     this.PhysXUtil = PhysXUtil;
@@ -341,6 +343,8 @@ AFRAME.registerSystem('physx', {
         PhysX.PxShapeFlag.eSIMULATION_SHAPE.value
     )
     this.defaultFilterData = new PhysX.PxFilterData(1, 1, 0, 0)
+
+    this.scene.setGravity(this.data.gravity)
 
     if (this.data.useDefaultScene)
     {
@@ -1767,7 +1771,12 @@ AFRAME.registerComponent('physx-contact-sound', {
 // system. _Note that it is super experimental and under development. Make a
 // backup before using._
 //
-// **Download Blender Plugin:** <a id="blender-plugin-link">vartiste_toolkit_entity_helper.zip</a>
+// **Download Blender Plugin:** <a id="blender-plugin-link">vartiste_toolkit_entity_helper.zip (v0.2.0)</a>
+//
+// **GLB Viewer**
+//
+// You can test your `gltf-entities` enabled glb files locally by dragging and
+// dropping them into this [web viewer](https://fascinated-hip-period.glitch.me/viewer.html)
 AFRAME.registerComponent('gltf-entities', {
   dependencies: ['gltf-model'],
   schema: {
