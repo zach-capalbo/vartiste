@@ -486,6 +486,11 @@ AFRAME.registerSystem('physx', {
   registerJoint(joint, component) {
     this.jointMap.set(joint.$$.ptr, component);
   },
+  removeBody(component) {
+    let body = component.rigidBody
+    this.objects.delete(component.el.object3D)
+    body.release()
+  },
   tock(t, dt) {
     if (t < this.data.delay) return
     if (!this.physXInitialized && this.data.autoLoad && !this.running) this.startPhysX()
@@ -744,6 +749,9 @@ AFRAME.registerComponent('physx-body', {
         this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_CCD, true)
       }
     }
+  },
+  remove() {
+    this.system.removeBody(this)
   },
   createGeometry(o) {
     if (o.el.hasAttribute('geometry'))
