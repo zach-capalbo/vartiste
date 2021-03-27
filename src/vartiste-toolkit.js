@@ -100,7 +100,8 @@ const {Pool} = require('./pool')
 const {MaterialTransformations} = require('./material-transformations')
 window.VARTISTE = {}
 VARTISTE.Util = require('./util.js').Util
-Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoStack, MaterialTransformations, VERSION})
+const Color = require('color')
+Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoStack, MaterialTransformations, VERSION, Color})
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
 AFRAME.registerComponent('vartiste-rotation-button-mapping', {

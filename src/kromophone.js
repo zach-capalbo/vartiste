@@ -1,0 +1,108 @@
+var Tone;
+const Color = require('color')
+const {Util} = require('./util.js')
+
+//Array.from(line.matchAll(/(0\.\d+)f?\*sin\(phase\*(\d+\.\d+)f?/g)).map(f => parseFloat(f[1]))
+const Timbres = {
+  trumpet: [0.66, 0.54, 0.6, 0.82, 0.83, 0.9, 0.83, 0.71, 0.48, 0.3, 0.21, 0.22, 0.15, 0.1],
+  organ: [0.001831, 0.11747, 0.606061, 0.667617, 0.32325, 0.32325, 0.667617, 0.606061, 0.11747],
+  ukulele: [0.914102564102564, 1, 0.624358974358974, 0.683333333333333, 0.638461538461538],
+  sin: [1.0],
+  marimba: [0.8105694691387023,0,-0.0900632743487447,0,0.8434636622299385,0,-0.016542234064055146,0,0.010007030483193857,0,-0.00669892123255126,0,0.0018838011188271615,1,-0.0036025309739497885,1,0.0028047386475387615,0]
+}
+const Voices = {
+  red: {pitch: 5.0, pan: 1.0, timbre: 'trumpet'},
+  green: {pitch: 1.5, pan: 0.0, timbre: 'organ'},
+  blue: {pitch: 1.0, pan: 0.5, timbre: 'trumpet'},
+  yellow: {pitch: 4.0, pan: 0.8, timbre: 'ukulele'},
+  white: {pitch: 2.0, pan: 1.0, timbre: 'sin'},
+}
+class Kromophone {
+  constructor() {
+    this.voice = {}
+    this.envelope = new Tone.AmplitudeEnvelope({
+      attack: 0.11,
+			decay: 0.0,
+			sustain: 0.5,
+			release: 1.2
+  	}).toDestination()
+    for (let color in Voices)
+    {
+      this.voice[color] = this.createVoice(Voices[color])
+      this.voice[color].gain.connect(this.envelope)
+    }
+  }
+  createVoice(voice) {
+    let frequency = 140 * voice.pitch
+    let timbre = Timbres[voice.timbre]
+    //create a synth and connect it to the main output (your speakers)
+    const gain = new Tone.Gain(0.2);
+    const panner = new Tone.Panner(voice.pan * 2 - 1).connect(gain)
+    const synth = new Tone.Oscillator({
+      "mute": false,
+      "volume": -14,
+      "detune": 0,
+      "frequency": frequency,
+      "partialCount": timbre.length,
+      "partials": timbre,
+      "phase": 0,
+      "type": "custom"
+    }).connect(panner)
+
+    synth.start();
+    return {synth, gain}
+  }
+  transform(color) {
+    let {r,g,b} = color.unitObject();
+    let s = Math.min(r,g,b)
+    let y = Math.min(r,g) - s
+    this.voice.red.gain.gain.value = r - y - s;
+    this.voice.green.gain.gain.value = g - y - s;
+    this.voice.blue.gain.gain.value = b - s;
+    this.voice.yellow.gain.gain.value = y;
+    this.voice.white.gain.gain.value = s;
+  }
+  static get Timbres() {return Timbres}
+  static get Voices() {return Voices}
+};
+
+
+
+Util.registerComponentSystem('kromophone', {
+  schema: {
+    source: {oneOf: ['none', 'camera', 'paint'], default: 'paint'}
+  },
+  events: {
+    colorchanged: function(e) {
+      if (!this.kromophone) return;
+      if (this.data.source !== 'paint') return;
+      this.kromophone.envelope.triggerAttackRelease(0.5)
+    },
+    startdrawing: function(e) {
+      if (!this.kromophone) return;
+      if (this.data.source !== 'paint') return;
+      this.kromophone.envelope.triggerAttack()
+    },
+    enddrawing: function(e) {
+      if (!this.kromophone) return;
+      if (this.data.source !== 'paint') return;
+      this.kromophone.envelope.triggerRelease()
+    }
+  },
+  init() {
+  },
+  start() {
+    import('tone').then((m) => {
+      Tone = m
+      Tone.start()
+      this.kromophone = new Kromophone();
+    })
+  },
+  stop() {
+    Tone.stop()
+  },
+  tick(t,dt) {
+    if (!this.kromophone) return;
+    this.kromophone.transform(this.el.sceneEl.systems['paint-system'].brush.ccolor)
+  }
+})

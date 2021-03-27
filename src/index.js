@@ -83,6 +83,7 @@ require('./brush-editor')
 require('./ik-solving')
 require('./xr-controllers')
 require('./manipulator-omni-tool')
+require('./kromophone')
 // require('./text')
 
 require('./app.styl')
