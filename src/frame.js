@@ -141,12 +141,12 @@ AFRAME.registerComponent("frame", {
     let zOffset = -0.001
     if (this.data.outline && !this.lineObject && !isNaN(width) && !isNaN(height))
     {
-      let outline = new THREE.Geometry()
-      outline.vertices.push(new THREE.Vector3(-width / 2, height / 2, zOffset));
-      outline.vertices.push(new THREE.Vector3(width / 2, height / 2, zOffset));
-      outline.vertices.push(new THREE.Vector3(width / 2, - height / 2, zOffset));
-      outline.vertices.push(new THREE.Vector3(-width / 2, - height / 2, zOffset));
-      outline.vertices.push(new THREE.Vector3(-width / 2, height / 2, zOffset));
+      let outline = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-width / 2, height / 2, zOffset),
+      new THREE.Vector3(width / 2, height / 2, zOffset),
+      new THREE.Vector3(width / 2, - height / 2, zOffset),
+      new THREE.Vector3(-width / 2, - height / 2, zOffset),
+      new THREE.Vector3(-width / 2, height / 2, zOffset)]);
 
       let lineObject = new THREE.Line(outline, new THREE.LineBasicMaterial( { color: this.data.outlineColor, linewidth: 5 } ))
       this.el.object3D.add(lineObject)

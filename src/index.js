@@ -4,6 +4,8 @@
 
 require('./loading-page')
 
+require('./framework/geometry-shim.js')
+
 require('./framework/fix-text-autoscaling-logging.js')
 require('./framework/GLTFExporter.js')
 // require('./framework/valve-index-controls.js')

@@ -1,11 +1,13 @@
-let o = THREE.BufferGeometry.prototype.fromGeometry
-THREE.BufferGeometry.prototype.fromGeometry = function(g) {
-  // Suppress the "Faceless geometries are not supported " error
-  if (g.faces.length === 0) {
-    return this;
+if (THREE.BufferGeometry.prototype.fromGeometry) {
+  let o = THREE.BufferGeometry.prototype.fromGeometry
+  THREE.BufferGeometry.prototype.fromGeometry = function(g) {
+    // Suppress the "Faceless geometries are not supported " error
+    if (g.faces.length === 0) {
+      return this;
+    }
+    return o.call(this, g)
   }
-  return o.call(this, g)
-}
+};
 //
 // let originalBufferGeometry = THREE.BufferGeometry
 //
