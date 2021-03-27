@@ -18,6 +18,13 @@ uniform int u_shape;
 uniform bool u_onion;
 uniform bool u_bumpy;
 uniform bool u_hard;
+uniform bool u_noisy;
+uniform bool u_bristles;
+
+float rand3(vec3 co){
+    return fract(sin(dot(co ,vec3(12.9898,78.233,34.23))) * 43758.5453);
+}
+
 
 
 float opOnion( in float sdf, in float thickness )
@@ -44,6 +51,14 @@ float opDisplace(in float d, in vec3 p, in float size)
   return d + d2 + u_size * 0.15;
 }
 
+vec3 opTwist( in vec3 p, float k )
+{
+    float c = cos(k*p.y);
+    float s = sin(k*p.y);
+    mat2  m = mat2(c,-s,s,c);
+    vec3  q = vec3(m*p.xz,p.y);
+    return q;
+}
 
 float sdSphere( vec3 p, float s )
 {
@@ -85,6 +100,12 @@ float sdHorizontalCapsule( vec3 p, float h, float r )
   return length( p ) - r;
 }
 
+float sdCylinder( vec3 p, vec3 c )
+{
+  /* return length(p.xz-c.xz)-c.y; */
+  return length(p.xz-c.xy)-c.z;
+}
+
 float sdBrush(vec3 p)
 {
   p.y += u_size / 2.0;
@@ -97,6 +118,23 @@ float sdBrush(vec3 p)
   float base = sdHorizontalCapsule(pp, u_size * 4.5, u_size * 0.3);
 
   return min(teeth, base);
+}
+
+float opBristles(in float d, vec3 p, in float size)
+{
+  p.x += 0.2 * sin(p.y * 2.0);
+  p.z += 0.2 * cos(p.y * 1.0);
+  p.x *= 3.0;
+  p.z *= 3.0;
+  vec3 q = p;
+  q = opRep(q, vec3(2.0, 0.0, 2.0));
+  /* q = mix(q, opTwist(q, 1.0), 0.3); */
+  /* vec3 q = p; */
+  /* float cylinder = sdCylinder(q, vec3(u_size * 2.0, u_size * 2.0, u_size * 0.6));//sdVerticalCapsule(q, u_size * 2.0, u_size * 0.3); */
+  float cylinder = sdCylinder(q, vec3(2.0, 0.5, 0.6));
+  cylinder = cylinder - size / 3.0;// * size * size;
+  /* return cylinder - size; */
+  return max(cylinder, d);
 }
 
 
@@ -126,11 +164,15 @@ void main() {
 
   d = u_bumpy ? opDisplace(d, p, 20.0) : d;
 
-  d = d / u_size;
+  d = u_bristles ? opBristles(d, p, u_size) : d;
+
+  d = d / pow(u_size, 1.0 / 3.0);
 
   d = clamp(-d, 0.0, 1.0);
 
   d = u_hard ? smoothstep(0.0, u_size * 0.2, d) : d;
+
+  d = u_noisy ? d * rand3(p) : d;
 
   /* d = d - 0.01; */
 
