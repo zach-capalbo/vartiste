@@ -7,7 +7,7 @@ Util.registerComponentSystem('volumetrics', {
     bumpy: {default: false},
     hard: {default: true},
     noisy: {default: false},
-    bristles: {default: true},
+    bristles: {default: false},
     undoEnabled: {default: false},
     undoThrottle: {default: 250},
   },
