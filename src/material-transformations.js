@@ -79,6 +79,10 @@ class MaterialTransformations {
       metalCtx.fillStyle = "#000"
       metalCtx.fillRect(0,0, metalness.width, metalness.height)
     }
+    else
+    {
+      metalness = Util.cloneCanvas(metalness)
+    }
     if (metalness.width !== roughness.width || metalness.height !== roughness.height)
     {
       console.warn("Metalness and roughness are not same dimensions")

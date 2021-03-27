@@ -6,6 +6,8 @@ Util.registerComponentSystem('volumetrics', {
     onion: {default: false},
     bumpy: {default: false},
     hard: {default: true},
+    noisy: {default: false},
+    bristles: {default: false},
     undoEnabled: {default: false},
     undoThrottle: {default: 250},
   },
@@ -185,7 +187,7 @@ function registerVolumeTool(name, toolOpts) {
       if (!this.volumetrics.proc) return
       if (!this.data.toolActive) return
 
-      console.log("Drawing volume")
+      // console.log("Drawing volume")
 
       let proc = this.volumetrics.proc
       let destinationCanvas = Compositor.drawableCanvas
@@ -233,6 +235,8 @@ function registerVolumeTool(name, toolOpts) {
       proc.setUniform('u_onion', 'uniform1i', this.volumetrics.data.onion)
       proc.setUniform('u_bumpy', 'uniform1i', this.volumetrics.data.bumpy)
       proc.setUniform('u_hard', 'uniform1i', this.volumetrics.data.hard)
+      proc.setUniform('u_noisy', 'uniform1i', this.volumetrics.data.noisy)
+      proc.setUniform('u_bristles', 'uniform1i', this.volumetrics.data.bristles)
 
       // proc.setInputCanvas(Compositor.drawableCanvas)
 
