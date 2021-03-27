@@ -265,7 +265,8 @@ AFRAME.registerComponent('camera-tool', {
     near: {default: 0.1},
     far: {default: 10},
     preview: {default: true},
-    previewThrottle: {default: 500},
+    previewThrottle: {default: 300},
+    previewLive: {default: false},
     aspectAdjust: {default: 1.0},
     captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
     captureMaterial: {default: false},
@@ -582,14 +583,16 @@ AFRAME.registerComponent('camera-tool', {
       }
       preview.setAttribute('position', `0 -${cameraWidth / 2} 0`)
       preview.setAttribute('frame', 'closable: false; pinnable: false')
-      let previewCanvas = document.createElement('canvas')
-      previewCanvas.width = 256
-      previewCanvas.height = previewCanvas.width * this.camera.aspect
-      this.previewCanvas = previewCanvas
-      this.previewCtx = previewCanvas.getContext('2d')
-      this.previewCtx.fillStyle = '#333'
+      // let previewCanvas = document.createElement('canvas')
+      // previewCanvas.width = 256
+      // previewCanvas.height = previewCanvas.width * this.camera.aspect
+      // this.previewCanvas = previewCanvas
+      // this.previewCtx = previewCanvas.getContext('2d')
+      // this.previewCtx.fillStyle = '#333'
+      let previewTarget = new THREE.WebGLRenderTarget(256, Math.round(256 * this.camera.aspect))
+      this.previewTarget = previewTarget
       this.preview = preview
-      preview.setAttribute('material', {src: previewCanvas, npot: true, side: 'double'})
+      preview.setAttribute('material', {npot: true, side: 'double'})
       this.el.append(preview)
     }
 
@@ -636,6 +639,11 @@ AFRAME.registerComponent('camera-tool', {
       button.setAttribute('icon-button', '#asset-brightness-4')
       button.setAttribute('tooltip', 'Capture Material Textures')
       button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'captureMaterial'})
+      button = document.createElement('a-entity')
+      row.append(button)
+      button.setAttribute('icon-button', '#asset-play-pause')
+      button.setAttribute('tooltip', 'Update preview live')
+      button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'previewLive'})
     }
     this.activate = function(){};
   },
@@ -656,21 +664,30 @@ AFRAME.registerComponent('camera-tool', {
   },
   tick(t,dt) {
     if (!this.preview) return;
-    if (!(this.el.is("grabbed") || this.el.is('cursor-hovered'))) return;
+    if (!(this.el.is("grabbed") || this.el.is('cursor-hovered') || this.data.previewLive)) return;
 
-    if (this.data.orthographic)
-    {
-      Util.ensureSize(this.previewCanvas, 255, 255 / (this.camera.right - this.camera.left) * (this.camera.top - this.camera.bottom))
-    }
-    else
-    {
-      Util.ensureSize(this.previewCanvas, 256, 256 * this.camera.aspect)
-    }
-
-    this.previewCtx.fillRect(0, 0, this.previewCanvas.width, this.previewCanvas.height)
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
-    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.previewCanvas)
+
+    let renderer = this.el.sceneEl.renderer
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+
+    let oldTarget = renderer.getRenderTarget()
+
+    let newTarget = this.previewTarget
+
+    this.preview.components.material.material.map = null
+
+    newTarget.texture.encoding = renderer.outputEncoding
+    renderer.setRenderTarget(newTarget)
+    renderer.render(this.el.sceneEl.object3D, this.camera);
+
+    this.preview.components.material.material.map = this.previewTarget
+
+    renderer.xr.enabled = wasXREnabled;
+    renderer.setRenderTarget(oldTarget)
+
     this.helper.visible = true
     this.el.sceneEl.emit("endsnap", {source: this.el})
     this.preview.getObject3D('mesh').material.map.needsUpdate = true
