@@ -124,12 +124,14 @@ AFRAME.registerComponent("frame", {
     {
       let {width, height} = this
       let title = document.createElement('a-entity')
-      title.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
+      title.setAttribute('geometry', 'primitive: plane; height: 0; width: 0')
       title.setAttribute('material', 'color: #26211c; shader: flat')
       title.setAttribute('position', `${- width / 4 + 0.055} ${height / 2 + 0.055} 0`)
       title.setAttribute('text', `color: #FFF; width: ${width / 2}; align: left; value: ${this.data.name}; wrapCount: 20; zOffset: 0.005`)
       title.setAttribute('class', 'raycast-invisible')
       this.el.append(title)
+      // title.addEventListener('textfontset', () => title.setAttribute('geometry', 'primitive: plane; height: auto; width: auto'))
+      // Util.whenLoaded([this.el, title], () => title.setAttribute('geometry', 'primitive: plane; height: auto; width: 1'))
       this.objects.push(title.object3D)
       this.title = title
     }
