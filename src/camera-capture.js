@@ -145,6 +145,37 @@ AFRAME.registerSystem('camera-capture', {
     newTarget.dispose()
     return canvas
   },
+  capturePixelData(camera,  {data, width, height}) {
+    let renderer = this.el.sceneEl.renderer
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+
+    let oldTarget = renderer.getRenderTarget()
+
+
+    let targetTempCanvas = this.getTargetTempCanvas()
+
+    let newTarget = new THREE.WebGLRenderTarget(width, height)
+
+    if (!data)
+    {
+      data = new Uint8Array(4 * width * height)
+    }
+
+    newTarget.texture.encoding = renderer.outputEncoding
+    renderer.setRenderTarget(newTarget)
+
+    renderer.render(this.el.sceneEl.object3D, camera);
+
+    let gl = renderer.getContext();
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data)
+
+    renderer.xr.enabled = wasXREnabled
+
+    renderer.setRenderTarget(oldTarget)
+    newTarget.dispose()
+    return data
+  },
   raytraceToCanvas(camera, canvas) {
     if (!canvas) {
       canvas = this.getTempCanvas()
@@ -1188,24 +1219,28 @@ AFRAME.registerComponent('eye-drop-tool', {
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
 
-    let targetCanvas = this.cameraCanvas
-    let targetContext = targetCanvas.getContext("2d")
+    let width = 64
+    let height = 64
 
-    targetContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height)
-    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+    let targetSize = 4 * width * height
 
-    let imageData = targetContext.getImageData(0, 0, targetCanvas.width, targetCanvas.height)
+    if (!this.buffer || this.buffer.length !== targetSize)
+    {
+      this.buffer = new Uint8Array(targetSize)
+    }
+    this.el.sceneEl.systems['camera-capture'].capturePixelData(this.camera, {data: this.buffer, width, height})
+    let buffer = this.buffer
 
     let avg = {r:0.0, g:0.0, b:0.0, alpha: 0}
-    let {height, width} = targetCanvas
-    for (let j = 0; j < targetCanvas.height; j++)
+
+    for (let j = 0; j < height; j++)
     {
-      for (let i = 0; i < targetCanvas.width; i++)
+      for (let i = 0; i < width; i++)
       {
-        avg.r += imageData.data[4*(j * width + i) + 0] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
-        avg.g += imageData.data[4*(j * width + i) + 1] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
-        avg.b += imageData.data[4*(j * width + i) + 2] / 255 * imageData.data[4*(j * width + i) + 3] / 255.0
-        avg.alpha += imageData.data[4*(j * width + i) + 3] / 255.0
+        avg.r += buffer[4*(j * width + i) + 0] / 255 * buffer[4*(j * width + i) + 3] / 255.0
+        avg.g += buffer[4*(j * width + i) + 1] / 255 * buffer[4*(j * width + i) + 3] / 255.0
+        avg.b += buffer[4*(j * width + i) + 2] / 255 * buffer[4*(j * width + i) + 3] / 255.0
+        avg.alpha += buffer[4*(j * width + i) + 3] / 255.0
       }
     }
 

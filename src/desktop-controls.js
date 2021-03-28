@@ -104,11 +104,19 @@ AFRAME.registerSystem('desktop-controls', {
     document.querySelector('#camera-root').removeState('looking')
     document.querySelector('#mouse').removeState('looking')
     document.querySelector('#mouse').removeState('grabmode')
+    document.querySelector('#mouse').removeState('sampling')
   },
   grab() {
     document.querySelector('#camera-root').addState('looking')
     document.querySelector('#mouse').addState('looking')
     document.querySelector('#mouse').addState('grabmode')
+  },
+  sample() {
+    document.querySelector('#mouse').addState('sampling')
+
+    document.querySelector('#camera-root').removeState('looking')
+    document.querySelector('#mouse').removeState('looking')
+    document.querySelector('#mouse').removeState('grabmode')
   },
   rotateLeft() {
     this.el.sceneEl.systems['artist-root'].rotateLeft()
