@@ -19,21 +19,36 @@ const Voices = {
 }
 class Kromophone {
   constructor() {
+    this.baseFrequency = 140;
     this.voice = {}
     this.envelope = new Tone.AmplitudeEnvelope({
       attack: 0.11,
 			decay: 0.0,
 			sustain: 0.5,
 			release: 1.2
-  	}).toDestination()
+  	});
+    let voiceConnection = this.envelope
+    let o = this.envelope;
+
+    // Roughness
+    // let noise = new Tone.Noise("pink").start();
+    // const mult = new Tone.Multiply(0.0);
+    // this.noise = mult
+    // noise.connect(mult);
+    // let add = new Tone.Add();
+    // voiceConnection = add;
+    // mult.connect(add.addend)
+    // voiceConnection.connect(o)
+
+    o.toDestination()
     for (let color in Voices)
     {
       this.voice[color] = this.createVoice(Voices[color])
-      this.voice[color].gain.connect(this.envelope)
+      this.voice[color].gain.connect(voiceConnection)
     }
   }
   createVoice(voice) {
-    let frequency = 140 * voice.pitch
+    let frequency = this.baseFrequency * voice.pitch
     let timbre = Timbres[voice.timbre]
     //create a synth and connect it to the main output (your speakers)
     const gain = new Tone.Gain(0);
@@ -51,6 +66,13 @@ class Kromophone {
 
     synth.start();
     return {synth, gain}
+  }
+  rebase(frequency) {
+    this.baseFrequency = frequency
+    for (let color in this.voice)
+    {
+      this.voice[color].synth.frequency.value = Voices[color].pitch * frequency
+    }
   }
   transform(color) {
     let {r,g,b} = color.unitObject();
@@ -152,7 +174,18 @@ Util.registerComponentSystem('kromophone', {
     if (!this.data.active) return;
     let b = this.cameraBytes
     let gl = this.el.sceneEl.renderer.getContext()
-    gl.readPixels(Math.round(this.el.sceneEl.canvas.width / 2), Math.round(this.el.sceneEl.canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
+    let viewport = gl.getParameter(gl.VIEWPORT);
+    if (this.el.sceneEl.is('vr-mode'))
+    {
+      // -> Left eye toward center a little more
+      gl.readPixels(Math.round(viewport[2] *  0.55), Math.round(viewport[3] / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
+    }
+    else {
+      gl.readPixels(Math.round(viewport[2] / 2), Math.round(viewport[3] / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
+    }
     this.kromophone.transform(new Color(b))
+
+      // console.log(gl.drawingBufferWidth, gl.drawingBufferHeight, b)
+
   }
 })
