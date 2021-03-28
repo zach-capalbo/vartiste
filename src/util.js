@@ -1,5 +1,6 @@
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
+const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
   'multiply': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
@@ -437,6 +438,6 @@ const Util = new VARTISTEUtil();
 
 Pool.init(Util)
 
-window.VARTISTE = {Util}
+window.VARTISTE = {Util, Color}
 
 export {Util}

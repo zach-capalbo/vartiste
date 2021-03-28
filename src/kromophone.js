@@ -36,7 +36,7 @@ class Kromophone {
     let frequency = 140 * voice.pitch
     let timbre = Timbres[voice.timbre]
     //create a synth and connect it to the main output (your speakers)
-    const gain = new Tone.Gain(0.2);
+    const gain = new Tone.Gain(0);
     const panner = new Tone.Panner(voice.pan * 2 - 1).connect(gain)
     const synth = new Tone.Oscillator({
       "mute": false,
@@ -70,7 +70,8 @@ class Kromophone {
 
 Util.registerComponentSystem('kromophone', {
   schema: {
-    source: {oneOf: ['none', 'camera', 'paint'], default: 'paint'}
+    source: {oneOf: ['none', 'camera', 'paint'], default: 'paint'},
+    active: {default: false},
   },
   events: {
     colorchanged: function(e) {
@@ -90,19 +91,68 @@ Util.registerComponentSystem('kromophone', {
     }
   },
   init() {
+    this.cameraBytes = new Uint8Array(4);
+  },
+  update(oldData) {
+    if (this.data.active) {
+      this.start()
+    } else {
+      this.stop()
+    }
+    if (this.data.source !== oldData.source && this.kromophone)
+    {
+      if (oldData.source === 'camera')
+      {
+        this.kromophone.envelope.triggerRelease()
+      }
+
+      if (this.data.source === 'camera')
+      {
+        this.kromophone.envelope.triggerAttack()
+      }
+    }
   },
   start() {
-    import('tone').then((m) => {
-      Tone = m
+    if (!this.kromophone) {
+      import('tone').then((m) => {
+        Tone = m
+        this.Tone = Tone
+        Tone.start()
+        this.kromophone = new Kromophone();
+
+        if (this.data.source === 'camera')
+        {
+          this.kromophone.envelope.triggerAttack()
+        }
+      })
+    }
+    else
+    {
       Tone.start()
-      this.kromophone = new Kromophone();
-    })
+      Tone.Destination.mute = false;
+    }
   },
   stop() {
-    Tone.stop()
+    if (!Tone) return;
+    Tone.Destination.mute = true;
   },
   tick(t,dt) {
     if (!this.kromophone) return;
-    this.kromophone.transform(this.el.sceneEl.systems['paint-system'].brush.ccolor)
+    if (this.data.source === 'paint')
+    {
+      let color = this.el.sceneEl.systems['paint-system'].brush.ccolor
+      if (color) {
+        this.kromophone.transform(color)
+      }
+    }
+  },
+  tock(t, dt) {
+    if (!this.kromophone) return;
+    if (this.data.source !== 'camera') return;
+    if (!this.data.active) return;
+    let b = this.cameraBytes
+    let gl = this.el.sceneEl.renderer.getContext()
+    gl.readPixels(Math.round(this.el.sceneEl.canvas.width / 2), Math.round(this.el.sceneEl.canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
+    this.kromophone.transform(new Color(b))
   }
 })

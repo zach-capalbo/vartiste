@@ -1,0 +1,5 @@
+a-entity shelf="name: Kromophone" scale="0.3 0.3 1"
+  a-entity icon-row="" position="-1.6 1.1 0"
+    a-entity icon-button="#asset-play-pause" toggle-button="target: a-scene; component: kromophone; property: active" tooltip="Play / Pause sonification"
+    a-entity icon-button="#asset-brush" radio-button="target: a-scene; component: kromophone; property: source; value: paint" tooltip="Sonify paint color"
+    a-entity icon-button="#asset-camera" radio-button="target: a-scene; component: kromophone; property: source; value: camera" tooltip="Sonify display center"
