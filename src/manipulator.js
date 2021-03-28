@@ -148,9 +148,9 @@ AFRAME.registerComponent('manipulator', {
 
     }
 
-    this.grabLine = new THREE.Geometry();
-    this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
-    this.grabLine.vertices.push(new THREE.Vector3(0,0,4));
+    this.grabLine = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0,0,0),
+    new THREE.Vector3(0,0,4)]);
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 50 } ))
     this.startPoint.add(this.grabLineObject);
 
@@ -279,8 +279,9 @@ AFRAME.registerComponent('manipulator', {
       // console.log("Parent WS", ws)
     }
 
-    this.grabLine.vertices[1].set(this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
-    this.grabLine.verticesNeedUpdate = true;
+    this.grabLine.attributes.position.setXYZ(1, this.endPoint.position.x, this.endPoint.position.y, this.endPoint.position.z)
+
+    this.grabLine.attributes.position.needsUpdate = true;
     this.grabLineObject.visible = true
     this.endPoint.visible = true;
 

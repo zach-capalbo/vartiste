@@ -19,4 +19,5 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
     a-entity icon-button="#asset-web" system-click-action="system: user-media; action: showDesktop" tooltip="Show Desktop"
     a-entity icon-button="#asset-video-vintage" system-click-action="system: user-media; action: showCamera" tooltip="Show Webcam"
     a-entity icon-button="#asset-hand-right" system-click-action="system: xr-controllers-only; action: enterSession" tooltip="Use VR Controllers with Desktop Display"
+    a-entity icon-button="#asset-account-voice" popup-button="popup: kromophone-shelf;  deferred: true; scale: 0.15 0.15 0.15" tooltip="Kromophone color sonification"
   a-entity position="0 -1.1 0" text="value: *Experimental Tools*; width: 3; wrapCount: 40"

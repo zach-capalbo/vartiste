@@ -19,7 +19,7 @@ Util.registerComponentSystem('mesh-tools', {
     Compositor.meshRoot.traverse(o => {
       if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
       {
-        o.geometry.fromGeometry(mod.modify(o.geometry))
+        mod.modify(o.geometry).toBufferGeometry(o.geometry)
       }
     })
   },

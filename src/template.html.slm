@@ -19,7 +19,7 @@ html
     meta property="twitter:description" content=desc
     meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
 
-    script src="https://aframe.io/releases/1.1.0/aframe.js"
+    script src="https://aframe.io/releases/1.2.0/aframe.js"
     script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.9.0/aframe-enviropacks.js"
     /script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"
     /script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"

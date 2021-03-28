@@ -4,6 +4,8 @@
 
 require('./loading-page')
 
+require('./framework/geometry-shim.js')
+
 require('./framework/fix-text-autoscaling-logging.js')
 require('./framework/GLTFExporter.js')
 // require('./framework/valve-index-controls.js')
@@ -81,6 +83,7 @@ require('./brush-editor')
 require('./ik-solving')
 require('./xr-controllers')
 require('./manipulator-omni-tool')
+require('./kromophone')
 // require('./text')
 
 require('./app.styl')

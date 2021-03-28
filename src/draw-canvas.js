@@ -1,6 +1,7 @@
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {Pool} from './pool.js'
+import {Util} from './util.js'
 
 // Allows painting to a canvas with a [`hand-draw-tool`](#hand-draw-tool). See
 // the VARTISTE toolkit demo for example usage
@@ -35,6 +36,10 @@ AFRAME.registerComponent('draw-canvas', {
 
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       this.brush = e.detail.brush
+    })
+
+    Util.whenLoaded([this.el, this.el.sceneEl], () => {
+      this.brush = paintSystem.brush
     })
 
     this.el.addEventListener('framechanged', (e) => {
@@ -234,7 +239,6 @@ AFRAME.registerComponent('draw-canvas', {
     }
 
     if (canvas === null) {
-      console.log("Using compositor canvas", canvas, this.data.canvas)
       let compositor = document.getElementById('canvas-view').components.compositor
       if (compositor.activeLayer.mode.endsWith("Map"))
       {
@@ -254,11 +258,12 @@ AFRAME.registerComponent('draw-canvas', {
 
     let sampleCanvas = this.sampleCanvas
     let ctx = sampleCanvas.getContext('2d')
-    let width = Math.min(Math.round(this.brush.width), 1)
-    let height = Math.min(Math.round(this.brush.height), 1)
+    let width = Math.max(Math.round(this.brush.width), 1)
+    let height = Math.max(Math.round(this.brush.height), 1)
+    // console.log("Using canvas", this.brush, canvas, width, height)
 
-    if (typeof width === 'undefined') return
-    if (typeof height === 'undefined') return
+    if (typeof width === 'undefined' || !isFinite(width)) return
+    if (typeof height === 'undefined' || !isFinite(height)) return
 
     this.sampleCanvas.width = width
     this.sampleCanvas.height = height
@@ -310,6 +315,8 @@ AFRAME.registerComponent('draw-canvas', {
     {
       throw new Error("Color sampling error. NAN", uv, x,y, avg, canvas, sampleCanvas, width, height)
     }
+
+    // console.log("Picked", avg)
 
     // if (!this.el.sceneEl.getAttribute('renderer').colorManagement)
     {

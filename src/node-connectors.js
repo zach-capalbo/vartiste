@@ -13,8 +13,8 @@ AFRAME.registerComponent('node-grabber', {
     {
       grabber.object3D.visible = true
       this.el.parentEl.components['node-output'].snapToInput(grabber)
-      grabber.grabLine.vertices[1].copy(grabber.object3D.position)
-      grabber.grabLine.verticesNeedUpdate = true
+      grabber.grabLine.attributes.position.setXYZ(1, grabber.object3D.position.x, grabber.object3D.position.y, grabber.object3D.position.z)
+      grabber.grabLine.attributes.position.needsUpdate = true
     }
     else
     {
@@ -50,8 +50,8 @@ AFRAME.registerComponent('node-output', {
 
       if (!grabber.is('grabbed'))
       {
-        grabber.grabLine.vertices[1].set(0, 0, 0)
-        grabber.grabLine.verticesNeedUpdate = true
+        grabber.grabLine.attributes.position.setXYZ(1, 0, 0, 0)
+        grabber.grabLine.attributes.position.needsUpdate = true
 
         if (grabber !== this.grabber)
         {
@@ -89,9 +89,9 @@ AFRAME.registerComponent('node-output', {
       }
     })
 
-    this.grabLine = new THREE.Geometry();
-    this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
-    this.grabLine.vertices.push(new THREE.Vector3(0,0,0));
+    this.grabLine = new THREE.BufferGeometry().setFromPoints([
+     new THREE.Vector3(0,0,0),
+     new THREE.Vector3(0,0,0)])
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0x34eb80, linewidth: 50 } ))
     this.grabLineObject.frustumCulled = false
     grabber.grabLineObject = this.grabLineObject
@@ -104,8 +104,8 @@ AFRAME.registerComponent('node-output', {
     if (!snapped)
     {
       grabber.object3D.position.set(0, 0, 0)
-      grabber.grabLine.vertices[1].set(0,0,0)
-      grabber.grabLine.verticesNeedUpdate = true
+      grabber.grabLine.attributes.position.setXYZ(1,0,0,0)
+      grabber.grabLine.attributes.position.needsUpdate = true
     }
 
     if (grabber.snappedTo != snapped)
@@ -168,6 +168,7 @@ AFRAME.registerComponent('node-input', {
     index: {default: 0}
   },
   init() {
+    Pool.init(this)
     let radius = 0.1
     this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}`)
     if (!this.el.hasAttribute('material')) this.el.setAttribute("material", "color: #f57242")
@@ -210,10 +211,12 @@ AFRAME.registerComponent('node-input', {
     if (this.snappedTo && !this.snappedGrabber.is("grabbed"))
     {
       let {grabLine} = this.snappedGrabber
-      this.el.object3D.getWorldPosition(grabLine.vertices[1])
-      this.snappedTo.object3D.worldToLocal(grabLine.vertices[1])
-      this.snappedGrabber.object3D.position.copy(grabLine.vertices[1])
-      grabLine.verticesNeedUpdate = true
+      let v = this.pool('v', THREE.Vector3)
+      this.el.object3D.getWorldPosition(v)
+      this.snappedTo.object3D.worldToLocal(v)
+      this.snappedGrabber.object3D.position.copy(v)
+      grabLine.attributes.position.setXYZ(1, v.x, v.y, v.z)
+      grabLine.attributes.position.needsUpdate = true
     }
   }
 })

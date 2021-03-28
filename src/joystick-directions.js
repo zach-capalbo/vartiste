@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 const Axes = {
   LEFT_RIGHT: 0,
   UP_DOWN: 1,
@@ -223,14 +225,14 @@ AFRAME.registerComponent('hand-action-tooltip', {
   },
   init() {
     let container = document.createElement('a-entity')
-    container.setAttribute('geometry', 'primitive: plane; height: auto; width: auto')
+    container.setAttribute('geometry', 'primitive: plane; height: 0; width: 0')
     container.setAttribute('material', 'color: #abe; shader: flat')
     container.setAttribute('position', this.data.position)
     container.setAttribute('rotation', "-47.22767925743924 -1.2047588819680946 -2.40270564492676")
     container.setAttribute('scale', '0.15 0.15 0.15')
     container.setAttribute('text', `color: #000; width: 1; align: left; value: ...; wrapCount: 20; baseline: top`)
-    this.container = container
     this.el.append(container)
+    this.container = container
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
     this.buttons = [

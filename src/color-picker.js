@@ -3,6 +3,8 @@ const Color = require('color')
 const {Undo} = require('./undo.js')
 import {Util} from './util.js'
 
+const INDICATOR_GEOMETRY = {"metadata":{"version":4.5,"type":"BufferGeometry","generator":"BufferGeometry.toJSON"},"uuid":"DB0461DE-8349-4483-B90E-210136A9DA19","type":"BufferGeometry","data":{"attributes":{"position":{"itemSize":3,"type":"Float32Array","array":[0,0.05000000074505806,0.009999999776482582,-0.05000000074505806,0.20000000298023224,0.009999999776482582,0.05000000074505806,0.20000000298023224,0.009999999776482582],"normalized":false},"normal":{"itemSize":3,"type":"Float32Array","array":[0,0,0,0,0,0,0,0,0],"normalized":false},"color":{"itemSize":3,"type":"Float32Array","array":[1,1,1,1,1,1,1,1,1],"normalized":false}},"groups":[{"start":0,"materialIndex":0,"count":3}],"boundingSphere":{"center":[0,0.125,0.01],"radius":0.09013878188659974}}};
+
 // Adds a colorwheel for picking colors for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("color-picker", {
   dependencies: ['material', 'geometry'],
@@ -117,11 +119,7 @@ AFRAME.registerComponent("opacity-picker", {
     this.mesh = this.el.getObject3D('mesh');
     this.mesh.material = material;
 
-    let geometry = new THREE.Geometry()
-    geometry.vertices.push(new THREE.Vector3(0,0.05,0.01))
-    geometry.vertices.push(new THREE.Vector3(-0.05,0.2,0.01))
-    geometry.vertices.push(new THREE.Vector3(0.05,0.2,0.01))
-    geometry.faces.push(new THREE.Face3(0,1,2))
+    let geometry = new THREE.BufferGeometryLoader().parse(INDICATOR_GEOMETRY);
     this.indicator = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0xa87732, side: THREE.DoubleSide}))
     this.el.object3D.add(this.indicator)
 
@@ -167,7 +165,7 @@ AFRAME.registerComponent("opacity-picker", {
     })
   },
   adjustIndicator(opacity) {
-    let width = this.mesh.geometry.metadata.parameters.width
+    let width = 1.9; //undefined; //this.mesh.geometry.metadata.parameters.width
     let x = Math.pow(opacity, 1/2.2)
     this.indicator.position.x = x * width - width / 2
   },
