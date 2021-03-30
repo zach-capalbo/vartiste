@@ -266,6 +266,7 @@ AFRAME.registerComponent('material-pack', {
     pack: {type: 'string'},
     applyMask: {default: false},
     repeat: {default: 1},
+    rotations: {default: 0},
 
     srcEnabled: {default: true},
     normalMapEnabled: {default: true},
@@ -450,7 +451,27 @@ AFRAME.registerComponent('material-pack', {
       {
         for (let x = 0; x < repeat; ++x)
         {
-          tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
+          if (this.data.rotations > 0)
+          {
+            tmpCtx.save()
+            tmpCtx.translate(x * repeatXIncrement + repeatXIncrement / 2, y * repeatYIncrement + repeatYIncrement / 2)
+            tmpCtx.rotate(this.data.rotations * Math.PI / 2)
+            if (this.data.rotations % 2 == 0)
+            {
+              tmpCtx.translate(-repeatXIncrement / 2, -repeatYIncrement / 2)
+              tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
+            }
+            else
+            {
+              tmpCtx.translate(-repeatYIncrement / 2, -repeatXIncrement / 2)
+              tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, y * repeatYIncrement, x * repeatXIncrement, repeatYIncrement, repeatXIncrement,)
+            }
+            tmpCtx.restore()
+          }
+          else
+          {
+            tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
+          }
         }
       }
 

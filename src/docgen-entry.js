@@ -62,6 +62,7 @@ async function addDocumentation(src)
   require('./camera-capture')
   require('./undo')
   require('./physics')
+  require('./kromophone')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> {

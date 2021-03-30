@@ -180,6 +180,7 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
     let output = []
     output.push(`
+<a name="${className}"></a><a name="class_${className}"></a>
 ## Class \`${className}\` [(${filename}:${expression.loc.start.line})](${sourceBaseURL}${filename}#L${expression.loc.start.line})
 
 ${comment}
@@ -225,7 +226,7 @@ ${funcString}
 
       output = []
       output.push(`
-<a name="${componentName}"></a>
+<a name="${componentName}"></a><a name="${type.toLowerCase()}_${componentName}"></a>
 ## ${type} \`${componentName}\` [(${filename}:${expression.loc.start.line})](${sourceBaseURL}${filename}#L${expression.loc.start.line})
 
 ${docstring}
