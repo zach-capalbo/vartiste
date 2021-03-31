@@ -183,7 +183,8 @@ Util.registerComponentSystem('kromophone', {
     Tone.Destination.mute = true;
   },
 
-  // Sonifies `color`
+  // Sonifies `color`. If `duration` is greater than 0, it will play a discrete
+  // sound, otherwise it will play the sound for `color` indefinitely.
   sonify(color, {duration = 0.5}) {
     if (!this.kromophone) return;
     let c = color
@@ -226,8 +227,5 @@ Util.registerComponentSystem('kromophone', {
       gl.readPixels(Math.round(viewport[2] / 2), Math.round(viewport[3] / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
     }
     this.kromophone.transform(new Color(b))
-
-      // console.log(gl.drawingBufferWidth, gl.drawingBufferHeight, b)
-
   }
 })

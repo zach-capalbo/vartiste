@@ -173,10 +173,13 @@ AFRAME.registerSystem('physx', {
     // NYI
     wrapBounds: {default: false},
 
+    // Which collision layers the ground belongs to
     groundCollisionLayers: {default: [2]},
 
+    // Which collision layers will collide with the ground
     groundCollisionMask: {default: [1,2,3,4]},
 
+    // Global gravity vector
     gravity: {type: 'vec3', default: {x: 0, y: -9.8, z: 0}},
   },
   init() {
@@ -553,6 +556,8 @@ AFRAME.registerComponent('physx-material', {
     // Array containing all layers that this shape should collide with
     collidesWithLayers: {default: [1,2,3,4], type: 'array'},
 
+    // If `collisionGroup` is greater than 0, this shape will *not* collide with
+    // any other shape with the same `collisionGroup` value
     collisionGroup: {default: 0},
 
     // If >= 0, this will set the PhysX contact offset, indicating how far away
@@ -731,11 +736,6 @@ AFRAME.registerComponent('physx-body', {
       this.el.sceneEl.systems['button-caster'].install(['bbutton'])
     }
 
-    if (this.el.sceneEl.systems.manipulator)
-    {
-        // this.el.sceneEl.systems.manipulator.installConstraint(this.kinematicMove)
-    }
-
     this.physxRegisteredPromise.then(() => this.update())
   },
   update() {
@@ -878,7 +878,6 @@ AFRAME.registerComponent('physx-body', {
     this.shapes = shapes
 
     return shapes
-    // return physics.createShape(geometry, material, false, flags)
   },
   // Turns gravity on and off
   toggleGravity() {
@@ -947,7 +946,7 @@ AFRAME.registerComponent('physx-joint-driver', {
     // If true, will automatically lock axes which are not being driven
     lockOtherAxes: {default: false},
 
-
+    // If true SLERP rotation mode. If false, will use SWING mode.
     slerpRotation: {default: true},
   },
   events: {
@@ -1230,6 +1229,8 @@ AFRAME.registerComponent('physx-joint', {
     // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
     breakForce: {type: 'vec2', default: {x: -1, y: -1}},
 
+    // If true, removes the entity containing this component when the joint is
+    // broken.
     removeElOnBreak: {default: false},
 
     // If false, collision will be disabled between the rigid body containing
@@ -1876,6 +1877,7 @@ AFRAME.registerComponent('gltf-entities', {
   }
 })
 
+// NOT YET IMPLEMENTED. Only kind of works
 AFRAME.registerComponent("breakable-bodies", {
   dependencies: ['physx-material'],
   schema: {
