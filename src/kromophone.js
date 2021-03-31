@@ -182,7 +182,9 @@ Util.registerComponentSystem('kromophone', {
     if (!Tone) return;
     Tone.Destination.mute = true;
   },
-  sonify(color) {
+
+  // Sonifies `color`
+  sonify(color, {duration = 0.5}) {
     if (!this.kromophone) return;
     let c = color
     if (color.isColor) {
@@ -190,7 +192,13 @@ Util.registerComponentSystem('kromophone', {
     }
 
     this.kromophone.transform(c)
-    this.kromophone.envelope.triggerAttackRelease(0.5)
+
+    if (duration > 0) {
+      this.kromophone.envelope.triggerAttackRelease(duration)
+    }
+    else {
+      this.kromophone.envelope.triggerAttack(duration)
+    }
   },
   tick(t,dt) {
     if (!this.kromophone) return;
