@@ -6,6 +6,8 @@ import {Util} from './util.js'
 import Pako from 'pako'
 import JSZip from 'jszip'
 
+const HANDLED_MODEL_FORMAT_REGEX = /\.(glb|obj|vrm|gltf|fbx)$/i;
+
 class URLFileAdapter {
   constructor(url) {
     this.url = url
@@ -86,7 +88,7 @@ async function addHDRImage(file) {
 
 var defaultStandardMaterial = new THREE.MeshStandardMaterial();
 
-async function addGlbViewer(file, {postProcessMesh = true} = {}) {
+async function addGlbViewer(file, {postProcessMesh = true, loadingManager = undefined} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
@@ -96,7 +98,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
-    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(/\.(glb|obj|vrm)$/i, ""))
+    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(HANDLED_MODEL_FORMAT_REGEX, ""))
   }
 
   let startingLayerLength = compositor.layers.length
@@ -116,7 +118,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
 
   if (format === 'obj')
   {
-    let loader = new THREE.OBJLoader()
+    let loader = new THREE.OBJLoader(loadingManager)
     model = new THREE.Object3D()
     let buffer = await file.text()
     model.scene = loader.parse(buffer)
@@ -125,7 +127,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   else if (format === 'fbx')
   {
     const { FBXLoader } = await import('./framework/FBXLoader.js')
-    let loader = new FBXLoader()
+    let loader = new FBXLoader(loadingManager)
     let buffer = await file.arrayBuffer()
     model = new THREE.Object3D()
     model.scene = loader.parse(buffer)
@@ -133,7 +135,7 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   }
   else
   {
-    let loader = new THREE.GLTFLoader()
+    let loader = new THREE.GLTFLoader(loadingManager)
     let buffer = await file.arrayBuffer()
     try {
       model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
@@ -439,12 +441,12 @@ async function addGlbViewer(file, {postProcessMesh = true} = {}) {
   })()
 }
 
-async function addGlbReference(file) {
+async function addGlbReference(file, {loadingManager = undefined} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
-  let loader = new THREE.GLTFLoader()
+  let loader = new THREE.GLTFLoader(loadingManager)
 
   let buffer = await file.arrayBuffer()
   let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
@@ -550,7 +552,7 @@ Util.registerComponentSystem('file-upload', {
     this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
     document.body.append(this.inputEl)
   },
-  handleFile(file, {itemType, positionIdx} = {}) {
+  handleFile(file, {itemType, positionIdx, loadingManager} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
@@ -580,7 +582,7 @@ Util.registerComponentSystem('file-upload', {
     if (/\.materialpack$/i.test(file.name))
     {
       (async () => {
-      let loader = new THREE.GLTFLoader()
+      let loader = new THREE.GLTFLoader(loadingManager)
       let buffer = await file.arrayBuffer()
       let model
       try {
@@ -596,15 +598,15 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
-    if (/\.((glb)|(gltf)|(obj)|(fbx)|(vrm))$/i.test(file.name))
+    if (HANDLED_MODEL_FORMAT_REGEX.test(file.name))
     {
       if (settings.data.addReferences)
       {
-        addGlbReference(file)
+        addGlbReference(file, {loadingManager})
       }
       else
       {
-        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh})
+        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager})
       }
       return
     }
@@ -628,13 +630,59 @@ Util.registerComponentSystem('file-upload', {
         let zip = new JSZip();
         zip = await zip.loadAsync(b)
         console.log("New zip", zip)
+
+        let blobs = {}
+        let gltfFile = undefined
+
         for (let fileName in zip.files)
         {
-          console.log("Handling", fileName)
-          let blob = await zip.file(fileName).async('blob')
-          console.log("Got blob", blob)
-          this.handleFile()
+          if (HANDLED_MODEL_FORMAT_REGEX.test(fileName)) gltfFile = fileName;
+
+          console.log("Blobbing", fileName)
+          let unzipped = await zip.file(fileName)
+          if (!unzipped) continue;
+          let blob = await unzipped.async('blob')
+          blobs[fileName] = blob
         }
+
+        if (!gltfFile)
+        {
+          console.log("No gltf file in zip")
+          return;
+        }
+
+        const manager = new THREE.LoadingManager();
+        // Initialize loading manager with URL callback.
+        const objectURLs = [];
+        let urlModifier = ( url ) => {
+          let rawUrl = url;
+          // if (url.startsWith("blob:") && !url.startsWith("blob:" + location.origin)) return url;
+          if (url.startsWith('blob:http'))
+          {
+            let blobless = url.replace("blob:http", "http")
+            console.log("Blobless", blobless)
+            let u = new URL(blobless)
+            url = u.pathname.slice(1)
+          }
+
+          if (url in blobs) {
+            console.log("Modifying url", url, blobs[ url ])
+          	url = URL.createObjectURL( blobs[ url ] );
+          	objectURLs.push( url );
+          	return url;
+          }
+          else
+          {
+            console.log("No blob for", url, rawUrl)
+            return rawUrl
+          }
+        };
+        manager.setURLModifier(urlModifier);
+
+        let blobFile = blobs[gltfFile];
+        blobFile.name = gltfFile;
+
+        this.handleFile(blobFile, {loadingManager: manager})
       })
 
       return;

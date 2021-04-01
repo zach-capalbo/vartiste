@@ -49,7 +49,7 @@ You can also reference any of the feature demos posted on Twitter:
 <a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
 
 ## Controls
-For Oculus Touch controllers:
+For Reverb G2 / Valve Index / Oculus Touch type controllers:
 
  - Right Hand:
   - Trigger: Draw, Click buttons
@@ -145,10 +145,11 @@ To import an image as a new layer, drag and drop it onto the browser window.
 To import a 3D model, drag and drop it onto the browser window. The model should
 appear in front, and the 2D canvas view will flip to behind you.
 **Note the following:**
- - Only `.glb` format is supported (GLTF binary)
- - Draco compression is not currently supported
+ - Formats supported:
+    - `.glb` is the primary file format supported and will work the best
+    - Autoconverted GLTF `.zip` files from [Sketchfab](https://sketchfab.com)
+    - Other formats (at least partial support): `.obj`, `.fbx`
  - Existing textures will be resized to the main canvas size
- - Vertex colors are not currently imported
 
 To export a 3D model, use the "Export" ![Cube Arrow](../assets/cube-send.png)
 icon. This will download a GLB file with the currently displayed model or
