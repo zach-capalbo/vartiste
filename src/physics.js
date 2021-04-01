@@ -775,6 +775,8 @@ AFRAME.registerComponent('physx-body', {
 
     let g = mesh.geometry.attributes.position
     if (!g) return;
+    if (g.count < 3) return;
+    if (g.itemSize != 3) return;
     let t = new THREE.Vector3;
 
     if (rootAncestor)
