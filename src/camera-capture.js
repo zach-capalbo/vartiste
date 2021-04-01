@@ -1360,7 +1360,18 @@ Util.registerComponentSystem('spectator-camera', {
     // Camera to use when state is `SPECTATOR_CAMERA`
     camera: {type: 'selector', default: '#camera'},
     // Use this to throttle spectator rendering for performance or other reasons
-    throttle: {default: 20}
+    throttle: {default: 20},
+    // If true, moves the mouse cursor to the spectator camera
+    spectatorCursor: {type: 'selector', default: "#mouse"},
+  },
+  events: {
+    'exit-vr': function(e) {
+      if (this.data.spectatorCursor && this.spectatorCursorOrigin)
+      {
+        this.spectatorCursorOrigin.add(this.data.spectatorCursor.object3D)
+        this.data.spectatorCursor.sceneEl = this.el.sceneEl
+      }
+    }
   },
   init() {
     Pool.init(this)
@@ -1425,6 +1436,24 @@ Util.registerComponentSystem('spectator-camera', {
       else
       {
         camera = this.data.camera.isCamera ? this.data.camera : this.data.camera.getObject3D('camera')
+      }
+
+      if (this.data.spectatorCursor && !this.spectatorCursorOrigin)
+      {
+        console.log("Setting spectatorCursor", camera, this.data.spectatorCursor)
+        this.spectatorCursorOrigin = this.data.spectatorCursor.object3D.parent
+        camera.parent.add(this.data.spectatorCursor.object3D)
+
+        let proxy = new Proxy(this.el.sceneEl, {
+          get: function(target,key,receiver) {
+            if (key == "camera") return camera
+            let r = Reflect.get(target, key, receiver);
+            if (r.bind) r = r.bind(target)
+            return r;
+          }
+        })
+        this.data.spectatorCursor.sceneEl = proxy
+        this.data.spectatorCursor.setAttribute('raycaster', 'near', 0.1)
       }
 
       // camera.viewport = camera.viewport || new THREE.Vector4()
