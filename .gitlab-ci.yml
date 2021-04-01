@@ -9,9 +9,7 @@ build:
   stage: build
   retry: 2
   script:
-    - free -m
     - npm install
-    - free -m
     - npm run-script build
     - echo $CI_JOB_ID > dist/CI_JOB_ID
   artifacts:

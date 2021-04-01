@@ -188,7 +188,7 @@ AFRAME.registerComponent('quick-gallery', {
       console.log("Clicked Quick Load Button", e.target, loadName)
       if (!loadName) return
 
-      this.el.sceneEl.systems['file-upload'].handleURL(require(`./gallery/${loadName}.vartiste`))
+      this.el.sceneEl.systems['file-upload'].handleURL(require(`./gallery/${loadName}.vartistez`))
     }
   },
   init() {

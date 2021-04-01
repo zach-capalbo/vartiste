@@ -173,10 +173,13 @@ AFRAME.registerSystem('physx', {
     // NYI
     wrapBounds: {default: false},
 
+    // Which collision layers the ground belongs to
     groundCollisionLayers: {default: [2]},
 
+    // Which collision layers will collide with the ground
     groundCollisionMask: {default: [1,2,3,4]},
 
+    // Global gravity vector
     gravity: {type: 'vec3', default: {x: 0, y: -9.8, z: 0}},
   },
   init() {
@@ -342,7 +345,7 @@ AFRAME.registerSystem('physx', {
       PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE.value |
         PhysX.PxShapeFlag.eSIMULATION_SHAPE.value
     )
-    this.defaultFilterData = new PhysX.PxFilterData(1, 1, 0, 0)
+    this.defaultFilterData = new PhysX.PxFilterData(PhysXUtil.layersToMask(this.data.groundCollisionLayers), PhysXUtil.layersToMask(this.data.groundCollisionMask), 0, 0);
 
     this.scene.setGravity(this.data.gravity)
 
@@ -362,7 +365,7 @@ AFRAME.registerSystem('physx', {
     let material = this.physics.createMaterial(0.8, 0.8, 0.1);
 
     const shape = this.physics.createShape(geometry, material, false, this.defaultActorFlags)
-    shape.setQueryFilterData(new PhysX.PxFilterData(PhysXUtil.layersToMask(this.data.groundCollisionLayers), PhysXUtil.layersToMask(this.data.groundCollisionMask), 0, 0))
+    shape.setQueryFilterData(this.defaultFilterData)
     shape.setSimulationFilterData(this.defaultFilterData)
         const transform = {
       translation: {
@@ -553,6 +556,10 @@ AFRAME.registerComponent('physx-material', {
     // Array containing all layers that this shape should collide with
     collidesWithLayers: {default: [1,2,3,4], type: 'array'},
 
+    // If `collisionGroup` is greater than 0, this shape will *not* collide with
+    // any other shape with the same `collisionGroup` value
+    collisionGroup: {default: 0},
+
     // If >= 0, this will set the PhysX contact offset, indicating how far away
     // from the shape simulation contact events should begin.
     contactOffset: {default: -1.0},
@@ -729,11 +736,6 @@ AFRAME.registerComponent('physx-body', {
       this.el.sceneEl.systems['button-caster'].install(['bbutton'])
     }
 
-    if (this.el.sceneEl.systems.manipulator)
-    {
-        // this.el.sceneEl.systems.manipulator.installConstraint(this.kinematicMove)
-    }
-
     this.physxRegisteredPromise.then(() => this.update())
   },
   update() {
@@ -773,6 +775,8 @@ AFRAME.registerComponent('physx-body', {
 
     let g = mesh.geometry.attributes.position
     if (!g) return;
+    if (g.count < 3) return;
+    if (g.itemSize != 3) return;
     let t = new THREE.Vector3;
 
     if (rootAncestor)
@@ -812,8 +816,8 @@ AFRAME.registerComponent('physx-body', {
   {
     let material = physics.createMaterial(materialData.staticFriction, materialData.dynamicFriction, materialData.restitution);
     let shape = physics.createShape(geometry, material, false, this.system.defaultActorFlags)
-    shape.setQueryFilterData(new PhysX.PxFilterData(PhysXUtil.layersToMask(materialData.collisionLayers), PhysXUtil.layersToMask(materialData.collidesWithLayers), 0, 0))
-    shape.setSimulationFilterData(this.system.defaultFilterData)
+    shape.setQueryFilterData(new PhysX.PxFilterData(PhysXUtil.layersToMask(materialData.collisionLayers), PhysXUtil.layersToMask(materialData.collidesWithLayers), materialData.collisionGroup, 0))
+    shape.setSimulationFilterData(new PhysX.PxFilterData(PhysXUtil.layersToMask(materialData.collisionLayers), PhysXUtil.layersToMask(materialData.collidesWithLayers), materialData.collisionGroup, 0))
 
     if (materialData.contactOffset >= 0.0)
     {
@@ -876,7 +880,6 @@ AFRAME.registerComponent('physx-body', {
     this.shapes = shapes
 
     return shapes
-    // return physics.createShape(geometry, material, false, flags)
   },
   // Turns gravity on and off
   toggleGravity() {
@@ -945,7 +948,7 @@ AFRAME.registerComponent('physx-joint-driver', {
     // If true, will automatically lock axes which are not being driven
     lockOtherAxes: {default: false},
 
-
+    // If true SLERP rotation mode. If false, will use SWING mode.
     slerpRotation: {default: true},
   },
   events: {
@@ -1228,6 +1231,8 @@ AFRAME.registerComponent('physx-joint', {
     // Force needed to break the constraint. First component is the linear force, second component is angular force. Set both components are >= 0
     breakForce: {type: 'vec2', default: {x: -1, y: -1}},
 
+    // If true, removes the entity containing this component when the joint is
+    // broken.
     removeElOnBreak: {default: false},
 
     // If false, collision will be disabled between the rigid body containing
@@ -1871,5 +1876,94 @@ AFRAME.registerComponent('gltf-entities', {
     {
       this.setupObject(child, currentRootEl)
     }
+  }
+})
+
+// NOT YET IMPLEMENTED. Only kind of works
+AFRAME.registerComponent("breakable-bodies", {
+  dependencies: ['physx-material'],
+  schema: {
+    autoBody: {default: false},
+    breakForce: {type: 'vec2', default: {x: 100, y: 100}},
+    breakDelay: {default: 6000},
+  },
+  events: {
+    object3dset: function(e) {
+      if (e.target !== this.el) return;
+
+      if (this.data.autoBody) {
+        this.setupAutobody(this.el.object3D)
+      }
+      this.findTarget(this.el)
+      this.setupJoints()
+      this.jointTime = this.el.sceneEl.time
+    }
+  },
+  init() {
+    this.el.setAttribute('physx-material', 'collisionGroup', Math.round(Math.random() * 1000) + 1)
+  },
+  findTarget(el) {
+    if (el.hasAttribute('physx-body')) {
+      this.target = el;
+      return true;
+    }
+
+    for (let c of el.children)
+    {
+      if (this.findTarget(c)) return true;
+    }
+
+    return false;
+  },
+  setupJoints(el) {
+    if (el === undefined) el = this.el;
+
+    if (el.hasAttribute('physx-body')) {
+      el.setAttribute('physx-joint__breakable', {type: 'Fixed',
+                                                 breakForce: this.data.breakDelay <= 0 ? this.data.breakForce : {x: -1, y: -1},
+                                                 target: this.target})
+    }
+
+    for (let c of el.children)
+    {
+        this.setupJoints(c)
+    }
+  },
+  setupAutobody(obj3d) {
+    if (obj3d.type === 'Mesh') {
+      let el = document.createElement('a-entity')
+      el.setAttribute('physx-material', this.el.getAttribute('physx-material'))
+      el.setAttribute('physx-body', 'type: dynamic')
+
+      if (this.el.classList.contains("clickable"))
+      {
+        el.classList.add("clickable")
+      }
+
+      this.el.append(el)
+      VARTISTE.Util.whenLoaded(el, () => {
+        el.setObject3D('mesh', obj3d)
+        obj3d.updateMatrix()
+        VARTISTE.Util.applyMatrix(obj3d.matrix, el.object3D)
+        obj3d.matrix.identity()
+        VARTISTE.Util.applyMatrix(obj3d.matrix, obj3d)
+      })
+
+      return
+    }
+
+    for (let child of obj3d.children)
+    {
+      this.setupAutobody(child)
+    }
+  },
+  tick(t,dt) {
+    if (!this.jointTime) return
+    if (this.data.breakDelay <= 0) return;
+    if (t - this.jointTime < this.data.breakDelay) return
+
+    console.log("Setting break force")
+    this.el.querySelectorAll('a-entity[physx-joint__breakable]').forEach(el => el.setAttribute('physx-joint__breakable', 'breakForce', this.data.breakForce))
+    delete this.jointTime
   }
 })

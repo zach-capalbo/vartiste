@@ -1,4 +1,4 @@
-a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;"
+a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;" kromophone="source: paint"
   a-assets#assets timeout="${60 * 1000 * 5}"
   a-sky color="#333" hide-in-ar-mode=""
   /a-entity light="type: directional; castShadow: true; intensity: 10" position="1 1 0" fix-light-shadow=""
@@ -71,7 +71,7 @@ a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true
         a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
-      /a-entity position="0.03 1.0545312767040833 0.121"
+      a-entity position="0.03 1.0545312767040833 0.121"
         /== partial('./partials/welcome-shelf.html.slm')
     a-entity#canvas-root
       a-entity#canvas-view.canvas[

@@ -23,6 +23,9 @@ class Gallery {
       let name = entry.getAttribute('entry')
       entry.setAttribute('href', "index.html?load=" + require(`../gallery/${name}.vartistez`))
 
+      // To preserve old links
+      require(`../gallery/${name}.vartiste`)
+
       try {
         entry.querySelector('.preview').setAttribute('src', require(`../gallery/${name}.png`))
       }

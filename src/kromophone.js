@@ -2,7 +2,6 @@ var Tone;
 const Color = require('color')
 const {Util} = require('./util.js')
 
-//Array.from(line.matchAll(/(0\.\d+)f?\*sin\(phase\*(\d+\.\d+)f?/g)).map(f => parseFloat(f[1]))
 const Timbres = {
   trumpet: [0.66, 0.54, 0.6, 0.82, 0.83, 0.9, 0.83, 0.71, 0.48, 0.3, 0.21, 0.22, 0.15, 0.1],
   organ: [0.001831, 0.11747, 0.606061, 0.667617, 0.32325, 0.32325, 0.667617, 0.606061, 0.11747],
@@ -17,6 +16,9 @@ const Voices = {
   yellow: {pitch: 4.0, pan: 0.8, timbre: 'ukulele'},
   white: {pitch: 2.0, pan: 1.0, timbre: 'sin'},
 }
+
+// Standalone Kromophone class. Can be accessed from
+// `sceneEl.systems.kromophone.kromophone`. See [`#system_kromophone`]
 class Kromophone {
   constructor() {
     this.baseFrequency = 140;
@@ -88,11 +90,27 @@ class Kromophone {
   static get Voices() {return Voices}
 };
 
-
-
+// Provides the Kromophone color sonification sensory substitution device.
+//
+// The Kromophone is a system for transforming colors into sounds. It assigns
+// instrument voices to different primary colors, and adjusts the volume of each
+// voice based on the intensity of the color.
+//
+// You must call `start()` in order to load the required libraries and start
+// sonification.
+//
+// When `source` is `camera`, the Kromophone will sample a rendered pixel from
+// the framebuffer and sonify it. Sonification will occur continuously unless
+// `stop` is called. When the source is `paint`, the kromophone will sonify any
+// change in paint color (via the `colorchanged`) event or drawing event. When
+// the source is `none`, sonification will take place as discrete sound events
+// when `sonify(color)` is called.
 Util.registerComponentSystem('kromophone', {
   schema: {
-    source: {oneOf: ['none', 'camera', 'paint'], default: 'paint'},
+    // Source of color for sonification. See [`kromophone` description](#system_kromophone)
+    source: {oneOf: ['none', 'camera', 'paint'], default: 'camera'},
+
+    // Enable or disable sonification
     active: {default: false},
   },
   events: {
@@ -134,6 +152,10 @@ Util.registerComponentSystem('kromophone', {
       }
     }
   },
+
+  // Starts color sonification. If needed, loads required libraries and starts
+  // playing sound.  **Note**, sound will not actually be audible until the user
+  // interacts with the page due to browser security mechanisms.
   start() {
     if (!this.kromophone) {
       import('tone').then((m) => {
@@ -154,9 +176,30 @@ Util.registerComponentSystem('kromophone', {
       Tone.Destination.mute = false;
     }
   },
+
+  // Mutes sound
   stop() {
     if (!Tone) return;
     Tone.Destination.mute = true;
+  },
+
+  // Sonifies `color`. If `duration` is greater than 0, it will play a discrete
+  // sound, otherwise it will play the sound for `color` indefinitely.
+  sonify(color, {duration = 0.5}) {
+    if (!this.kromophone) return;
+    let c = color
+    if (color.isColor) {
+      c = "#" + color.getHexString()
+    }
+
+    this.kromophone.transform(c)
+
+    if (duration > 0) {
+      this.kromophone.envelope.triggerAttackRelease(duration)
+    }
+    else {
+      this.kromophone.envelope.triggerAttack(duration)
+    }
   },
   tick(t,dt) {
     if (!this.kromophone) return;
@@ -184,8 +227,5 @@ Util.registerComponentSystem('kromophone', {
       gl.readPixels(Math.round(viewport[2] / 2), Math.round(viewport[3] / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b)
     }
     this.kromophone.transform(new Color(b))
-
-      // console.log(gl.drawingBufferWidth, gl.drawingBufferHeight, b)
-
   }
 })
