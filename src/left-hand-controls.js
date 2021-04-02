@@ -56,7 +56,7 @@ AFRAME.registerComponent('left-hand-controls', {
       }
     })
 
-    this.el.setAttribute('action-tooltips', `leftright: Prev / Next Frame; updown: Add / Duplicate Frame; a: Undo; b: ${this.el.sceneEl.systems['speech'].recognition ? "Voice Commands" : "Toggle UI"}`)
+    this.el.setAttribute('action-tooltips', `trigger: Reset Orientation; leftright: Prev / Next Frame; updown: Add / Duplicate Frame; a: Undo; b: ${this.el.sceneEl.systems['speech'].recognition ? "Voice Commands" : "Toggle UI"}`)
   },
 
   leftClick() {

@@ -117,9 +117,11 @@ Util.registerComponentSystem('material-pack-system', {
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
-      if (item.kind !== 'file') continue
-      let file = item.getAsFile()
+      console.log("Checking", item, item instanceof Blob, item.kind)
+      if (item.kind !== 'file' && !(item instanceof Blob)) continue
+      let file = (item instanceof Blob) ? item : item.getAsFile()
       let isImage = item.type ? /image\//.test(item.type) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
+      console.log("IsImage", isImage)
       if (!isImage) continue
 
       let img = new Image()
@@ -164,6 +166,10 @@ Util.registerComponentSystem('material-pack-system', {
         {
           attr.emissive = attr.emissiveMap
           delete attr.emissiveMap
+        }
+        if (attr.multiply)
+        {
+          delete attr.multiply
         }
         el.components['material-pack'].view.setAttribute('material', attr)
         delete attr.shader

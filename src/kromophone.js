@@ -18,7 +18,7 @@ const Voices = {
 }
 
 // Standalone Kromophone class. Can be accessed from
-// `sceneEl.systems.kromophone.kromophone`. See [`#system_kromophone`]
+// `sceneEl.systems.kromophone.kromophone`. See [Kromophone system documentation](#componentsystem_kromophone)
 class Kromophone {
   constructor() {
     this.baseFrequency = 140;
@@ -107,7 +107,7 @@ class Kromophone {
 // when `sonify(color)` is called.
 Util.registerComponentSystem('kromophone', {
   schema: {
-    // Source of color for sonification. See [`kromophone` description](#system_kromophone)
+    // Source of color for sonification. See [`kromophone` description](#componentsystem_kromophone)
     source: {oneOf: ['none', 'camera', 'paint'], default: 'camera'},
 
     // Enable or disable sonification
