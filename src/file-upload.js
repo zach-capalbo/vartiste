@@ -26,6 +26,7 @@ class URLFileAdapter {
 export function toSrcString(file) {
   if (file instanceof File) return URL.createObjectURL(file)
   if (file instanceof URLFileAdapter) return file.url
+  if (file instanceof Blob) return URL.createObjectURL(file)
   return file
 }
 
@@ -643,12 +644,7 @@ Util.registerComponentSystem('file-upload', {
           if (!unzipped) continue;
           let blob = await unzipped.async('blob')
           blobs[fileName] = blob
-        }
-
-        if (!gltfFile)
-        {
-          console.log("No gltf file in zip")
-          return;
+          blob.name = fileName
         }
 
         const manager = new THREE.LoadingManager();
@@ -678,11 +674,26 @@ Util.registerComponentSystem('file-upload', {
           }
         };
         manager.setURLModifier(urlModifier);
+        if (gltfFile)
+        {
+          let blobFile = blobs[gltfFile];
+          blobFile.name = gltfFile;
 
-        let blobFile = blobs[gltfFile];
-        blobFile.name = gltfFile;
+          this.handleFile(blobFile, {loadingManager: manager})
+          return;
+        }
 
-        this.handleFile(blobFile, {loadingManager: manager})
+        let items = Object.values(blobs);
+
+        for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+        {
+          if (this.fileInterceptors[i](items)) return;
+        }
+
+        for (let blobFile of items)
+        {
+          this.handleFile(blobFile, {loadingManager: manager})
+        }
       })
 
       return;
