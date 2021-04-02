@@ -714,8 +714,10 @@ AFRAME.registerComponent('camera-tool', {
     renderer.setRenderTarget(newTarget)
     renderer.render(this.el.sceneEl.object3D, this.camera);
 
-    this.preview.components.material.material.map = this.previewTarget
+    this.preview.components.material.material.map = newTarget
+    this.preview.components.material.material.needsUpdate = true
 
+    console.log("preview", this.preview.components.material.material.map)
     renderer.xr.enabled = wasXREnabled;
     renderer.setRenderTarget(oldTarget)
 
