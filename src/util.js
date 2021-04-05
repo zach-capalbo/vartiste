@@ -432,6 +432,21 @@ class VARTISTEUtil {
   //
   //
   // }
+  emitsEvents(component) {
+    component.emitDetails = AFRAME.utils.clone(Object.getPrototypeOf(component).emits)
+    const debugEmitDocs = false;
+    if (debugEmitDocs)
+    {
+      let oldEmit = component.emit
+      component.emit = function(event, ...args) {
+        if (!(event in component.emitDetails)) {
+          console.warn("Undocumented event emitted:", event)
+          console.trace()
+        }
+        oldEmit.call(this, ...args)
+      }
+    }
+  }
 }
 
 const Util = new VARTISTEUtil();
