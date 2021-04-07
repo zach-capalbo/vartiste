@@ -77,7 +77,7 @@ Util.registerComponentSystem('material-pack-system', {
     }
 
     this.colCount = 3
-    this.xSpacing = 1.1
+    this.xSpacing = 1.4
     this.ySpacing = 1.5
     this.x = 0
     this.y = 0
@@ -332,6 +332,7 @@ AFRAME.registerComponent('material-pack', {
       material[map].wrapS = THREE.RepeatWrapping
       material[map].needsUpdate = true
     }
+    this.view.getObject3D('mesh').rotation.z = Math.PI / 2 * this.data.rotations
   },
   increaseRepeat() {
     this.data.repeat = THREE.Math.clamp(this.data.repeat + 1, 1, 50)
@@ -339,6 +340,10 @@ AFRAME.registerComponent('material-pack', {
   },
   decreaseRepeat() {
     this.data.repeat = THREE.Math.clamp(this.data.repeat - 1, 1, 50)
+    this.updateRepeat()
+  },
+  rotate() {
+    this.data.rotations = this.data.rotations + 1 % 4
     this.updateRepeat()
   },
   async loadTextures() {
