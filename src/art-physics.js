@@ -9,7 +9,7 @@ Util.registerComponentSystem('art-physics', {
   init() {},
   addPhysics() {
     this.el.querySelectorAll('*[pencil-tool]').forEach(el => {
-      el.setAttribute('pencil-tool', 'extraRayLength', 0.01)
+      el.setAttribute('pencil-tool', 'extraRayLength', 0.001)
       try {
         // el.components['pencil-tool'].activatePencil()
       } catch (e) {}

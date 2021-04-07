@@ -1342,6 +1342,7 @@ AFRAME.registerComponent('physx-joint', {
     return transform;
   },
   async createJoint() {
+    await VARTISTE.Util.whenComponentInitialized(this.bodyEl, 'physx-body')
     await this.bodyEl.components['physx-body'].physxRegisteredPromise;
     await this.data.target.components['physx-body'].physxRegisteredPromise;
 

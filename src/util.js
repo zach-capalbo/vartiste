@@ -409,13 +409,16 @@ class VARTISTEUtil {
   }
 
   whenComponentInitialized(el, component, fn) {
-    if (el && el[component] && el[component].initialized) {
-      return fn()
+    if (el && el.components[component] && el.components[component].initialized) {
+      return Promise.resolve(fn ? fn() : undefined)
     }
 
     return new Promise((r, e) => {
+      if (el && el.components[component] && el.components[component].initialized) {
+        return Promise.resolve(fn ? fn() : undefined)
+      }
+
       let listener = (e) => {
-        console.log("Initialized", e.detail)
         if (e.detail.name === component) {
           el.removeEventListener('componentinitialized', listener);
           if (fn) fn();
