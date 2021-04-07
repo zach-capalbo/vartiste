@@ -29,7 +29,8 @@ window.VARTISTE_TOOLKIT = Object.assign({
   ]
 }, window.VARTISTE_TOOLKIT || {})
 
-VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)\.?j?s?$/)[1])
+VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)(\.?js)?$/)[1])
+if (VARTISTE_TOOLKIT.includeFiles) VARTISTE_TOOLKIT.includeFiles = VARTISTE_TOOLKIT.includeFiles.map(f => f.match(/\.?\/?(.*?)(\.?js)?$/)[1])
 
 // Compatibility
 if (!THREE.Matrix4.prototype.invert) {
