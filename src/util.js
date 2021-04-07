@@ -3,7 +3,7 @@ import {Undo} from './undo.js'
 const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
-  'multiply': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
+  'aoMap': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
   'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
   'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
@@ -393,6 +393,10 @@ class VARTISTEUtil {
         break;
       case 'bumpMap':
         ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'aoMap':
+        ctx.fillStyle = 'rgb(255, 255, 255)'
         shouldFill = true;
         break;
       }

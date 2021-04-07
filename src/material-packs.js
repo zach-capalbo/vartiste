@@ -3,7 +3,7 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 
-const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'];
+const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -67,6 +67,7 @@ Util.registerComponentSystem('material-pack-system', {
     this.defaultMap = {};
     for (let map of HANDLED_MAPS)
     {
+      console.log("Creating default", map)
       let canvas = document.createElement('canvas')
       canvas.width = 24
       canvas.height = 24
@@ -171,8 +172,15 @@ Util.registerComponentSystem('material-pack-system', {
         {
           delete attr.multiply
         }
+        if (attr.aoMap)
+        {
+          attr.ambientOcclusionMap = attr.aoMap
+          delete attr.aoMap
+        }
         el.components['material-pack'].view.setAttribute('material', attr)
         delete attr.shader
+        attr.aoMap = attr.ambientOcclusionMap
+        delete attr.ambientOcclusionMap
         el.components['material-pack'].maps = attr
       })
     })
@@ -278,6 +286,7 @@ AFRAME.registerComponent('material-pack', {
     normalMapEnabled: {default: true},
     metalnessMapEnabled: {default: true},
     roughnessMapEnabled: {default: true},
+    aoMapEnabled: {default: true},
   },
   events: {
     click: function(e) {
@@ -345,6 +354,7 @@ AFRAME.registerComponent('material-pack', {
       if (!map) {
         map = 'src'
       }
+
       if (map === 'multiply' || map === 'displacementMap')
       {
         console.warn("Map", map, "not currently supported. Skipping")
@@ -354,6 +364,8 @@ AFRAME.registerComponent('material-pack', {
       img.src = rc(fileName)
 
       promises.push(new Promise(r => img.onload = r))
+
+      if (map === 'aoMap') { map = 'ambientOcclusionMap'; }
       attr[map] = img
 
       if (map === 'metalnessMap')
@@ -366,6 +378,11 @@ AFRAME.registerComponent('material-pack', {
     this.view.setAttribute('material', attr)
     this.maps = attr
     delete this.maps.shader
+    if ('ambientOcclusionMap' in this.maps)
+    {
+      this.maps.aoMap = this.maps.ambientOcclusionMap
+      delete this.maps.ambientOcclusionMap
+    }
 
     for (let map in this.system.defaultMap)
     {
