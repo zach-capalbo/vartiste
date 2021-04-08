@@ -12,6 +12,8 @@ Util.registerComponentSystem('artist-root', {
     //
     // addLight: {default: true},
 
+    resetPositioner: {default: '#camera-reset-el'}
+
   },
   events: {
     entervr: function() {}
@@ -100,8 +102,8 @@ Util.registerComponentSystem('artist-root', {
     this.resetPosition()
     // return;
 
-    let targetObj = document.querySelector('#artist-root').object3D
-    let positioner = document.querySelector('#camera-reset-el')
+    let targetObj = this.el.sceneEl.querySelector('#artist-root').object3D
+    let positioner = this.el.sceneEl.querySelector(this.data.resetPositioner)
     Util.positionObject3DAtTarget(targetObj, positioner.object3D)
 
     let cameraWorld = this.pool('cameraWorld', THREE.Vector3)
