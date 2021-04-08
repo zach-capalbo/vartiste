@@ -240,5 +240,11 @@ AFRAME.registerComponent('toolbox-shelf', {
         Compositor.drawableCanvas.touch()
       }
     })
+  },
+  defaultSpectatorAction() {
+    let camera = this.el.sceneEl.querySelector('#perspective-camera')
+    camera.emit('activate')
+    camera.setAttribute('camera-tool', 'captureType', 'spectator')
+    Util.positionObject3DAtTarget(camera.object3D, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
   }
 })

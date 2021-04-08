@@ -40,6 +40,7 @@ const THREED_MODES = [
   "metalnessMap",
   "roughnessMap",
   "envMap",
+  "aoMap",
   "matcap"
 ]
 

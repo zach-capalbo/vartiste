@@ -29,7 +29,8 @@ window.VARTISTE_TOOLKIT = Object.assign({
   ]
 }, window.VARTISTE_TOOLKIT || {})
 
-VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)\.?j?s?$/)[1])
+VARTISTE_TOOLKIT.excludeFiles = VARTISTE_TOOLKIT.excludeFiles.map(f => f.match(/\.?\/?(.*?)(\.?js)?$/)[1])
+if (VARTISTE_TOOLKIT.includeFiles) VARTISTE_TOOLKIT.includeFiles = VARTISTE_TOOLKIT.includeFiles.map(f => f.match(/\.?\/?(.*?)(\.?js)?$/)[1])
 
 // Compatibility
 if (!THREE.Matrix4.prototype.invert) {
@@ -122,9 +123,13 @@ AFRAME.registerComponent('vartiste-rotation-button-mapping', {
 
 // Applies the VARTISTE user setup, including camera and controller components
 AFRAME.registerComponent('vartiste-user-root', {
+  schema: {
+    resetPositioner: {default: '#camera-reset-el'}
+  },
   init() {
     this.el.innerHTML = require('./partials/artist-root.html.slm')
     this.el.querySelector('#right-hand').setAttribute('joystick-turn', "target: #artist-root")
+    this.el.sceneEl.setAttribute('artist-positioner', 'resetPositioner', this.data.resetPositioner)
   }
 })
 

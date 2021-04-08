@@ -80,6 +80,7 @@ AFRAME.registerComponent('pencil-tool', {
     radius: {default: 0.03},
     tipRatio: {default: 0.2},
     extraStates: {type: 'array'},
+    extraRayLength: {default: 0.0},
 
     enabled: {default: true},
 
@@ -93,7 +94,7 @@ AFRAME.registerComponent('pencil-tool', {
       this.createLockedClone()
     },
     'stateadded': function(e) {
-      if (e.detail === 'grabbed') {
+      if (e.detail === 'grabbed' || e.detail === 'wielded') {
         this.system.lastGrabbed = this
 
         this.overlay = this.overlay || {el: this.el}
@@ -303,7 +304,7 @@ AFRAME.registerComponent('pencil-tool', {
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
   },
   calcFar() {
-    return this.tipHeight * this.el.object3D.scale.x
+    return this.tipHeight * this.el.object3D.scale.x + this.data.extraRayLength
   },
   updateRaycaster: function(far)
   {

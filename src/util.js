@@ -3,7 +3,7 @@ import {Undo} from './undo.js'
 const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
-  'multiply': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
+  'aoMap': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
   'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
   'normalMap': [/(\b|_)norm?(al)?(map)?(\b|_)/i],
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
@@ -395,6 +395,10 @@ class VARTISTEUtil {
         ctx.fillStyle = 'rgb(0, 0, 0)'
         shouldFill = true;
         break;
+      case 'aoMap':
+        ctx.fillStyle = 'rgb(255, 255, 255)'
+        shouldFill = true;
+        break;
       }
 
       if (shouldFill)
@@ -409,13 +413,16 @@ class VARTISTEUtil {
   }
 
   whenComponentInitialized(el, component, fn) {
-    if (el && el[component] && el[component].initialized) {
-      return fn()
+    if (el && el.components[component] && el.components[component].initialized) {
+      return Promise.resolve(fn ? fn() : undefined)
     }
 
     return new Promise((r, e) => {
+      if (el && el.components[component] && el.components[component].initialized) {
+        return Promise.resolve(fn ? fn() : undefined)
+      }
+
       let listener = (e) => {
-        console.log("Initialized", e.detail)
         if (e.detail.name === component) {
           el.removeEventListener('componentinitialized', listener);
           if (fn) fn();
@@ -432,6 +439,21 @@ class VARTISTEUtil {
   //
   //
   // }
+  emitsEvents(component) {
+    component.emitDetails = AFRAME.utils.clone(Object.getPrototypeOf(component).emits)
+    const debugEmitDocs = false;
+    if (debugEmitDocs)
+    {
+      let oldEmit = component.emit
+      component.emit = function(event, ...args) {
+        if (!(event in component.emitDetails)) {
+          console.warn("Undocumented event emitted:", event)
+          console.trace()
+        }
+        oldEmit.call(this, ...args)
+      }
+    }
+  }
 }
 
 const Util = new VARTISTEUtil();

@@ -84,6 +84,8 @@ require('./ik-solving')
 require('./xr-controllers')
 require('./manipulator-omni-tool')
 require('./kromophone')
+require('./xbox-controller.js')
+require('./art-physics.js')
 // require('./text')
 
 require('./app.styl')

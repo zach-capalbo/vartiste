@@ -772,6 +772,15 @@ AFRAME.registerComponent('compositor', {
           case "roughnessMap":
             material.roughness = layer.opacity
             break
+          case 'aoMap':
+            material.aoMapIntensity = layer.opacity
+            for (let mesh of Compositor.meshes) {
+              if (mesh.geometry && mesh.geometry.attributes.uv && !mesh.geometry.attributes.uv2) {
+                console.log("Cloning to UV2 for aoMap")
+                mesh.geometry.attributes.uv2 = mesh.geometry.attributes.uv.clone()
+              }
+            }
+            break
           case "envMap":
             this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
             material.envMap.mapping = THREE.SphericalReflectionMapping
