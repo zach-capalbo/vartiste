@@ -52,10 +52,10 @@ AFRAME.registerComponent('settings-shelf', {
       this.el.querySelector('.height').setAttribute('text', {value: e.detail.height})
     })
 
-    if (!this.el.sceneEl.systems.sketchfab.loggedIn())
-    {
-      this.el.querySelector('.sketchfab-button').setAttribute('tooltip', "Log in to Sketchfab")
-    }
+    // if (!this.el.sceneEl.systems.sketchfab.loggedIn())
+    // {
+    //   this.el.querySelector('.sketchfab-button').setAttribute('tooltip', "Log in to Sketchfab")
+    // }
   },
   newCompositionAction(e) {
     let compositor = document.getElementById('canvas-view').components.compositor;
