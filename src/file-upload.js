@@ -214,7 +214,7 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
       {
         if (material[mode] || mode === 'map')
         {
-          if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap') shouldUse3D = true
+          if (mode === 'roughnessMap' || mode === 'metalnessMap' || mode === 'emissiveMap' || 'aoMap') shouldUse3D = true
           let image = material[mode] ? material[mode].image : undefined
           let {width, height} = compositor
           let layer = new Layer(width, height)

@@ -242,9 +242,14 @@ AFRAME.registerComponent('toolbox-shelf', {
     })
   },
   defaultSpectatorAction() {
-    let camera = this.el.sceneEl.querySelector('#perspective-camera')
-    camera.emit('activate')
-    camera.setAttribute('camera-tool', 'captureType', 'spectator')
-    Util.positionObject3DAtTarget(camera.object3D, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
+    // let camera = this.el.sceneEl.querySelector('#perspective-camera')
+    // camera.emit('activate')
+    // camera.setAttribute('camera-tool', 'captureType', 'spectator')
+    // Util.positionObject3DAtTarget(camera.object3D, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
+
+    let camera = this.el.sceneEl.camera.clone()
+    this.el.sceneEl.object3D.add(camera)
+    Util.positionObject3DAtTarget(camera, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
+    this.el.sceneEl.setAttribute('spectator-camera', {state: 'SPECTATOR_CAMERA', camera: camera})
   }
 })

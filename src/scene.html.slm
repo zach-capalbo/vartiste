@@ -73,6 +73,7 @@ a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true
           == partial('./partials/node-control-panel.html.slm')
       a-entity position="0.03 1.0545312767040833 0.121"
         /== partial('./partials/welcome-shelf.html.slm')
+        /== partial('./partials/sketchfab-shelf.html.slm')
     a-entity#canvas-root
       a-entity#canvas-view.canvas[
         grab-options="undoable: true"
