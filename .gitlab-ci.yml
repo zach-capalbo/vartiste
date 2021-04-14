@@ -104,6 +104,8 @@ itch:
   only:
     - release
   script:
+    - rm dist/gallery/*.vartiste
+    - rm -r dist/stats
     - curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
     - unzip butler.zip
     - chmod +x butler
