@@ -113,6 +113,7 @@ Util.registerComponentSystem('settings-system', {
     }
   },
   async saveAction() {
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
     let compositor = document.getElementById('canvas-view').components.compositor;
     let saveObj = await ProjectFile.save({compositor})
     document.getElementById('composition-view').emit('updatemesh')
@@ -143,6 +144,7 @@ Util.registerComponentSystem('settings-system', {
       let encoded = encodeURIComponent(json)
       this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
     }
+    busy.done()
   },
   getPreview({width=64, height=64} = {}) {
     let compositor = Compositor.component
@@ -162,6 +164,7 @@ Util.registerComponentSystem('settings-system', {
     return db
   },
   async storeToBrowserAction() {
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
     let projectData = JSON.stringify(await ProjectFile.save({compositor: Compositor.component}))
     let db = this.openProjectsDB()
     await db.transaction("rw", db.projects, db.previews, async () => {
@@ -177,6 +180,7 @@ Util.registerComponentSystem('settings-system', {
     })
     this.el.emit('open-popup', `Saved at ${new Date()}`)
     document.getElementById('composition-view').emit('updatemesh')
+    busy.done()
   },
   async loadFromBrowser(projectName) {
     let db = this.openProjectsDB()
@@ -315,11 +319,13 @@ Util.registerComponentSystem('settings-system', {
     mainCanvas.setAttribute('scale', "0.002 0.002 0.002")
   },
   async load(text) {
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Loading..."})
     window.isLoadingProject = true
     let loadObj = JSON.parse(text)
     await ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
     window.isLoadingProject = false
     window.loadedSuccessfully = true
+    busy.done()
   },
   helpAction() {
     this.popup("landing.html", "Instructions")

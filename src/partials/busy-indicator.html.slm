@@ -1,0 +1,1 @@
+a-entity.clickable geometry="primitive: dodecahedron; radius: 0.3" scale="0.7 2 1" material="src: #asset-shelf" animation="property: scale; from: 0.7 2 1; to: 1.3 0.4 1; loop: true; dir: alternate"

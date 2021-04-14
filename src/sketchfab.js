@@ -37,7 +37,7 @@ Util.registerComponentSystem('sketchfab', {
   },
   async executeSearch() {
     let query = this.el.querySelector('#sketchfab-search-field').getAttribute('text').value
-    this.handleSearchResults(this.search(query))
+    Util.busy(() => this.handleSearchResults(this.search(query)), {title: `Searching for ${query}`})
   },
   async handleSearchResults(queryPromise) {
     let resultEntity = this.el.querySelector('#sketchfab-search-results')
@@ -92,6 +92,7 @@ Util.registerComponentSystem('sketchfab', {
   },
   async download(uid, result) {
     console.log("Importing", uid)
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Downloading from Sketchfab"})
     this.addAttribution(result)
     let archiveInfo = await this.get(`/models/${uid}/download`)
     let zipUrl = archiveInfo.gltf.url
@@ -99,7 +100,8 @@ Util.registerComponentSystem('sketchfab', {
     let zip = await zipResponse.blob()
     zip.name = uid + ".zip"
     console.log("Got zip", zip)
-    this.el.sceneEl.systems['file-upload'].handleFile(zip)
+    await this.el.sceneEl.systems['file-upload'].handleFile(zip)
+    busy.done()
   },
   async addAttribution(result) {
     let info = await this.get(`/models/${result.uid}`)

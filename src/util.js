@@ -454,6 +454,17 @@ class VARTISTEUtil {
       }
     }
   }
+  async busy(fn, opts) {
+    let scene = AFRAME.scenes[0]
+    let busy = scene.systems['busy-indicator'].busy(opts)
+    try {
+      await fn()
+      busy.done()
+    } catch (e) {
+      busy.error(e)
+      throw e
+    }
+  }
 }
 
 const Util = new VARTISTEUtil();
