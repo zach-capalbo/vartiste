@@ -2,6 +2,7 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
   a-entity icon-row="" position="-1.6 1.1 0"
     a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Import as Reference Object" toggle-button="target: a-scene; component: settings-system; property: addReferences; "
     a-entity icon-button="#asset-close" tooltip="Replace mesh on import" toggle-button="target: a-scene; component: file-upload; property: replaceMesh"
+    a-entity icon-button="#asset-resize" tooltip="Autoscale mesh on import" toggle-button="target: a-scene; component: file-upload; property: autoscaleModel"
     a-entity icon-button="#asset-transition" tooltip="Import Material" toggle-button="target: a-scene; component: file-upload; property: importMaterial"
     a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Combine Import Materials" toggle-button="target: a-scene; component: file-upload; property: combineMaterials"
     a-entity icon-button="#asset-oven" tooltip="Post-process Imported Mesh" toggle-button="target: a-scene; component: file-upload; property: postProcessMesh"

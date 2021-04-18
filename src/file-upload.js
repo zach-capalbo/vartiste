@@ -476,6 +476,12 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
   entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
   entity.setAttribute('shadow', 'cast: true; receive: true')
 
+  if (document.querySelector('a-scene').components['file-upload'].data.autoscaleModel)
+  {
+    Util.autoScaleViewer(entity.getObject3D('mesh'), entity)
+    entity.object3D.position.z += 0.25
+  }
+
   entity.emit('model-loaded', {format: 'gltf', model: model});
 
 }
@@ -553,10 +559,12 @@ Util.registerComponentSystem('file-upload', {
     this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
     document.body.append(this.inputEl)
   },
-  handleFile(file, {itemType, positionIdx, loadingManager} = {}) {
+  handleFile(file, {itemType, positionIdx, loadingManager, busy} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
+
+    if (!busy) busy = this.el.systems['busy-indicator'].busy({title: `Handle ${file.name}`})
 
     if (isImage)
     {
@@ -565,18 +573,19 @@ Util.registerComponentSystem('file-upload', {
         addImageReference(file).then(reference => {
           if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
           reference.setAttribute('position', `${positionIdx * 0.1} 0 ${positionIdx * -0.02}`)
+          busy.done()
         })
       }
       else
       {
-        addImageLayer(file, {setMapFromFilename: this.data.setMapFromFilename})
+        addImageLayer(file, {setMapFromFilename: this.data.setMapFromFilename}).then(() => busy.done())
       }
       return
     }
 
     if (/\.(hdri?|exr)$/i.test(file.name))
     {
-      addHDRImage(file)
+      addHDRImage(file).then(busy.done())
       return
     }
 
@@ -595,6 +604,8 @@ Util.registerComponentSystem('file-upload', {
         return
       }
       settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
+
+      busy.done()
       })()
       return
     }
@@ -603,17 +614,18 @@ Util.registerComponentSystem('file-upload', {
     {
       if (settings.data.addReferences)
       {
-        addGlbReference(file, {loadingManager})
+        addGlbReference(file, {loadingManager}).then(() => busy.done())
       }
       else
       {
-        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager})
+        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager}).then(() => busy.done())
       }
       return
     }
 
     if (/\.(mtl)$/i.test(file.name))
     {
+      busy.done()
       return
     }
 
@@ -621,6 +633,7 @@ Util.registerComponentSystem('file-upload', {
     {
       file.text().then(t => {
         this.el.sceneEl.systems['brush-system'].addUserBrushes(JSON.parse(t))
+        busy.done()
       })
       return
     }
@@ -680,6 +693,7 @@ Util.registerComponentSystem('file-upload', {
           blobFile.name = gltfFile;
 
           this.handleFile(blobFile, {loadingManager: manager})
+          busy.done()
           return;
         }
 
@@ -687,13 +701,17 @@ Util.registerComponentSystem('file-upload', {
 
         for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
         {
-          if (this.fileInterceptors[i](items)) return;
+          if (this.fileInterceptors[i](items)) {
+            busy.done();
+            return;
+          }
         }
 
         for (let blobFile of items)
         {
           this.handleFile(blobFile, {loadingManager: manager})
         }
+        busy.done()
       })
 
       return;
@@ -707,6 +725,7 @@ Util.registerComponentSystem('file-upload', {
         inflated = (new TextDecoder("utf-8")).decode(inflated)
         console.timeEnd('decompressProject')
         settings.load(inflated)
+        busy.done()
       })
       .catch(e => console.error("Couldn't load", e))
       return
@@ -716,6 +735,7 @@ Util.registerComponentSystem('file-upload', {
     {
       file.text().then(t => {
         settings.load(t)
+        busy.done()
       }).catch(e => console.error("Couldn't load", e))
       return;
     }

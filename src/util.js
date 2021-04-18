@@ -136,6 +136,37 @@ class VARTISTEUtil {
     Util.applyMatrix(destMat, obj)
   }
 
+  autoScaleViewer(rootObj, viewer)
+  {
+    let boundingBox = this.pool('boundingBox', THREE.Box3)
+    let tmpBox = this.pool('tmpBox', THREE.Box3)
+    let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
+    rootObj.updateMatrixWorld()
+
+    firstModel.geometry.computeBoundingBox()
+    boundingBox.copy(firstModel.geometry.boundingBox)
+    firstModel.updateMatrixWorld()
+    boundingBox.applyMatrix4(firstModel.matrixWorld)
+
+    rootObj.traverse(m => {
+      if (!m.geometry) return
+      m.geometry.computeBoundingBox()
+      m.updateMatrixWorld()
+      tmpBox.copy(m.geometry.boundingBox)
+      tmpBox.applyMatrix4(m.matrixWorld)
+      boundingBox.union(tmpBox)
+    })
+    let maxDimension = Math.max(boundingBox.max.x - boundingBox.min.x,
+                                boundingBox.max.y - boundingBox.min.y,
+                                boundingBox.max.z - boundingBox.min.z)
+    let targetScale = 0.5 / maxDimension
+    viewer.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
+
+    boundingBox.getCenter(viewer.object3D.position)
+    viewer.object3D.position.multiplyScalar(- targetScale)
+    viewer.object3D.position.z = boundingBox.min.z * targetScale
+  }
+
   // Returns the `THREE.Object3D` that contains the true world transformation
   // matrix for the camera. Works both on desktop and in VR
   cameraObject3D() {

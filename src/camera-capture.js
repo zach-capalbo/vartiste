@@ -419,6 +419,13 @@ AFRAME.registerComponent('camera-tool', {
         farLever.setAttribute('tooltip', 'Adjust Far Plane')
         farLever.setAttribute('tooltip-style', 'rotation: 0 0 0; scale: 0.5 0.5 0.5')
         this.el.append(farLever)
+
+        if (this.el.components['six-dof-tool'] && this.el.components['six-dof-tool'].data.lockedClone)
+        {
+          this.el.addState('grab-activated')
+          this.el.removeAttribute('summonable')
+          Util.whenLoaded(this.el, () => this.activate())
+        }
       }
 
       Compositor.el.addEventListener('resized', (e) => {
@@ -677,6 +684,13 @@ AFRAME.registerComponent('camera-tool', {
       button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'previewLive'})
     }
     this.activate = function(){};
+    if (this.el.components['six-dof-tool'] && !this.el.components['six-dof-tool'].data.lockedComponent)
+    {
+      this.el.components['six-dof-tool'].data.lockedClone = true
+      this.el.components['six-dof-tool'].data.lockedComponent = 'camera-tool'
+      this.el.components['six-dof-tool'].data.lockedComponentDependencies = ['manipulator-weight']
+      console.log("Setting camera locked component", this.el.components['six-dof-tool'].data)
+    }
   },
   createLockedClone() {
     let clone = document.createElement('a-entity')
@@ -717,7 +731,7 @@ AFRAME.registerComponent('camera-tool', {
     this.preview.components.material.material.map = newTarget
     this.preview.components.material.material.needsUpdate = true
 
-    console.log("preview", this.preview.components.material.material.map)
+    // console.log("preview", this.preview.components.material.material.map)
     renderer.xr.enabled = wasXREnabled;
     renderer.setRenderTarget(oldTarget)
 
