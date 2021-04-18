@@ -265,34 +265,10 @@ Util.registerComponentSystem('settings-system', {
 
     if (this.el.sceneEl.components['file-upload'].data.autoscaleModel && replace)
     {
-      let boundingBox = this.pool('boundingBox', THREE.Box3)
-      let tmpBox = this.pool('tmpBox', THREE.Box3)
-      let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
-      rootObj.updateMatrixWorld()
-
-      firstModel.geometry.computeBoundingBox()
-      boundingBox.copy(firstModel.geometry.boundingBox)
-      firstModel.updateMatrixWorld()
-      boundingBox.applyMatrix4(firstModel.matrixWorld)
-
-      rootObj.traverse(m => {
-        if (!m.geometry) return
-        m.geometry.computeBoundingBox()
-        m.updateMatrixWorld()
-        tmpBox.copy(m.geometry.boundingBox)
-        tmpBox.applyMatrix4(m.matrixWorld)
-        boundingBox.union(tmpBox)
-      })
-      let maxDimension = Math.max(boundingBox.max.x - boundingBox.min.x,
-                                  boundingBox.max.y - boundingBox.min.y,
-                                  boundingBox.max.z - boundingBox.min.z)
-      let targetScale = 0.5 / maxDimension
-      viewer.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
-      viewer.setAttribute('shadow', 'cast: true; receive: true')
-      boundingBox.getCenter(viewer.object3D.position)
-      viewer.object3D.position.multiplyScalar(- targetScale)
-      viewer.object3D.position.z = boundingBox.min.z * targetScale
+      Util.autoScaleViewer(rootObj, viewer)
     }
+
+    viewer.setAttribute('shadow', 'cast: true; receive: true')
 
     if (replace)
     {

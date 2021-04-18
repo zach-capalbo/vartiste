@@ -476,6 +476,12 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
   entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
   entity.setAttribute('shadow', 'cast: true; receive: true')
 
+  if (document.querySelector('a-scene').components['file-upload'].data.autoscaleModel)
+  {
+    Util.autoScaleViewer(entity.getObject3D('mesh'), entity)
+    entity.object3D.position.z += 0.25
+  }
+
   entity.emit('model-loaded', {format: 'gltf', model: model});
 
 }
