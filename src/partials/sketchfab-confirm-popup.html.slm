@@ -1,0 +1,5 @@
+a-entity shelf="width: 2; height: 1; frame: false" scale="0.1 0.1 0.1"
+  a-entity position="0 0.288 0" text="width: 2; wrapCount: 30; value: Warning, logging in will require refreshing the page. Make sure to save your changes first."
+  a-entity icon-row="" position="0.25 -0.25 0" scale="0.7 0.7 0.7"
+    a-entity icon-button="#asset-close-circle-outline" tooltip="Cancel" popup-action="close"
+    a-entity icon-button="#asset-sketchfab" tooltip="Log into Sketchfab" system-click-action="system: sketchfab; action: login"

@@ -39,6 +39,12 @@ Util.registerComponentSystem('sketchfab', {
     let query = this.el.querySelector('#sketchfab-search-field').getAttribute('text').value
     Util.busy(() => this.handleSearchResults(this.search(query)), {title: `Searching for ${query}`})
   },
+  async purchasedModels() {
+    Util.busy(() => this.handleSearchResults(this.get('/me/models/purchases')), {title: "Sketchfab purchases"})
+  },
+  async myModels() {
+    Util.busy(() => this.handleSearchResults(this.get('/me/models?count=14')), {title: "Load models"})
+  },
   async handleSearchResults(queryPromise) {
     let resultEntity = this.el.querySelector('#sketchfab-search-results')
     for (let c of resultEntity.getChildEntities())
