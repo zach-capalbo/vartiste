@@ -7,8 +7,15 @@ class Busy {
     Object.assign(this, opts)
     this.system = system
     this.startTime = this.system.el.sceneEl.time
+    this.finished = false
+    this.doneCallbacks = null
   }
   done() {
+    if (this.finished) {
+      console.warn("Already finsihed job", this.title)
+      return;
+    }
+    this.finished = true;
     this.endTime = this.system.el.sceneEl.time
     this.duration = this.endTime - this.startTime
     if (this.doneCallbacks) {
