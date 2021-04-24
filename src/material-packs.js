@@ -179,8 +179,10 @@ Util.registerComponentSystem('material-pack-system', {
         }
         el.components['material-pack'].view.setAttribute('material', attr)
         delete attr.shader
-        attr.aoMap = attr.ambientOcclusionMap
-        delete attr.ambientOcclusionMap
+        if (attr.ambientOcclusionMap) {
+          attr.aoMap = attr.ambientOcclusionMap
+          delete attr.ambientOcclusionMap
+        }
         el.components['material-pack'].maps = attr
       })
     })
@@ -456,6 +458,7 @@ AFRAME.registerComponent('material-pack', {
       }
       if (!layer)
       {
+        console.log("map", map, this)
         if (this.maps[map].id.startsWith('default-')) continue;
 
         layer = new Layer(Compositor.component.width, Compositor.component.height)
