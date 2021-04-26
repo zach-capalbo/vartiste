@@ -37,7 +37,10 @@ Util.registerComponentSystem('mesh-tools', {
     Compositor.meshRoot.traverse(o => {
       if (o.type === 'Mesh' || o.type === 'SkinnedMesh')
       {
-        o.geometry = mod.modify(o.geometry, o.geometry.attributes.position.count * factor)
+        let desiredCount = Math.round(o.geometry.attributes.position.count * factor)
+        let modified = mod.modify(o.geometry, desiredCount)
+        console.log("Modified geometry", desiredCount, o.geometry, modified)
+        o.geometry = modified
       }
     })
   },
