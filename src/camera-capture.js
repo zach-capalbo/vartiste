@@ -446,6 +446,10 @@ AFRAME.registerComponent('camera-tool', {
     {
       this.toggleSpectator()
     }
+    else if (oldData.captureType === 'spectator')
+    {
+      this.camera.layers.disable(CAMERA_LAYERS.SPECTATOR)
+    }
   },
   takePicture() {
     console.log("Taking picture")
@@ -704,6 +708,7 @@ AFRAME.registerComponent('camera-tool', {
   toggleSpectator() {
     let system = this.el.sceneEl.systems['spectator-camera']
 
+    this.camera.layers.enable(CAMERA_LAYERS.SPECTATOR)
     system.data.camera = this.camera
     system.data.state = SPECTATOR_CAMERA
   },
