@@ -284,6 +284,8 @@ AFRAME.registerComponent("frame", {
 
   // Hides the frame, but not the framed element
   hide() {
+    if (!this.objects) return;
+
     for (let o of this.objects)
     {
       o = (o.object3D) ? o.object3D : o
@@ -293,6 +295,8 @@ AFRAME.registerComponent("frame", {
 
   // Unhides a frame hidden by `hide`
   unhide() {
+    if (!this.objects) return;
+
     for (let o of this.objects)
     {
       o = (o.object3D) ? o.object3D : o
