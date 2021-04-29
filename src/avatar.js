@@ -1,11 +1,14 @@
 import {Util} from './util.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
+var Tone;
+
 Util.registerComponentSystem('avatar', {
   schema: {
     importAvatar: {default: false},
     leftHandEl: {type: 'selector', default: '#left-hand'},
     rightHandEl: {type: 'selector', default: '#right-hand'},
+    debug: {default: false},
   },
   init() {
     this.intercept = this.intercept.bind(this)
@@ -14,7 +17,7 @@ Util.registerComponentSystem('avatar', {
     this.onGripOpen = this.onGripOpen.bind(this)
 
     this.rightHandTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.PI / 2, -Math.PI / 2, 0))
-    this.leftHandTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.PI / 2, -Math.PI / 2, 0))
+    this.leftHandTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.PI / 2, Math.PI / 2, 0))
 
     this.hipTransform = new THREE.Matrix4().identity();
     this.headTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0, Math.PI, 0));
@@ -92,8 +95,14 @@ Util.registerComponentSystem('avatar', {
         this.animations = model.animations
         this.el.sceneEl.object3D.add(this.scene)
         this.scene.traverse(o => {
-          o.layers.disableAll()
-          o.layers.enable(CAMERA_LAYERS.SPECTATOR)
+          if (!this.data.debug)
+          {
+            o.layers.disableAll()
+            o.layers.enable(CAMERA_LAYERS.SPECTATOR)
+          }
+
+          o.frustumCulled = false
+
           if (!(o instanceof THREE.Mesh)) { return; }
           o.castShadow = true
           o.receiveShadow = true
@@ -126,48 +135,88 @@ Util.registerComponentSystem('avatar', {
 
           this.mixer.setTime(10)
         }
+
+        this.startAudioMonitoring()
       })();
 
       return true
     }
   },
+  async startAudioMonitoring() {
+    if (!Tone) {
+      Tone = await import('tone')
+    }
+
+    const meter = new Tone.Meter({normalRange: true});
+    const mic = new Tone.UserMedia().connect(meter);
+    await mic.open()
+    console.log("mic open");
+    this.meter = meter
+  },
   tick(t,dt) {
+    if (!this.scene) return;
+
     if (this.mixer) {
       this.mixer.update(0)
     }
 
-    let cameraPosObj = Util.cameraObject3D()
-    if (this.hips) {
-      Util.positionObject3DAtTarget(this.hips, cameraPosObj)
-      this.hips.position.sub(this.headToHip)
-      // Util.applyMatrix(this.hipTransform, this.hips)
-    }
-
-    if (this.head) {
-      Util.positionObject3DAtTarget(this.head, cameraPosObj)
-      this.head.matrix.multiply(this.headTransform)
-      Util.applyMatrix(this.head.matrix, this.head)
-    }
-    if (this.leftHand) {
-      Util.positionObject3DAtTarget(this.leftHand, this.data.leftHandEl.object3D)
-      this.leftHand.matrix.multiply(this.leftHandTransform)
-      Util.applyMatrix(this.leftHand.matrix, this.leftHand)
-    }
-    if (this.rightHand) {
-      Util.positionObject3DAtTarget(this.rightHand, this.data.rightHandEl.object3D)
-      this.rightHand.matrix.multiply(this.rightHandTransform)
-      Util.applyMatrix(this.rightHand.matrix, this.rightHand)
-    }
-
-    if (this.leftHand && this.rightHand) {
-      for (let el of [this.data.leftHandEl, this.data.rightHandEl]) {
-        el.object3D.traverse(o => {
-          o.layers.disable(CAMERA_LAYERS.DEFAULT)
-          o.layers.disable(CAMERA_LAYERS.SPECTATOR)
-          o.layers.enable(CAMERA_LAYERS.LEFT_EYE)
-          o.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
-        })
+    if (!this.data.debug)
+    {
+      let cameraPosObj = Util.cameraObject3D()
+      if (this.hips) {
+        cameraPosObj.getWorldPosition(this.hips.position)
+        this.hips.parent.worldToLocal(this.hips.position)
+        this.hips.position.sub(this.headToHip)
+        this.hips.rotation.y = Math.PI
       }
+
+      if (this.head) {
+        Util.positionObject3DAtTarget(this.head, cameraPosObj)
+        this.head.matrix.multiply(this.headTransform)
+        Util.applyMatrix(this.head.matrix, this.head)
+      }
+      if (this.leftHand) {
+        Util.positionObject3DAtTarget(this.leftHand, this.data.leftHandEl.object3D)
+        this.leftHand.matrix.multiply(this.leftHandTransform)
+        Util.applyMatrix(this.leftHand.matrix, this.leftHand)
+      }
+      if (this.rightHand) {
+        Util.positionObject3DAtTarget(this.rightHand, this.data.rightHandEl.object3D)
+        this.rightHand.matrix.multiply(this.rightHandTransform)
+        Util.applyMatrix(this.rightHand.matrix, this.rightHand)
+      }
+
+      if (this.leftHand && this.rightHand) {
+        for (let el of [this.data.leftHandEl, this.data.rightHandEl]) {
+          el.object3D.traverse(o => {
+            o.layers.disable(CAMERA_LAYERS.DEFAULT)
+            o.layers.disable(CAMERA_LAYERS.SPECTATOR)
+            o.layers.enable(CAMERA_LAYERS.LEFT_EYE)
+            o.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+          })
+        }
+      }
+    }
+
+    if (this.meter) {
+      let level = this.meter.getValue();
+
+      level = Math.min(1.0, level * 5);
+
+      // Why not.....
+      // this.el.sceneEl.systems['paint-system'].selectOpacity(level)
+
+      this.scene.traverse(o => {
+        let hubsData = o.userData.hubs_component_morph_audio_feedback;
+        if  (o.userData.gltfExtensions && o.userData.gltfExtensions.MOZ_hubs_components) hubsData = o.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback']
+        if (!hubsData) return;
+
+        let mappedLevel = THREE.MathUtils.mapLinear(level, 0, 1, hubsData.minValue, hubsData.maxValue)
+
+        // console.log("Setting morph data", o, level, mappedLevel)
+
+        o.morphTargetInfluences[o.morphTargetDictionary[hubsData.name]] = mappedLevel;
+      })
     }
   }
 })
