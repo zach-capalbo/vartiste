@@ -1,6 +1,6 @@
 {
   "name": "aframe-vartiste-toolkit",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "description": "Toolkit to create GUI similar to VARTISTE",
   "main": "vartiste-toolkit.js",
   "scripts": {

@@ -896,9 +896,9 @@ AFRAME.registerComponent('physx-body', {
     if (this.rigidBody && this.data.type === 'kinematic' && !this.setKinematic)
     {
       this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eKINEMATIC, true)
-      this.setKinematic= true
+      this.setKinematic = true
     }
-    if (this.el.is("grabbed")) {
+    if (this.rigidBody && (this.data.type === 'kinematic' || this.el.is("grabbed"))) {
       // this.el.object3D.scale.set(1,1,1)
       this.kinematicMove()
     }

@@ -87,6 +87,7 @@ require('./kromophone')
 require('./xbox-controller.js')
 require('./art-physics.js')
 require('./busy.js')
+require('./avatar.js')
 // require('./text')
 
 require('./app.styl')

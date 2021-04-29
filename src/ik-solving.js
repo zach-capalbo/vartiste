@@ -36,6 +36,7 @@ Util.registerComponentSystem('ik-solving', {
 })
 
 const constraints = [new THREE.IKBallConstraint(180)];
+const FIXED_CONSTRAINTS = [new THREE.IKBallConstraint(3)];
 AFRAME.registerComponent('ik-handle-tool', {
   dependencies: ['selection-box-tool'],
   schema: {
@@ -178,8 +179,9 @@ AFRAME.registerComponent('ik-handle-tool', {
         let ikchain = new IKChain()
         for (let i = 0; i < boneChain.length; ++i)
         {
+          let currentJoint = new IKJoint(boneChain[i], {constraints});
           ikchain.add(
-            new IKJoint(boneChain[i], {constraints}),
+            currentJoint,
             { target: i === boneChain.length - 1 ? target : null});
 
           if (i === boneChain.length - 1) break;
@@ -189,9 +191,16 @@ AFRAME.registerComponent('ik-handle-tool', {
             if (!c.isBone) continue;
             if (boneChain.indexOf(c) >= 0) continue;
 
-            ikchain.add(
-              new IKJoint(c, {constraints: []})
-            )
+            console.log("Adding subchain", ikchain)
+
+            let subTarget = new THREE.Object3D()
+            this.el.sceneEl.object3D.add(subTarget)
+            Util.positionObject3DAtTarget(subTarget, c)
+
+            let subchain = new IKChain()
+            subchain.add(currentJoint, {constraints})
+            subchain.add(new IKJoint(c, {constraints: FIXED_CONSTRAINTS}, {target: subTarget}))
+            ikchain.connect(subchain)
           }
         }
 
