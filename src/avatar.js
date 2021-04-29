@@ -10,6 +10,9 @@ Util.registerComponentSystem('avatar', {
   init() {
     this.intercept = this.intercept.bind(this)
 
+    this.onGripClose = this.onGripClose.bind(this)
+    this.onGripOpen = this.onGripOpen.bind(this)
+
     this.rightHandTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.PI / 2, -Math.PI / 2, 0))
     this.leftHandTransform = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-Math.PI / 2, -Math.PI / 2, 0))
 
@@ -26,6 +29,36 @@ Util.registerComponentSystem('avatar', {
       console.log("Clearing import avatar handler")
       this.el.sceneEl.systems['file-upload'].fileInterceptors.slice(this.el.sceneEl.systems['file-upload'].fileInterceptors.indexOf(this.intercept), 1)
     }
+
+    if (this.data.leftHandEl !== oldData.leftHandEl)
+    {
+      if (oldData.leftHandEl)
+      {
+        oldData.leftHandEl.removeEventListener('gripup', this.onGripOpen)
+        oldData.leftHandEl.removeEventListener('gripdown', this.onGripClose)
+      }
+      this.data.leftHandEl.addEventListener('gripup', this.onGripOpen)
+      this.data.leftHandEl.addEventListener('gripdown', this.onGripClose)
+    }
+
+    if (this.data.rightHandEl !== oldData.rightHandEl)
+    {
+      if (oldData.rightHandEl)
+      {
+        oldData.rightHandEl.removeEventListener('gripup', this.onGripOpen)
+        oldData.rightHandEl.removeEventListener('gripdown', this.onGripClose)
+      }
+      this.data.rightHandEl.addEventListener('gripup', this.onGripOpen)
+      this.data.rightHandEl.addEventListener('gripdown', this.onGripClose)
+    }
+  },
+  onGripClose(e) {
+    let clip = e.target === this.data.rightHandEl ? this.rightGripAnim : this.leftGripAnim
+    Util.callLater(() => clip.play())
+  },
+  onGripOpen(e) {
+    let clip = e.target === this.data.rightHandEl ? this.rightGripAnim : this.leftGripAnim
+    Util.callLater(() => clip.stop())
   },
   intercept(items) {
     console.log("Handling avatar")
@@ -90,6 +123,8 @@ Util.registerComponentSystem('avatar', {
 
           let rightGripClip = this.animations.find(a => a.name === "allGrip_R")
           this.rightGripAnim = rightGripClip ? this.mixer.clipAction(rightGripClip) : null
+
+          this.mixer.setTime(10)
         }
       })();
 
@@ -97,6 +132,10 @@ Util.registerComponentSystem('avatar', {
     }
   },
   tick(t,dt) {
+    if (this.mixer) {
+      this.mixer.update(0)
+    }
+
     let cameraPosObj = Util.cameraObject3D()
     if (this.hips) {
       Util.positionObject3DAtTarget(this.hips, cameraPosObj)
