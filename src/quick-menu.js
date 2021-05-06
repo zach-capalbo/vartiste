@@ -200,6 +200,7 @@ AFRAME.registerComponent('quick-gallery', {
       let button = document.createElement('a-entity')
       button.setAttribute('icon-button', img)
       button.setAttribute('tooltip', `Quick Start ${entry.displayName}`)
+      button.setAttribute('tooltip-style', "scale: 0.5 0.5 1.0;")
       button.setAttribute('quick-load', entry.name)
       this.el.append(button)
     }
