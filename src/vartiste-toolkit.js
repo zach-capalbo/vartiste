@@ -124,6 +124,7 @@ AFRAME.registerComponent('vartiste-rotation-button-mapping', {
 // Applies the VARTISTE user setup, including camera and controller components
 AFRAME.registerComponent('vartiste-user-root', {
   schema: {
+    // Object to use for positioning the user on position reset
     resetPositioner: {default: '#camera-reset-el'}
   },
   init() {

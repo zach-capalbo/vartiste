@@ -31,7 +31,14 @@ AFRAME.registerComponent('camera-layers', {
     'child-attached': function() { this.refresh(); }
   },
   update(oldData) {
-    this.tick = AFRAME.utils.throttleTick(this.refresh, this.data.tick, this)
+    if (this.data.tick < 0)
+    {
+      this.tick = function() {};
+    }
+    else
+    {
+      this.tick = AFRAME.utils.throttleTick(this.refresh, this.data.tick, this)
+    }
     let layers = this.el.object3D.layers
     layers.mask = 0
     for (let layer of this.data.layers)
@@ -43,7 +50,7 @@ AFRAME.registerComponent('camera-layers', {
         number = this.system.camera_layers[layer]
         if (isNaN(number))
         {
-          console.error('No such layer', number)
+          console.error('No such layer', number, layer)
           return
         }
       }
@@ -1535,6 +1542,31 @@ Util.registerComponentSystem('spectator-camera', {
       }
 
       this.lightMap.clear()
+    }
+  }
+})
+
+AFRAME.registerComponent('camera-target', {
+  dependencies: ['grab-activate'],
+  events: {
+    activate: function(e) {
+      this.el.setAttribute('camera-layers', 'layers: left-eye, right-eye; throttle: 2000')
+      this.cameras = Array.from(document.querySelectorAll('a-entity[camera-tool]')).filter(el => {
+        return el.getAttribute('camera-tool').autoCamera
+      })
+    }
+  },
+  init() {
+    this.flipQuaternion = new THREE.Quaternion(0, 1, 0, 0)
+    this.worldPos = new THREE.Vector3();
+  },
+  tick(t, dt) {
+    if (!this.el.is('grab-activated')) return;
+
+    this.el.object3D.getWorldPosition(this.worldPos);
+    for (let el of this.cameras) {
+      el.object3D.lookAt(this.worldPos)
+      el.object3D.quaternion.multiply(this.flipQuaternion)
     }
   }
 })

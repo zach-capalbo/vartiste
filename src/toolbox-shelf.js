@@ -251,5 +251,9 @@ AFRAME.registerComponent('toolbox-shelf', {
     this.el.sceneEl.object3D.add(camera)
     Util.positionObject3DAtTarget(camera, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
     this.el.sceneEl.setAttribute('spectator-camera', {state: 'SPECTATOR_CAMERA', camera: camera})
+  },
+  mergeDownNormalMap() {
+    let layer = Compositor.component.activeLayer
+    let targetLayer = Compositor.component.layers[Compositor.component.layers.indexOf(layer) - 1]
   }
 })
