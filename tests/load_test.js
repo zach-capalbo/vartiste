@@ -1,17 +1,19 @@
 const assert = require('assert');
 
+const LANDING_TEXT = "VARTISTE - WebXR Drawing, Texturing, and more!";
+
 Feature('load');
 
 Scenario('Access Page', (I) => {
   I.amOnPage("/index.html");
-  I.see("VARTISTE is intended to be used with a virtual reality headset.")
+  I.see(LANDING_TEXT)
   I.waitForFunction(() => window.passedLoadTest, 20)
   I.dontSee("It looks like VARTISTE Crashed")
 });
 
 Scenario('Load Preset', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
-  I.see("VARTISTE is intended to be used with a virtual reality headset.")
+  I.see(LANDING_TEXT)
   I.waitForFunction(() => window.passedLoadTest, 20)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
   let meshLength = await I.executeScript(() => Compositor.meshes.length)
@@ -32,7 +34,7 @@ Scenario('Load Preset', async (I) => {
 
 Scenario('Crash the page', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
-  I.see("VARTISTE is intended to be used with a virtual reality headset.")
+  I.see(LANDING_TEXT)
   I.waitForFunction(() => window.passedLoadTest, 20)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
 
@@ -60,7 +62,7 @@ Scenario('Toolkit test', async (I) => {
 
 Scenario('Skeletonator', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
-  I.see("VARTISTE is intended to be used with a virtual reality headset.")
+  I.see(LANDING_TEXT)
   I.waitForFunction(() => window.passedLoadTest, 20)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
   let meshLength = await I.executeScript(() => Compositor.meshes.length)
