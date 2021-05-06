@@ -498,14 +498,36 @@ Util.registerComponentSystem('file-upload', {
   },
   init() {
     this.fileInterceptors = []
+    this.dragIndicator = document.querySelector('#drag-and-drop')
+    this.dragSet = new Set()
     document.body.ondragover = (e) => {
-      // console.log("Drag over", e.detail)
+      // console.log("Drag over", e.detail, e.target)
       e.preventDefault()
+      this.dragIndicator.className = ""
+      this.dragSet.add(e.target)
+    }
+
+    document.body.ondragleave = (e) => {
+      e.preventDefault()
+      this.dragSet.delete(e.target)
+
+      if (this.clearTimeout) {
+        window.clearTimeout(this.clearTimeout)
+      }
+
+      this.clearTimeout = window.setTimeout(() => {
+        if (this.dragSet.size === 0)
+        {
+          this.dragIndicator.className = "hidden"
+        }
+      }, 100)
+      // console.log(e.target)
     }
 
     document.body.ondrop = (e) => {
       console.log("Drop", e.detail)
       e.preventDefault()
+      this.dragIndicator.className = "hidden"
       let referenceIdx = 0
       let items = Array.from(e.dataTransfer.items)
 
