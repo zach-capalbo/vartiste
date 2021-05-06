@@ -55,6 +55,10 @@ AFRAME.registerComponent('edit-field', {
       }
     })
 
+    this.inputField.addEventListener('keydown', (e) => {
+      e.stopPropagation()
+    })
+
     this.inputField.addEventListener('input', (e) => {
       this.setValue(this.inputField.value)
       // this.numpad.querySelector('.value').setAttribute('text', {value: this.inputField.value})

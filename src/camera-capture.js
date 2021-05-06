@@ -1547,21 +1547,29 @@ Util.registerComponentSystem('spectator-camera', {
 })
 
 AFRAME.registerComponent('camera-target', {
-  dependencies: ['grab-activate'],
+  dependencies: ['grab-activate', 'material'],
   events: {
     activate: function(e) {
+      this.tracking = true
       this.el.setAttribute('camera-layers', 'layers: left-eye, right-eye; throttle: 2000')
       this.cameras = Array.from(document.querySelectorAll('a-entity[camera-tool]')).filter(el => {
         return el.getAttribute('camera-tool').autoCamera
       })
+    },
+    click: function(e) {
+      this.tracking = !this.tracking
+      this.el.setAttribute('material', 'color', this.tracking ? this.originalColor : '#000')
     }
   },
   init() {
     this.flipQuaternion = new THREE.Quaternion(0, 1, 0, 0)
     this.worldPos = new THREE.Vector3();
+    this.originalColor = this.el.getAttribute('material').color
+    this.el.setAttribute('six-dof-tool', 'lockedComponent: camera-target')
   },
   tick(t, dt) {
     if (!this.el.is('grab-activated')) return;
+    if (!this.tracking) return;
 
     this.el.object3D.getWorldPosition(this.worldPos);
     for (let el of this.cameras) {

@@ -4,14 +4,20 @@ header
   left 50%
   transform: translate(-50%, 0)
   z-index: 100
-  padding: 20px
+  padding: 8px
   background-color: #f0edf2
-  border: 3px solid #2e4459
-  border-radius: 5px
-  margin-top: -5px
+  // border: 3px solid #2e4459
+  border-radius: 8px
+  margin-top: -8px
   text-align: center
+  background: linear-gradient(#fcf7ff 0%, #fcf7ff 90%, #e1c7f2 95%, #3b3666 100%)
+  // box-shadow: 3px 3px 2px 2px #3b366633
+  h2
+    font-size: 100%
   p
     text-align: left
+  #got-it
+    float: right
 
 @keyframes fadeIn {
   0% {
@@ -146,3 +152,9 @@ header
   background-color: #f0edf2AA
   box-shadow: 0px 0px 10px 10px #f0edf2AA
   user-select: none
+  img
+    user-select: none
+    filter: invert(1)
+    position: absolute
+    top: 50%
+    left: 50%
