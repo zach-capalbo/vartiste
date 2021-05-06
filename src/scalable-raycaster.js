@@ -42,3 +42,33 @@ AFRAME.registerComponent('scalable-raycaster', {
     }, this.el.components.raycaster)
   }
 })
+
+AFRAME.registerComponent('raycaster-layers', {
+  dependencies: ['raycaster'],
+  schema: {
+    layers: {type: 'array', default: ["default"]},
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['camera-layers']
+  },
+  update(oldData) {
+    let layers = this.el.components.raycaster.raycaster.layers
+    layers.mask = 0
+    for (let layer of this.data.layers)
+    {
+      let number = parseInt(layer)
+
+      if (isNaN(number))
+      {
+        number = this.system.camera_layers[layer]
+        if (isNaN(number))
+        {
+          console.error('No such layer', number, layer)
+          return
+        }
+      }
+
+      layers.enable(number)
+    }
+  }
+})

@@ -6,7 +6,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity icon-button="#asset-floppy" tooltip="Save" quick-menu-action="quickSave"
       a-entity#quick-menu-project-name-edit edit-field="type: string; autoClear: true" _popup-button="scale: 0.3 0.3 0.3" visible="false"
     a-entity icon-button="#asset-undo" tooltip="Undo" system-click-action="system: settings-system; action: undoAction"
-    a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
+    a-entity icon-button="#asset-folder-open-outline" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
     a-entity icon-button="#asset-image-filter-hdr" tooltip="Environment Options" shelf-summoner="name: Environment Shelf"
     a-entity icon-button="#asset-brush" tooltip="Tools" shelf-summoner="name: 6DoF Tool Shelf"
     a-entity icon-button="#asset-arrow-down-bold" tooltip="More" quick-menu-action="expandQuickMenu"

@@ -147,7 +147,7 @@ AFRAME.registerComponent('load-shelf', {
     this.el.parentEl.addEventListener('popupshown', e => this.repopulate())
     this.inputEl = document.createElement('input')
     this.inputEl.setAttribute('type', "file")
-    this.inputEl.setAttribute('accept', ".vartiste")
+    this.inputEl.setAttribute('accept', ".vartiste, .vartistez, .glb, .png, .jpg, .zip")
     this.inputEl.style="display: none"
     this.inputEl.addEventListener('change', (e) => {this.upload(e)})
     document.body.append(this.inputEl)
@@ -202,13 +202,11 @@ AFRAME.registerComponent('load-shelf', {
     this.inputEl.click()
   },
   upload(e) {
-    let file = this.inputEl.files[0]
-    if (!file) return
-    file.text().then(t => {
-      console.log("Loading file")
-      this.el.sceneEl.systems['settings-system'].load(t)
-      this.el.emit('popupaction', 'close')
-    })
+    for (let file of this.inputEl.files)
+    {
+      this.el.sceneEl.systems['file-upload'].handleFile(file)
+    }
+    this.el.emit('popupaction', 'close')
   },
   loadURLField() {
     let url = this.el.querySelector('#load-url-field').getAttribute('text').value

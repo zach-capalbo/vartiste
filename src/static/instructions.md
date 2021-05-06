@@ -229,6 +229,7 @@ applied to different frames, giving a kind of animated brush effect.
     As long as everything shares the same UV map, you can import the large model
     at the end to combine it all.
   - Turn off Hand Stabilization ![Hand with Two Lines](../assets/hand-two-lines.png)
+  - Try using spray cans or volumetric brushes instead of point-and-click or pencils. They use different underlying mechanisms for drawing, and have different performance characteristics.
   - I've gotten the best performance out of Chrome (You may need to [launch with special flags](https://github.com/aframevr/aframe/issues/4558))
     - Works with Chrome canary 86.0.4214.0:
       - Oculus: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`

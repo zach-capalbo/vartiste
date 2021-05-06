@@ -28,6 +28,14 @@ AFRAME.registerComponent('desktop-controls', {
         this.keys[e.key] = false
       }
     })
+
+    this.el.sceneEl.addEventListener('enter-vr', () => {
+      document.querySelector('.desktop-controls').classList.add('hidden')
+    })
+
+    this.el.sceneEl.addEventListener('exit-vr', () => {
+      document.querySelector('.desktop-controls').classList.remove('hidden')
+    })
   },
   setupLookControls(el){
     // console.log("Settting up look controls", el)
