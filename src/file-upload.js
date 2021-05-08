@@ -518,7 +518,7 @@ Util.registerComponentSystem('file-upload', {
       this.clearTimeout = window.setTimeout(() => {
         if (this.dragSet.size === 0)
         {
-          this.dragIndicator.className = "hidden"
+          this.dragIndicator.className = "minimized"
         }
       }, 100)
       // console.log(e.target)
@@ -527,7 +527,7 @@ Util.registerComponentSystem('file-upload', {
     document.body.ondrop = (e) => {
       console.log("Drop", e.detail)
       e.preventDefault()
-      this.dragIndicator.className = "hidden"
+      this.dragIndicator.className = "minimized"
       let referenceIdx = 0
       let items = Array.from(e.dataTransfer.items)
 

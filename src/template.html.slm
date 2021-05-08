@@ -24,7 +24,7 @@ html
     /script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"
     /script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"
   body
-    header#need-help-notification
+    header#need-help-notification.hidden-in-vr
       h2 VARTISTE - WebXR Drawing, Texturing, and more!
       a href="landing.html" Need Help? Click here for instructions and more.
       /p VARTISTE is intended to be used with a virtual reality headset. Click the VR button on the bottom right hand corner to begin.
@@ -35,6 +35,6 @@ html
       a href="https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=Loading%20Error" Please file a bug report if you’re feeling charitable
     == partial('./partials/desktop-controls.html.slm')
     == partial('./partials/loading-page.html.slm')
-    #drag-and-drop.hidden
+    #drag-and-drop.minimized.hidden-in-vr
       | Drop file here to load
-      img src="./assets/drag-and-drop.png"
+      img title="Drag and drop file here to load" alt="drag and drop indicator" src="./assets/drag-and-drop.png"
