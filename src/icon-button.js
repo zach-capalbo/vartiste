@@ -608,11 +608,7 @@ AFRAME.registerComponent('icon-row', {
     this.componentToButton = new Map();
     let buttons = Array.from(this.el.getChildEntities()).filter(el => el.hasAttribute('icon-button'))
     let mesh = new THREE.InstancedMesh(this.system.geometry, this.system.bgMaterial, buttons.length)
-    if (this.mesh) {
-      this.mesh.parent.remove(this.mesh)
-      this.mesh.dispose()
-    }
-    this.mesh = mesh
+
     await Util.whenLoaded(buttons);
 
     for (let buttonEl of buttons)
@@ -624,6 +620,12 @@ AFRAME.registerComponent('icon-row', {
         if (fg.material.map.image.decode) await fg.material.map.image.decode()
       }
     }
+
+    if (this.mesh) {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.dispose()
+    }
+    this.mesh = mesh
 
     mesh.position.set(0, 0, - this.system.depth / 2)
     let i = 0
