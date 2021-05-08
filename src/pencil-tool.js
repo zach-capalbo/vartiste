@@ -223,7 +223,7 @@ AFRAME.registerComponent('pencil-tool', {
       if (this.data.detailTip)
       {
         Util.whenLoaded(tip, () => {
-          tip.setAttribute('material', {shader: 'standard'})
+          tip.setAttribute('material', {shader: 'standard', transparent: false})
           tip.getObject3D('mesh').material.flatShading = true
           tip.getObject3D('mesh').material.needsUpdate = true
         })

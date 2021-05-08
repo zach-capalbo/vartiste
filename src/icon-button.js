@@ -676,15 +676,15 @@ AFRAME.registerComponent('icon-row', {
       if (!fg) {
         fg = document.createElement('a-image')
         this.el.append(fg)
+        fg.setAttribute('material', {
+          src: canvas,
+          color: '#FFF',
+          fog: false,
+          transparent: true,
+          shader: this.system.data.iconShader,
+          opacity: this.data === "" ? 0.0 : 1.0
+        })
       }
-      fg.setAttribute('material', {
-        src: canvas,
-        color: '#FFF',
-        fog: false,
-        transparent: true,
-        shader: this.system.data.iconShader,
-        opacity: this.data === "" ? 0.0 : 1.0
-      })
       fg.setAttribute('geometry', `width: ${(this.system.width + 0.05) * buttons.length}; height: ${this.system.width}`)
       fg.setAttribute('position', `${(this.system.width + 0.05) * (buttons.length - 1) / 2 - 0.025} 0 ${this.system.depth + 0.001}`)
       // fg.setAttribute('frame', '')
