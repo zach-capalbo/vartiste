@@ -161,3 +161,38 @@ AFRAME.registerComponent('expandable-shelf', {
     this.el.sceneEl.emit('refreshobjects')
   }
 })
+
+// Automatically aligns to the parent shelf so that the first [`icon-button`](#icon-button) in the
+// first [`icon-row`](#icon-row) is automatically positioned at the top left of the shelf
+AFRAME.registerComponent('shelf-content', {
+  schema: {
+    padding: {default: 0.4}
+  },
+  init() {
+    let el = this.el.parentEl
+    while (el)
+    {
+      if (el.hasAttribute('shelf'))
+      {
+        this.shelf = el;
+        break
+      }
+      el = el.parentEl
+    }
+
+    if (!el) {
+      console.warn("shelf-content must be placed in a shelf")
+      return;
+    }
+
+    this.el.classList.add('grab-root')
+    this.el['redirect-grab'] = this.shelf
+  },
+  update(oldData) {
+    if (!this.shelf) return
+    Util.whenLoaded(this.shelf, () => {
+      let shelf = this.shelf.getAttribute('shelf')
+      this.el.setAttribute('position', `${- shelf.width / 2 + this.data.padding} ${shelf.height / 2 - this.data.padding} 0`)
+    })
+  }
+})
