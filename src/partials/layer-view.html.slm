@@ -1,5 +1,5 @@
 a-entity.layer-shelf shelf="frame: true; name: Layer Control; pinnable: false"
-  a-entity position="-1.5 1.2 0"
+  a-entity icon-row="mergeButtons: true" position="-1.5 1.2 0"
     a-entity.clickable click-action="hide" icon-button="#asset-eye" tooltip="Hide Layer"
     a-entity.clickable click-action="edit" icon-button="#asset-brush" tooltip="Activate Layer "
     a-entity.clickable click-action="grab" icon-button="#asset-arrow-all" tooltip="Grab Layer"

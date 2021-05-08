@@ -392,6 +392,11 @@ AFRAME.registerComponent('icon-button', {
     threeColor.setStyle(color)
     if (this.system.colorManagement) threeColor.convertSRGBToLinear()
 
+    if (this.instanceManager)
+    {
+      this.instanceManager.setColor(this, threeColor)
+    }
+
     if (this.system.bgMaterials[threeColor.getHex()])
     {
       this.bg.material = this.system.bgMaterials[threeColor.getHex()]
@@ -574,9 +579,46 @@ AFRAME.registerComponent('system-click-action', {
 // y-position based on how many icon-rows there are before it in the parent
 // element. See [`icon-button`](#icon-button) for an example.
 AFRAME.registerComponent('icon-row', {
+  schema: {
+    mergeButtons: {default: false},
+    autoPosition: {default: true},
+  },
   init() {
-    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
-    this.el.object3D.position.y -= (0.4 + 0.1) * indexId
+    if (this.data.autoPosition)
+    {
+      let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
+      this.el.object3D.position.y -= (0.4 + 0.1) * indexId
+    }
+
+    this.system = this.el.sceneEl.systems['icon-button']
+
+    if (this.data.mergeButtons) Util.whenLoaded(this.el, () => this.merge())
+  },
+  async merge() {
+    this.componentToButton = new Map();
+    let buttons = Array.from(this.el.getChildEntities()).filter(el => el.hasAttribute('icon-button'))
+    await Util.whenLoaded(buttons);
+    let mesh = new THREE.InstancedMesh(this.system.geometry, this.system.bgMaterial, buttons.length)
+    mesh.position.set(0, 0, - this.system.depth / 2)
+    let i = 0
+
+    for (let buttonEl of buttons)
+    {
+      let component = buttonEl.components['icon-button']
+      buttonEl.object3D.updateMatrix()
+      mesh.setMatrixAt(i, buttonEl.object3D.matrix)
+      mesh.setColorAt(i, component.bg.material.color)
+      component.bg.parent.remove(component.bg)
+      component.instanceManager = this
+      this.componentToButton.set(component, i)
+      i++;
+    }
+    this.mesh = mesh
+    this.el.object3D.add(mesh)
+  },
+  setColor(component, color) {
+    this.mesh.setColorAt(this.componentToButton.get(component), color)
+    this.mesh.instanceColor.needsUpdate = true
   }
 })
 
