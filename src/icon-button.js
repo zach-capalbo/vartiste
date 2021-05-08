@@ -607,6 +607,9 @@ AFRAME.registerComponent('icon-row', {
     this.mergeInProgress = true
     this.componentToButton = new Map();
     let buttons = Array.from(this.el.getChildEntities()).filter(el => el.hasAttribute('icon-button'))
+
+    if (buttons.length == 0) return;
+
     let mesh = new THREE.InstancedMesh(this.system.geometry, this.system.bgMaterial, buttons.length)
 
     await Util.whenLoaded(buttons);
