@@ -313,6 +313,7 @@ AFRAME.registerComponent('icon-button', {
 
     this.el.getObject3D('mesh').add(bg)
     this.bg = bg
+    this.fg = this.el.getObject3D('mesh')
 
     this.el.addEventListener('click', (e) => {
       this.clickTime = this.el.sceneEl.time
@@ -391,6 +392,11 @@ AFRAME.registerComponent('icon-button', {
     let threeColor = this.system.tmpColor
     threeColor.setStyle(color)
     if (this.system.colorManagement) threeColor.convertSRGBToLinear()
+
+    if (this.instanceManager)
+    {
+      this.instanceManager.setColor(this, threeColor)
+    }
 
     if (this.system.bgMaterials[threeColor.getHex()])
     {
@@ -574,9 +580,125 @@ AFRAME.registerComponent('system-click-action', {
 // y-position based on how many icon-rows there are before it in the parent
 // element. See [`icon-button`](#icon-button) for an example.
 AFRAME.registerComponent('icon-row', {
+  schema: {
+    mergeButtons: {default: false},
+    mergeIcons: {default: true},
+    autoPosition: {default: true},
+  },
+  events: {
+    object3dset: function(e) {
+      if (this.data.mergeButtons) this.merge()
+    }
+  },
   init() {
-    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
-    this.el.object3D.position.y -= (0.4 + 0.1) * indexId
+    if (this.data.autoPosition)
+    {
+      let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-row')).indexOf(this.el)
+      this.el.object3D.position.y -= (0.4 + 0.1) * indexId
+    }
+
+    this.system = this.el.sceneEl.systems['icon-button']
+
+    if (this.data.mergeButtons) Util.whenLoaded(this.el, () => this.merge())
+  },
+  async merge() {
+    if (!this.data.mergeButtons) return;
+    if (this.mergeInProgress) return;
+    this.mergeInProgress = true
+    this.componentToButton = new Map();
+    let buttons = Array.from(this.el.getChildEntities()).filter(el => el.hasAttribute('icon-button'))
+
+    if (buttons.length == 0) return;
+
+    let mesh = new THREE.InstancedMesh(this.system.geometry, this.system.bgMaterial, buttons.length)
+
+    await Util.whenLoaded(buttons);
+
+    for (let buttonEl of buttons)
+    {
+      let component = buttonEl.components['icon-button']
+      let fg = component.fg
+      if (fg.material.map && this.data.mergeIcons)
+      {
+        if (fg.material.map.image.decode) await fg.material.map.image.decode()
+      }
+    }
+
+    if (this.mesh) {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.dispose()
+    }
+    this.mesh = mesh
+
+    mesh.position.set(0, 0, - this.system.depth / 2)
+    let i = 0
+
+    let canvas = this.iconCanvas || document.createElement('canvas')
+    this.iconCanvas = canvas
+    canvas.height = 32
+    let ctx = canvas.getContext('2d')
+    let usedCanvas = false
+    let canUseCanvas = this.data.mergeIcons && !buttons.some(b => b.hasAttribute('position'))
+
+    let spacing = 32 / this.system.width * (this.system.width + 0.05)
+    canvas.width = spacing * buttons.length
+
+    for (let buttonEl of buttons)
+    {
+      let component = buttonEl.components['icon-button']
+      buttonEl.object3D.updateMatrix()
+      mesh.setMatrixAt(i, buttonEl.object3D.matrix)
+      mesh.setColorAt(i, component.bg.material.color)
+      if (component.bg.parent) component.bg.parent.remove(component.bg)
+      component.instanceManager = this
+      this.componentToButton.set(component, i)
+
+      let fg = component.fg
+      if (fg.material.map && canUseCanvas)
+      {
+        ctx.drawImage(fg.material.map.image, i * spacing + spacing - 32, 0, 32, 32)
+        usedCanvas = true
+
+        if (!fg.material.cloned)
+        {
+          fg.material = fg.material.clone()
+          fg.material.cloned = true
+          // Can't remove. Need for raycaster
+          fg.material.visible = false
+        }
+      }
+
+      i++;
+    }
+
+    this.el.object3D.add(mesh)
+
+    if (usedCanvas)
+    {
+      let fg = this.fg
+      if (!fg) {
+        fg = document.createElement('a-image')
+        this.el.append(fg)
+        fg.setAttribute('material', {
+          src: canvas,
+          color: '#FFF',
+          fog: false,
+          transparent: true,
+          shader: this.system.data.iconShader,
+          opacity: this.data === "" ? 0.0 : 1.0
+        })
+      }
+      fg.setAttribute('geometry', `width: ${(this.system.width + 0.05) * buttons.length}; height: ${this.system.width}`)
+      fg.setAttribute('position', `${(this.system.width + 0.05) * (buttons.length - 1) / 2 - 0.025} 0 ${this.system.depth + 0.001}`)
+      // fg.setAttribute('frame', '')
+      this.fg = fg
+    }
+
+    this.mergeInProgress = false
+  },
+  setColor(component, color) {
+    this.mesh.setColorAt(this.componentToButton.get(component), color)
+    this.mesh.instanceColor.needsUpdate = true
   }
 })
 

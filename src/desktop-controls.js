@@ -30,7 +30,7 @@ AFRAME.registerComponent('desktop-controls', {
     })
 
     this.el.sceneEl.addEventListener('enter-vr', () => {
-      document.querySelector('.desktop-controls').classList.add('hidden')
+      document.querySelectorAll('.hidden-in-vr').forEach(el => el.classList.add('hidden'))
     })
 
     this.el.sceneEl.addEventListener('exit-vr', () => {

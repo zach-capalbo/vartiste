@@ -1,15 +1,15 @@
 a-entity shelf="width: 5; frame: false"
-  a-entity position="-2 0.68 0"
+  a-entity position="-2 0.68 0" icon-row="mergeButtons: true; autoPosition: false"
     - for (let k of "qwertyuiop")
       a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4"
-  a-entity position="-1.8 0.18 0"
+  a-entity position="-1.8 0.18 0" icon-row="mergeButtons: true; autoPosition: false"
     - for (let k of "asdfghjkl")
       a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4"
-  a-entity position="-1.6 -0.34 0"
+  a-entity position="-1.6 -0.34 0" icon-row="mergeButtons: true; autoPosition: false"
     - for (let k of "zxcvbnm_")
       a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4"
   a-entity.value text="width: 4.8; wrapCount: 26; value:project; align: center" position="0 1.3 0"
-  a-entity position="0.0 -0.83 0"
+  a-entity position="0.0 -0.83 0" icon-row="mergeButtons: true; autoPosition: false"
     a-entity icon-button="#asset-archive-arrow-down-outline" action="paste" tooltip="paste"
     a-entity icon-button="#asset-ear-hearing" speech-recognition-button=""
     a-entity icon-button="#asset-close" action="clear" tooltip="clear"

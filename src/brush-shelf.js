@@ -44,10 +44,10 @@ AFRAME.registerComponent('brush-shelf', {
 
     this.brushButtons = []
     for (let idx = 0; idx < BrushList.length; ++idx) {
-      this.addBrush(BrushList[idx])
+      this.addBrush(BrushList[idx], true)
     }
   },
-  addBrush(brush) {
+  addBrush(brush, defaultBrush = false) {
     if (this.nextTimeExpand)
     {
       if (this.el.querySelector('.brushes').children.length > 4)
@@ -77,6 +77,10 @@ AFRAME.registerComponent('brush-shelf', {
 
     if ((idx % BRUSHES_PER_ROW) == BRUSHES_PER_ROW - 1)
     {
+      if (defaultBrush)
+      {
+        this.brushRow.setAttribute('icon-row', 'autoPosition: false; mergeButtons: true')
+      }
       this.brushRow = document.createElement('a-entity')
       this.brushRow.setAttribute('position', `0 ${-0.6 * this.el.querySelector('.brushes').children.length} 0`)
       this.el.querySelector('.brushes').append(this.brushRow)
