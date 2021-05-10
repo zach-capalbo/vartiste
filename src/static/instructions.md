@@ -7,8 +7,7 @@
 Pronounced Vee-Ar-tEEst. VARTISTE is a virtual reality app for 2D drawing and
 image editing, and 3D model texturing. A virtual reality headset with tracked
 motion controllers, such as the [Valve
-Index](https://store.steampowered.com/valveindex) or [Oculus Rift
-S](https://www.oculus.com/rift-s/) is required to use it.
+Index](https://store.steampowered.com/valveindex) or [HP Reverb G2](https://www8.hp.com/us/en/vr/reverb-g2-vr-headset.html) is required to use it.
 
 <a class="launch-button" href="index.html">LAUNCH VARTISTE</a>
 
@@ -232,7 +231,6 @@ applied to different frames, giving a kind of animated brush effect.
   - Try using spray cans or volumetric brushes instead of point-and-click or pencils. They use different underlying mechanisms for drawing, and have different performance characteristics.
   - I've gotten the best performance out of Chrome (You may need to [launch with special flags](https://github.com/aframevr/aframe/issues/4558))
     - Works with Chrome canary 86.0.4214.0:
-      - Oculus: `start chrome.exe --disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus`
       - SteamVR: `start chrome.exe --disable-features=XRSandbox --enable-features=OpenVR --force-webxr-runtime=OpenVR`
     - [Or you can download a Chromium version with pretested flags](#download)
 - **Trick:** To _Copy and Paste_ try this:
@@ -271,16 +269,19 @@ keep your browsing safe from crashes and experimental features.
 
 <a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
 
-To run, extract the zip file to a folder, and then use the shortcuts for either
-SteamVR ~or Oculus mode~ (Oculus flags don't currently seem to work with Chromium, but Oculus works with SteamVR, so you can use that).
+To run, extract the zip file to a folder, and then use the shortcuts for SteamVR.
 
 **Linux COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
-## Issues
+## Issues, Suggestions, and Feedback
 
 This is a very early version of the software. It still needs a lot of love. If
 you encounter problems, you can [Submit an Issue Report](https://gitlab.com/zach-geek/vartiste/issues).
 If you feel inclined, you can also [Contribute code in the form of a Merge Request](https://gitlab.com/zach-geek/vartiste).
+
+You can also join the VARTISTE Discord chat:
+
+<a class="launch-button" href="https://discord.gg/vRHM8MYNby">VARTISTE Discord</a>
 
 <img src="moose.jpg" alt="Painting lipstick on a moose" class="screenshot">
 

@@ -26,11 +26,26 @@ systems.
 ```html
 <html>
 <head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.22.0/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.24.0/vartiste-toolkit.js"></script>
 </head>
 ...
 </html>
 ```
+
+## New Project vs. Existing Project
+
+If you're creating a new project, the aframe-vartiste-toolkit has a lot of
+features and functionality, and I recommend pulling in the whole thing. This is
+the default behavior when including the toolkit script. The components and
+systems can work together to provide more functionality when everything is
+available.
+
+If you're bringing aframe-vartiste-toolkit into an existing project, you can
+either [bring in specific pieces of the toolkit](#customization), or you can
+bring in the whole thing. If possible, I recommend pulling in the whole toolkit,
+since some components may depend on other components or systems, but if there's
+concern for naming or functionality conflicts, most components can also operate
+on their own.
 
 # Toolkit Overview
 
