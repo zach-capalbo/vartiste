@@ -581,8 +581,21 @@ AFRAME.registerComponent('system-click-action', {
 // element. See [`icon-button`](#icon-button) for an example.
 AFRAME.registerComponent('icon-row', {
   schema: {
+    // If set to true, it will merge all icon-buttons in this icon-row into a
+    // single instanced mesh. Color updates, click events, etc, will still
+    // happen as normal. This should provide some performance benefit by
+    // reducing the number of draw calls.
     mergeButtons: {default: false},
+
+    // If set to true and `mergeButtons` is also true, this will combine all
+    // button icons in the row into a single transparent texture in order to
+    // reduce expensive transparent draw calls. Note that this only works as
+    // long as the buttons in the icon-row have not been moved out of their
+    // default positions
     mergeIcons: {default: true},
+
+    // If set to true, this icon-row will automatically have it's y position
+    // adjusted based on the number of other icon-rows in its parent element.
     autoPosition: {default: true},
   },
   events: {
@@ -626,7 +639,7 @@ AFRAME.registerComponent('icon-row', {
 
     if (this.mesh) {
       this.mesh.parent.remove(this.mesh)
-      this.mesh.dispose()
+      if (this.mesh.dispose) this.mesh.dispose()
     }
     this.mesh = mesh
 
@@ -685,11 +698,15 @@ AFRAME.registerComponent('icon-row', {
           fog: false,
           transparent: true,
           shader: this.system.data.iconShader,
-          opacity: this.data === "" ? 0.0 : 1.0
+          opacity: this.data === "" ? 0.0 : 1.0,
         })
       }
       fg.setAttribute('geometry', `width: ${(this.system.width + 0.05) * buttons.length}; height: ${this.system.width}`)
       fg.setAttribute('position', `${(this.system.width + 0.05) * (buttons.length - 1) / 2 - 0.025} 0 ${this.system.depth + 0.001}`)
+      Util.whenLoaded(fg, () => {
+        fg.components.material.material.toneMapped = false
+        fg.components.material.material.needsUpdate = true
+      })
       // fg.setAttribute('frame', '')
       this.fg = fg
     }
