@@ -252,6 +252,7 @@ AFRAME.registerComponent('popup-button', {
       if (!e.target.hasAttribute('popup-action')) return
 
       this[e.target.getAttribute('popup-action') + "Popup"]()
+
       // e.stopPropagation()
     })
 
