@@ -55,7 +55,7 @@ AFRAME.registerComponent("layer-shelves", {
       }
     })
     let modePopup = container.querySelector('.mode-popup')
-    modePopup.addEventListener('click', e => { this.handleModeSelection(layer, modePopup, e) })
+    modePopup.parentNode.addEventListener('click', e => { this.handleModeSelection(layer, modePopup, e) })
 
     container.addEventListener('bbuttonup', e => this.popoutLayer(layer))
 
