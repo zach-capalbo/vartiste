@@ -386,6 +386,12 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
     }
   }
 
+  model.scene.traverse(o => {
+    if (o.geometry) {
+      o.geometry.computeBoundsTree();
+    }
+  })
+
   AFRAME.utils.extendDeep(model.scene.userData, model.userData)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
@@ -442,22 +448,9 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
   })()
 }
 
-async function addGlbReference(file, {loadingManager = undefined} = {}) {
-  let id = shortid.generate()
-  let asset = document.createElement('a-asset-item')
-  asset.id = `asset-model-${id}`
-
-  let loader = new THREE.GLTFLoader(loadingManager)
-
-  let buffer = await file.arrayBuffer()
-  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
-
-
-  let entity = document.createElement('a-entity')
-  document.querySelector('#reference-spawn').append(entity)
+export function setupGlbReferenceEntity(entity) {
   entity.classList.add("clickable")
   entity.classList.add("reference-glb")
-  entity.setObject3D("mesh", model.scene || model.scenes[0])
 
   if (!document.querySelector('a-scene').getAttribute('renderer').colorManagement)
   {
@@ -473,8 +466,33 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
     })
   }
 
+  entity.getObject3D('mesh').traverse(o => {
+    if (o.geometry) {
+      Util.deinterleaveAttributes(o.geometry)
+      o.geometry.computeBoundsTree();
+    }
+  })
+
   entity.setAttribute('uv-scroll', 'requireGltfExtension: true')
   entity.setAttribute('shadow', 'cast: true; receive: true')
+};
+
+async function addGlbReference(file, {loadingManager = undefined} = {}) {
+  let id = shortid.generate()
+  let asset = document.createElement('a-asset-item')
+  asset.id = `asset-model-${id}`
+
+  let loader = new THREE.GLTFLoader(loadingManager)
+
+  let buffer = await file.arrayBuffer()
+  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+
+
+  let entity = document.createElement('a-entity')
+  document.querySelector('#reference-spawn').append(entity)
+  entity.setObject3D("mesh", model.scene || model.scenes[0])
+
+  setupGlbReferenceEntity(entity)
 
   if (document.querySelector('a-scene').components['file-upload'].data.autoscaleModel)
   {
