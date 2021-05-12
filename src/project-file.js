@@ -1,7 +1,7 @@
 import {Layer} from './layer.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
-import {addImageReferenceViewer} from './file-upload.js'
+import {addImageReferenceViewer, setupGlbReferenceEntity} from './file-upload.js'
 import {Util} from './util.js'
 import {BrushList} from './brush-list.js'
 const FILE_VERSION = 2
@@ -154,8 +154,7 @@ class ProjectFile {
       referenceContainer.append(newEl)
       newEl.object3D.copy(objectLoader.parse(refJson))
       newEl.setObject3D('mesh', newEl.object3D.children[0])
-      newEl.classList.add('clickable')
-      newEl.classList.add('reference-glb')
+      setupGlbReferenceEntity(newEl)
     }
 
     let glbLoader = new THREE.GLTFLoader()
@@ -165,11 +164,10 @@ class ProjectFile {
       let buffer = await base64ToBufferAsync(glb)
       let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
       let newEl = document.createElement('a-entity')
-      newEl.classList.add('clickable')
-      newEl.classList.add('reference-glb')
       referenceContainer.append(newEl)
       newEl.object3D.copy(model.scenes[0].children[0])
       newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
+      setupGlbReferenceEntity(newEl)
     }
 
     if ('skeletonator' in obj)

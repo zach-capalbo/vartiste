@@ -13,6 +13,8 @@ require('./framework/hide-in-ar.js')
 require('./framework/billboard.js')
 require('./framework/fix-lost-controllers.js')
 
+require('./framework/raycast-bvh.js')
+
 // window.Leap = require('leapjs')
 require('./leap-hand')
 require('./hand-tracking');
