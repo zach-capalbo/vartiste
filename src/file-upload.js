@@ -386,12 +386,6 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
     }
   }
 
-  model.scene.traverse(o => {
-    if (o.geometry) {
-      o.geometry.computeBoundsTree();
-    }
-  })
-
   AFRAME.utils.extendDeep(model.scene.userData, model.userData)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
@@ -443,6 +437,12 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
     {
       Compositor.meshRoot.parent.rotation.set(0, Math.PI, 0)
     }
+
+    Compositor.meshRoot.traverse(o => {
+      if (o.geometry) {
+        o.geometry.computeBoundsTree();
+      }
+    })
 
     compositor.activateLayer(startingLayer);
   })()

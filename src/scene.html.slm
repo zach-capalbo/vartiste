@@ -87,6 +87,6 @@ a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true
         /
         a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
       a-entity position="0.03 1.0545312767040833 0.11243601320796098"
-        a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false"
+        a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false" raycast-bvh="throttle: 2000"
       a-entity#reference-spawn position="0 1.6 -0.7"
   a-entity test-load-confirmation=""

@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+require('./framework/raycast-bvh.js')
 
 // Adding this component to an element will make the render loop skip updating this
 // element and all of its children. Can give a considerable performance benefit
@@ -81,4 +82,42 @@ Util.registerComponentSystem('optimize-mesh-raycast', {
       return res
     }
   }
+})
+
+// Uses [three-mesh-bvh](https://github.com/gkjohnson/three-mesh-bvh) to
+// significantly improve raycasting performance for this entity's mesh (or
+// child meshes recursively)
+AFRAME.registerComponent('raycast-bvh', {
+  schema: {
+    // If throttle is greater or equal to 0, it will check periodically for any
+    // ungenerated BVH bounds trees, and generate them automatically. Otherwise,
+    // it will only generate bounds trees when `object3dset` is emitted.
+    throttle: {default: -1},
+  },
+  events: {
+    object3dset: function(e) {
+      this.compute()
+    }
+  },
+  init() {
+    if (this.el.getObject3D('mesh')) this.compute();
+  },
+  update(oldData) {
+    if (this.data.throttle >= 0)
+    {
+      this.tick = AFRAME.utils.throttleTick(this.compute, this.data.throttle, this)
+    }
+    else
+    {
+      this.tick = function(){};
+    }
+  },
+  compute() {
+    this.el.object3D.traverse(o => {
+      if (o.geometry && !o.geometry.boundsTree) {
+        o.geometry.computeBoundsTree();
+      }
+    })
+  },
+  tick(t, dt) {}
 })
