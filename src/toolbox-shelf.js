@@ -255,5 +255,35 @@ AFRAME.registerComponent('toolbox-shelf', {
   mergeDownNormalMap() {
     let layer = Compositor.component.activeLayer
     let targetLayer = Compositor.component.layers[Compositor.component.layers.indexOf(layer) - 1]
+  },
+  async exportObjAction() {
+    await import('./framework/OBJExporter.js')
+    let exporter = new THREE.OBJExporter()
+
+    let meshes = Compositor.meshes;
+
+    let mesh = meshes[0].clone();
+
+    mesh.updateMatrixWorld()
+    mesh.geometry = mesh.geometry.clone();
+
+    let inv = new THREE.Matrix4().copy(mesh.matrixWorld)
+    inv.invert();
+
+    let geos = [mesh.geometry]
+
+    for (let i = 1; i < meshes.length; ++i)
+    {
+      let other = meshes[i]
+      let geo = other.geometry.clone()
+      geo.applyMatrix4(other.matrixWorld)
+      geo.applyMatrix4(inv)
+      geos.push(geo)
+    }
+
+    mesh.geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geos, false)
+
+    let obj = exporter.parse(mesh)
+    this.el.sceneEl.systems['settings-system'].download("data:application/x-binary;base64," + btoa(obj), {extension: 'obj', suffix:''})
   }
 })
