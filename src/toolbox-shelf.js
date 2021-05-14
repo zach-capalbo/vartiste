@@ -281,6 +281,11 @@ AFRAME.registerComponent('toolbox-shelf', {
       geos.push(geo)
     }
 
+    for (let geo of geos)
+    {
+      
+    }
+
     mesh.geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geos, false)
 
     let obj = exporter.parse(mesh)
