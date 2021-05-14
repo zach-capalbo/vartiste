@@ -147,7 +147,7 @@ AFRAME.registerComponent('load-shelf', {
     this.el.parentEl.addEventListener('popupshown', e => this.repopulate())
     this.inputEl = document.createElement('input')
     this.inputEl.setAttribute('type', "file")
-    this.inputEl.setAttribute('accept', ".vartiste, .vartistez, .glb, .png, .jpg, .zip")
+    this.inputEl.setAttribute('accept', ".vartiste, .vartistez, .glb, .png, .jpg, .zip, .vartiste-brushes")
     this.inputEl.style="display: none"
     this.inputEl.addEventListener('change', (e) => {this.upload(e)})
     document.body.append(this.inputEl)
