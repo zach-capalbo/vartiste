@@ -10,6 +10,7 @@ Util.registerComponentSystem('volumetrics', {
     bristles: {default: false},
     undoEnabled: {default: false},
     undoThrottle: {default: 250},
+    autoDilate: {default: true},
   },
   init() {
     this.lastUndoCheck = 0
@@ -23,6 +24,8 @@ Util.registerComponentSystem('volumetrics', {
     let proc = new CanvasShaderProcessor({source: require('./shaders/shapes/volumetrics.glsl'), vertexShader: require('./shaders/vertex-distance.vert'), canvas})
     this.proc = proc
     this.initializeGeometry()
+
+    this.dilateProc  = new CanvasShaderProcessor({fx: 'dilate'})
 
     this.active = function() {};
     this.tick = AFRAME.utils.throttleTick(this._tick, 10, this)
@@ -254,12 +257,23 @@ function registerVolumeTool(name, toolOpts) {
         this.wasDrawing = false
       }
 
+      let procCanvas = proc.canvas
+
+      if (this.volumetrics.data.autoDilate)
+      {
+        this.volumetrics.dilateProc.setInputCanvas(proc.canvas)
+        this.volumetrics.dilateProc.update()
+        procCanvas = this.volumetrics.dilateProc.canvas
+      }
+
       let ctx = destinationCanvas.getContext("2d")
       // ctx.globalCompositeOperation = 'copy'
       ctx.globalAlpha = 1.0
-      ctx.drawImage(proc.canvas,
-                    0, 0, proc.canvas.width, proc.canvas.height,
+      ctx.drawImage(procCanvas,
+                    0, 0, procCanvas.width, procCanvas.height,
                     0, 0, destinationCanvas.width, destinationCanvas.height)
+
+
 
       if (destinationCanvas.touch) destinationCanvas.touch()
     }

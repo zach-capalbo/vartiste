@@ -113,3 +113,36 @@ AFRAME.registerSystem('crash-handler', {
     this.noticeDiv.classList.add('hidden')
   }
 })
+
+
+AFRAME.registerSystem('enter-vr-failed-handler', {
+  init() {
+    let noticeDiv = document.createElement('div')
+    this.noticeDiv = noticeDiv
+    noticeDiv.innerHTML = require('./partials/enter-vr-failed-handler.html.slm')
+    noticeDiv.classList.add('hidden')
+    noticeDiv.classList.add('crash-bg')
+    document.body.append(noticeDiv)
+
+    noticeDiv.querySelector('#dismiss-and-ignore-enter-vr').addEventListener('click', () => {
+      this.ignored = true
+      noticeDiv.classList.add('hidden')
+    })
+
+    document.addEventListener('fullscreenchange', () => {
+      if (this.shouldExitFullscreen && !this.ignored)
+      {
+        document.exitFullscreen()
+      }
+    });
+
+    this.el.addEventListener('enter-vr', () => {
+      if (this.ignored) return
+      if (navigator.xr && !this.el.xrSession) {
+        console.warn("No XR Session")
+        noticeDiv.classList.remove('hidden')
+        this.shouldExitFullscreen = true
+      }
+    })
+  }
+})

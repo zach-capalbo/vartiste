@@ -1,0 +1,31 @@
+#enter-vr-failed-handler.crash-handler
+  h2 VR Mode Failed
+  markdown:
+    Sorry, it looks like we couldn't get you into virtual reality. Please make
+    sure you've got your virtual reality headset plugged in and turned on.
+    VARTISTE works best with OpenXR, so please makes sure you've got the right
+    OpenXR provider configured.
+
+  .chrome-only
+    markdown:
+      For Chrome/Chromium on the desktop, please make sure the run time is set
+      to OpenXR. You can do this by entering `chrome://flags` in the address
+      bar, then typing `xr` into the search field, and then setting
+      "Force WebXr Runtime" to _Open XR_
+
+  markdown:
+    There are some instructions for common headset types listed below:
+
+    - *Windows Mixed Reality*: If there's a message that says something along
+      the lines of "Windows Mixed Reality is not set up to run OpenXR apps" when
+      starting Windows Mixed Reality, click the "Fix it" button then restart the
+      browser.
+
+    - *SteamVR*: Under SteamVR settings, in the Developer tab, click
+      "Set SteamVR as OpenXR Runtime", restart the browser, and try again.
+
+    - *Oculus*: Follow the instructions [here](https://flightsimulator.zendesk.com/hc/en-us/articles/360018555179-How-to-install-OpenXR-)
+
+    If you continue having trouble entering VR, feel free to [file an issue on the issue tracker](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=EnterVR) or ask a question in the [Discord chat](https://discord.gg/vRHM8MYNby)
+
+  a#dismiss-and-ignore-enter-vr href="#" Dismiss and ignore this issue
