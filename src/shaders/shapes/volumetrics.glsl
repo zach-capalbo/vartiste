@@ -11,6 +11,7 @@ uniform vec3 u_center;
 uniform float u_size;
 uniform vec4 u_color;
 uniform mat4 u_matrix;
+uniform float u_userScale;
 
 uniform vec3 u_rand;
 uniform int u_shape;
@@ -169,6 +170,8 @@ void main() {
   d = d / pow(u_size, 1.0 / 3.0);
 
   d = clamp(-d, 0.0, 1.0);
+
+  d = d * u_userScale;
 
   d = u_hard ? smoothstep(0.0, u_size * 0.2, d) : d;
 

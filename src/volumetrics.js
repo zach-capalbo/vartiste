@@ -125,13 +125,13 @@ function registerVolumeTool(name, toolOpts) {
     events: {
       activate: function() { this.activate(); },
       stateremoved: function(e) {
-        if (e.detail === 'grabbed')
+        if (e.detail === 'grabbed' || e.detail === 'grabbed')
         {
           this.wasDrawing = false
         }
       },
       click: function() {
-        if (this.el.is('grabbed'))
+        if (this.el.is('grabbed') || this.el.is('wielded'))
         {
           this.el.setAttribute(`volume-${name}-tool`, 'toolActive', !this.data.toolActive)
         }
@@ -142,7 +142,9 @@ function registerVolumeTool(name, toolOpts) {
       this.volumetrics = this.el.sceneEl.systems.volumetrics
 
       this.el.classList.add('grab-root')
+      this.el.classList.add('volume-tool')
       this.el.setAttribute('grab-options', 'showHand: false')
+
       let body = document.createElement('a-cylinder')
       body.setAttribute('height', 0.3)
       body.setAttribute('radius', 0.07)
@@ -184,9 +186,11 @@ function registerVolumeTool(name, toolOpts) {
     },
     activate() {
       this.volumetrics.activate()
+
+      this.initialScale = this.el.object3D.scale.x
     },
     tick(t,dt) {
-      if (!this.el.is('grabbed')) return
+      if (!(this.el.is('grabbed') || this.el.is('wielded'))) return
       if (!this.volumetrics.proc) return
       if (!this.data.toolActive) return
 
@@ -216,6 +220,8 @@ function registerVolumeTool(name, toolOpts) {
       tipRad.sub(tipPos)
 
       proc.setUniform('u_size', 'uniform1f', tipRad.length())
+
+      proc.setUniform('u_userScale', 'uniform1f', Math.max(1.0, this.el.object3D.scale.x / this.initialScale))
 
       let target = Compositor.mesh
       let destMat = this.pool('dest', THREE.Matrix4)

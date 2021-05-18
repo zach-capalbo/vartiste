@@ -206,3 +206,19 @@ AFRAME.registerComponent('quick-gallery', {
     }
   }
 })
+
+AFRAME.registerComponent('when-visible', {
+  tick(t, dt) {
+    let visible = true
+    this.el.object3D.traverseAncestors(a => {
+      if (!a.visible) {
+        visible = false
+      }
+    })
+
+    if (visible) {
+      this.el.emit('whenvisible', {})
+      this.el.removeAttribute('when-visible')
+    }
+  }
+})
