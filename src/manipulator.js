@@ -675,7 +675,7 @@ AFRAME.registerComponent('grab-activate', {
   },
   init() {
     let activate = (e) => {
-      if ((e.detail === 'grabbed' || e.detail === 'wieled') && e.target === this.el) {
+      if ((e.detail === 'grabbed' || e.detail === 'wielded') && e.target === this.el) {
         if (this.el.is('grab-activated')) return;
 
         this.el.emit('activate')

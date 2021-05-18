@@ -1373,6 +1373,9 @@ AFRAME.registerComponent('physx-joint', {
 //
 // This is the easiest way to create non-kinematic grabbing.
 AFRAME.registerComponent('dual-wieldable', {
+  schema: {
+    grabbedState: {default: 'wielded'},
+  },
   init() {
     let target = document.createElement('a-entity')
     this.el.parentEl.append(target)
@@ -1382,7 +1385,7 @@ AFRAME.registerComponent('dual-wieldable', {
       target.setAttribute('manipulator-weight', this.el.getAttribute('manipulator-weight'))
     }
 
-    target.setAttribute('dual-wield-target', {target: this.el})
+    target.setAttribute('dual-wield-target', {target: this.el, grabbedState: this.data.grabbedState})
     this.el.setAttribute('redirect-grab', target)
     this.el.classList.add('grab-root')
   }

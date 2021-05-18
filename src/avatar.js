@@ -30,7 +30,7 @@ Util.registerComponentSystem('avatar', {
     } else if (!this.data.importAvatar && oldData.importAvatar)
     {
       console.log("Clearing import avatar handler")
-      this.el.sceneEl.systems['file-upload'].fileInterceptors.slice(this.el.sceneEl.systems['file-upload'].fileInterceptors.indexOf(this.intercept), 1)
+      this.el.sceneEl.systems['file-upload'].fileInterceptors.splice(this.el.sceneEl.systems['file-upload'].fileInterceptors.indexOf(this.intercept), 1)
     }
 
     if (this.data.leftHandEl !== oldData.leftHandEl)
@@ -57,10 +57,12 @@ Util.registerComponentSystem('avatar', {
   },
   onGripClose(e) {
     let clip = e.target === this.data.rightHandEl ? this.rightGripAnim : this.leftGripAnim
+    if (!clip) return;
     Util.callLater(() => clip.play())
   },
   onGripOpen(e) {
     let clip = e.target === this.data.rightHandEl ? this.rightGripAnim : this.leftGripAnim
+    if (!clip) return;
     Util.callLater(() => clip.stop())
   },
   intercept(items) {
