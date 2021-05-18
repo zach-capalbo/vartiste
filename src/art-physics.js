@@ -30,8 +30,13 @@ Util.registerComponentSystem('art-physics', {
       el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4')
       el.setAttribute('dual-wieldable', '')
     })
-    this.el.querySelector('#composition-view').setAttribute('physx-body', 'type: kinematic')
     Compositor.el.setAttribute('physx-body', 'type: kinematic')
+    this.el.querySelector('#composition-view').setAttribute('physx-body', 'type: dynamic; mass: 100; angularDamping: 10; linearDamping: 4')
+
+    this.el.querySelectorAll('.reference-glb').forEach(el => {
+      el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4')
+      el.setAttribute('dual-wieldable', '')
+    })
 
     Util.callLater(async () => {
       await Compositor.el.components['physx-body'].physxRegisteredPromise;
