@@ -100,7 +100,10 @@ AFRAME.registerComponent('pencil-tool', {
         this.overlay = this.overlay || {el: this.el}
         this.overlay.brush = this.el.components['hand-draw-tool'].system.brush
 
-        Compositor.component.overlays[this.el.components['hand-draw-tool'].id] = this.overlay
+        if (Compositor.el)
+        {
+          Compositor.component.overlays[this.el.components['hand-draw-tool'].id] = this.overlay
+        }
       }
     },
     activate: function() { this.activatePencil() }
