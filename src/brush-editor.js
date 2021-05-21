@@ -5,6 +5,9 @@ import * as Brush from './brush.js'
 import shortid from 'shortid'
 
 AFRAME.registerSystem('brush-system', {
+  schema: {
+    autoLoadBrushes: {default: true},
+  },
   init() {
     this.loadDefaultBrushes()
     this.brushList = BrushList
