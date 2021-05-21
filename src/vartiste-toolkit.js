@@ -110,6 +110,7 @@ if (VARTISTE_TOOLKIT.includeCompositor)
 {
   require('./compositor.js')
   if (checkFile('./pencil-tool')) require('./pencil-tool')
+  if (checkFile('./brush-editor')) require('./brush-editor')
   VARTISTE.Compositor = Compositor
 }
 
