@@ -96,6 +96,7 @@ if (checkFile('./webxr-input-profiles')) require('./webxr-input-profiles')
 if (checkFile('./camera-capture')) require('./camera-capture')
 if (checkFile('./physics')) require('./physics')
 if (checkFile('./kromophone')) require('./kromophone')
+if (checkFile('./pencil-tool')) require('./pencil-tool')
 const {ButtonMaps, Axes, JoystickDirections} = require('./joystick-directions.js')
 // require('./user-media')
 const {Undo, UndoStack} = require('./undo')
@@ -109,7 +110,6 @@ Object.assign(VARTISTE, {ButtonMaps, Axes, JoystickDirections, Pool, Undo, UndoS
 if (VARTISTE_TOOLKIT.includeCompositor)
 {
   require('./compositor.js')
-  if (checkFile('./pencil-tool')) require('./pencil-tool')
   if (checkFile('./brush-editor')) require('./brush-editor')
   VARTISTE.Compositor = Compositor
 }

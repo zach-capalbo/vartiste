@@ -9,7 +9,10 @@ AFRAME.registerSystem('brush-system', {
     autoLoadBrushes: {default: true},
   },
   init() {
-    this.loadDefaultBrushes()
+    if (this.data.autoLoadBrushes)
+    {
+      this.loadDefaultBrushes()
+    }
     this.brushList = BrushList
     this.brusheTypes = Brush
   },
