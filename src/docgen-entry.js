@@ -63,6 +63,8 @@ async function addDocumentation(src)
   require('./undo')
   require('./physics')
   require('./kromophone')
+  require('./pencil-tool')
+  require('./brush-editor')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> {

@@ -68,6 +68,8 @@ AFRAME.registerSystem('pencil-tool', {
   }
 })
 
+// Creates a grabbable pencil which can be used to draw onto [`drawable`](#drawable)
+// components
 AFRAME.registerComponent('pencil-tool', {
   dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
@@ -108,8 +110,14 @@ AFRAME.registerComponent('pencil-tool', {
     },
     activate: function() { this.activatePencil() }
   },
-  init() {
+  async init() {
     this.el.classList.add('grab-root')
+
+    if (this.el.hasAttribute('set-brush'))
+    {
+      this.data.locked = true
+      await Util.whenComponentInitialized(this.el, 'set-brush')
+    }
 
     this.el.setAttribute('six-dof-tool', 'lockedComponentDependencies', ['manipulator-weight'])
 
@@ -133,7 +141,23 @@ AFRAME.registerComponent('pencil-tool', {
       {
         systemData = Object.assign({}, this.el.sceneEl.systems['paint-system'].data)
       }
-      let brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
+      let brush;
+
+      if (this.el.hasAttribute('set-brush'))
+      {
+        if (this.el.components['set-brush'] && this.el.components['set-brush'].brush)
+        {
+          brush = this.el.components['set-brush'].brush
+        }
+        else
+        {
+          brush = new Brush()
+        }
+      }
+      else {
+        brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
+      }
+
       // console.log("Restoring brush", brush)
       console.log("Restoring brush", brush.constructor.name, brush.baseid)
       lockedSystem = {
@@ -266,6 +290,7 @@ AFRAME.registerComponent('pencil-tool', {
 
   },
   update(oldData) {
+    if (!this.tip) return
     this.updateEnabled()
 
     if (this.data.drawThrough)

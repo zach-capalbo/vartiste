@@ -6,7 +6,7 @@ import shortid from 'shortid'
 
 AFRAME.registerSystem('brush-system', {
   schema: {
-    autoLoadBrushes: {default: true},
+    autoLoadBrushes: {default: false},
   },
   init() {
     if (this.data.autoLoadBrushes)

@@ -35,6 +35,11 @@ AFRAME.registerComponent('canvas-updater', {
 // object's existing color texture when used in conjunction with the [`hand-draw-tool`](#hand-draw-tool)
 // or the [`pencil-tool`](#pencil-tool)
 //
+// **Note:** Currently, this only works correctly on objects with a single
+// material, or at least multiple materials that share the same `map` texture.
+// It also requires a UV map. The quality of the drawing experience will depend
+// on the quality of the UV unwrapping.
+//
 // If you need more advanced features (e.g., layers), please see the [`compositor`](#compositor) component
 AFRAME.registerComponent('drawable', {
   schema: {
@@ -48,12 +53,11 @@ AFRAME.registerComponent('drawable', {
     // Height of canvas to create if a canvas is needed
     canvasHeight: {default: 1024},
 
-    // Drawing update throttle
-    throttle: {default: 5},
+    // If true, will traverse this element's object3D and set all materials and
+    // objects to be drawable. If false, will only traverse the `getObject3D('mesh')`
+    traverse: {default: false},
   },
   init() {
-    // this.el.setAttribute('compositor', '')
-    // this.el.classList.add('clickable')
     this.el.classList.add('canvas')
   },
   update(oldData) {
@@ -76,15 +80,26 @@ AFRAME.registerComponent('drawable', {
       this.canvas.height = this.data.canvasHeight
     }
     this.tex = new THREE.CanvasTexture(this.canvas)
+    this.tex.encoding = this.el.sceneEl.getAttribute('renderer').colorManagement ? THREE.GammaEncoding : THREE.LinearEncoding
+    this.canvas.touch = () => this.tex.needsUpdate = true
 
     this.el.setAttribute('draw-canvas', {canvas: this.canvas})
-
-    this.el.setAttribute('canvas-updater', {throttle: this.data.throttle})
   },
   tick(t,dt) {
-    this.el.object3D.traverse(o => {
-      if (o.material && o.material.map !== this.tex)
+    let originalImage = undefined;
+    let traversalObject = this.data.traverse ? this.el.object3D : this.el.getObject3D('mesh');
+    traversalObject.traverse(o => {
+      if (!o.material) return;
+      if (!o.material.map) return;
+      if (o.material.map !== this.tex)
       {
+        if (originalImage && originalImage !== o.material.map.image)
+        {
+            console.error("Drawable currently only supports objects with a single texture. Results may be unexpected")
+        }
+
+        originalImage = o.material.map.image
+
         o.material = o.material.clone()
         let ctx = this.tex.image.getContext('2d')
         ctx.drawImage(o.material.map.image, 0, 0, ctx.canvas.width, ctx.canvas.height)
