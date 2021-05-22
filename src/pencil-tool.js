@@ -87,13 +87,17 @@ AFRAME.registerComponent('pencil-tool', {
     enabled: {default: true},
 
     locked: {default: false},
+    lockable: {default: true},
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
     lockedColor: {type: 'color'}
   },
   events: {
     'bbuttonup': function(e) {
-      this.createLockedClone()
+      if (this.data.lockable)
+      {
+        this.createLockedClone()
+      }
     },
     'stateadded': function(e) {
       if (e.detail === 'grabbed' || e.detail === 'wielded') {
@@ -116,6 +120,7 @@ AFRAME.registerComponent('pencil-tool', {
     if (this.el.hasAttribute('set-brush'))
     {
       this.data.locked = true
+      this.data.lockable = false
       await Util.whenComponentInitialized(this.el, 'set-brush')
     }
 

@@ -26,7 +26,7 @@ systems.
 ```html
 <html>
 <head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.27.0/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.27.1/vartiste-toolkit.js"></script>
 </head>
 ...
 </html>
