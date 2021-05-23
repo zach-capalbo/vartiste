@@ -88,6 +88,7 @@ AFRAME.registerComponent('drawable', {
   tick(t,dt) {
     let originalImage = undefined;
     let traversalObject = this.data.traverse ? this.el.object3D : this.el.getObject3D('mesh');
+    if (!traversalObject) return;
     traversalObject.traverse(o => {
       if (!o.material) return;
       if (!o.material.map) return;
