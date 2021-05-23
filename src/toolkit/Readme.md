@@ -26,7 +26,7 @@ systems.
 ```html
 <html>
 <head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.24.0/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.27.1/vartiste-toolkit.js"></script>
 </head>
 ...
 </html>
@@ -121,6 +121,24 @@ There's also a bunch of built-in constraints, which can be set on entities to
 restrict how they move when grabbed. For instance
 [`manipulator-weight`](#manipulator-weight) makes entities feel "heavy" by
 slowing down their movement when grabbed.
+
+## Drawing Components
+
+[VARTISTE](https://vartiste.xyz) of course is a drawing and image editing
+application. I've brought many of the drawing components into the toolkit to
+allow easily adding drawing to other A-Frame applications.
+
+The easiest way to get started adding drawing to your app is to add the
+[`drawable`](#drawable) component to whatever you want to be able to draw on,
+and the [`hand-draw-tool`](#hand-draw-tool) component to whichever raycasters
+you want to be able to draw. These are already set up if you use the
+[`vartiste-user-root`](#vartiste-user-root) component. Additionally, you can
+create [`pencil-tool`](#pencil-tool) components to create grabbable pencils that
+can be easier to use in VR.
+
+You can create your own brushes with the [`set-brush`](#set-brush) component.
+Scene-wide drawing parameters are managed by the
+[`paint-system`](#paint-system).
 
 ## Other cool stuff
 
@@ -295,12 +313,13 @@ and contributions, both code-wise and documentation-wise are welcome.
 
     <!--You can use some of the VARTISTE drawing tools, too!-->
     <a-entity id="draw-canvas-demo" class="clickable"
-              canvas-updater="throttle: 5"
-              draw-canvas="canvas:#draw-canvas-asset" frame=""
+              drawable="canvas:#draw-canvas-asset" frame=""
               geometry="primitive: plane; width: 2; height: 1.75"
               material="shader: flat; src: #draw-canvas-asset; npot: true"
               position="3.1 0 -2.4" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"></a-entity>
     <a-entity class="clickable" color-picker="" geometry="primitive: circle; radius: 1; height: 1.75" position="3.1 2 -2.4"></a-entity>
+    <a-entity position="4.5 2 -2.4" icon-button="#asset-brush" tooltip="Change brush" set-brush="brushType: ImageBrush; image: #asset-brush; color: blue; scale: 5; activationEvent: click"></a-entity>
+    <a-entity position="3.1 0 -1.4" rotation="90 0 0" scale="2 2 2" pencil-tool="" tooltip="Grabbable Pencil" set-brush="brushType: ImageBrush; image: #asset-lead-pencil; color: green; scale: 5"></a-entity>
 
     <!-- There's a few handy default constraints to restrict how things can be grabbed -->
     <a-sphere class="clickable"

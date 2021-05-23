@@ -68,6 +68,8 @@ AFRAME.registerSystem('pencil-tool', {
   }
 })
 
+// Creates a grabbable pencil which can be used to draw onto [`drawable`](#drawable)
+// components
 AFRAME.registerComponent('pencil-tool', {
   dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
@@ -85,13 +87,17 @@ AFRAME.registerComponent('pencil-tool', {
     enabled: {default: true},
 
     locked: {default: false},
+    lockable: {default: true},
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
     lockedColor: {type: 'color'}
   },
   events: {
     'bbuttonup': function(e) {
-      this.createLockedClone()
+      if (this.data.lockable)
+      {
+        this.createLockedClone()
+      }
     },
     'stateadded': function(e) {
       if (e.detail === 'grabbed' || e.detail === 'wielded') {
@@ -100,13 +106,23 @@ AFRAME.registerComponent('pencil-tool', {
         this.overlay = this.overlay || {el: this.el}
         this.overlay.brush = this.el.components['hand-draw-tool'].system.brush
 
-        Compositor.component.overlays[this.el.components['hand-draw-tool'].id] = this.overlay
+        if (window.Compositor && window.Compositor.el)
+        {
+          window.Compositor.component.overlays[this.el.components['hand-draw-tool'].id] = this.overlay
+        }
       }
     },
     activate: function() { this.activatePencil() }
   },
-  init() {
+  async init() {
     this.el.classList.add('grab-root')
+
+    if (this.el.hasAttribute('set-brush'))
+    {
+      this.data.locked = true
+      this.data.lockable = false
+      await Util.whenComponentInitialized(this.el, 'set-brush')
+    }
 
     this.el.setAttribute('six-dof-tool', 'lockedComponentDependencies', ['manipulator-weight'])
 
@@ -130,7 +146,23 @@ AFRAME.registerComponent('pencil-tool', {
       {
         systemData = Object.assign({}, this.el.sceneEl.systems['paint-system'].data)
       }
-      let brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
+      let brush;
+
+      if (this.el.hasAttribute('set-brush'))
+      {
+        if (this.el.components['set-brush'] && this.el.components['set-brush'].brush)
+        {
+          brush = this.el.components['set-brush'].brush
+        }
+        else
+        {
+          brush = new Brush()
+        }
+      }
+      else {
+        brush = Brush.fromStore(JSON.parse(this.data.brush), BrushList)
+      }
+
       // console.log("Restoring brush", brush)
       console.log("Restoring brush", brush.constructor.name, brush.baseid)
       lockedSystem = {
@@ -263,6 +295,7 @@ AFRAME.registerComponent('pencil-tool', {
 
   },
   update(oldData) {
+    if (!this.tip) return
     this.updateEnabled()
 
     if (this.data.drawThrough)
@@ -728,8 +761,8 @@ AFRAME.registerComponent('six-dof-tool', {
         let wm = new THREE.Matrix4
         this.el.object3D.updateMatrixWorld()
         wm.copy(this.el.object3D.matrixWorld)
-        this.el.object3D.parent.remove(this.el.object3D)
-        document.querySelector('#world-root').object3D.add(this.el.object3D)
+        this.el.object3D.parent.remove(this.el.object3D);
+        (document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D)
         Util.applyMatrix(wm, this.el.object3D)
       }
     }

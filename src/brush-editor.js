@@ -5,8 +5,14 @@ import * as Brush from './brush.js'
 import shortid from 'shortid'
 
 AFRAME.registerSystem('brush-system', {
+  schema: {
+    autoLoadBrushes: {default: false},
+  },
   init() {
-    this.loadDefaultBrushes()
+    if (this.data.autoLoadBrushes)
+    {
+      this.loadDefaultBrushes()
+    }
     this.brushList = BrushList
     this.brusheTypes = Brush
   },

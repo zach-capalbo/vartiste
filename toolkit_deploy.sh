@@ -16,6 +16,8 @@ rm -r stats/
 
 rm -r assets/
 
+rm -r ai/
+
 npm set registry https://registry.npmjs.org
 npm set //registry.npmjs.org/:_authToken $NPM_DEPLOY_KEY
 

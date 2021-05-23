@@ -9,7 +9,7 @@ class Brush {
     return {
       baseid: {type: 'string'},
       user: {default: false},
-      color: {type: 'color'},
+      color: {type: 'color', default: 'black'},
       opacity: {default: 1.0},
       scale: {default: 1.0},
       tooltip: {type: 'string'},
