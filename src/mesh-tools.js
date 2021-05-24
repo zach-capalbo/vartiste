@@ -456,6 +456,22 @@ AFRAME.registerComponent('mesh-fill-tool', {
     }
 
     if (destinationCanvas.touch) destinationCanvas.touch()
+  },
+  erodeMesh() {
+    for (let m of Compositor.nonCanvasMeshes)
+    {
+      let p = new THREE.Vector3;
+      let n = new THREE.Vector3;
+      for (let i = 0; i < m.geometry.attributes.position.count; ++i)
+      {
+          p.fromBufferAttribute(m.geometry.attributes.position, i)
+          n.fromBufferAttribute(m.geometry.attributes.normal, i)
+          p.addScaledVector(n, -0.01)
+          m.geometry.attributes.position.setXYZ(i, p.x, p.y, p.z)
+      }
+
+      m.geometry.attributes.position.needsUpdate = true
+    }
   }
 })
 

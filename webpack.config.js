@@ -120,7 +120,7 @@ function minimizer() {
   parallel: true,
   terserOptions: {
     toplevel: true,
-    keep_classnames: /Node|Layer/
+    keep_classnames: /Node|Layer|Brush/
   }
 })]};
 

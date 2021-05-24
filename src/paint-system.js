@@ -84,8 +84,10 @@ AFRAME.registerSystem('paint-system', {
 //
 // I'm working on better documentation, but in the meantime, here are a few examples:
 //
+// ```
 //    <a-entity pencil-tool="" set-brush="brushType: ImageBrush; color: red; opacity: 0.5; image: #asset-paint-img; scale: 2; autoRotate: false; dragRotate: true"></a-entity>
 //    <a-entity icon-button="#asset-brush" set-brush="activationEvent: click; brushType: ProceduralBrush; color: #3a3a3a; opacity: 0.3; connected: true, hqBlending: true; mode: color-burn"></a-entity>
+// ```
 AFRAME.registerComponent('set-brush', {
   schema: {
     // Type of brush. Should be set to one of the class names in [`brush.js`](https://gitlab.com/zach-geek/vartiste/-/blob/release/src/brush.js)

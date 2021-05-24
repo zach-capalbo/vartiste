@@ -275,6 +275,9 @@ Util.registerComponentSystem('environment-manager', {
   installMatcap() {
     Compositor.el.setAttribute('material', 'shader', 'matcap')
   },
+  installPBMatcap() {
+    Compositor.el.setAttribute('material', 'shader', 'pbmatcap')
+  },
   use3DShading() {
     Compositor.el.setAttribute('material', 'shader', 'standard')
   },
