@@ -4,7 +4,7 @@ import {CanvasShaderProcessor, UVStretcher} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
-class Brush {
+export class Brush {
   static schema() {
     return {
       baseid: {type: 'string'},
@@ -106,7 +106,7 @@ class Brush {
 
 window.Brush = Brush
 
-class ProceduralBrush extends Brush {
+export class ProceduralBrush extends Brush {
   static schema() {
     return Object.assign({
       width: {default: 20},
@@ -401,7 +401,7 @@ class ProceduralBrush extends Brush {
   }
 }
 
-class ImageBrush extends ProceduralBrush{
+export class ImageBrush extends ProceduralBrush{
   static schema() {
     return Object.assign({
       textured: {default: false},
@@ -508,7 +508,7 @@ class ImageBrush extends ProceduralBrush{
   }
 }
 
-class LambdaBrush extends ProceduralBrush {
+export class LambdaBrush extends ProceduralBrush {
   constructor(baseid, options={}, lambda) {
     super(baseid, options)
     this.lambda = lambda
@@ -533,7 +533,7 @@ class LambdaBrush extends ProceduralBrush {
   }
 }
 
-class FillBrush extends Brush {
+export class FillBrush extends Brush {
   constructor(baseid, {mode = "source-over", previewSrc, tooltip = undefined} = {}) {
     super(baseid);
     this.previewSrc = previewSrc || require('./assets/format-color-fill.png')
@@ -573,7 +573,7 @@ class FillBrush extends Brush {
   }
 }
 
-class NoiseBrush extends ProceduralBrush {
+export class NoiseBrush extends ProceduralBrush {
   constructor(baseid, {
     rainbow=false,
     lightness=true,
@@ -656,7 +656,7 @@ class NoiseBrush extends ProceduralBrush {
   }
 }
 
-class FxBrush extends Brush {
+export class FxBrush extends Brush {
   constructor(baseid, {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
     super(baseid)
     this.baseBrush = baseBrush
@@ -713,7 +713,7 @@ class FxBrush extends Brush {
   }
 }
 
-class LineBrush extends Brush
+export class LineBrush extends Brush
 {
   constructor(baseid, {
     tooltip=undefined,
@@ -823,7 +823,7 @@ class LineBrush extends Brush
   }
 }
 
-class StretchBrush extends LineBrush {
+export class StretchBrush extends LineBrush {
   static schema() {
     return Object.assign({
       switchbackAngle: {default: 140},
@@ -1026,4 +1026,3 @@ class StretchBrush extends LineBrush {
 }
 
 const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
-export { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};;

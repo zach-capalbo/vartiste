@@ -22,7 +22,7 @@ Util.registerComponentSystem('art-physics', {
         // el.components['pencil-tool'].activatePencil()
       } catch (e) {}
       el.components['pencil-tool'].updateDrawTool()
-      el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4')
+      el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4; mass: 0.01')
       el.setAttribute('dual-wieldable', '')
     })
     this.el.querySelectorAll('.volume-tool').forEach(async el => {

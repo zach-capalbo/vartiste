@@ -12,6 +12,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
     a-entity icon-button="#asset-brightness-4" system-click-action="action: use3DShading" tooltip="Use 3D Shading"
   a-entity position="0.7 -0.5 0"
     a-entity icon-button="#asset-bed" toggle-button="target: #environment-place; component: visible" tooltip="Show floor"
+    /a-entity icon-button="#asset-blur-preview" system-click-action="action: installPBMatcap" tooltip="Use Matcap Shading"
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
 
