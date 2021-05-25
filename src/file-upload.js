@@ -750,11 +750,11 @@ Util.registerComponentSystem('file-upload', {
     {
       if (settings.data.addReferences)
       {
-        addMovieReference(file).then(busy.done())
+        addMovieReference(file).then(() => busy.done())
       }
       else
       {
-        addMovieLayer(file).then(busy.done())
+        addMovieLayer(file).then(() => busy.done())
       }
       return;
     }
