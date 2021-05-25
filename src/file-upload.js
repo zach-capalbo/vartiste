@@ -180,7 +180,7 @@ async function addMovieLayer(file) {
     }
     catch (e)
     {
-      console.log("End reading", e)
+      console.log("Done reading", e)
       break;
     }
 
@@ -209,6 +209,22 @@ async function addMovieLayer(file) {
 
     i++;
   }
+}
+
+async function addMovieReference(file)
+{
+  let video = document.createElement('video')
+  video.src = toSrcString(file)
+
+  console.log("Waiting for video to load", video)
+
+  await video.play()
+  video.width = video.videoWidth
+  video.height = video.videoHeight
+  video.loop = true
+  video.onload = undefined
+
+  return addImageReferenceViewer(video)
 }
 
 var defaultStandardMaterial = new THREE.MeshStandardMaterial();
@@ -732,7 +748,14 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.(mp4|mov|avi|m4v|webm|mkv|gif)$/.test(file.name))
     {
-      addMovieLayer(file).then(busy.done())
+      if (settings.data.addReferences)
+      {
+        addMovieReference(file).then(busy.done())
+      }
+      else
+      {
+        addMovieLayer(file).then(busy.done())
+      }
       return;
     }
 
