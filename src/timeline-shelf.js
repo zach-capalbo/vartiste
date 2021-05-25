@@ -11,7 +11,7 @@ import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 
 window.ffmpeg = createFFmpeg({ log: true });
-window.fetchFile = fetchFile;
+ffmpeg.fetchFile = fetchFile;
 
 console.error("Need to import ffmpeg, not load")
 
