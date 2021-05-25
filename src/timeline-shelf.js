@@ -8,12 +8,7 @@ import {Layer} from './layer.js'
 import {bumpCanvasToNormalCanvas} from './material-transformations.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 
-const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
-
-window.ffmpeg = createFFmpeg({ log: true });
-ffmpeg.fetchFile = fetchFile;
-
-console.error("Need to import ffmpeg, not load")
+import {ffmpeg} from './framework/ffmpeg.js'
 
 Util.registerComponentSystem('timeline-system', {
   schema: {
@@ -50,7 +45,6 @@ Util.registerComponentSystem('timeline-system', {
   async exportFFMPEG({extension, args}) {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component
-    let ffmpeg = window.ffmpeg
 
     if (!ffmpeg.isLoaded())
     {
@@ -61,7 +55,7 @@ Util.registerComponentSystem('timeline-system', {
     {
       compositor.jumpToFrame(frame)
       compositor.quickDraw()
-      ffmpeg.FS('writeFile', `${frame}`.padStart("0", Math.ceil(Math.log10(numberOfFrames + 1))) + ".png", await fetchFile(Compositor.component.preOverlayCanvas.toDataURL()))
+      ffmpeg.FS('writeFile', `${frame}`.padStart("0", Math.ceil(Math.log10(numberOfFrames + 1))) + ".png", await ffmpeg.fetchFile(Compositor.component.preOverlayCanvas.toDataURL()))
       // (Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
     }
 

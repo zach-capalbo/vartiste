@@ -6,6 +6,7 @@ import {Util} from './util.js'
 import Pako from 'pako'
 import JSZip from 'jszip'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+import {ffmpeg} from './framework/ffmpeg.js'
 
 const HANDLED_MODEL_FORMAT_REGEX = /\.(glb|obj|vrm|gltf|fbx)$/i;
 
@@ -89,7 +90,6 @@ async function addHDRImage(file) {
 }
 
 async function addMovieLayer(file) {
-  let ffmpeg = window.ffmpeg
   if (!ffmpeg.isLoaded())
   {
     await ffmpeg.load()
