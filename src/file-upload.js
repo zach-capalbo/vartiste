@@ -5,6 +5,8 @@ import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 import Pako from 'pako'
 import JSZip from 'jszip'
+import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+import {ffmpeg} from './framework/ffmpeg.js'
 
 const HANDLED_MODEL_FORMAT_REGEX = /\.(glb|obj|vrm|gltf|fbx)$/i;
 
@@ -85,6 +87,144 @@ async function addHDRImage(file) {
 				r()
 			} );
   })
+}
+
+async function addMovieLayer(file) {
+  if (!ffmpeg.isLoaded())
+  {
+    await ffmpeg.load()
+  }
+
+  let extension = file.name.match(/\.([^\.]*)$/)[1]
+
+  let layer;
+
+  let intermediateFormat = 'bmp'
+
+  await ffmpeg.FS("writeFile", `input.${extension}`, await ffmpeg.fetchFile(file))
+
+  console.log("Video Info --->")
+
+  let foundInput = false
+  let durationSeconds
+  let fps
+  let width
+  let height
+
+  ffmpeg.setLogger(({ type, message }) => {
+  /*
+   * type can be one of following:
+   *
+   * info: internal workflow debug messages
+   * fferr: ffmpeg native stderr output
+   * ffout: ffmpeg native stdout output
+   */
+   if (type === 'fferr')
+   {
+     if (/^Input \#/.test(message))
+     {
+       foundInput = true
+       return
+     }
+
+     if (!foundInput)
+     {
+       return;
+     }
+
+     let m
+     if (m = message.match(/Duration: (\d+):(\d+):([\d\.]+),/))
+     {
+       durationSeconds = parseFloat(m[1]) * 60 * 60 + parseFloat(m[2]) * 60 + parseFloat(m[3])
+     }
+     else if (m = message.match(/Stream #.*: Video:.*, (\d+)x(\d+).* ([\d\.]+) fps,/))
+     {
+       width = parseInt(m[1])
+       height = parseInt(m[2])
+       fps = parseFloat(m[3])
+     }
+   }
+ })
+
+  await ffmpeg.run('-i', `input.${extension}`)
+
+  let numberOfFrames = fps * durationSeconds
+
+  console.log("Info", {durationSeconds, fps, width, height, numberOfFrames})
+
+  if ([durationSeconds, fps, width, height, numberOfFrames].some(a => !a))
+  {
+    console.error("Missing Info!")
+    return;
+  }
+
+  ffmpeg.setLogger(function(){})
+
+  if (numberOfFrames > 100)
+  {
+    await ffmpeg.run("-i", `input.${extension}`, "-r", `${100 / durationSeconds}`, `%01d.${intermediateFormat}`)
+  }
+  else
+  {
+    await ffmpeg.run("-i", `input.${extension}`, "-r", "1/1", `%01d.${intermediateFormat}`)
+  }
+
+  let i = 1
+  while (true) {
+    let frame
+    try {
+      frame = await ffmpeg.FS('readFile', `${i}.${intermediateFormat}`)
+      ffmpeg.FS('unlink', `${i}.${intermediateFormat}`)
+      console.log("Read frame", i)
+
+    }
+    catch (e)
+    {
+      console.log("Done reading", e)
+      break;
+    }
+
+    // document.querySelector('a-scene').systems['settings-system'].download("data:application/x-binary;base64," + base64ArrayBuffer(frame), {extension: 'png'}, "Animation")
+
+    let blob = new Blob([frame], {type: `image/${intermediateFormat}`})
+    let image = new Image
+    image.src = toSrcString(blob)
+    await image.decode()
+    // await new Promise((r,e) => image.onload = r)
+
+    let canvas
+    if (!layer)
+    {
+      layer = new Layer(image.width, image.height)
+      Compositor.component.addLayer(undefined, {layer})
+      canvas = layer.canvas
+    }
+    else
+    {
+      Compositor.component.addFrameAfter()
+      canvas = layer.frame(i - 1)
+    }
+
+    canvas.getContext('2d').drawImage(image, 0, 0)
+
+    i++;
+  }
+}
+
+async function addMovieReference(file)
+{
+  let video = document.createElement('video')
+  video.src = toSrcString(file)
+
+  console.log("Waiting for video to load", video)
+
+  await video.play()
+  video.width = video.videoWidth
+  video.height = video.videoHeight
+  video.loop = true
+  video.onload = undefined
+
+  return addImageReferenceViewer(video)
 }
 
 var defaultStandardMaterial = new THREE.MeshStandardMaterial();
@@ -605,6 +745,19 @@ Util.registerComponentSystem('file-upload', {
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
 
     if (!busy) busy = this.el.systems['busy-indicator'].busy({title: `Handle ${file.name}`})
+
+    if (/\.(mp4|mov|avi|m4v|webm|mkv|gif)$/.test(file.name))
+    {
+      if (settings.data.addReferences)
+      {
+        addMovieReference(file).then(() => busy.done())
+      }
+      else
+      {
+        addMovieLayer(file).then(() => busy.done())
+      }
+      return;
+    }
 
     if (isImage)
     {

@@ -62,6 +62,8 @@
     "xml-loader": "^1.2.1"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.10.0",
+    "@ffmpeg/ffmpeg": "^0.10.0",
     "@tensorflow/tfjs": "^1.7.3",
     "@webxr-input-profiles/motion-controllers": "^1.0.0",
     "aframe-leap-hands": "^0.8.0",

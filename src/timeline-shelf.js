@@ -1,11 +1,14 @@
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Util} from './util.js'
-import Gif from 'gif.js'
+// import Gif from 'gif.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import {THREED_MODES} from './layer-modes.js'
 import {Layer} from './layer.js'
 import {bumpCanvasToNormalCanvas} from './material-transformations.js'
+import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
+
+import {ffmpeg} from './framework/ffmpeg.js'
 
 Util.registerComponentSystem('timeline-system', {
   schema: {
@@ -34,30 +37,44 @@ Util.registerComponentSystem('timeline-system', {
     }
   },
   async exportGif() {
+    await this.exportFFMPEG({extension: 'gif', args: ["-filter_complex", "[0:v] split [a][b];[a] palettegen [p];[b][p] paletteuse"]})
+  },
+  async exportMP4() {
+    await this.exportFFMPEG({extension: 'mp4', args: ["-pix_fmt", "yuv420p"]})
+  },
+  async exportFFMPEG({extension, args}) {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component
-    let gif = new Gif({
-      workers: 2,
-      quality: 10,
-      workerScript: require('file-loader!gif.js/dist/gif.worker.js')
-    })
+
+    if (!ffmpeg.isLoaded())
+    {
+      await ffmpeg.load()
+    }
 
     for (let frame = 0; frame < numberOfFrames; frame++)
     {
       compositor.jumpToFrame(frame)
       compositor.quickDraw()
-      gif.addFrame(Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
+      ffmpeg.FS('writeFile', `${frame}`.padStart("0", Math.ceil(Math.log10(numberOfFrames + 1))) + ".png", await ffmpeg.fetchFile(Compositor.component.preOverlayCanvas.toDataURL()))
+      // (Compositor.component.preOverlayCanvas, {copy: true, delay: 1000 / Compositor.component.data.frameRate})
     }
 
-    let url = await new Promise((r, e) => {
-      gif.on('finished', function(blob) {
-        r(URL.createObjectURL(blob))
-      });
+    await ffmpeg.run('-r', `${Compositor.component.data.frameRate}`, '-i', '%d.png', ...args, `output.${extension}`);
+    // await ffmpeg.run('-r', `${Compositor.component.data.frameRate}`, '-i', '%d.png', "-pix_fmt", "yuv420p", `output.${extension}`);
 
-      try { gif.render(); } catch (ex)  { e(ex) }
-    })
+    let data = ffmpeg.FS('readFile', `output.${extension}`);
 
-    this.el.sceneEl.systems['settings-system'].download(url, {extension: 'gif'}, "Gif animation")
+    // console.log(array)
+
+    // let url = await new Promise((r, e) => {
+    //   gif.on('finished', function(blob) {
+    //     r(URL.createObjectURL(blob))
+    //   });
+    //
+    //   try { gif.render(); } catch (ex)  { e(ex) }
+    // })
+
+    this.el.sceneEl.systems['settings-system'].download("data:application/x-binary;base64," + base64ArrayBuffer(data), {extension}, "Animation")
   },
   makeUVScrollable({direction} = {}) {
     let numberOfFrames = this.data.endFrameNumber
