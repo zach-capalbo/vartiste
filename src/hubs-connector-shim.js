@@ -25,8 +25,8 @@ AFRAME.registerSystem('hubs-connector', {
         rotation: null,
       },
       head: {
-        rotation: new THREE.Vector3,
-        position: null
+        position: new THREE.Vector3,
+        rotation: null,
       },
       canvas: {
         matrix: null,
@@ -40,43 +40,59 @@ AFRAME.registerSystem('hubs-connector', {
     this.el.append(this.poserEl)
     this.poser = this.poserEl.object3D
 
-    Util.whenLoaded(this.el, () => {
+    Util.whenLoaded(this.el, async () => {
       this.rightHandEl = document.querySelector('#right-hand')
       this.leftHandEl = document.querySelector('#right-hand')
+
+      if (networked) this.socket = await this.connectSocket();
     })
   },
-  async tick() {
+  tick() {
     if (!this.data.enabled) return
 
-    let socket = await this.socket()
+    let socket = this.socket
+
+    if (!socket) return;
 
     let canvasLocation = this.pool('canvasLocation', THREE.Vector3)
     // Compositor.el.object3D.getWorldPosition(canvasLocation)
     Compositor.el.object3D.updateMatrixWorld()
-
-    let tool;
+    this.updateEmitData.canvas.matrix = Compositor.el.object3D.matrix
+    this.updateEmitData.canvas.width = Compositor.el.getAttribute('geometry').width
+    this.updateEmitData.canvas.height = Compositor.el.getAttribute('geometry').height
 
     let lastGrabbed = this.el.sceneEl.systems['pencil-tool'].lastGrabbed;
 
     if (lastGrabbed && lastGrabbed.el.is('grabbed'))
     {
-      tool = {
-        matrix: lastGrabbed.el.object3D.matrixWorld.elements
-      }
+      this.updateEmitData.tool.matrix = lastGrabbed.el.object3D.matrixWorld.elements
+    }
+    else
+    {
+      this.updateEmitData.tool.matrix = null
     }
 
     this.updateObj(this.leftHandEl, this.updateEmitData.leftHand)
     this.updateObj(this.rightHandEl, this.updateEmitData.rightHand)
-    this.updateObj(Util.cameraObject3D().el, this.updateEmitData.head)
+    this.updateObj(Util.cameraObject3D(), this.updateEmitData.head)
+
+    // if (this.el.sceneEl.is('vr-mode'))
+    // {
+    //   Util.cameraObject3D().el
+    // }
 
     socket.emit('update', this.updateEmitData)
   },
   updateObj(el, data) {
-    Util.positionObject3DAtTarget(this.poser, el.object3D)
+    if (!(el instanceof THREE.Object3D)) {
+      el = el.object3D
+    }
+    // Util.positionObject3DAtTarget(this.poser, el)
+    Util.applyMatrix(el.matrixWorld, this.poser)
     data.position.copy(this.poser.position)
     data.rotation = this.poserEl.getAttribute('rotation')
   },
-  async socket() {
+  async connectSocket() {
     if (this._socket) return await this._socket
 
     this._socket = new Promise((resolve, err) => {

@@ -37,6 +37,8 @@ class VartisteHubsConnector extends HubsBot {
     }, canvas)
   }
   async spawnTools() {
+    if (this.spawned) return;
+    this.spawned = true
     this.pencil = await this.spawnObject({
       url: PENCIL_URL,
       position: '0 0 0',
@@ -51,7 +53,7 @@ class VartisteHubsConnector extends HubsBot {
     console.log("Spawned Pencil", this.pencil)
   }
   async setToolsLocation({tool}) {
-    if (!tool) return;
+    if (!tool || !tool.matrix) return;
     await this.evaluate((tool) => {
       // if (!NAF.utils.isMine(this.pencil)) await NAF.utils.takeOwnership(this.pencil)
 
@@ -67,12 +69,13 @@ class VartisteHubsConnector extends HubsBot {
         this.pencil.object3D.quaternion,
         this.pencil.object3D.scale
       )
-    }, tool)
+    }, tool);
   }
 }
 
 let bot = new VartisteHubsConnector({
-  headless: false
+  headless: false,
+  name: "VARTISTE"
 })
 
 bot.enterRoom(process.argv[2])
