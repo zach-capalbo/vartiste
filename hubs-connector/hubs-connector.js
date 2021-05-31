@@ -1,5 +1,8 @@
 var {HubsBot} = require("C:/Users/Admin/scripts/vr/hubs-client-bot")
 
+// const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
+const PENCIL_URL = "https://uploads-prod.reticulum.io/files/cb90a707-8d49-478d-8a84-32190148b179.glb"
+
 class VartisteHubsConnector extends HubsBot {
   async setCanvasLocation({canvas}) {
     await this.evaluate((canvas) => {
@@ -33,10 +36,46 @@ class VartisteHubsConnector extends HubsBot {
       })
     }, canvas)
   }
+  async spawnTools() {
+    if (this.spawned) return;
+    this.spawned = true
+    this.pencil = await this.spawnObject({
+      url: PENCIL_URL,
+      position: '0 0 0',
+      dynamic: false,
+    })
+
+    await this.evaluate((pencilId) => {
+      this.pencil = document.getElementById(pencilId)
+      this.pencil.getObject3D('mesh').rotation.x = Math.PI
+    }, this.pencil)
+
+    console.log("Spawned Pencil", this.pencil)
+  }
+  async setToolsLocation({tool}) {
+    if (!tool || !tool.matrix) return;
+    await this.evaluate((tool) => {
+      // if (!NAF.utils.isMine(this.pencil)) await NAF.utils.takeOwnership(this.pencil)
+
+      this.pencilMatrix = this.pencilMatrix || new THREE.Matrix4()
+      this.pencilMatrix.fromArray(tool.matrix)
+
+      let rigObj = document.querySelector('#avatar-rig').object3D
+      rigObj.updateMatrixWorld()
+      this.pencilMatrix.premultiply(rigObj.matrixWorld)
+
+      this.pencilMatrix.decompose(
+        this.pencil.object3D.position,
+        this.pencil.object3D.quaternion,
+        this.pencil.object3D.scale
+      )
+    }, tool);
+  }
 }
 
 let bot = new VartisteHubsConnector({
-  headless: false
+  headless: false,
+  name: "VARTISTE"
 })
 
 bot.enterRoom(process.argv[2])
@@ -48,10 +87,12 @@ var io = require('socket.io')(http);
 io.on('connection', (socket) => {
   console.log('a user connected');
   bot.controlHands()
+  bot.spawnTools()
 
   socket.on('update', (data) => {
     bot.setAvatarLocations(data)
     bot.setCanvasLocation(data)
+    bot.setToolsLocation(data)
   })
 
   bot

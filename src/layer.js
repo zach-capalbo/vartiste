@@ -700,5 +700,9 @@ export class NetworkOutputNode extends CanvasNode {
 }
 
 class MaskNode extends CanvasNode {
+
+}
+
+class VectorLayer extends Layer {
   
 }

@@ -92,6 +92,8 @@ require('./busy.js')
 require('./avatar.js')
 // require('./text')
 
+require('./hubs-connector-shim.js')
+
 require('./app.styl')
 
 if (location.host === "zach-geek.gitlab.io" && (location.pathname === '/vartiste/' || location.pathname === "/vartiste/index.html") && !location.search.includes("gitlabURL"))
