@@ -223,22 +223,59 @@ AFRAME.registerComponent('webxr-motion-controller', {
 
     if (this.data.originSpace === 'gripSpace')
     {
-      let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
-      this.rayMatrix.elements = objectRayPose.transform.matrix;
-      this.rayMatrix.extractRotation(this.rayMatrix)
-      let forward = new THREE.Vector3(0, 0, -1)
-      forward.applyMatrix4(this.rayMatrix)
-      this.el.setAttribute('raycaster', {direction: forward})
+      let WORKAROUND_CHROMIUM_1214497 = true
+      if (WORKAROUND_CHROMIUM_1214497)
+      {
+        let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.system.referenceSpace)
+        this.rayMatrix.elements = objectRayPose.transform.matrix;
+        this.rayMatrix.invert()
+        this.rayMatrix.multiply(object3D.matrix)
+        this.rayMatrix.invert()
+
+        this.rayMatrix.extractRotation(this.rayMatrix)
+        let forward = new THREE.Vector3(0, 0, -1)
+        forward.applyMatrix4(this.rayMatrix)
+        this.el.setAttribute('raycaster', {direction: forward})
+      }
+      else
+      {
+        let objectRayPose = frame.getPose(this.controller.targetRaySpace, this.controller.gripSpace)
+        this.rayMatrix.elements = objectRayPose.transform.matrix;
+        this.rayMatrix.extractRotation(this.rayMatrix)
+        let forward = new THREE.Vector3(0, 0, -1)
+        forward.applyMatrix4(this.rayMatrix)
+        this.el.setAttribute('raycaster', {direction: forward})
+      }
     }
     else
     {
-      let gripPose = frame.getPose(this.controller.gripSpace, this.controller.targetRaySpace)
-      this.rayMatrix.elements = gripPose.transform.matrix
-      let mesh = this.el.getObject3D('mesh')
-      // mesh.updateMatrix()
-      mesh.matrix.compose(mesh.position, mesh.quaternion, mesh.scale)
-      mesh.matrix.multiply(this.rayMatrix)
-      Util.applyMatrix(mesh.matrix, mesh)
+      let WORKAROUND_CHROMIUM_1214497 = true
+      if (WORKAROUND_CHROMIUM_1214497)
+      {
+        let gripPose = frame.getPose(this.controller.gripSpace, this.system.referenceSpace)
+
+        this.rayMatrix.elements = gripPose.transform.matrix;
+        this.rayMatrix.invert()
+        this.rayMatrix.multiply(object3D.matrix)
+        this.rayMatrix.invert()
+                
+        let mesh = this.el.getObject3D('mesh')
+        // mesh.updateMatrix()
+        mesh.matrix.compose(mesh.position, mesh.quaternion, mesh.scale)
+        mesh.matrix.multiply(this.rayMatrix)
+        Util.applyMatrix(mesh.matrix, mesh)
+      }
+      else
+      {
+        let gripPose = frame.getPose(this.controller.gripSpace, this.controller.targetRaySpace)
+        this.rayMatrix.elements = gripPose.transform.matrix
+        console.log("ray", this.controller.targetRaySpace === this.controller.gripSpace, this.rayMatrix.elements)
+        let mesh = this.el.getObject3D('mesh')
+        // mesh.updateMatrix()
+        mesh.matrix.compose(mesh.position, mesh.quaternion, mesh.scale)
+        mesh.matrix.multiply(this.rayMatrix)
+        Util.applyMatrix(mesh.matrix, mesh)
+      }
     }
   },
   getAFrameComponentName(component)
