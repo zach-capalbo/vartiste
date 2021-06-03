@@ -11,7 +11,7 @@ const BRUSH_PACKS = {}
    let asset = fileName.slice("./".length)
    if (asset.startsWith(".")) continue;
 
-   let assetSrc = require(`file-loader!./brush-packs/${asset}`)
+   let assetSrc = require(`!!file-loader!./brush-packs/${asset}`)
    BRUSH_PACKS[asset] = assetSrc
  }
 
@@ -254,8 +254,8 @@ AFRAME.registerComponent('brush-editor', {
       if (brush.deleted) continue;
       brushes.push(brush.fullStore())
     }
-    let encoded = encodeURIComponent(JSON.stringify(brushes))
-    this.el.sceneEl.systems['settings-system'].download("data:application/x-binary," + encoded, {extension: "vartiste-brushes"}, "User created brushes")
+    let encoded = JSON.stringify(brushes)
+    this.el.sceneEl.systems['settings-system'].downloadCompressed(encoded, {extension: "vartiste-brushez"}, "User created brushes")
   },
   deleteBrush() {
     let brush = this.el.sceneEl.systems['paint-system'].brush

@@ -831,6 +831,17 @@ Util.registerComponentSystem('file-upload', {
       return
     }
 
+    if (/\.(vartiste-brushez)$/i.test(file.name))
+    {
+      file.arrayBuffer().then(b => {
+        let inflated = Pako.inflate(b)
+        let t = (new TextDecoder("utf-8")).decode(inflated)
+        this.el.sceneEl.systems['brush-system'].addUserBrushes(JSON.parse(t))
+        busy.done()
+      })
+      return
+    }
+
     if (/\.zip$/i.test(file.name))
     {
       file.arrayBuffer().then(async (b) => {

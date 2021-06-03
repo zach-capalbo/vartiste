@@ -54,6 +54,28 @@ Util.registerComponentSystem('settings-system', {
 
     desktopLink.click()
   },
+  async downloadCompressed(rawData, filename, description) {
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: description})
+
+    let data
+    let worker = new CompressionWorker();
+    try {
+      data = await new Promise((r, e) => {
+        worker.onmessage = (message) => {
+          r(message.data)
+        }
+        worker.onerror = e;
+        worker.postMessage(rawData)
+      })
+    }
+    finally
+    {
+      worker.terminate();
+    }
+
+    this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), filename, description)
+    busy.done()
+  },
   copyToClipboard(text, description) {
     this.clipboardInput.value = text
     this.clipboardInput.select();
