@@ -4,6 +4,17 @@ import {toSrcString} from './file-upload.js'
 import * as Brush from './brush.js'
 import shortid from 'shortid'
 
+
+const BRUSH_PACKS = {}
+
+ for (let fileName of require.context('./brush-packs/', true, /.*/).keys()) {
+   let asset = fileName.slice("./".length)
+   if (asset.startsWith(".")) continue;
+
+   let assetSrc = require(`!!file-loader!./brush-packs/${asset}`)
+   BRUSH_PACKS[asset] = assetSrc
+ }
+
 AFRAME.registerSystem('brush-system', {
   schema: {
     autoLoadBrushes: {default: false},
@@ -15,6 +26,7 @@ AFRAME.registerSystem('brush-system', {
     }
     this.brushList = BrushList
     this.brusheTypes = Brush
+    this.brushPacks = BRUSH_PACKS
   },
   loadDefaultBrushes() {
     BrushList.push.apply(BrushList, [
@@ -62,6 +74,16 @@ AFRAME.registerSystem('brush-system', {
     for (let b of brushes) {
       brushShelf.addBrush(Brush.Brush.fullRestore(b))
     }
+  },
+  loadPack(fileKey) {
+    if (!BRUSH_PACKS[fileKey]) {
+      console.warn("No such brush pack", fileKey)
+      return
+    }
+
+    console.log("Loading pack", fileKey, BRUSH_PACKS[fileKey])
+
+    this.sceneEl.systems['file-upload'].handleURL(BRUSH_PACKS[fileKey])
   }
 })
 
@@ -232,8 +254,8 @@ AFRAME.registerComponent('brush-editor', {
       if (brush.deleted) continue;
       brushes.push(brush.fullStore())
     }
-    let encoded = encodeURIComponent(JSON.stringify(brushes))
-    this.el.sceneEl.systems['settings-system'].download("data:application/x-binary," + encoded, {extension: "vartiste-brushes"}, "User created brushes")
+    let encoded = JSON.stringify(brushes)
+    this.el.sceneEl.systems['settings-system'].downloadCompressed(encoded, {extension: "vartiste-brushez"}, "User created brushes")
   },
   deleteBrush() {
     let brush = this.el.sceneEl.systems['paint-system'].brush

@@ -45,6 +45,7 @@ let config = {
           }
         }]
       },
+      { test: /\.vartiste-brushez?$/, use: {loader: 'file-loader'} },
       {
         test: /\.worker\.js$/,
         use: { loader: "worker-loader" },
