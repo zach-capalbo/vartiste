@@ -407,7 +407,13 @@ export class ImageBrush extends ProceduralBrush{
       textured: {default: false},
       image: {
         type: 'map',
-        store: (img) => img.src,
+        store: (img) => {
+          if (img.src.startsWith('blob:'))
+          {
+            return Util.cloneCanvas(img).toDataURL()
+          }
+          return img.src
+        },
         restore: (src) => {
           let img = new Image()
           img.src = src;
