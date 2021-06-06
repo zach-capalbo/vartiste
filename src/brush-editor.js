@@ -191,7 +191,7 @@ AFRAME.registerComponent('brush-editor', {
   },
   useLayer() {
     let img = new Image();
-    img.src = Compositor.drawableCanvas.toDataURL()
+    img.src = Util.autoCropCanvas(Compositor.drawableCanvas).toDataURL()
     this.setImage(img)
   },
   setImage(img) {

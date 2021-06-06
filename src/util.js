@@ -387,6 +387,37 @@ class VARTISTEUtil {
     return true
   }
 
+  autoCropBounds(canvas) {
+    let ctx = canvas.getContext('2d')
+    let data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    let box = new THREE.Box2
+    let pixel = new THREE.Box2
+    for (let y = 0; y < canvas.height; ++y)
+    {
+      for (let x = 0; x < canvas.width; ++x)
+      {
+        if (data.data[(y*canvas.width + x) * 4 + 3] > 0) {
+          pixel.min.set(x,y)
+          pixel.max.set(x+1,y+1)
+          box.union(pixel)
+        }
+      }
+    }
+
+    return box
+  }
+
+  autoCropCanvas(canvas) {
+    let bounds = this.autoCropBounds(canvas)
+    let dest = document.createElement('canvas')
+    let size = new THREE.Vector2
+    bounds.getSize(size)
+    dest.width = size.x
+    dest.height = size.y
+    dest.getContext('2d').drawImage(canvas, bounds.min.x, bounds.min.y, size.x, size.y, 0, 0, size.x, size.y)
+    return dest
+  }
+
   callLater(fn) {
     return new Promise((r, e) => {
       window.setTimeout(() => {
