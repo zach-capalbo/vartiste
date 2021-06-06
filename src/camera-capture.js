@@ -453,10 +453,6 @@ AFRAME.registerComponent('camera-tool', {
     {
       this.toggleSpectator()
     }
-    else if (oldData.captureType === 'spectator')
-    {
-      this.camera.layers.disable(CAMERA_LAYERS.SPECTATOR)
-    }
   },
   takePicture() {
     console.log("Taking picture")
@@ -693,6 +689,8 @@ AFRAME.registerComponent('camera-tool', {
       button.setAttribute('icon-button', '#asset-play-pause')
       button.setAttribute('tooltip', 'Update preview live')
       button.setAttribute('toggle-button', {target: this.el, component: 'camera-tool', property: 'previewLive'})
+
+      this.camera.layers.enable(CAMERA_LAYERS.SPECTATOR)
     }
     this.activate = function(){};
     if (this.el.components['six-dof-tool'] && !this.el.components['six-dof-tool'].data.lockedComponent)

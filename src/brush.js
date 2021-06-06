@@ -111,6 +111,8 @@ export class ProceduralBrush extends Brush {
     return Object.assign({
       width: {default: 20},
       height: {default: 20},
+      baseWidth: {default: 20},
+      baseHeight: {default: 20},
       distanceBased: {default: false},
       maxDistance: {default: 1.5},
       connected: {default: false},
