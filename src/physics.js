@@ -656,6 +656,8 @@ AFRAME.registerComponent('physx-body', {
     // If set to `true`, the object will receive extra attention by the
     // simulation engine (at a performance cost).
     highPrecision: {default: false},
+
+    shapeOffset: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
   },
   events: {
     stateadded: function(e) {
@@ -873,6 +875,9 @@ AFRAME.registerComponent('physx-body', {
             materialData = this.el.components['physx-material'].data
         }
         let shape = this.createShape(physics, geometry, materialData)
+
+        // shape.setLocalPose({translation: this.data.shapeOffset, rotation: {w: 1, x: 0, y: 0, z: 0}})
+
         shapes.push(shape)
       }
     });

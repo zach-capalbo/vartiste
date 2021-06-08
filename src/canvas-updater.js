@@ -102,6 +102,8 @@ AFRAME.registerComponent('drawable', {
         originalImage = o.material.map.image
 
         o.material = o.material.clone()
+        this.tex.flipY = o.material.map.flipY
+        this.tex.needsUpdate = true
         let ctx = this.tex.image.getContext('2d')
         ctx.drawImage(o.material.map.image, 0, 0, ctx.canvas.width, ctx.canvas.height)
         o.material.map = this.tex

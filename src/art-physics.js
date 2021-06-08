@@ -22,8 +22,21 @@ Util.registerComponentSystem('art-physics', {
         // el.components['pencil-tool'].activatePencil()
       } catch (e) {}
       el.components['pencil-tool'].updateDrawTool()
-      el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4; mass: 0.01')
+      // let tip = el.components['pencil-tool'].tip
+      // let tipHeight = tip.getAttribute('height')
+      // if (!tipHeight) return;
+
+      // tipHeight = parseFloat(tipHeight)
+      // tip.setAttribute('height', tipHeight / 2)
+      // tip.object3D.position.y += tipHeight / 4
+
+      el.setAttribute('physx-body', 'type: dynamic; angularDamping: 10; linearDamping: 4; mass: 0.01; shapeOffset: 0 0.05 0')
       el.setAttribute('dual-wieldable', '')
+
+      // await el.components['physx-body'].physxRegisteredPromise
+
+      // tip.setAttribute('height', tipHeight)
+      // tip.object3D.position.y -= tipHeight / 4
     })
     this.el.querySelectorAll('.volume-tool').forEach(async el => {
       await whenVisible(el)
