@@ -229,7 +229,7 @@ async function addMovieReference(file)
 
 var defaultStandardMaterial = new THREE.MeshStandardMaterial();
 
-async function addGlbViewer(file, {postProcessMesh = true, loadingManager = undefined} = {}) {
+async function addGlbViewer(file, {postProcessMesh = true, loadingManager = undefined, sceneName = undefined} = {}) {
   let id = shortid.generate()
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
@@ -239,7 +239,7 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
 
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
-    document.querySelector('a-scene').systems['settings-system'].setProjectName(file.name.replace(HANDLED_MODEL_FORMAT_REGEX, ""))
+    document.querySelector('a-scene').systems['settings-system'].setProjectName((sceneName || file.name).replace(HANDLED_MODEL_FORMAT_REGEX, ""))
   }
 
   let startingLayerLength = compositor.layers.length
@@ -739,7 +739,7 @@ Util.registerComponentSystem('file-upload', {
     this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
     document.body.append(this.inputEl)
   },
-  handleFile(file, {itemType, positionIdx, loadingManager, busy} = {}) {
+  handleFile(file, {itemType, positionIdx, loadingManager, busy, sceneName} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
@@ -811,7 +811,7 @@ Util.registerComponentSystem('file-upload', {
       }
       else
       {
-        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager}).then(() => busy.done())
+        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager, sceneName}).then(() => busy.done())
       }
       return
     }
@@ -896,7 +896,7 @@ Util.registerComponentSystem('file-upload', {
           let blobFile = blobs[gltfFile];
           blobFile.name = gltfFile;
 
-          this.handleFile(blobFile, {loadingManager: manager})
+          this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, "")})
           busy.done()
           return;
         }
