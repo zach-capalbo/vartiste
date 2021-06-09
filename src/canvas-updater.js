@@ -102,10 +102,16 @@ AFRAME.registerComponent('drawable', {
         originalImage = o.material.map.image
 
         o.material = o.material.clone()
-        this.tex.flipY = o.material.map.flipY
-        this.tex.needsUpdate = true
+
         let ctx = this.tex.image.getContext('2d')
+
         ctx.drawImage(o.material.map.image, 0, 0, ctx.canvas.width, ctx.canvas.height)
+
+        if (o.material.map.flipY !== this.tex.flipY)
+        {
+          this.el.sceneEl.systems['canvas-fx'].applyFX('flip-y', ctx.canvas)
+        }
+
         o.material.map = this.tex
         o.material.needsUpdate = true
       }
