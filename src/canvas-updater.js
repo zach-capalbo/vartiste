@@ -33,7 +33,8 @@ AFRAME.registerComponent('canvas-updater', {
 
 // Simple component to enable drawing on a 3D model. Will allow drawing to an
 // object's existing color texture when used in conjunction with the [`hand-draw-tool`](#hand-draw-tool)
-// or the [`pencil-tool`](#pencil-tool)
+// or the [`pencil-tool`](#pencil-tool). If you use the [`vartiste-user-root`](#vartiste-user-root)
+// component, then you're all set up for point-and-click drawing already!
 //
 // **Note:** Currently, this only works correctly on objects with a single
 // material, or at least multiple materials that share the same `map` texture.
@@ -41,6 +42,11 @@ AFRAME.registerComponent('canvas-updater', {
 // on the quality of the UV unwrapping.
 //
 // If you need more advanced features (e.g., layers), please see the [`compositor`](#compositor) component
+//
+// Some examples of the `drawable` component in action (together with the [`gltf-entities` Blender exporter](#gltf-entities)):
+//
+// - [VARTISTE Physics Playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html%3A251%3A38)
+// - [Color Museum Proof-of-concept](https://glitch.com/edit/#!/fascinated-hip-period?path=color-temple.html%3A65%3A37)
 AFRAME.registerComponent('drawable', {
   schema: {
     // If set, will use an existing canvas as the draw target / material. If not
