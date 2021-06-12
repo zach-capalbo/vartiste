@@ -171,10 +171,12 @@ var domModifiedHandler = function(evt) {
   let assets = evt.target.querySelector('a-assets');
 
   if (!assets) {
+    console.log("Creating new a-assets")
     // Create and add the assets if they don't already exist
     assets = document.createElement('a-assets')
     assets.setAttribute('timeout', 60 * 1000 * 5)
     evt.target.append(assets)
+    return
   }
 
   if (window.VARTISTE_TOOLKIT && !assets.querySelector('vartiste-assets, *[vartiste-assets]'))
