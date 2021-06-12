@@ -139,6 +139,12 @@ Util.registerComponentSystem('material-pack-system', {
       hasAttr = true
     }
     if (hasAttr) {
+      for (let map in this.defaultMap)
+      {
+        if (map in attr) continue;
+        attr[map] = this.defaultMap[map]
+      }
+
       this.addMaterialPack(attr)
       return true
     }
@@ -458,8 +464,8 @@ AFRAME.registerComponent('material-pack', {
       }
       if (!layer)
       {
-        console.log("map", map, this)
         if (this.maps[map].id.startsWith('default-')) continue;
+        console.log("adding map layer", map, this)
 
         layer = new Layer(Compositor.component.width, Compositor.component.height)
         if (map === 'src')
