@@ -80,6 +80,11 @@ AFRAME.registerComponent('drawable', {
     // If true, will traverse this element's object3D and set all materials and
     // objects to be drawable. If false, will only traverse the `getObject3D('mesh')`
     traverse: {default: false},
+
+    // If true, will turn meshes without pre-existing textures drawable. Set
+    // this to false if you're drawing on a model with some un-textured
+    // components.
+    includeTexturelessMeshes: {default: true}
   },
   init() {
     this.el.classList.add('canvas')
@@ -115,10 +120,15 @@ AFRAME.registerComponent('drawable', {
     if (!traversalObject) return;
     traversalObject.traverse(o => {
       if (!o.material) return;
-      if (!o.material.map)
+      if (!o.material.map && this.data.includeTexturelessMeshes)
       {
+        o.material = o.material.clone()
         o.material.map = this.tex
         o.material.needsUpdate = true
+        let ctx = this.tex.image.getContext('2d')
+        ctx.fillStyle = "#" + o.material.color.getHexString()
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        o.material.color.set(0xFFFFFF)
         return;
       }
       if (o.material.map !== this.tex)

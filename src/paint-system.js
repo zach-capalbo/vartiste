@@ -137,7 +137,7 @@ AFRAME.registerComponent('set-brush', {
     this.brush.changeColor(this.data.color)
     this.brush.changeOpacity(this.data.opacity)
 
-    if (this.el.components['hand-draw-tool'])
+    if (this.el.components['hand-draw-tool'] || this.el.sceneEl === this.el)
     {
       this.activate()
     }
