@@ -31,6 +31,24 @@ AFRAME.registerComponent('canvas-updater', {
   }
 });
 
+// Scene-wide settings for the `drawable` component
+AFRAME.registerSystem('drawable', {
+  schema: {
+    // If true, will automatically setup entities with the a-frame `cursor`
+    // component to be able to draw
+    drawWithCursorComponent: {default: false},
+  },
+  init() {
+    if (this.data.drawWithCursorComponent) {
+      AFRAME.components.cursor.dependencies.push('hand-draw-tool')
+      document.querySelectorAll('*[cursor]').forEach(el => {
+        if (!el.isEntity) return;
+        el.setAttribute('hand-draw-tool', '')
+      })
+    }
+  }
+})
+
 // Simple component to enable drawing on a 3D model. Will allow drawing to an
 // object's existing color texture when used in conjunction with the [`hand-draw-tool`](#hand-draw-tool)
 // or the [`pencil-tool`](#pencil-tool). If you use the [`vartiste-user-root`](#vartiste-user-root)
@@ -97,7 +115,12 @@ AFRAME.registerComponent('drawable', {
     if (!traversalObject) return;
     traversalObject.traverse(o => {
       if (!o.material) return;
-      if (!o.material.map) return;
+      if (!o.material.map)
+      {
+        o.material.map = this.tex
+        o.material.needsUpdate = true
+        return;
+      }
       if (o.material.map !== this.tex)
       {
         if (originalImage && originalImage !== o.material.map.image)
