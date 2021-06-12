@@ -10,6 +10,7 @@ build:
   retry: 2
   script:
     - npm install
+    - node build-build-info.js
     - npm run-script build
     - echo $CI_JOB_ID > dist/CI_JOB_ID
   artifacts:
