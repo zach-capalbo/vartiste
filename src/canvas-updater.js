@@ -31,6 +31,24 @@ AFRAME.registerComponent('canvas-updater', {
   }
 });
 
+// Scene-wide settings for the `drawable` component
+AFRAME.registerSystem('drawable', {
+  schema: {
+    // If true, will automatically setup entities with the a-frame `cursor`
+    // component to be able to draw
+    drawWithCursorComponent: {default: false},
+  },
+  init() {
+    if (this.data.drawWithCursorComponent) {
+      AFRAME.components.cursor.dependencies.push('hand-draw-tool')
+      document.querySelectorAll('*[cursor]').forEach(el => {
+        if (!el.isEntity) return;
+        el.setAttribute('hand-draw-tool', '')
+      })
+    }
+  }
+})
+
 // Simple component to enable drawing on a 3D model. Will allow drawing to an
 // object's existing color texture when used in conjunction with the [`hand-draw-tool`](#hand-draw-tool)
 // or the [`pencil-tool`](#pencil-tool). If you use the [`vartiste-user-root`](#vartiste-user-root)
@@ -62,6 +80,11 @@ AFRAME.registerComponent('drawable', {
     // If true, will traverse this element's object3D and set all materials and
     // objects to be drawable. If false, will only traverse the `getObject3D('mesh')`
     traverse: {default: false},
+
+    // If true, will turn meshes without pre-existing textures drawable. Set
+    // this to false if you're drawing on a model with some un-textured
+    // components.
+    includeTexturelessMeshes: {default: true}
   },
   init() {
     this.el.classList.add('canvas')
@@ -97,7 +120,17 @@ AFRAME.registerComponent('drawable', {
     if (!traversalObject) return;
     traversalObject.traverse(o => {
       if (!o.material) return;
-      if (!o.material.map) return;
+      if (!o.material.map && this.data.includeTexturelessMeshes)
+      {
+        o.material = o.material.clone()
+        o.material.map = this.tex
+        o.material.needsUpdate = true
+        let ctx = this.tex.image.getContext('2d')
+        ctx.fillStyle = "#" + o.material.color.getHexString()
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        o.material.color.set(0xFFFFFF)
+        return;
+      }
       if (o.material.map !== this.tex)
       {
         if (originalImage && originalImage !== o.material.map.image)
