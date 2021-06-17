@@ -139,12 +139,6 @@ Util.registerComponentSystem('material-pack-system', {
       hasAttr = true
     }
     if (hasAttr) {
-      for (let map in this.defaultMap)
-      {
-        if (map in attr) continue;
-        attr[map] = this.defaultMap[map]
-      }
-
       this.addMaterialPack(attr)
       return true
     }
@@ -152,6 +146,12 @@ Util.registerComponentSystem('material-pack-system', {
     return false
   },
   addMaterialPack(attr) {
+    for (let map in this.defaultMap)
+    {
+      if (map in attr) continue;
+      attr[map] = this.defaultMap[map]
+    }
+    
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
     let el = document.createElement('a-entity')
