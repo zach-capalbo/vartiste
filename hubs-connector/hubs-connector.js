@@ -3,6 +3,8 @@ var {HubsBot} = require("C:/Users/Admin/scripts/vr/hubs-client-bot")
 // const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
 const PENCIL_URL = "https://uploads-prod.reticulum.io/files/cb90a707-8d49-478d-8a84-32190148b179.glb"
 
+const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.gltf?v=63790793836"
+
 class VartisteHubsConnector extends HubsBot {
   async setCanvasLocation({canvas}) {
     await this.evaluate((canvas) => {
@@ -78,7 +80,10 @@ let bot = new VartisteHubsConnector({
   name: "VARTISTE"
 })
 
-bot.enterRoom(process.argv[2])
+bot.enterRoom(process.argv[2], {manual: true}).then(() => {
+  console.log("Setting avatar")
+  bot.setAvatar(PAINTER_AVATAR)
+})
 
 var app = require('express')();
 var http = require('http').createServer(app);
@@ -89,10 +94,15 @@ io.on('connection', (socket) => {
   bot.controlHands()
   bot.spawnTools()
 
+
   socket.on('update', (data) => {
     bot.setAvatarLocations(data)
     bot.setCanvasLocation(data)
     bot.setToolsLocation(data)
+
+    if (!data.tool) {
+
+    }
   })
 
   bot
