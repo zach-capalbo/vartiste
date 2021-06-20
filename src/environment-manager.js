@@ -46,11 +46,14 @@ Util.registerComponentSystem('environment-manager', {
     this.state = STATE_COLOR
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
+    this.hasSwitched = false
+    Util.whenLoaded(this.el, () => this.usePresetHDRI({initial: true}))
   },
   update() {
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
   },
-  switchState(newState) {
+  switchState(newState, updateSwitched = true) {
+    if (updateSwitched) { this.hasSwitched = true; }
     if (newState == this.state) return
     console.log(`Switching environment from ${this.state} to ${newState}`)
 
@@ -146,8 +149,8 @@ Util.registerComponentSystem('environment-manager', {
     skyEl.getObject3D('mesh').material.color.g = exposure
     skyEl.getObject3D('mesh').material.color.b = exposure
   },
-  installHDREnvironment(texture) {
-    this.switchState(STATE_HDRI)
+  installHDREnvironment(texture, switchState = true) {
+    if (switchState) { this.switchState(STATE_HDRI) }
     let renderer = AFRAME.scenes[0].renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
@@ -227,19 +230,30 @@ Util.registerComponentSystem('environment-manager', {
     // })
     this.el.sceneEl.emit('tonemappingchanged', toneMapping)
   },
-  async usePresetHDRI() {
-    this.switchState(STATE_HDRI)
+  async usePresetHDRI({initial = false} = {}) {
+    this.switchState(STATE_HDRI, !initial)
     await new Promise( (r,e) => {
   		new RGBELoader()
   			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
   			.load( new URL(require('./assets/colorful_studio_1k.hdr').toString(), window.location).toString() , ( texture, textureData ) => {
-          this.installHDREnvironment(texture)
+          if (!(initial && this.hasSwitched))
+          {
+            console.log("Loaded studio", initial, this.hasSwitched)
+            this.installHDREnvironment(texture, false)
+          }
   				r()
   			} );
     })
 
+    if (initial && this.hasSwitched)
+    {
+      console.log("Not finishing preset", initial, this.hasSwitched)
+      return;
+    }
+
+    document.querySelector('a-sky').setAttribute('material', {src: ""})
     document.querySelector('a-sky').setAttribute('material', {src: "#asset-colorful_studio"})
-    this.setToneMapping(THREE.LinearToneMapping)
+    this.setToneMapping(initial ? THREE.NoToneMapping : THREE.LinearToneMapping)
     this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
     this.substate = 'preset-hdri'
