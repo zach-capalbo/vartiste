@@ -73,6 +73,23 @@ class VartisteHubsConnector extends HubsBot {
       )
     }, tool);
   }
+  async fetchToolLocation() {
+    return await this.evaluate(() => {
+      this.pencilMatrix = this.pencilMatrix || new THREE.Matrix4()
+
+      let rigObj = document.querySelector('#avatar-rig').object3D
+      rigObj.updateMatrixWorld()
+      this.pencilMatrix.copy(rigObj.matrixWorld)
+      this.pencilMatrix.invert()
+
+      this.pencil.object3D.updateMatrix()
+      this.pencilMatrix.premultiply(this.pencil.object3D.matrix)
+
+      return this.pencilMatrix.elements;
+
+      // this.pencilMatrix.premultiply(rigObj.matrixWorld)
+    })
+  }
 }
 
 let bot = new VartisteHubsConnector({
