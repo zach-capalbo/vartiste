@@ -13,7 +13,7 @@ AFRAME.registerSystem('hubs-connector', {
     if (!networked) this.data.enabled = false
 
     Pool.init(this)
-    this.tick = AFRAME.utils.throttleTick(this.tick, 500, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 200, this)
 
     this.updateEmitData = {
       leftHand: {
@@ -118,6 +118,17 @@ AFRAME.registerSystem('hubs-connector', {
       }, () => {}, (e) => {
         console.error(e)
       })
+    })
+
+    s.on('hubdate', (data) => {
+      console.log("hubdate", data)
+      let tool = data.tool;
+      if (!tool) return;
+      if (!this.el.sceneEl.systems['pencil-tool'].lastGrabbed) return;
+
+      let pencil = this.el.sceneEl.systems['pencil-tool'].lastGrabbed.el.object3D;
+      pencil.matrix.fromArray(tool)
+      Util.applyMatrix(pencil.matrix, pencil)
     })
 
     return await this._socket

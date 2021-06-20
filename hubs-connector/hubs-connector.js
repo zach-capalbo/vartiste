@@ -79,11 +79,11 @@ class VartisteHubsConnector extends HubsBot {
 
       let rigObj = document.querySelector('#avatar-rig').object3D
       rigObj.updateMatrixWorld()
-      this.pencilMatrix.copy(rigObj.matrixWorld)
-      this.pencilMatrix.invert()
+      // this.pencilMatrix.copy(rigObj.matrixWorld)
+      this.pencilMatrix.getInverse(rigObj.matrixWorld)
 
       this.pencil.object3D.updateMatrix()
-      this.pencilMatrix.premultiply(this.pencil.object3D.matrix)
+      this.pencilMatrix.multiply(this.pencil.object3D.matrix)
 
       return this.pencilMatrix.elements;
 
@@ -110,6 +110,7 @@ io.on('connection', (socket) => {
   console.log('a user connected');
   bot.controlHands()
   bot.spawnTools()
+  bot.setAvatar(PAINTER_AVATAR)
 
 
   socket.on('update', (data) => {
@@ -117,8 +118,10 @@ io.on('connection', (socket) => {
     bot.setCanvasLocation(data)
     bot.setToolsLocation(data)
 
-    if (!data.tool) {
-
+    if (!data.tool.matrix) {
+      bot.fetchToolLocation().then((tool) => {
+        socket.emit('hubdate', {tool})
+      })
     }
   })
 
