@@ -68,6 +68,7 @@
     "@webxr-input-profiles/motion-controllers": "^1.0.0",
     "aframe-leap-hands": "^0.8.0",
     "aframe-troika-text": "^0.4.0",
+    "bson": "^4.4.0",
     "convolve": "^0.1.0",
     "dexie": "^2.0.4",
     "gif.js": "^0.2.0",
