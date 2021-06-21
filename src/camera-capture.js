@@ -1072,18 +1072,26 @@ AFRAME.registerComponent('spray-can-tool', {
         b = capturedData.data[((y * capturedImage.width) + x) * 4 + 2]
         a = capturedData.data[((y * capturedImage.width) + x) * 4 + 3]
 
-        bx = Math.floor(x / capturedImage.width * brush.width)
-        by = Math.floor(y / capturedImage.height * brush.height)
+
 
         if (brush.autoRotate)
         {
-          bx = x / capturedImage.width
-          by = y / capturedImage.height
-          len = Math.sqrt((bx - 0.5) * (bx - 0.5) + (by - 0.5) * (by - 0.5))
-          angle = Math.atan2(by - 0.5, bx - 0.5)
+          bx = x / capturedImage.width - 0.5
+          by = y / capturedImage.height - 0.5
+          len = Math.sqrt(bx * bx + by * by)
+          angle = Math.atan2(by, bx)
           angle -= rotation
           bx = Math.floor((len * Math.cos(angle) + 0.5) * brush.width)
           by = Math.floor((len * Math.sin(angle) + 0.5) * brush.height)
+          if (bx > brush.width || bx < 0 || by > brush.height || by < 0)
+          {
+            continue;
+          }
+        }
+        else
+        {
+          bx = Math.floor(x / capturedImage.width * brush.width)
+          by = Math.floor(y / capturedImage.height * brush.height)
         }
 
         u = (((b & 0xF0) >> 4) * 256 + r) / 4096
