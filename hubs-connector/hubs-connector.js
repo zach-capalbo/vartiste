@@ -1,4 +1,5 @@
 var {HubsBot} = require("C:/Users/Admin/scripts/vr/hubs-client-bot")
+const BSON = require('bson')
 
 // const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
 const PENCIL_URL = "https://uploads-prod.reticulum.io/files/cb90a707-8d49-478d-8a84-32190148b179.glb"
@@ -104,7 +105,18 @@ bot.enterRoom(process.argv[2], {manual: true}).then(() => {
 
 var app = require('express')();
 var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+var whitelist = ['http://localhost:8080', 'https://vartiste.xyz']
+var io = require('socket.io')(http, {
+  cors: {
+    origin: function (origin, callback) {
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    }
+  }
+});
 
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -113,7 +125,9 @@ io.on('connection', (socket) => {
   bot.setAvatar(PAINTER_AVATAR)
 
 
-  socket.on('update', (data) => {
+  socket.on('update', (bindata, callback) => {
+    // let data = BSON.deserialize(Buffer.from(bindata))
+    let data = bindata
     bot.setAvatarLocations(data)
     bot.setCanvasLocation(data)
     bot.setToolsLocation(data)
@@ -123,6 +137,8 @@ io.on('connection', (socket) => {
         socket.emit('hubdate', {tool})
       })
     }
+    callback()
+
   })
 
   bot

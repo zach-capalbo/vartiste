@@ -8,6 +8,7 @@
   },
   "author": "Zach Capalbo",
   "dependencies": {
-    "socket.io": "^2.3.0"
+    "bson": "^4.4.0",
+    "socket.io": "^4.1.2"
   }
 }

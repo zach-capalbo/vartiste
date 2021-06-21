@@ -1,5 +1,6 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
+const BSON = require('bson')
 
 AFRAME.registerSystem('hubs-connector', {
   schema: {
@@ -13,7 +14,9 @@ AFRAME.registerSystem('hubs-connector', {
     if (!networked) this.data.enabled = false
 
     Pool.init(this)
-    this.tick = AFRAME.utils.throttleTick(this.tick, 200, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+
+    this.readyForUpdate = true
 
     this.updateEmitData = {
       leftHand: {
@@ -49,6 +52,8 @@ AFRAME.registerSystem('hubs-connector', {
   },
   tick() {
     if (!this.data.enabled) return
+    if (!this.readyForUpdate) return
+    // this.readyForUpdate = false
 
     let socket = this.socket
 
@@ -81,7 +86,9 @@ AFRAME.registerSystem('hubs-connector', {
     //   Util.cameraObject3D().el
     // }
 
-    socket.emit('update', this.updateEmitData)
+    socket.emit('update', this.updateEmitData, (response) => {
+      this.readyForUpdate = true
+    })
   },
   updateObj(el, data) {
     if (!(el instanceof THREE.Object3D)) {
@@ -121,7 +128,6 @@ AFRAME.registerSystem('hubs-connector', {
     })
 
     s.on('hubdate', (data) => {
-      console.log("hubdate", data)
       let tool = data.tool;
       if (!tool) return;
       if (!this.el.sceneEl.systems['pencil-tool'].lastGrabbed) return;

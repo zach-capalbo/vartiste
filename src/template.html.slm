@@ -26,7 +26,17 @@ html
   body
     header#need-help-notification.hidden-in-vr
       h2 VARTISTE - WebXR Drawing, Texturing, and more!
-      a href="landing.html" Need Help? Click here for instructions and more.
+      a href="landing.html" title="Overview and Help" Intro
+      span.space |
+      a href="landing.html#gallery" title="Artwork and Templates" Gallery
+      span.space |
+      a href="landing.html#controls" title="For VR and desktop" Controls
+      span.space |
+      a href="https://discord.gg/vRHM8MYNby"
+        img alt="discord icon" title="Join the VARTISTE Discord" src="./static/images/discord.png"
+      span.space |
+      a href="https://twitter.com/zach_geek"
+        img alt="twitter icon" title="Follow for updates" src="./static/images/twitter.png"
       /p VARTISTE is intended to be used with a virtual reality headset. Click the VR button on the bottom right hand corner to begin.
       p
       a#got-it href="#" Dismiss...
