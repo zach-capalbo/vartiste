@@ -752,6 +752,9 @@ AFRAME.registerComponent('camera-tool', {
 })
 
 AFRAME.registerSystem('spray-can-tool', {
+  init() {
+    this.dilateProc = new CanvasShaderProcessor({fx: 'dilate'})
+  },
   setSprayResolution(width, height) {
     this.el.sceneEl.querySelectorAll('*[spray-can-tool]').forEach(el => {
       if (el.getAttribute('spray-can-tool').locked) return
@@ -780,6 +783,7 @@ AFRAME.registerComponent('spray-can-tool', {
     projector: {default: false},
     materialProjector: {default: false},
     canvasSize: {type: 'vec2', default: {x: 64, y: 64}},
+    autoDilate: {default: false},
 
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
@@ -1123,6 +1127,13 @@ AFRAME.registerComponent('spray-can-tool', {
     }
     // let mathTime = Date.now() - startTime - pictureTime - imageDataTime
     targetContext.putImageData(targetData, 0, 0)
+
+    if (this.sprayCanTool.data.autoDilate)
+    {
+      this.sprayCanTool.system.dilateProc.setInputCanvas(targetContext.canvas)
+      this.sprayCanTool.system.dilateProc.update()
+      targetCanvas = this.sprayCanTool.system.dilateProc.canvas
+    }
 
     let finalContext = finalDestinationCanvas.getContext("2d")
     let oldAlpha = finalContext.globalAlpha
