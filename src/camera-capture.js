@@ -845,7 +845,7 @@ AFRAME.registerComponent('spray-can-tool', {
       })
     }).call(this.el.components['camera-tool'], this)
 
-    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
   },
   update(oldData)
   {

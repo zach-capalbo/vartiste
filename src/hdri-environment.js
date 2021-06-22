@@ -22,7 +22,7 @@ AFRAME.registerComponent('hdri-environment', {
     intensity: {default: 1.0},
 
     // If true, it will replace the skybox mesh's texture, and use the hdri as a skybox
-    replaceTexture: {default: true}
+    replaceTexture: {default: true},
 
     // If > 0 will set the envMap for all objects with compatible material continuously
     updateEnvMapThrottle: {default: 100},
