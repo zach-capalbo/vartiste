@@ -783,7 +783,7 @@ AFRAME.registerComponent('spray-can-tool', {
     projector: {default: false},
     materialProjector: {default: false},
     canvasSize: {type: 'vec2', default: {x: 64, y: 64}},
-    autoDilate: {default: false},
+    autoDilate: {default: true},
 
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
@@ -845,7 +845,7 @@ AFRAME.registerComponent('spray-can-tool', {
       })
     }).call(this.el.components['camera-tool'], this)
 
-    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
   },
   update(oldData)
   {

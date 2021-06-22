@@ -32,10 +32,14 @@ class VartisteHubsConnector extends HubsBot {
           el.object3D.scale
         )
 
-        el.object3D.scale.x *= canvas.width
-        el.object3D.scale.y *= canvas.height
+        let video = el.components['media-video'].video
 
-        console.log("Setting canvas matrix", this.canvasMatrix)
+        if (!video) return;
+
+        el.object3D.scale.x *=  (canvas.width / video.videoWidth) * 1024
+        el.object3D.scale.y *=  (canvas.height / video.videoHeight) * 1024
+
+        // console.log("Setting canvas matrix", this.canvasMatrix)
       })
     }, canvas)
   }
@@ -76,6 +80,7 @@ class VartisteHubsConnector extends HubsBot {
   }
   async fetchToolLocation() {
     return await this.evaluate(() => {
+      if (!this.pencil) return;
       this.pencilMatrix = this.pencilMatrix || new THREE.Matrix4()
 
       let rigObj = document.querySelector('#avatar-rig').object3D
