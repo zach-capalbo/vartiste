@@ -21,6 +21,9 @@ AFRAME.registerComponent('hdri-environment', {
     // Intensity of the environement map
     intensity: {default: 1.0},
 
+    // If true, it will replace the skybox mesh's texture, and use the hdri as a skybox
+    replaceTexture: {default: true}
+
     // If > 0 will set the envMap for all objects with compatible material continuously
     updateEnvMapThrottle: {default: 100},
   },
@@ -78,12 +81,16 @@ AFRAME.registerComponent('hdri-environment', {
 
     let skyEl = this.el
     let mesh = skyEl.getObject3D('mesh')
-    mesh.material.map = texture
-    mesh.material.color.set("#FFFFFF")
-    mesh.material.needsUpdate = true
 
-    mesh.scale.x = -1
-    mesh.scale.z = -1
+    if (this.data.replaceTexture)
+    {
+      mesh.material.map = texture
+      mesh.material.color.set("#FFFFFF")
+      mesh.material.needsUpdate = true
+
+      mesh.scale.x = -1
+      mesh.scale.z = -1
+    }
 
     this.hdriTexture = texture
     var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
