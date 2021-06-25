@@ -64,6 +64,15 @@ export function addImageReferenceViewer(image) {
   viewer.classList.add("clickable")
   viewer.classList.add("reference-image")
   document.querySelector('#reference-spawn').append(viewer)
+  Util.whenLoaded(viewer, () => {
+    let toLayer = viewer.components.frame.addButton('#asset-archive-arrow-down-outline')
+    toLayer.setAttribute('tooltip', 'Convert To Layer')
+    toLayer.addEventListener('click', () => {
+      let layer = new Layer(image.width, image.height)
+      layer.canvas.getContext('2d').drawImage(image, 0, 0)
+      Compositor.component.addLayer(Compositor.component.layers.length - 1, {layer})
+    })
+  })
   return viewer
 }
 

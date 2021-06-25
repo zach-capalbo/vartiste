@@ -115,13 +115,15 @@ AFRAME.registerComponent('side-by-side-display', {
       let ipdLever = document.createElement('a-entity')
       this.el.append(ipdLever)
       ipdLever.setAttribute('lever', {axis: 'y', valueRange: '-0.5 0.5', target: this.el, component: 'side-by-side-display', property: 'ipd'})
-      ipdLever.setAttribute('position', `0 -${this.el.getAttribute('geometry').height / 2 + 0.1} 0`)
-      ipdLever.setAttribute('scale', '0.5 0.5 0.5')
+      ipdLever.setAttribute('position', `0 -${this.el.getAttribute('geometry').height / 2 + 0.025} 0`)
+      ipdLever.setAttribute('scale', '0.35 0.35 0.35')
+      ipdLever.setAttribute('tooltip', 'Focus Adjustment')
     }
   },
   update(oldData) {
     if (!this.right) return;
 
-    this.right.position.x = this.data.ipd;
+    this.right.position.x = this.data.ipd / 2.0;
+    this.left.position.x =  - this.data.ipd / 2.0;
   }
 })
