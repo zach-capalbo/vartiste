@@ -84,14 +84,26 @@ Util.registerComponentSystem('hand-tracking', {
     this.setHandsFree = false
     handsfree.use('logger', data => {
       if (!data.handpose) return
+      if (data.handpose.handInViewConfidence < 0.8) return;
 
       window.lastHandPose = data
       if (!this.setHandsFree)
       {
-        document.querySelector('')
-        data.handpose.meshes[0].parent
+        let target = this.el.sceneEl //document.querySelector('#camera-root')
+        let handsObject = data.handpose.meshes[0].parent
+        handsObject.scale.set(1.0/this.el.sceneEl.canvas.width, 1.0/this.el.sceneEl.canvas.width, 1.0/this.el.sceneEl.canvas.width)//, 1.0/this.el.sceneEl.canvas.height, 0.1)
+        handsObject.position.set(0, 1.5, 0.1)
+        handsObject.rotation.set(0, Math.PI, 0)
+        this.handsObject = handsObject;
+        target.object3D.add(handsObject)
         this.setHandsFree = true
       }
+      for (let mesh of this.handsObject.children)
+      {
+        // mesh.position.z *= -this.el.sceneEl.canvas.width * 100.0
+        mesh.updateMatrix()
+      }
+      // this.handsObject.position.z = data.handpose.normalized[0][2] / 10.0
       // console.log(data.handpose.boundingBox)
     })
   }

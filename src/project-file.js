@@ -237,6 +237,8 @@ class ProjectFile {
     obj.referenceImages = []
     let referenceCanvas = document.createElement('canvas')
     document.querySelectorAll('.reference-image').forEach(image => {
+      if (!image.getObject3D('mesh').material.map || !image.getObject3D('mesh').material.map.image) return;
+
       let img = image.getObject3D('mesh').material.map.image
       referenceCanvas.width = img.width
       referenceCanvas.height = img.height
