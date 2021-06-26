@@ -89,6 +89,7 @@ AFRAME.registerComponent('side-by-side-display', {
     for (let i = 0; i < left.geometry.attributes.uv.count; ++i)
     {
       left.geometry.attributes.uv.array[i * 2] *= 0.5
+      left.geometry.attributes.uv.array[i * 2] += 0.5
     }
     left.geometry.attributes.uv.needsUpdate = true
     left.layers.disable(CAMERA_LAYERS.DEFAULT)
@@ -99,7 +100,7 @@ AFRAME.registerComponent('side-by-side-display', {
     right.geometry = right.geometry.clone();
     for (let i = 0; i < left.geometry.attributes.uv.count; ++i)
     {
-      right.geometry.attributes.uv.array[i * 2] += 0.5
+      right.geometry.attributes.uv.array[i * 2] -= 0.5
     }
     right.geometry.attributes.uv.needsUpdate = true
     right.position.z += 0.001
