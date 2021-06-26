@@ -99,11 +99,18 @@ AFRAME.registerSystem('webxr-input-profiles', {
       else
       {
         this.loadingControllers.add(input)
-        let prof = await fetchProfile(input, this.data.url)
-        let m = new MotionController(input, prof.profile, prof.assetPath)
-        m.seen = true
-        this.motionControllers.set(input, m)
-        this.loadingControllers.delete(input)
+        try {
+          let prof = await fetchProfile(input, this.data.url)
+          let m = new MotionController(input, prof.profile, prof.assetPath)
+
+          m.seen = true
+          this.motionControllers.set(input, m)
+          this.loadingControllers.delete(input)
+        }
+        catch (e) {
+          console.warn("Could not load input profile for", input, e)
+          continue;
+        }
         // console.log("Added new motion contorller", m)
       }
     }
@@ -258,7 +265,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
         this.rayMatrix.invert()
         this.rayMatrix.multiply(object3D.matrix)
         this.rayMatrix.invert()
-                
+
         let mesh = this.el.getObject3D('mesh')
         // mesh.updateMatrix()
         mesh.matrix.compose(mesh.position, mesh.quaternion, mesh.scale)
