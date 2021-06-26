@@ -690,11 +690,17 @@ AFRAME.registerComponent('compositor', {
 
       let wrapType = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
+      let anyUpdates = false
+
       for (let layer of layers) {
         if (!layer.visible) continue
 
         if (THREED_MODES.indexOf(layer.mode) < 0)
         {
+          if (layer.updateTime > this.drawnT)
+          {
+            anyUpdates = true;
+          }
           layer.draw(ctx, this.currentFrame)
           continue
         }
@@ -789,6 +795,8 @@ AFRAME.registerComponent('compositor', {
 
         modesUsed.add(layer.mode)
       }
+
+      // if (!anyUpdates) return;
 
       if (this.data.usePreOverlayCanvas)
       {
