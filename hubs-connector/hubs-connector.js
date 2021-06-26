@@ -9,7 +9,7 @@ const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.g
 class VartisteHubsConnector extends HubsBot {
   async setCanvasLocation({canvas}) {
     await this.evaluate((canvas) => {
-      document.querySelectorAll('*[media-loader][networked]').forEach(async (el) => {
+      document.querySelectorAll('*[media-loader][networked][media-video]').forEach(async (el) => {
         if (!/^hubs.*video$/.test(el.getAttribute('media-loader').src)) return
         if (!NAF.utils.isMine(el)) await NAF.utils.takeOwnership(el)
 
@@ -36,8 +36,8 @@ class VartisteHubsConnector extends HubsBot {
 
         if (!video) return;
 
-        el.object3D.scale.x *=  (canvas.width / video.videoWidth) * 1024
-        el.object3D.scale.y *=  (canvas.height / video.videoHeight) * 1024
+        el.object3D.scale.x *=  (canvas.width / el.getObject3D('mesh').scale.x)
+        el.object3D.scale.y *=  (canvas.height / el.getObject3D('mesh').scale.y)
 
         // console.log("Setting canvas matrix", this.canvasMatrix)
       })

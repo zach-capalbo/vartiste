@@ -34,7 +34,7 @@ Click on any of the entries below to load them into VARTISTE.
 
 <div id="gallery-content"></div>
 
-Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link) I'd love to see what people are making with VARTISTE!
+Got a cool VARTISTE drawing? [Submit it here!](https://discord.gg/DZnQBE2grJ) I'd love to see what people are making with VARTISTE!
 
 
 ## Tutorials
