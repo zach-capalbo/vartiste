@@ -1,8 +1,4 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
-	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
-	(global = global || self, factory(global.MeshBVHLib = global.MeshBVHLib || {}, global.THREE));
-}(this, function (exports, three) { 'use strict';
+const three = THREE;
 
 	// Split strategy constants
 	const CENTER = 0;
@@ -3988,6 +3984,3 @@
 	exports.getBVHExtremes = getBVHExtremes;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
-//# sourceMappingURL=index.js.map

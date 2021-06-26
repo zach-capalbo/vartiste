@@ -151,6 +151,8 @@ io.on('connection', (socket) => {
     .then((scene) => socket.emit('scene', scene))
 });
 
+app.get('')
+
 http.listen(3000, () => {
   console.log('listening on *:3000');
 });
