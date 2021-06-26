@@ -1,6 +1,5 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
-const BSON = require('bson')
 
 AFRAME.registerSystem('hubs-connector', {
   schema: {
