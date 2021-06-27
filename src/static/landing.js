@@ -5,3 +5,5 @@ const {Gallery} = require('./gallery')
 new Gallery(document.getElementById('gallery-content'))
 
 require('!!file-loader?name=preview.jpg!./images/fullscreen.jpg')
+
+window.features = require('./features.html.slm')

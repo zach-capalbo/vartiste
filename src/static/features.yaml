@@ -1,0 +1,386 @@
+---
+sections:
+  - name: Drawing
+    features:
+      - name: Animation
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1225835188015583233
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I added animation to my VR drawing app!  <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a> <a href="https://t.co/Tb1wdjJ6lI">pic.twitter.com/Tb1wdjJ6lI</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1225835188015583233?ref_src=twsrc%5Etfw">February 7, 2020</a></blockquote>
+      - name: Paint to 3d models
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1214005565862617088
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">You can now paint directly onto 3D models using VARTISTE <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/VRart?src=hash&amp;ref_src=twsrc%5Etfw">#VRart</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/3dmodeling?src=hash&amp;ref_src=twsrc%5Etfw">#3dmodeling</a> <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a> <a href="https://t.co/7Z1XqQQVXW">pic.twitter.com/7Z1XqQQVXW</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1214005565862617088?ref_src=twsrc%5Etfw">January 6, 2020</a></blockquote>
+  - name: Material Packs
+    features:
+      - name: ' Cork Material'
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1405682332049215488
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">These <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> material packs come in handy, by the way. Say you want to combine this nice wine cork 3d scan from <a href="https://twitter.com/Scan3DCat?ref_src=twsrc%5Etfw">@Scan3DCat</a> on <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a> with the PBR cork material from <a href="https://twitter.com/ambientCG?ref_src=twsrc%5Etfw">@ambientCG</a> and export a GLB. It&#39;s quite easy to do! <a href="https://t.co/yOqrHnJg0U">pic.twitter.com/yOqrHnJg0U</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1405682332049215488?ref_src=twsrc%5Etfw">June 18, 2021</a></blockquote>
+      - name: Drag and drop to create
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1341094224826085381
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">You can drag and drop the textures downloaded from @CC0Textures or <a href="https://twitter.com/texturehaven?ref_src=twsrc%5Etfw">@texturehaven</a> and create your own material packs. <a href="https://t.co/kP6AmkUopj">pic.twitter.com/kP6AmkUopj</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1341094224826085381?ref_src=twsrc%5Etfw">December 21, 2020</a></blockquote>
+      - name: Material Pack intro
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1341093858214637573
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature I&#39;ve been trying to figure out a good way to do for a long time: Material Packs. I think I&#39;ve finally figured out how to start.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://t.co/BElbvLHNXE">pic.twitter.com/BElbvLHNXE</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1341093858214637573?ref_src=twsrc%5Etfw">December 21, 2020</a></blockquote>
+  - name: Brushes
+    features:
+      - name: Fire Brush Loader
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1400572970075103244
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update lets you load a few pre-made brush packs, including this fire one!<a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXRArt?src=hash&amp;ref_src=twsrc%5Etfw">#WebXRArt</a> <a href="https://t.co/Re8ASSbkeU">https://t.co/Re8ASSbkeU</a> <a href="https://t.co/SrkymuoMBm">pic.twitter.com/SrkymuoMBm</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1400572970075103244?ref_src=twsrc%5Etfw">June 3, 2021</a></blockquote>
+      - name: Experimental Brushes
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1395163678337601537
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I uploaded some experimental <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> brushes to the VARTISTE Discord (<a href="https://t.co/JG8YgSLkdN">https://t.co/JG8YgSLkdN</a>) before I decide whether to put them into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> or not. Here&#39;s a <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> &quot;plein air&quot; quick painting demo with a few of the brushes. <a href="https://t.co/h7ZeCExu0i">pic.twitter.com/h7ZeCExu0i</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1395163678337601537?ref_src=twsrc%5Etfw">May 19, 2021</a></blockquote>
+      - name: Advanced Color Picker
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1340700115900780545
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update:<br>1. Reference models are now saved in the .vartiste project file<br>2. Added a color picker expansion, so you can get exactly the colors you want.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://t.co/HXmbzVf3UX">pic.twitter.com/HXmbzVf3UX</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1340700115900780545?ref_src=twsrc%5Etfw">December 20, 2020</a></blockquote>
+      - name: Stretch Brushes
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1310003343054569474
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> Update brings a whole bunch of new texture stretch brushes! Opens up a lot of new possibilities to get artistic texture with VARTISTE. I&#39;ve added presets with the new brushes to the sketch and paint templates, too.<a href="https://twitter.com/hashtag/VRdrawing?src=hash&amp;ref_src=twsrc%5Etfw">#VRdrawing</a> <a href="https://twitter.com/hashtag/VRpainting?src=hash&amp;ref_src=twsrc%5Etfw">#VRpainting</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/sUEXKI8MWU">pic.twitter.com/sUEXKI8MWU</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1310003343054569474?ref_src=twsrc%5Etfw">September 26, 2020</a></blockquote>
+  - name: Tools
+    features:
+      - name: Autorotate spray cans
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1408593735332642821
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a cool new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature for headsets with front-facing webcams (like <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a>): Stereoscopic passthrough portal. Kind of like <a href="https://twitter.com/hashtag/AR?src=hash&amp;ref_src=twsrc%5Etfw">#AR</a>-light. Feels like watching a 3D movie at the theater, but weirder.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/ARinVR?src=hash&amp;ref_src=twsrc%5Etfw">#ARinVR</a> <a href="https://t.co/2TnNpL5b6H">pic.twitter.com/2TnNpL5b6H</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1408593735332642821?ref_src=twsrc%5Etfw">June 26, 2021</a></blockquote>
+      - name: Volumetric Options
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1375871505083592709
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update: playing with some more volumetric brush texture options. Haven&#39;t taken the effort to think through all the math yet, so there are artifacts when scaling the brush relative to the canvas. Also a fix for the camera preview performance. <a href="https://t.co/z0lJs3rVYS">pic.twitter.com/z0lJs3rVYS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1375871505083592709?ref_src=twsrc%5Etfw">March 27, 2021</a></blockquote>
+      - name: Material Projector
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1357138070890565632
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Using the same technique as the photomaterialgraph, I added a full-material spray-projector to <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. Can project material textures from a material pack or 3D model onto a your canvas.<br>(alt: In VR using spray can to project rock texture and toy car onto a wooden banjo model) <a href="https://t.co/le20NGFf1z">pic.twitter.com/le20NGFf1z</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1357138070890565632?ref_src=twsrc%5Etfw">February 4, 2021</a></blockquote>
+      - name: Photomaterialgraph
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1356771415568056320
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a new thing in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. I&#39;m calling it a <a href="https://twitter.com/hashtag/Photomaterialgraph?src=hash&amp;ref_src=twsrc%5Etfw">#Photomaterialgraph</a><br>(alt text: In virtual reality taking a photograph of a coin in a bowl on a carpet. The resulting 2D photograph retains the textures of the original objects.) <a href="https://t.co/O9jBLBqtZX">pic.twitter.com/O9jBLBqtZX</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1356771415568056320?ref_src=twsrc%5Etfw">February 3, 2021</a></blockquote>
+      - name: Camera / Spotlight improvements
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1344744902454882304
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Plus some camera and spotlight improvements:<br>- Camera has preview (updates when grabbed)<br>- Camera can capture to current layer, new layer, new frame, or direct download<br>- Spotlight color can be changed <a href="https://t.co/1Nctbw3dYA">pic.twitter.com/1Nctbw3dYA</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1344744902454882304?ref_src=twsrc%5Etfw">December 31, 2020</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1344744795202269185
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Of course, there are a few new features that snuck in, too:<br>- Project files (changed to .vartistez) are now compressed and take ~half the size<br>- Branded loading screen<br>- Better crash detection / reporting<br>- Paste images directly into VARTISTE using Ctrl+V <a href="https://t.co/JxwqetL5dp">pic.twitter.com/JxwqetL5dp</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1344744795202269185?ref_src=twsrc%5Etfw">December 31, 2020</a></blockquote>
+      - name: Weighted Brush
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1320477425873100809
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> and aframe-vartiste-toolkit update today! Lots of nifty little things. <br>VARTISTE:<br>- Weighted brush for even smoother drawing. You can adjust the &quot;weight&quot; by using a lever<br>- Hubs uv-scroll support for reference models <a href="https://t.co/da7Dj5Azi6">pic.twitter.com/da7Dj5Azi6</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1320477425873100809?ref_src=twsrc%5Etfw">October 25, 2020</a></blockquote>
+      - name: Camera Levers
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1316920271182454787
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> performance update. And levers! Levers on cameras! 📸 <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/RzVwUJaccF">pic.twitter.com/RzVwUJaccF</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1316920271182454787?ref_src=twsrc%5Etfw">October 16, 2020</a></blockquote>
+      - name: Volumetric brushes
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1314375419295129600
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New way to draw! True volumetric brushes have come to <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. Draw with arbitrarily complex 3D shapes. No problem with weird UV maps. More to come from this; Volumetric effects is a big area where VR 2D drawing can offer innovation compared to tablet &amp; stylus. <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/pOJ3UaqB0X">pic.twitter.com/pOJ3UaqB0X</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1314375419295129600?ref_src=twsrc%5Etfw">October 9, 2020</a></blockquote>
+      - name: Save pencils
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1299728659310415875
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New quality-of-life update for <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>:<br>- Can copy, delete, and save 6-DoF pencils<br>- Updates to starter templates<br>- Quality selection for spray cans<br>- Can paste to keyboard<br>- Can type on VR keyboard using real keyboard<br>- Misc bug fixes <a href="https://t.co/qiANZyeyAU">pic.twitter.com/qiANZyeyAU</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1299728659310415875?ref_src=twsrc%5Etfw">August 29, 2020</a></blockquote>
+      - name: Spray projector normal map
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1300577805370089475
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Cool thing about the spray projector tool update, you can use it with things like normal maps to quickly add a lot of texture to your model or image <a href="https://t.co/K4twXakSHe">pic.twitter.com/K4twXakSHe</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1300577805370089475?ref_src=twsrc%5Etfw">August 31, 2020</a></blockquote>
+      - name: Spray projector
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1287448018418049026
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Fun new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature: project stencils and things onto your canvas / models. <a href="https://twitter.com/hashtag/VRART?src=hash&amp;ref_src=twsrc%5Etfw">#VRART</a> <a href="https://t.co/ika1LI5rm6">pic.twitter.com/ika1LI5rm6</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1287448018418049026?ref_src=twsrc%5Etfw">July 26, 2020</a></blockquote>
+      - name: Spray paint tool
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1282812362878320652
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE: New spray paint tool uses a new camera-uv based drawing method to adapt to discontinuous and messy UV maps. Works well for graffiti on photogrammetry scans. <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> (Skate park 3d scan by <a href="https://twitter.com/Tojek_VFX?ref_src=twsrc%5Etfw">@Tojek_VFX</a>; art inspiration: <a href="https://twitter.com/brianglenney?ref_src=twsrc%5Etfw">@brianglenney</a>) <a href="https://t.co/n0pEObZWr9">pic.twitter.com/n0pEObZWr9</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1282812362878320652?ref_src=twsrc%5Etfw">July 13, 2020</a></blockquote>
+      - name: Camera Tool
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1274425731364388866
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Are you a mixed-media artist interested in using VR to combine 2D and 3D? Check out the new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> camera tool! <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://t.co/0xjlstAa55">pic.twitter.com/0xjlstAa55</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1274425731364388866?ref_src=twsrc%5Etfw">June 20, 2020</a></blockquote>
+  - name: Import / Export
+    features:
+      - name: FFMPEG.wasm
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1397352982849769475
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update brings in <a href="https://twitter.com/hashtag/ffmpeg?src=hash&amp;ref_src=twsrc%5Etfw">#ffmpeg</a>.wasm. Now you can import animations, and video references. Paint over or reanimate videos. Or plop them onto 3D models. Better gif and video export, too.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRAnimation?src=hash&amp;ref_src=twsrc%5Etfw">#VRAnimation</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/22xdWWEYL3">pic.twitter.com/22xdWWEYL3</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1397352982849769475?ref_src=twsrc%5Etfw">May 26, 2021</a></blockquote>
+      - name: Gravity Sketch Loader
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1393714520288342016
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I put together a little tutorial showing how to use <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> to import models created with <a href="https://twitter.com/GravitySketch?ref_src=twsrc%5Etfw">@GravitySketch</a>, unwrap them, texture them, and then export them to <a href="https://twitter.com/unity3d?ref_src=twsrc%5Etfw">@unity3d</a><a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a><a href="https://t.co/Htcnz0Cor8">https://t.co/Htcnz0Cor8</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1393714520288342016?ref_src=twsrc%5Etfw">May 15, 2021</a></blockquote>
+      - name: Sketchfab
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1382316167625383936
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update brings <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a> import! Including painting materials onto models and as reference models.  Search/Import/Paint/Texture/Upload all from within VR!<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/mQD2iW8jGw">pic.twitter.com/mQD2iW8jGw</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1382316167625383936?ref_src=twsrc%5Etfw">April 14, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1252395174476447745
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE, now with <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a> export built in! <a href="https://twitter.com/hashtag/vr?src=hash&amp;ref_src=twsrc%5Etfw">#vr</a> <a href="https://twitter.com/hashtag/vrart?src=hash&amp;ref_src=twsrc%5Etfw">#vrart</a> <a href="https://t.co/8iG7253HQG">https://t.co/8iG7253HQG</a> <a href="https://t.co/JP5koDEr7g">pic.twitter.com/JP5koDEr7g</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1252395174476447745?ref_src=twsrc%5Etfw">April 21, 2020</a></blockquote>
+      - name: Drag and drop from Sketchfab
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1377787252017930242
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Just in time to take advantage of this really incredible resource, I&#39;ve added support to <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> for drag and dropping zip files straight from <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a>. No more converting to glb. Works for materials from @CC0Textures too! <a href="https://t.co/WFT68rYvoP">https://t.co/WFT68rYvoP</a> <a href="https://t.co/rlELMu0R5r">pic.twitter.com/rlELMu0R5r</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1377787252017930242?ref_src=twsrc%5Etfw">April 2, 2021</a></blockquote>
+      - name: Open Brush -> VARTISTE (Scarecrow)
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1367262013739646976
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Playing around with <a href="https://twitter.com/IcosaGallery?ref_src=twsrc%5Etfw">@IcosaGallery</a> <a href="https://twitter.com/hashtag/OpenBrush?src=hash&amp;ref_src=twsrc%5Etfw">#OpenBrush</a> -&gt; <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> -&gt; <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a>. Works pretty well!<br><br>(alt: modelling then painting a scarecrow in virtual reality. Then throwing things at it. Banjo music in background.) <a href="https://t.co/xdLoWl1djf">pic.twitter.com/xdLoWl1djf</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1367262013739646976?ref_src=twsrc%5Etfw">March 3, 2021</a></blockquote>
+      - name: VRM
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1330185188383580160
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update:<br>- Drag and drop to import <a href="https://twitter.com/hashtag/VRM?src=hash&amp;ref_src=twsrc%5Etfw">#VRM</a> files! The metadata will be carried through, and export will save a VRM instead of a GLB<br>- Fixes to handle importing more complicated materials / meshes<br>- 3D animation fixes and improvements<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/Vrmakum6OX">pic.twitter.com/Vrmakum6OX</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1330185188383580160?ref_src=twsrc%5Etfw">November 21, 2020</a></blockquote>
+      - name: Hubs Creator Meetup
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1328825682869284867
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">The talk I gave for the <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a> Creators Meetup group is now live! Thanks so much to <a href="https://twitter.com/MattBCool?ref_src=twsrc%5Etfw">@MattBCool</a> and <a href="https://twitter.com/elginskye?ref_src=twsrc%5Etfw">@elginskye</a> for the editing and hosting. This is currently the best and most up-to-date guide to making things with <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a><a href="https://t.co/hGSeyy5dVn">https://t.co/hGSeyy5dVn</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1328825682869284867?ref_src=twsrc%5Etfw">November 17, 2020</a></blockquote>
+      - name: Export Hubs UV-scroll
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1319404307586945033
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">You can now export your <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> animations to GLB files and import them straight into <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a> thanks to the uv-scroll component! Works for 2D animations and animated 3D materials. Animates colors, roughness, bump/normalMap, etc! <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/AQum7Dj7cv">pic.twitter.com/AQum7Dj7cv</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1319404307586945033?ref_src=twsrc%5Etfw">October 22, 2020</a></blockquote>
+      - name: Rendered & Per-layer export
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1306724039570882563
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Minor <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update:<br>- Fix Firefox compatibility 😳<br>- Line drawing tool<br>- Rendered and Per-Layer PNG download options <a href="https://t.co/ExS7DNhBp2">pic.twitter.com/ExS7DNhBp2</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1306724039570882563?ref_src=twsrc%5Etfw">September 17, 2020</a></blockquote>
+      - name: Save to browser
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1253507019132321795
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE can now save projects directly to the browser! Makes it much easier to use for <a href="https://twitter.com/hashtag/OculusQuest?src=hash&amp;ref_src=twsrc%5Etfw">#OculusQuest</a> and other standalone devices <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a> <a href="https://t.co/1AqzNQCP3h">pic.twitter.com/1AqzNQCP3h</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1253507019132321795?ref_src=twsrc%5Etfw">April 24, 2020</a></blockquote>
+  - name: Spectator
+    features:
+      - name: Hubs / ReadyPlayerMe
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1387922788892151811
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Experimental, but you can now use <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a> &amp; <a href="https://twitter.com/getwolf3d?ref_src=twsrc%5Etfw">@getwolf3d</a> <a href="https://twitter.com/hashtag/ReadyPlayerMe?src=hash&amp;ref_src=twsrc%5Etfw">#ReadyPlayerMe</a> style avatars for spectator mode in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>!<br><br>(video alt: Person avatar painting a tree. Hubs robot painting a hubs robot.) <a href="https://t.co/w2255mCyqZ">pic.twitter.com/w2255mCyqZ</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1387922788892151811?ref_src=twsrc%5Etfw">April 30, 2021</a></blockquote>
+      - name: Click through
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1379954666516135937
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Feature that snuck into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> recently: you can click through the spectator camera, letting one person draw from the desktop and another from VR at the same time!  Thanks <a href="https://twitter.com/EveaRaye?ref_src=twsrc%5Etfw">@EveaRaye</a> for drawing with me!<a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a><br>(alt: two people painting a snowman, one in VR, one on screen) <a href="https://t.co/1zg4YQoGCs">pic.twitter.com/1zg4YQoGCs</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1379954666516135937?ref_src=twsrc%5Etfw">April 8, 2021</a></blockquote>
+      - name: WebXR Spectator
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1354927563018285066
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Finally got a spectator camera setup compatible with <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> / <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a> working and into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>!<br>(alt text: Picture-in-picture demo of activating the spectator camera, and painting landscapes on faces of a cube) <a href="https://t.co/bEFnRO8x6F">pic.twitter.com/bEFnRO8x6F</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1354927563018285066?ref_src=twsrc%5Etfw">January 28, 2021</a></blockquote>
+  - name: Environment
+    features:
+      - name: Enviropacks
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1360255675822206976
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I&#39;ve integrated aframe-enviropacks into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. It works great when drawing materials onto models. You can preview how your textures will look in different lighting and make adjustments as you go!<a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/3Dart?src=hash&amp;ref_src=twsrc%5Etfw">#3Dart</a> <br>(alt text: drawing textured hello world in onto a golden cup) <a href="https://t.co/dY0AgkDs9D">pic.twitter.com/dY0AgkDs9D</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1360255675822206976?ref_src=twsrc%5Etfw">February 12, 2021</a></blockquote>
+      - name: Floor
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1321640126058008577
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update: Add a togglable wooden floor to provide some grounding. Works best with the preset lighting environment, or a nice HDRI from @HDRIHaven! Also bug fixes. Lots of bug fixes 😬<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/pLWsBSkgzx">pic.twitter.com/pLWsBSkgzx</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1321640126058008577?ref_src=twsrc%5Etfw">October 29, 2020</a></blockquote>
+      - name: AR Passthrough
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1308241252958298112
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another look at VARTISTE <a href="https://twitter.com/hashtag/AR?src=hash&amp;ref_src=twsrc%5Etfw">#AR</a> thanks to <a href="https://twitter.com/webmixedreality?ref_src=twsrc%5Etfw">@webmixedreality</a>&#39;s Metachromium + <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a> passthrough. <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/kgDShgj19c">pic.twitter.com/kgDShgj19c</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1308241252958298112?ref_src=twsrc%5Etfw">September 22, 2020</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1280880895508045825
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE running on Metachromium is pretty amazing. You can take a sketchpad into the <a href="https://twitter.com/MuseumOR?ref_src=twsrc%5Etfw">@MuseumOR</a> and practice sketching from masterworks (like Prey by <a href="https://twitter.com/NickTheLadd?ref_src=twsrc%5Etfw">@NickTheLadd</a>) or you can draw from &quot;life&quot; in your favorite hyper-realistic games. <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/H4feyOjhjJ">pic.twitter.com/H4feyOjhjJ</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1280880895508045825?ref_src=twsrc%5Etfw">July 8, 2020</a></blockquote>
+      - name: HDRIs
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1264326767164227584
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New VARTISTE feature: Use HDRI lighting and environments while you paint and animate (thanks to @HDRIHaven for the HDRIs, and of course <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a> and <a href="https://twitter.com/threejs?ref_src=twsrc%5Etfw">@threejs</a> for the library support) <a href="https://twitter.com/hashtag/VRart?src=hash&amp;ref_src=twsrc%5Etfw">#VRart</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/fhByqKB4Jc">pic.twitter.com/fhByqKB4Jc</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1264326767164227584?ref_src=twsrc%5Etfw">May 23, 2020</a></blockquote>
+      - name: Stereoscopic Passthrough
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1408593735332642821
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a cool new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature for headsets with front-facing webcams (like <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a>): Stereoscopic passthrough portal. Kind of like <a href="https://twitter.com/hashtag/AR?src=hash&amp;ref_src=twsrc%5Etfw">#AR</a>-light. Feels like watching a 3D movie at the theater, but weirder.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/ARinVR?src=hash&amp;ref_src=twsrc%5Etfw">#ARinVR</a> <a href="https://t.co/2TnNpL5b6H">pic.twitter.com/2TnNpL5b6H</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1408593735332642821?ref_src=twsrc%5Etfw">June 26, 2021</a></blockquote>
+  - name: Mesh Tools
+    features:
+      - name: Morph Targets
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1335765647066882050
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update today. Thanks to some inspiration from <a href="https://twitter.com/MattBCool?ref_src=twsrc%5Etfw">@MattBCool</a>, not only can you create morph targets, but you can now select a morph target as a Hubs Avatar audio feedback target, export as GLB, and bring it straight into <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a>!<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/0vnrQ5iHtz">pic.twitter.com/0vnrQ5iHtz</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1335765647066882050?ref_src=twsrc%5Etfw">December 7, 2020</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1335674638240784385
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update:<br>- Rounded Buttons!<br>- Bake skeletal poses to morph targets or to vertices<br>- Bake morph targets to vertices<br>- Bug fixes!<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/3DAnimation?src=hash&amp;ref_src=twsrc%5Etfw">#3DAnimation</a> <a href="https://twitter.com/hashtag/VRBroccoli?src=hash&amp;ref_src=twsrc%5Etfw">#VRBroccoli</a> <a href="https://t.co/5wRsoUey8D">pic.twitter.com/5wRsoUey8D</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1335674638240784385?ref_src=twsrc%5Etfw">December 6, 2020</a></blockquote>
+      - name: Morph Targets Mixer Board
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1335018483139141633
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> has been updated to A-Frame 1.1.0 as well. *PLUS*: Mesh morph target mixer board! It&#39;s not integrated into the animation system yet, but is still quite fun. (Model is &quot;Actor V1&quot; by Rafael Monteiro CC-BY-NC <a href="https://t.co/wxAfB0BW0U">https://t.co/wxAfB0BW0U</a>, textured in VARTISTE by myself) <a href="https://t.co/QH8hlNC5eI">pic.twitter.com/QH8hlNC5eI</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1335018483139141633?ref_src=twsrc%5Etfw">December 5, 2020</a></blockquote>
+      - name: Combine References
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1327431161874878464
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Snuck in there and other updates, I&#39;ve added a bunch more mesh tools, including moving, hiding, organizing, and exporting meshes. You can now use <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>&#39;s reference mesh option to combine multiple GLBs into a single scene, and position everything right where you want in VR! <a href="https://t.co/CSaDcVnHQG">pic.twitter.com/CSaDcVnHQG</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1327431161874878464?ref_src=twsrc%5Etfw">November 14, 2020</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1327727099587735553
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">+Another small change; You can re-import the combined mesh into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> and draw on any part of it. (Sticks CC-BY <a href="https://twitter.com/norgeotloic?ref_src=twsrc%5Etfw">@norgeotloic</a> <a href="https://t.co/64U0nYsygA">https://t.co/64U0nYsygA</a>, Canvas CC-BY Heledahn <a href="https://t.co/oxtuoC9uqN">https://t.co/oxtuoC9uqN</a>, retrieved from <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a>) <a href="https://t.co/7WJAVUte33">pic.twitter.com/7WJAVUte33</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1327727099587735553?ref_src=twsrc%5Etfw">November 14, 2020</a></blockquote>
+      - name: Apply Transformations
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1323073356720181250
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">There&#39;s also new buttons in the mesh tools shelf that allow you to apply the visible orientation transforms to your mesh before exporting as GLB. And a new grabber tool that lets you grab lots of things at once. <a href="https://t.co/XXL24FsbVv">pic.twitter.com/XXL24FsbVv</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1323073356720181250?ref_src=twsrc%5Etfw">November 2, 2020</a></blockquote>
+      - name: Texture Atlas
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1318385770701426688
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> now supports automatic texture atlasing for multi-material objects. This means you can now import glb files with multiple meshes and materials, and draw on them! For instance, you can now paint your <a href="https://twitter.com/getwolf3d?ref_src=twsrc%5Etfw">@getwolf3d</a> avatar with VARTISTE for halloween! <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/1mIPhUTLsX">pic.twitter.com/1mIPhUTLsX</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1318385770701426688?ref_src=twsrc%5Etfw">October 20, 2020</a></blockquote>
+      - name: Bake to and from vertex colors
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1310370064508563456
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update. Baking to and from vertex colors <a href="https://t.co/Z3g0y7NJRt">pic.twitter.com/Z3g0y7NJRt</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1310370064508563456?ref_src=twsrc%5Etfw">September 28, 2020</a></blockquote>
+      - name: UV Unwrapping
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1292625794376904704
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a new, VR-centric method for unwrapping UV maps in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/3dmodeling?src=hash&amp;ref_src=twsrc%5Etfw">#3dmodeling</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/uvwUaFfKTo">pic.twitter.com/uvwUaFfKTo</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1292625794376904704?ref_src=twsrc%5Etfw">August 10, 2020</a></blockquote>
+  - name: Skeletonator
+    features:
+      - name: Keyframe display
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1332406942946516993
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Considerable upgrade for the <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> 3D skeletal animation tools:<br>- per-bone Keyframe display<br>- Linear interpolation between keyframes<br>- Fix animated GLB skeleton creation and export<br>- Improved skin weights-from-nodes experience<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/D54BiDvRBK">pic.twitter.com/D54BiDvRBK</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1332406942946516993?ref_src=twsrc%5Etfw">November 27, 2020</a></blockquote>
+      - name: Fixed
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1326698512046837761
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">As promised, I&#39;ve fixed the <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> skeletal rigging / animation tools! However, it stays in the experimental tools section until I have a chance to polish it up quite a lot more. <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/3Danimation?src=hash&amp;ref_src=twsrc%5Etfw">#3Danimation</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/6LdFJS3s8w">pic.twitter.com/6LdFJS3s8w</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1326698512046837761?ref_src=twsrc%5Etfw">November 12, 2020</a></blockquote>
+      - name: Preview
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1248013561030275073
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a preview of a new VR skeleton rigging / skinning / animating tool I&#39;m working on putting into VARTISTE using <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a> <a href="https://twitter.com/hashtag/vr?src=hash&amp;ref_src=twsrc%5Etfw">#vr</a> <a href="https://twitter.com/hashtag/animation?src=hash&amp;ref_src=twsrc%5Etfw">#animation</a> <a href="https://twitter.com/hashtag/vrart?src=hash&amp;ref_src=twsrc%5Etfw">#vrart</a> <a href="https://twitter.com/hashtag/vartiste?src=hash&amp;ref_src=twsrc%5Etfw">#vartiste</a> <a href="https://t.co/HI00sYDXKi">https://t.co/HI00sYDXKi</a> <a href="https://t.co/pz29TtYX1G">pic.twitter.com/pz29TtYX1G</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1248013561030275073?ref_src=twsrc%5Etfw">April 8, 2020</a></blockquote>
+  - name: UI
+    features:
+      - name: UI Overhaul
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1316334511572111361
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Major <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> UI overhaul launches today! Everything is more compact, friendlier, and easier to use. (At least I hope so! Feedback welcome!) <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/XRUI?src=hash&amp;ref_src=twsrc%5Etfw">#XRUI</a> <a href="https://t.co/5Ev0QWMnLY">pic.twitter.com/5Ev0QWMnLY</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1316334511572111361?ref_src=twsrc%5Etfw">October 14, 2020</a></blockquote>
+      - name: Disable UI
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1298383015744241665
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Quick <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> tip for <a href="https://twitter.com/hashtag/OculusQuest?src=hash&amp;ref_src=twsrc%5Etfw">#OculusQuest</a> users: An easy way to improve performance in VARTISTE is to disable the UI, using the &quot;Toggle UI&quot; button from the settings shelf. <a href="https://t.co/Ljn2dZlBKS">pic.twitter.com/Ljn2dZlBKS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1298383015744241665?ref_src=twsrc%5Etfw">August 25, 2020</a></blockquote>
+      - name: Speech Recognition
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1294279313257304066
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> Speech recognition now in place for browsers that support the SpeechRecognition API! Want to know the commands? Just read any tooltip!<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/webXR?src=hash&amp;ref_src=twsrc%5Etfw">#webXR</a> <a href="https://twitter.com/hashtag/a11y?src=hash&amp;ref_src=twsrc%5Etfw">#a11y</a> <a href="https://t.co/wa0WxmUCQG">pic.twitter.com/wa0WxmUCQG</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1294279313257304066?ref_src=twsrc%5Etfw">August 14, 2020</a></blockquote>
+      - name: Screen reader
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1285701299674251266
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">If you&#39;re having trouble seeing anything in VARTISTE, you can now turn on the in-app screen reader, and it will tell you whatever you&#39;re pointing at. (On browsers that support it).<br><br>Link with screen reader enabled: <a href="https://t.co/f7Sol2xMv1">https://t.co/f7Sol2xMv1</a> (Sticky preference gets saved to browser) <a href="https://t.co/jsOQNT0twH">pic.twitter.com/jsOQNT0twH</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1285701299674251266?ref_src=twsrc%5Etfw">July 21, 2020</a></blockquote>
+      - name: Screen / Camera sharing
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1279058303620972544
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">You can also bring your desktop, windows, and webcam right into VARTISTE. Great for following along with tutorial videos or drawing from life. <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/KwFk37CS7V">pic.twitter.com/KwFk37CS7V</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1279058303620972544?ref_src=twsrc%5Etfw">July 3, 2020</a></blockquote>
+      - name: Popout & Pin layers
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1262196742587547653
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE quality of life feature: Pop out individual layers and pin things to your hands. Great for making a color mixing palette / scratch area. <a href="https://t.co/vf8K0NJlJd">pic.twitter.com/vf8K0NJlJd</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1262196742587547653?ref_src=twsrc%5Etfw">May 18, 2020</a></blockquote>
+  - name: General Art
+    features:
+      - name: Popup Book
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1383483845584904198
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Experimenting with process for creating a stop-motion popup-book using <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. (Thanks to <a href="https://twitter.com/VRArtLive?ref_src=twsrc%5Etfw">@VRArtLive</a> <a href="https://twitter.com/hashtag/YearOfVRArt?src=hash&amp;ref_src=twsrc%5Etfw">#YearOfVRArt</a> &quot;books/memories&quot; prompt for reminding me of the idea!)<br>(video alt: VR creation of popup book showing person reading and a green cartoon bug) <a href="https://t.co/fzCSEJAduT">pic.twitter.com/fzCSEJAduT</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1383483845584904198?ref_src=twsrc%5Etfw">April 17, 2021</a></blockquote>
+      - name: WrinkleBug
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1365764030804201475
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Getting my old friend the bug🐛 ready for some new adventures. Added some sculpted details with <a href="https://twitter.com/Kodon3D?ref_src=twsrc%5Etfw">@Kodon3D</a>, and painted in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>.<br>(video shows this at 10x speed. Total paint time was 20min) <a href="https://t.co/6WENDtGDBG">pic.twitter.com/6WENDtGDBG</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1365764030804201475?ref_src=twsrc%5Etfw">February 27, 2021</a></blockquote>
+      - name: Sunshade demo
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1362910531972173828
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a really cool snippet from <a href="https://twitter.com/SufeeYama?ref_src=twsrc%5Etfw">@SufeeYama</a> of the creation of &quot;Sunshade&quot; using <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>! <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/VRPainting?src=hash&amp;ref_src=twsrc%5Etfw">#VRPainting</a> <a href="https://twitter.com/hashtag/Painting?src=hash&amp;ref_src=twsrc%5Etfw">#Painting</a><br>(alt text: vr headset-view of artist painting sky and canvas) <a href="https://t.co/XpXjWML7Hg">pic.twitter.com/XpXjWML7Hg</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1362910531972173828?ref_src=twsrc%5Etfw">February 19, 2021</a></blockquote>
+      - name: Reference Image Timer
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1279058300936519682
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New feature for those of us using VARTISTE to learn how to draw: There&#39;s now a timer, which can also swap reference photos. Great for drawing practice exercises. <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/drawing?src=hash&amp;ref_src=twsrc%5Etfw">#drawing</a> <a href="https://t.co/bPzrzXUOcQ">pic.twitter.com/bPzrzXUOcQ</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1279058300936519682?ref_src=twsrc%5Etfw">July 3, 2020</a></blockquote>
+      - name: Hubs template
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1241407654502768642
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Check it out! You can now create your own <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a> avatar skin in VARTISTE: <a href="https://t.co/HI00sYmmSK">https://t.co/HI00sYmmSK</a> <a href="https://twitter.com/hashtag/socialVR?src=hash&amp;ref_src=twsrc%5Etfw">#socialVR</a> <a href="https://twitter.com/hashtag/VRART?src=hash&amp;ref_src=twsrc%5Etfw">#VRART</a> <a href="https://t.co/K9BCWUpxmF">pic.twitter.com/K9BCWUpxmF</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1241407654502768642?ref_src=twsrc%5Etfw">March 21, 2020</a></blockquote>
+      - name: Easel Template
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1406762608879886336
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update changes the default background / lighting. Also adds a new easel painting starter template.<a href="https://t.co/wW1xZ5Bp7m">https://t.co/wW1xZ5Bp7m</a> <a href="https://t.co/kIO6aHGzTt">pic.twitter.com/kIO6aHGzTt</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1406762608879886336?ref_src=twsrc%5Etfw">June 20, 2021</a></blockquote>
+  - name: Experimental
+    features:
+      - name: PhysX
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1394786121788317696
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Finally brought some of the PhysX physics from the playground demo back into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> proper. Still an opt-in experimental feature; needs some tweaking and polish, but kind of fun already.<a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/9I05JcxsSv">pic.twitter.com/9I05JcxsSv</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1394786121788317696?ref_src=twsrc%5Etfw">May 18, 2021</a></blockquote>
+      - name: Kromophone
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1376237276691369990
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Many years ago, <a href="https://twitter.com/brianglenney?ref_src=twsrc%5Etfw">@brianglenney</a> and I made a color sonification device called the <a href="https://twitter.com/hashtag/Kromophone?src=hash&amp;ref_src=twsrc%5Etfw">#Kromophone</a>. I&#39;ve dusted off that code and put it into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. <br><br>Built with <a href="https://twitter.com/yotammann?ref_src=twsrc%5Etfw">@yotammann</a>&#39;s Tone.js + <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a> + <a href="https://twitter.com/threejs_org?ref_src=twsrc%5Etfw">@threejs_org</a><br>(Video demonstrates sonification w/ audio🔊) <a href="https://t.co/s544DjfKGN">pic.twitter.com/s544DjfKGN</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1376237276691369990?ref_src=twsrc%5Etfw">March 28, 2021</a></blockquote>
+      - name: VR Contollers Only
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1345880833547231234
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> experimental feature: Use VR controllers without wearing the headset; you can use them with your desktop monitor. Thanks to the magic of <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> (and <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a> and <a href="https://twitter.com/threejs_org?ref_src=twsrc%5Etfw">@threejs_org</a>) <a href="https://t.co/FAGQvfyIC0">pic.twitter.com/FAGQvfyIC0</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1345880833547231234?ref_src=twsrc%5Etfw">January 3, 2021</a></blockquote>
+      - name: Joystick Balloon Locomotion
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1312546623617146887
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New movement system introduced in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. I&#39;m tentatively calling it &quot;Joystick-balloon locomotion&quot;. <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/JoystickBalloonLocomotion?src=hash&amp;ref_src=twsrc%5Etfw">#JoystickBalloonLocomotion</a><br><br>Now live at <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/uhavPjnAnf">pic.twitter.com/uhavPjnAnf</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1312546623617146887?ref_src=twsrc%5Etfw">October 4, 2020</a></blockquote>
+      - name: Leap Motion Hand tracking
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1307763507992104969
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Facebook-free hand tracking comes to VARTISTE via <a href="https://twitter.com/ultraleap_devs?ref_src=twsrc%5Etfw">@ultraleap_devs</a> Leap Motion! (Running on <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a>) <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/handtracking?src=hash&amp;ref_src=twsrc%5Etfw">#handtracking</a> <a href="https://twitter.com/hashtag/leapmotion?src=hash&amp;ref_src=twsrc%5Etfw">#leapmotion</a> <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://t.co/bQGBAqb1qE">pic.twitter.com/bQGBAqb1qE</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1307763507992104969?ref_src=twsrc%5Etfw">September 20, 2020</a></blockquote>
+      - name: Multiplayer
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1296949723484626944
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">And now the feature everyone (maybe someone?) has been waiting for, at long last, multi-player drawing in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>.<a href="https://t.co/ufH5moX4nE">https://t.co/ufH5moX4nE</a><a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/socialvr?src=hash&amp;ref_src=twsrc%5Etfw">#socialvr</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/aUiHznkTca">pic.twitter.com/aUiHznkTca</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1296949723484626944?ref_src=twsrc%5Etfw">August 21, 2020</a></blockquote>
+      - name: Style transfer
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1254407429959401472
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/AI?src=hash&amp;ref_src=twsrc%5Etfw">#AI</a> Style transfer added to VARTISTE. Have the AI paint around your VR drawing in realtime! <a href="https://twitter.com/hashtag/VRart?src=hash&amp;ref_src=twsrc%5Etfw">#VRart</a> <a href="https://twitter.com/hashtag/AIart?src=hash&amp;ref_src=twsrc%5Etfw">#AIart</a> <a href="https://t.co/wSfapjliVI">https://t.co/wSfapjliVI</a> <a href="https://t.co/NXBiIUyOzm">pic.twitter.com/NXBiIUyOzm</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1254407429959401472?ref_src=twsrc%5Etfw">April 26, 2020</a></blockquote>

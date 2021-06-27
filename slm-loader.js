@@ -35,14 +35,34 @@ markdown.register(slm.template);
 
 let oldPartial = slm.template.VM.prototype.partial;
 
-module.exports = function(source) {
+module.exports = async function(source, map, meta) {
   this.cacheable && this.cacheable(true);
+  var callback = this.async();
 
   var options = loaderUtils.getOptions(this) || {};
   options.filename = this.resourcePath;
 
   let addDep = (dep) => this.addDependency(dep);
 
+  let promises = []
+  let preloaded = {}
+  for (let match of source.matchAll(/-.*require\(["'](.*)["']\)/g))
+  {
+      let requireText = match[1];
+      if (requireText.endsWith('.js')) continue;
+
+      let dep = path.resolve("src/" + requireText)
+      console.log("Pre-loading", dep);
+      promises.push(new Promise((r, e) => {
+        this.loadModule(dep, (e,s,sm, m) => {
+          console.info(">> Loading Module Dep", dep, s)
+          preloaded[dep] = s;
+          r();
+        });
+      }))
+  }
+
+  await Promise.all(promises)
 
   slm.template.VM.prototype.partial = function(...args) {
     let dep = path.resolve("src/" + args[0])
@@ -58,7 +78,13 @@ module.exports = function(source) {
     let oldCache = require.cache[require.resolve(dep)]
     delete require.cache[require.resolve(dep)]
 
-    let ret = require(dep)
+    let ret;
+
+    if (dep in preloaded) {
+      ret = preloaded[dep]
+    } else {
+      ret = require(dep);
+    }
 
     if (oldCache)
     {
@@ -87,5 +113,5 @@ module.exports = function(source) {
     delete slm.template.VM.prototype._cache[dep];
   });
 
-  return tmplFunc();
+  callback(null, tmplFunc(), map, meta);
 };
