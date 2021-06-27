@@ -146,9 +146,17 @@ io.on('connection', (socket) => {
 
   })
 
-  bot
-    .evaluate(() => document.querySelector('#environment-scene *[gltf-model-plus]').getAttribute('gltf-model-plus').src)
-    .then((scene) => socket.emit('scene', scene))
+  // bot
+  //   .evaluate(() => document.querySelector('#environment-scene *[gltf-model-plus]').getAttribute('gltf-model-plus').src)
+  //   .then((scene) => {
+  //     console.log("Fetching scene", scene)
+  //     fetch(scene)
+  //     .then(res => {
+  //         const dest = fs.createWriteStream('./tmp/scene.gltf');
+  //         res.body.pipe(dest);
+  //     });
+  //     socket.emit('scene', scene)
+  //   })
 });
 
 app.get('')
