@@ -1,2 +1,13 @@
-- let yaml = require('./static/features.yaml')
-code=yaml
+- let raw = require('./static/features.yaml')
+- let sections = JSON.parse(raw).sections
+ul
+  - for section of sections
+    li
+      h3.expand-feature=section.name
+      ul.collapsed
+        - for feature of section.features
+          li
+            h4=feature.name
+            ul.tweet-list
+              - for tweet of feature.tweets
+                .tweet-container.collapsed-tweet data-html=tweet.html

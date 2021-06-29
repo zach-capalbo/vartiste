@@ -98,3 +98,26 @@ iframe
   height: 100%
   background-color: #999
   z-index: 99
+
+#features-content
+  h3,h4
+    text-align: left
+  & > ul
+    list-style: none
+  .expand-feature
+    cursor: pointer
+
+    &:before
+      content: '+'
+      margin-right: 1em
+      transform: translateX(-1em)
+  ul.collapsed
+    display: none
+  .tweet-list
+    display: flex
+    padding 0px
+  .tweet-container
+    width: 300px
+    margin: 5px
+  .twitter-tweet
+    // transform: scale(0.7)

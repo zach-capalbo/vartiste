@@ -43,9 +43,15 @@ There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/p
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-You can also reference any of the feature demos posted on Twitter:
+## Features
 
-<a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
+Most of the features are documented by short demo videos posted to [Twitter](https://twitter.com/zach_geek). Expand these feature categories to explore the many many VARTISTE features.
+
+<div id="features-content"></div>
+
+### Chronological Order
+
+<a class="twitter-timeline" data-width="600" data-height="400" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
 
 ## Controls
 For Reverb G2 / Valve Index / Oculus Touch type controllers:

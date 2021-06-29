@@ -39,79 +39,84 @@ module.exports = async function(source, map, meta) {
   this.cacheable && this.cacheable(true);
   var callback = this.async();
 
-  var options = loaderUtils.getOptions(this) || {};
-  options.filename = this.resourcePath;
+  try {
+    var options = loaderUtils.getOptions(this) || {};
+    options.filename = this.resourcePath;
 
-  let addDep = (dep) => this.addDependency(dep);
+    let addDep = (dep) => this.addDependency(dep);
 
-  let promises = []
-  let preloaded = {}
-  for (let match of source.matchAll(/-.*require\(["'](.*)["']\)/g))
-  {
-      let requireText = match[1];
-      if (requireText.endsWith('.js')) continue;
-
-      let dep = path.resolve("src/" + requireText)
-      console.log("Pre-loading", dep);
-      promises.push(new Promise((r, e) => {
-        this.loadModule(dep, (e,s,sm, m) => {
-          console.info(">> Loading Module Dep", dep, s)
-          preloaded[dep] = s;
-          r();
-        });
-      }))
-  }
-
-  await Promise.all(promises)
-
-  slm.template.VM.prototype.partial = function(...args) {
-    let dep = path.resolve("src/" + args[0])
-    console.info("Adding a new dep", dep)
-    // console.trace()
-    addDep(dep)
-    return oldPartial.apply(this, args)
-  }
-
-  options.require = (dep) => {
-    dep = path.resolve("src/" + dep)
-    this.addDependency(dep)
-    let oldCache = require.cache[require.resolve(dep)]
-    delete require.cache[require.resolve(dep)]
-
-    let ret;
-
-    if (dep in preloaded) {
-      ret = preloaded[dep]
-    } else {
-      ret = require(dep);
-    }
-
-    if (oldCache)
+    let promises = []
+    let preloaded = {}
+    for (let match of source.matchAll(/-.*require\(["'](.*)["']\)/g))
     {
-      require.cache[require.resolve(dep)] = oldCache
+        let requireText = match[1];
+        if (requireText.endsWith('.js')) continue;
+
+        let dep = path.resolve("src/" + requireText)
+        console.log("Pre-loading", dep);
+        promises.push(new Promise((r, e) => {
+          this.loadModule(dep, (e,s,sm, m) => {
+            console.info(">> Loading Module Dep", dep, s)
+            preloaded[dep] = s;
+            r();
+          });
+        }))
     }
 
-    return ret
+    await Promise.all(promises)
+
+    slm.template.VM.prototype.partial = function(...args) {
+      let dep = path.resolve("src/" + args[0])
+      console.info("Adding a new dep", dep)
+      // console.trace()
+      addDep(dep)
+      return oldPartial.apply(this, args)
+    }
+
+    options.require = (dep) => {
+      dep = path.resolve("src/" + dep)
+      this.addDependency(dep)
+      let oldCache = require.cache[require.resolve(dep)]
+      delete require.cache[require.resolve(dep)]
+
+      let ret;
+
+      if (dep in preloaded) {
+        ret = preloaded[dep]
+      } else {
+        ret = require(dep);
+      }
+
+      if (oldCache)
+      {
+        require.cache[require.resolve(dep)] = oldCache
+      }
+
+      return ret
+    }
+
+    var tmplFunc = slm.compile(source, options);
+
+    // watch for changes in every referenced file
+    Object.keys(slm.template.VM.prototype._cache).forEach(function(dep) {
+      dep = path.resolve("src/" + dep)
+      console.info("Adding dep", dep)
+      this.addDependency(dep);
+    }, this);
+
+    // slm cache used to remember paths to all referenced files
+    // purge cache after each run to force rebuild on changes
+
+    // each cached chunk is deleted from original object,
+    // cause it's referenced by slm internally in other places
+    // replacing cache with new object {} will break hot reload
+    Object.keys(slm.template.VM.prototype._cache).forEach(function(dep) {
+      delete slm.template.VM.prototype._cache[dep];
+    });
+
+    callback(null, tmplFunc(), map, meta);
   }
-
-  var tmplFunc = slm.compile(source, options);
-
-  // watch for changes in every referenced file
-  Object.keys(slm.template.VM.prototype._cache).forEach(function(dep) {
-    dep = path.resolve("src/" + dep)
-    console.info("Adding dep", dep)
-    this.addDependency(dep);
-  }, this);
-
-  // slm cache used to remember paths to all referenced files
-  // purge cache after each run to force rebuild on changes
-
-  // each cached chunk is deleted from original object,
-  // cause it's referenced by slm internally in other places
-  // replacing cache with new object {} will break hot reload
-  Object.keys(slm.template.VM.prototype._cache).forEach(function(dep) {
-    delete slm.template.VM.prototype._cache[dep];
-  });
-
-  callback(null, tmplFunc(), map, meta);
+  catch (e) {
+    callback(e, null, map, meta)
+  }
 };
