@@ -59,7 +59,8 @@
     "webpack-stats-plugin": "^1.0.2",
     "webpack-visualizer-plugin2": "^1.0.0",
     "worker-loader": "^3.0.7",
-    "xml-loader": "^1.2.1"
+    "xml-loader": "^1.2.1",
+    "yaml-loader": "^0.6.0"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",

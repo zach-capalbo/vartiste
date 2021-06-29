@@ -35,6 +35,7 @@ let config = {
       { test: /oss-licenses-used/,loader: 'raw-loader'},
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
       { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
+      { test: /\.(ya?ml)$/, loader: 'yaml-loader', type: 'json'},
       { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
       { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
       { test: /gallery.*\.vartistez?$/,

@@ -1,6 +1,5 @@
 import {Pool} from './pool.js'
 import {Util} from './util.js'
-const BSON = require('bson')
 
 AFRAME.registerSystem('hubs-connector', {
   schema: {
@@ -20,16 +19,19 @@ AFRAME.registerSystem('hubs-connector', {
 
     this.updateEmitData = {
       leftHand: {
-        position: new THREE.Vector3(),
-        rotation: null,
+        // position: new THREE.Vector3(),
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
       },
       rightHand: {
-        position: new THREE.Vector3,
-        rotation: null,
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
       },
       head: {
-        position: new THREE.Vector3,
-        rotation: null,
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
       },
       canvas: {
         matrix: null,
@@ -45,7 +47,7 @@ AFRAME.registerSystem('hubs-connector', {
 
     Util.whenLoaded(this.el, async () => {
       this.rightHandEl = document.querySelector('#right-hand')
-      this.leftHandEl = document.querySelector('#right-hand')
+      this.leftHandEl = document.querySelector('#left-hand')
 
       if (networked) this.socket = await this.connectSocket();
     })
@@ -58,6 +60,7 @@ AFRAME.registerSystem('hubs-connector', {
     let socket = this.socket
 
     if (!socket) return;
+    if (!socket.connected) return;
 
     let canvasLocation = this.pool('canvasLocation', THREE.Vector3)
     // Compositor.el.object3D.getWorldPosition(canvasLocation)
@@ -94,10 +97,14 @@ AFRAME.registerSystem('hubs-connector', {
     if (!(el instanceof THREE.Object3D)) {
       el = el.object3D
     }
-    // Util.positionObject3DAtTarget(this.poser, el)
-    Util.applyMatrix(el.matrixWorld, this.poser)
-    data.position.copy(this.poser.position)
-    data.rotation = this.poserEl.getAttribute('rotation')
+    Util.positionObject3DAtTarget(this.poser, el)
+    data.matrix.copy(this.poser.matrixWorld)
+    // Util.applyMatrix(el.matrixWorld, this.poser)
+    // data.position.copy(this.poser.position)
+    // data.rotation.x = this.poser.rotation.x * 180 / Math.PI
+    // data.rotation.y = this.poser.rotation.y * 180 / Math.PI
+    // data.rotation.z = this.poser.rotation.z * 180 / Math.PI
+
   },
   async connectSocket() {
     if (this._socket) return await this._socket

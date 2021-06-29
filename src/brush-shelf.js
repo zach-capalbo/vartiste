@@ -1,6 +1,7 @@
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 import {STATE_TOGGLED} from './icon-button.js'
+import {Util} from './util.js'
 
 const BRUSHES_PER_ROW = 8
 AFRAME.registerComponent('brush-shelf', {
@@ -42,12 +43,15 @@ AFRAME.registerComponent('brush-shelf', {
     this.brushRow = document.createElement('a-entity')
     this.el.querySelector('.brushes').append(this.brushRow)
 
-    this.brushButtons = []
-    for (let idx = 0; idx < BrushList.length; ++idx) {
-      this.addBrush(BrushList[idx], true)
-    }
+    Util.whenLoaded(this.el, async () => {
+      this.brushButtons = []
+      for (let idx = 0; idx < BrushList.length; ++idx) {
+
+        await this.addBrush(BrushList[idx], true)
+      }
+    })
   },
-  addBrush(brush, defaultBrush = false) {
+  async addBrush(brush, defaultBrush = false) {
     if (this.nextTimeExpand)
     {
       if (this.el.querySelector('.brushes').children.length > 4)
@@ -74,6 +78,11 @@ AFRAME.registerComponent('brush-shelf', {
 
     this.brushButtons.push(button)
     this.brushRow.append(button)
+
+    if (defaultBrush)
+    {
+      await Util.whenLoaded(button)
+    }
 
     if ((idx % BRUSHES_PER_ROW) == BRUSHES_PER_ROW - 1)
     {

@@ -4,7 +4,7 @@ import {Undo} from './undo.js'
 import {Layer} from './layer.js'
 import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
-import { RayTracingRenderer } from 'ray-tracing-renderer'
+// import { RayTracingRenderer } from 'ray-tracing-renderer'
 
 AFRAME.registerSystem('camera-layers', {
   init() {

@@ -34,7 +34,7 @@ Click on any of the entries below to load them into VARTISTE.
 
 <div id="gallery-content"></div>
 
-Got a cool VARTISTE drawing? [Submit it here!](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=New%20Gallery%20Submission&issue%5Bdescription%5D=Please%20add%20a%20preview%20and%20a%20link) I'd love to see what people are making with VARTISTE!
+Got a cool VARTISTE drawing? [Submit it here!](https://discord.gg/DZnQBE2grJ) I'd love to see what people are making with VARTISTE!
 
 
 ## Tutorials
@@ -43,9 +43,13 @@ There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/p
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-You can also reference any of the feature demos posted on Twitter:
+## Features
 
-<a class="twitter-timeline" data-width="600" data-height="800" data-dnt="true" href="https://twitter.com/zach_geek/timelines/1254792745551572995?ref_src=twsrc%5Etfw">VARISTE Demos - Curated tweets by zach_geek</a>
+Some of the best documentation so far comes from the short demo videos I posted to [Twitter](https://twitter.com/zach_geek) during development. Some of the videos may display an outdated UI, and the locations for some features may have changed.
+
+Expand these feature categories to explore the many many VARTISTE features:
+
+<div id="features-content"></div>
 
 ## Controls
 For Reverb G2 / Valve Index / Oculus Touch type controllers:

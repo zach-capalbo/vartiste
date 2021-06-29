@@ -98,3 +98,50 @@ iframe
   height: 100%
   background-color: #999
   z-index: 99
+
+#features-content
+  h3
+    text-align: left
+  ul
+    padding-left: 20px
+  & > ul
+    list-style: none
+  .expand-feature
+    cursor: pointer
+
+    &:before
+      content: '+'
+      margin-right: 1em
+      transform: translateX(-1em)
+  ul.collapsed
+    display: none
+  .feature
+    display: flex
+    justify-content: center
+    grid-auto-flow: column
+    grid-template-columns: 300px 300px
+    flex-wrap: wrap
+    align-items: flex-start
+    left: 50%
+    margin-left: -48vw
+    margin-right: -48vw
+    max-width: 95vw
+    position: relative
+    right: 50%
+    width: 95vw
+    overflow-x: visible;
+    & h4
+      border-bottom: 1px solid #eee
+      margin: 0 30px
+    & > li
+      list-style: none
+      text-align: center
+  .tweet-list
+    display: flex
+    flex-wrap: wrap
+    padding 0px
+  .tweet-container
+    width: 300px
+    margin: 5px
+  .twitter-tweet
+    // transform: scale(0.7)
