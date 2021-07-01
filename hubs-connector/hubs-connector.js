@@ -50,6 +50,7 @@ class VartisteHubsConnector extends HubsBot {
       url: PENCIL_URL,
       position: '0 0 0',
       dynamic: false,
+      fitToBox: false,
     })
 
     await this.evaluate((pencilId) => {
@@ -76,6 +77,12 @@ class VartisteHubsConnector extends HubsBot {
         this.pencil.object3D.quaternion,
         this.pencil.object3D.scale
       )
+
+      this.pencil.object3D.scale.x *= 0.3
+      this.pencil.object3D.scale.y *= 0.3
+      this.pencil.object3D.scale.z *= 0.3
+      this.pencil.object3D.updateMatrix()
+      this.downscaled = true
     }, tool);
   }
   async fetchToolLocation() {
@@ -88,8 +95,18 @@ class VartisteHubsConnector extends HubsBot {
       // this.pencilMatrix.copy(rigObj.matrixWorld)
       this.pencilMatrix.getInverse(rigObj.matrixWorld)
 
+
+      this.pencil.object3D.scale.x /= 0.3
+      this.pencil.object3D.scale.y /= 0.3
+      this.pencil.object3D.scale.z /= 0.3
+
       this.pencil.object3D.updateMatrix()
       this.pencilMatrix.multiply(this.pencil.object3D.matrix)
+
+      this.pencil.object3D.scale.x *= 0.3
+      this.pencil.object3D.scale.y *= 0.3
+      this.pencil.object3D.scale.z *= 0.3
+      this.pencil.object3D.updateMatrix()
 
       return this.pencilMatrix.elements;
 

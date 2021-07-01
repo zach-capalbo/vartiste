@@ -51,12 +51,13 @@ module.exports = async function(source, map, meta) {
     {
         let requireText = match[1];
         if (requireText.endsWith('.js')) continue;
+        if (requireText.endsWith('.slm')) continue;
 
         let dep = path.resolve("src/" + requireText)
         console.log("Pre-loading", dep);
         promises.push(new Promise((r, e) => {
           this.loadModule(dep, (e,s,sm, m) => {
-            console.info(">> Loading Module Dep", dep, s)
+            // console.info(">> Loading Module Dep", dep, s)
             preloaded[dep] = s;
             r();
           });
