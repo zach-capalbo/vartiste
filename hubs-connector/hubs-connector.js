@@ -63,7 +63,7 @@ class VartisteHubsConnector extends HubsBot {
   async setToolsLocation({tool}) {
     if (!tool || !tool.matrix) return;
     await this.evaluate((tool) => {
-      // if (!NAF.utils.isMine(this.pencil)) await NAF.utils.takeOwnership(this.pencil)
+      if (!NAF.utils.isMine(this.pencil)) NAF.utils.takeOwnership(this.pencil)
 
       this.pencilMatrix = this.pencilMatrix || new THREE.Matrix4()
       this.pencilMatrix.fromArray(tool.matrix)

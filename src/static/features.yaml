@@ -80,6 +80,9 @@ sections:
           - url: https://twitter.com/zach_geek/status/1316334511572111361
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Major <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> UI overhaul launches today! Everything is more compact, friendlier, and easier to use. (At least I hope so! Feedback welcome!) <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/XRUI?src=hash&amp;ref_src=twsrc%5Etfw">#XRUI</a> <a href="https://t.co/5Ev0QWMnLY">pic.twitter.com/5Ev0QWMnLY</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1316334511572111361?ref_src=twsrc%5Etfw">October 14, 2020</a></blockquote>
+      - name: Grab and Move
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1410727839066820609
       - name: Disable UI
         tweets:
           - url: https://twitter.com/zach_geek/status/1298383015744241665
