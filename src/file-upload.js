@@ -311,6 +311,11 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
       {
         o.geometry = o.geometry.toNonIndexed()
       }
+
+      if (!o.geometry.attributes.normal)
+      {
+        o.geometry.computeVertexNormals()
+      }
     }
   })
 

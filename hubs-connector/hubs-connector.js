@@ -4,7 +4,8 @@ const BSON = require('bson')
 // const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
 const PENCIL_URL = "https://uploads-prod.reticulum.io/files/cb90a707-8d49-478d-8a84-32190148b179.glb"
 
-const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.gltf?v=63790793836"
+// const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.gltf?v=63790793836"
+const PAINTER_AVATAR = "https://xrtheater.live/api/v1/avatars/w4e2xe3/avatar.gltf?v=63792728168"
 
 class VartisteHubsConnector extends HubsBot {
   async setCanvasLocation({canvas}) {
