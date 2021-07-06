@@ -4,7 +4,8 @@ const BSON = require('bson')
 // const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
 const PENCIL_URL = "https://uploads-prod.reticulum.io/files/cb90a707-8d49-478d-8a84-32190148b179.glb"
 
-const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.gltf?v=63790793836"
+// const PAINTER_AVATAR = "https://hubs.mozilla.com/api/v1/avatars/g3TaUWh/avatar.gltf?v=63790793836"
+const PAINTER_AVATAR = "https://xrtheater.live/api/v1/avatars/w4e2xe3/avatar.gltf?v=63792728168"
 
 class VartisteHubsConnector extends HubsBot {
   async setCanvasLocation({canvas}) {
@@ -50,6 +51,7 @@ class VartisteHubsConnector extends HubsBot {
       url: PENCIL_URL,
       position: '0 0 0',
       dynamic: false,
+      fitToBox: false,
     })
 
     await this.evaluate((pencilId) => {
@@ -62,7 +64,7 @@ class VartisteHubsConnector extends HubsBot {
   async setToolsLocation({tool}) {
     if (!tool || !tool.matrix) return;
     await this.evaluate((tool) => {
-      // if (!NAF.utils.isMine(this.pencil)) await NAF.utils.takeOwnership(this.pencil)
+      if (!NAF.utils.isMine(this.pencil)) NAF.utils.takeOwnership(this.pencil)
 
       this.pencilMatrix = this.pencilMatrix || new THREE.Matrix4()
       this.pencilMatrix.fromArray(tool.matrix)
@@ -76,6 +78,12 @@ class VartisteHubsConnector extends HubsBot {
         this.pencil.object3D.quaternion,
         this.pencil.object3D.scale
       )
+
+      this.pencil.object3D.scale.x *= 0.3
+      this.pencil.object3D.scale.y *= 0.3
+      this.pencil.object3D.scale.z *= 0.3
+      this.pencil.object3D.updateMatrix()
+      this.downscaled = true
     }, tool);
   }
   async fetchToolLocation() {
@@ -88,8 +96,18 @@ class VartisteHubsConnector extends HubsBot {
       // this.pencilMatrix.copy(rigObj.matrixWorld)
       this.pencilMatrix.getInverse(rigObj.matrixWorld)
 
+
+      this.pencil.object3D.scale.x /= 0.3
+      this.pencil.object3D.scale.y /= 0.3
+      this.pencil.object3D.scale.z /= 0.3
+
       this.pencil.object3D.updateMatrix()
       this.pencilMatrix.multiply(this.pencil.object3D.matrix)
+
+      this.pencil.object3D.scale.x *= 0.3
+      this.pencil.object3D.scale.y *= 0.3
+      this.pencil.object3D.scale.z *= 0.3
+      this.pencil.object3D.updateMatrix()
 
       return this.pencilMatrix.elements;
 

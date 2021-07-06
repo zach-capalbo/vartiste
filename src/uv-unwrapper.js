@@ -30,11 +30,13 @@ Util.registerComponentSystem('uv-unwrapper', {
     let boundingBox = this.pool('boundingBox', THREE.Box3)
     let tmpBox = this.pool('tmpBox', THREE.Box3)
     Compositor.mesh.geometry.computeBoundingBox()
+    Compositor.mesh.updateMatrixWorld()
     boundingBox.copy(Compositor.mesh.geometry.boundingBox)
     boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
 
     for (let mesh of Compositor.nonCanvasMeshes)
     {
+      mesh.updateMatrixWorld()
       mesh.geometry.computeBoundingBox()
       tmpBox.copy(mesh.geometry.boundingBox)
       tmpBox.applyMatrix4(mesh.matrixWorld)
@@ -49,6 +51,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     cube.setAttribute('axis-handles', '')
     let size = this.pool('boxSize', THREE.Vector3)
     boundingBox.getSize(size)
+    size.multiplyScalar(1.1)
     cube.setAttribute('width', size.x)
     cube.setAttribute('height', size.y)
     cube.setAttribute('depth', size.z)
@@ -157,9 +160,9 @@ Util.registerComponentSystem('uv-unwrapper', {
     {
       switch (shape.nodeName)
       {
-        case 'A-SPHERE': this.unwrapASphere(geometry, shape, divisions[divisionIdx++]); break;
-        case 'A-CYLINDER': this.unwrapACylinder(geometry, shape, divisions[divisionIdx++]); break;
-        case 'A-BOX': this.unwrapABox(geometry, shape, divisions[divisionIdx++]); break;
+        case 'A-SPHERE': this.unwrapASphere(geometry, shape, divisions[divisionIdx++], mesh); break;
+        case 'A-CYLINDER': this.unwrapACylinder(geometry, shape, divisions[divisionIdx++], mesh); break;
+        case 'A-BOX': this.unwrapABox(geometry, shape, divisions[divisionIdx++], mesh); break;
       }
     }
 
@@ -187,29 +190,29 @@ Util.registerComponentSystem('uv-unwrapper', {
       this.drawUVs()
     }
   },
-  unwrapASphere(geometry, asphere, region)
+  unwrapASphere(geometry, asphere, region, mesh)
   {
     let boundingSphere = this.pool('boundingSphere', THREE.Sphere)
     boundingSphere.copy(asphere.getObject3D('mesh').geometry.boundingSphere)
     boundingSphere.applyMatrix4(asphere.getObject3D('mesh').matrixWorld)
     let invMat = this.pool('invMat', THREE.Matrix4)
-    invMat.copy(Compositor.mesh.matrixWorld).invert()
+    invMat.copy(mesh.matrixWorld).invert()
     boundingSphere.applyMatrix4(invMat)
     return this.applyProjection(this.sphereProject, geometry, boundingSphere, region)
 
   },
-  unwrapACylinder(geometry, acylinder, region)
+  unwrapACylinder(geometry, acylinder, region, mesh)
   {
     let boundingBox = this.pool('box', THREE.Box3)
     acylinder.getObject3D('mesh').geometry.computeBoundingBox()
     acylinder.getObject3D('mesh').updateMatrixWorld()
-    Compositor.mesh.updateMatrixWorld()
+    mesh.updateMatrixWorld()
 
     boundingBox.copy(acylinder.getObject3D('mesh').geometry.boundingBox)
     let invMat = this.pool('invMat', THREE.Matrix4)
     invMat.copy(acylinder.getObject3D('mesh').matrixWorld).invert()
 
-    invMat.multiply(Compositor.mesh.matrixWorld)
+    invMat.multiply(mesh.matrixWorld)
     boundingBox.vertexTransform = invMat
     boundingBox.containsPoint = (point) => {
       let p = this.pool('p', THREE.Vector3)
@@ -221,7 +224,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     boundingBox.sphere = acylinder.getObject3D('mesh').geometry.boundingSphere
     return this.applyProjection(this.cylinderProject, geometry, boundingBox, region)
   },
-  unwrapABox(geometry, abox, region)
+  unwrapABox(geometry, abox, region, mesh)
   {
     let boundingBox = this.pool('box', THREE.Box3)
     abox.getObject3D('mesh').geometry.computeBoundingBox()
@@ -233,7 +236,7 @@ Util.registerComponentSystem('uv-unwrapper', {
     invMat.copy(abox.getObject3D('mesh').matrixWorld).invert()
 
 
-    invMat.multiply(Compositor.mesh.matrixWorld)
+    invMat.multiply(mesh.matrixWorld)
     boundingBox.vertexTransform = invMat
     boundingBox.containsPoint = (point) => {
       let p = this.pool('p', THREE.Vector3)

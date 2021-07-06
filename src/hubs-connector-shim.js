@@ -98,6 +98,7 @@ AFRAME.registerSystem('hubs-connector', {
       el = el.object3D
     }
     Util.positionObject3DAtTarget(this.poser, el)
+    this.poser.updateMatrixWorld();
     data.matrix.copy(this.poser.matrixWorld)
     // Util.applyMatrix(el.matrixWorld, this.poser)
     // data.position.copy(this.poser.position)
