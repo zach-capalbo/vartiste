@@ -14,6 +14,8 @@ sections:
       - name: Layer Composition Modes
         tweets:
           - url: https://twitter.com/zach_geek/status/1410934271703928834
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s another fundamental <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature that never got its own demo video: Layer composition modes. Layers can be set to use any of the HTML Canvas compositing operations: <a href="https://t.co/GvFbLGVbPl">https://t.co/GvFbLGVbPl</a> <a href="https://t.co/VpjZyZoF57">pic.twitter.com/VpjZyZoF57</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1410934271703928834?ref_src=twsrc%5Etfw">July 2, 2021</a></blockquote>
       - name: Reference Model
         tweets:
           - url: https://twitter.com/zach_geek/status/1345824669799239680
@@ -86,6 +88,8 @@ sections:
       - name: Grab and Move
         tweets:
           - url: https://twitter.com/zach_geek/status/1410727839066820609
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a pretty basic <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature that hasn&#39;t gotten its own video demos before: You can grab pretty much anything, and move it around and resize it. Use the joystick / trackpad to resize. A or X locks and unlocks the rotation while moving. <a href="https://t.co/KfC7ntmP0d">pic.twitter.com/KfC7ntmP0d</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1410727839066820609?ref_src=twsrc%5Etfw">July 1, 2021</a></blockquote>
       - name: Disable UI
         tweets:
           - url: https://twitter.com/zach_geek/status/1298383015744241665
