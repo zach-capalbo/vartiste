@@ -1,4 +1,5 @@
-var {HubsBot} = require("C:/Users/Admin/scripts/vr/hubs-client-bot")
+// var {HubsBot} = require("C:/Users/Admin/scripts/vr/hubs-client-bot")
+var {HubsBot} = require("hubs-client-bot")
 const BSON = require('bson')
 
 // const PENCIL_URL = "https://uploads-prod.reticulum.io/files/f21745b0-cd0b-4055-bb19-4057f113e1f5.glb"
