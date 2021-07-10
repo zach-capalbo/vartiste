@@ -67,10 +67,11 @@ module.exports = async function(source, map, meta) {
     await Promise.all(promises)
 
     slm.template.VM.prototype.partial = function(...args) {
-      let dep = path.resolve("src/" + args[0])
-      console.info("Adding a new dep", dep)
+      let dep = path.resolve(path.dirname(this.filename), args[0]);
+      console.info("Adding a new dep", dep, args)
       // console.trace()
       addDep(dep)
+      // args[0] = args[0].replace("partials/", "");
       return oldPartial.apply(this, args)
     }
 

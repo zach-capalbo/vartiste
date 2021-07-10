@@ -10,9 +10,7 @@ a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false
 
   a-entity.clickable click-action="help" icon-button="#asset-help-circle-outline" tooltip="Help"
 a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false"
-  a-entity click-action="noStabilization" icon-button="#asset-hand-two-lines" tooltip="No Stabilization" toggle-button=""
-  a-entity click-action="mediumStabilization" icon-button="#asset-hand-one-line" tooltip="Medium Stabilization" toggle-button=""
-  a-entity click-action="maxStabilization" icon-button="#asset-hand-no-lines" tooltip="Maximum Stabilization" toggle-button=""
+  a-entity icon-button="#asset-hand-no-lines" tooltip="Controller Options" popup-button="popup: controller-setup-shelf; deferred: true"
   a-entity icon-button="#asset-dice-2" tooltip="Low Quality" click-action="lowQuality" toggle-button=""
   a-entity icon-button="#asset-dice-4" tooltip="Medium Quality" click-action="mediumQuality" toggle-button=""
   a-entity icon-button="#asset-dice-6" tooltip="Full Quality" click-action="fullQuality" toggle-button=""

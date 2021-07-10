@@ -13,6 +13,7 @@ export class Brush {
       opacity: {default: 1.0},
       scale: {default: 1.0},
       tooltip: {type: 'string'},
+      hidden: {default: false}
     }
   }
   constructor(baseid) {
@@ -139,6 +140,7 @@ export class ProceduralBrush extends Brush {
     minMovement=undefined,
     tooltip=undefined,
     user=false,
+    hidden=false,
     mode='source-over',
     ...options} = {})
   {
@@ -163,6 +165,7 @@ export class ProceduralBrush extends Brush {
     this.tooltip = tooltip
     this.user = user
     this.mode = mode
+    this.hidden = hidden
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width

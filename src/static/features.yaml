@@ -297,6 +297,9 @@ sections:
           - url: https://twitter.com/zach_geek/status/1397352982849769475
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update brings in <a href="https://twitter.com/hashtag/ffmpeg?src=hash&amp;ref_src=twsrc%5Etfw">#ffmpeg</a>.wasm. Now you can import animations, and video references. Paint over or reanimate videos. Or plop them onto 3D models. Better gif and video export, too.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRAnimation?src=hash&amp;ref_src=twsrc%5Etfw">#VRAnimation</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/22xdWWEYL3">pic.twitter.com/22xdWWEYL3</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1397352982849769475?ref_src=twsrc%5Etfw">May 26, 2021</a></blockquote>
+      - name: Brushwork VR
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1413868258860613636
       - name: SLIMERY.art import
         tweets:
           - url: https://twitter.com/zach_geek/status/1412373049685520389
@@ -342,6 +345,9 @@ sections:
           - url: https://twitter.com/zach_geek/status/1253507019132321795
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE can now save projects directly to the browser! Makes it much easier to use for <a href="https://twitter.com/hashtag/OculusQuest?src=hash&amp;ref_src=twsrc%5Etfw">#OculusQuest</a> and other standalone devices <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a> <a href="https://t.co/1AqzNQCP3h">pic.twitter.com/1AqzNQCP3h</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1253507019132321795?ref_src=twsrc%5Etfw">April 24, 2020</a></blockquote>
+      - name: PolyHaven
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1406664691028574212
       - name: Sketchfab
         tweets:
           - url: https://twitter.com/zach_geek/status/1382316167625383936

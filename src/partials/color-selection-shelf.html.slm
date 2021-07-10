@@ -1,6 +1,8 @@
 a-circle#color-picker.clickable material="" color-picker="" propogate-grab=""
 a-circle radius="0.2" position="1.25 0 0.005" show-current-color=""
 a-plane width="0.4" height="0.4" position="1.25 0.5 0.005" show-current-brush=""
+a-entity position="1.7 0.5 0.005" tooltip="Brush Scale" text="value: x1; wrapCount: 4; width: 0.4; anchor: center; align: center" show-current-brush-scale=""
+a-entity position="1.9 0.5 0.005" tooltip="Scale Brush" lever="valueRange: 1 -1" brush-scale-lever=""
 a-plane.clickable width="0.3" height="1.9" position="-1.35 0 0" brightness-picker="target:#color-picker" propogate-grab="" tooltip="Color Picker Brightness" tooltip-style="offset: 0 1 0"
 a-plane.clickable height="0.2" width="1.9" position="0 1.35 0" opacity-picker="" propogate-grab="" tooltip="-  Opacity  +"
 a-entity#project-palette position="-1.55 -1.25 0" palette="" icon-row="mergeButtons: true; mergeIcons: false"

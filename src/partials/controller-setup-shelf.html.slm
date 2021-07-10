@@ -1,0 +1,10 @@
+a-entity shelf="name: Controller Setup" scale="0.1 0.1 0.1"
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity system-click-action="system: pencil-tool; action: toggleGrabRotation" icon-button="#asset-rotate-orbit" tooltip="Toggle Grab Rotation Lock"
+      a-entity system-click-action="system: pencil-tool; action: toggleTriggerGrab" icon-button="#asset-hand-right" tooltip="Toggle Trigger As Grab" toggle-button=""
+      a-entity icon-button="#asset-ear-hearing" tooltip="Press Y for speech recognition" toggle-button="target: #left-hand; component: left-hand-controls; property: enableSpeech"
+    a-entity icon-row=""
+    a-entity icon-row=""
+      - for let [hand, name, x] of [["right-hand", "Right", 1], ["left-hand", "Left", 0]]
+        a-entity position="${x} 0 0" lever="target: #${hand}; component: smoothed-webxr-motion-controller; property: amount; valueRange: 0.95 0; initialValue: 0.8; handleLength: 0.6" tooltip="${name} Hand Smoothing"

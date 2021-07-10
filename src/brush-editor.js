@@ -48,9 +48,11 @@ AFRAME.registerSystem('brush-system', {
       new Brush.ImageBrush('diamond', 'diamond', {width: 20, height: 20, connected: true, hqBlending: true}),
       new Brush.FillBrush('fill1'),
       new Brush.FillBrush('fill2', {mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')}),
-      new Brush.NoiseBrush('noise1'),
+      new Brush.FxBrush('scatter', {baseBrush: new Brush.ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true}), type: 'scatter'}),
+      new Brush.NoiseBrush('noise1', {hidden: true}),
       new Brush.NoiseBrush('noise2', {round: true}),
-      new Brush.ImageBrush('cloth1', 'cloth', {widht: 48, height: 48, drawEdges: true, tooltip: "Hatches"}),
+      new Brush.ProceduralBrush('default', {connected: true, hqBlending: true, tooltip: "Default", mode: 'destination-out', tooltip: 'Eraser'}),
+
       new Brush.FxBrush('blur1', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'blur', previewSrc: require('./assets/blur-preview.png')}),
       new Brush.FxBrush('nudge1', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
       new Brush.FxBrush('nudeg2', {baseBrush: new Brush.ImageBrush('', 'lines2', {width: 40, height: 20, connected: true}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
@@ -67,6 +69,10 @@ AFRAME.registerSystem('brush-system', {
       new Brush.StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false, switchbackAngle: 90}),
       new Brush.StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
+
+
+    // Hidden Brushes
+    new Brush.ImageBrush('cloth1', 'cloth', {widht: 48, height: 48, drawEdges: true, tooltip: "Hatches", hidden: true}),
     ].filter(b => !b.invalid))
   },
   addUserBrushes(brushes) {
