@@ -20,7 +20,7 @@ AFRAME.registerComponent('edit-field', {
     // Tooltip to go on the edit button
     tooltip: {type: 'string'},
 
-    // What kind of keyboard to pop up. Either 'number' or 'string'
+    // What kind of keyboard to pop up. Either 'number', 'string', or 'dropdown'
     type: {type: 'string', default: 'number'},
 
     // [Optional] If set, will edit another elements component property
@@ -402,5 +402,91 @@ AFRAME.registerComponent('v-bind', {
     val = this.data.sourceProperty ? val[this.data.sourceProperty] : val
     let target = this.data.target || this.el
     target.setAttribute(this.data.component, this.data.property ? this.data.property : val, this.data.property ? val : undefined)
+  }
+})
+
+AFRAME.registerComponent('dropdown-button', {
+  schema: {
+    options: {type: 'array'},
+
+    optionIcon: {type: 'string', default: '#asset-record'},
+    tooltip: {default: 'Select'},
+
+    // [Optional] If set, will edit another elements component property
+    target: {type: 'selector'},
+    // If `target` is set, this is the component to edit
+    component: {type: 'string'},
+    // If `target` is set, this is the property to edit
+    property: {type: 'string'},
+
+    selectedValue: {type: 'string'}
+  },
+  events: {
+    popuplaunched: function(e) {
+      this.populatePopup()
+    }
+  },
+  init() {
+    this.el.setAttribute('popup-button', 'popup: dropdown-popup')
+
+
+    Util.whenLoaded(this.data.target ? [this.data.target, this.el] : this.el, () => {
+      if (this.data.target)
+      {
+        this.data.selectedValue = this.data.property ? this.data.target.getAttribute(this.data.component)[this.data.property]
+                                                     : this.data.target.getAttribute(this.data.component)
+
+      }
+
+      if (this.el.hasAttribute('text'))
+      {
+        this.el.setAttribute('text', 'value', this.data.selectedValue)
+      }
+    })
+  },
+  populatePopup() {
+    console.log("Populating popup", this.data.options)
+    let popup = this.el.components['popup-button'].popup
+    let content = popup.querySelector('*[shelf-content]')
+    content.getChildEntities().forEach(el => content.removeChild(el))
+    let maxLength = Math.max.apply(Math, this.data.options.map(o => o.length))
+    for (let option of this.data.options)
+    {
+      let row = document.createElement('a-entity')
+      content.append(row)
+      row.setAttribute('icon-row', '')
+      let button = document.createElement('a-entity')
+      row.append(button)
+      button.setAttribute('icon-button', this.data.optionIcon)
+
+      if (this.data.target)
+      {
+        button.setAttribute('radio-button', {value: option, target: this.data.target, component: this.data.component, property: this.data.property})
+      }
+      else
+      {
+        if (option === this.data.selectedValue)
+        {
+          button.setAttribute('toggle-button', 'toggled', 'true')
+        }
+      }
+
+      button.addEventListener('click', (e) => {
+        this.el.emit('dropdownoption', option)
+        this.el.setAttribute('dropdown-button', 'selectedValue', option)
+
+        if (this.el.hasAttribute('text')) {
+          this.el.setAttribute('text', 'value', option)
+        }
+      })
+
+      button.setAttribute('popup-action', 'close')
+
+      let label = document.createElement('a-entity')
+      row.append(label)
+      label.setAttribute('text', `wrapCount: ${maxLength + 3}; width: 1.5; anchor: left; align: left`)
+      label.setAttribute('text', 'value', option)
+      label.setAttribute('position', '0.4 0 0')
+    }
   }
 })

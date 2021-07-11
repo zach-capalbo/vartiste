@@ -221,8 +221,9 @@ AFRAME.registerComponent('brush-editor', {
     this.el.querySelector('.preview').setAttribute('material', 'src', img)
   },
   update(oldData) {
-    this.el.querySelectorAll('.image-brush').forEach(el => el.setAttribute('visible', this.data.type === 'ImageBrush' || this.data.type === 'FxBrush'))
-    this.el.querySelectorAll('.stretch-brush').forEach(el => el.setAttribute('visible', this.data.type === 'StretchBrush'))
+    this.el.querySelectorAll('.image-brush, .stretch-brush, .fx-brush').forEach(el => el.setAttribute('visible', false))
+    let brushClass = '.' + this.data.type.replace( /(?!^)([A-Z])/g, "-$1").toLowerCase()
+    this.el.querySelectorAll(brushClass).forEach(el => el.setAttribute('visible', true))
   },
   createBrush() {
     if (!this.image) {
