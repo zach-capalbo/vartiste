@@ -85,10 +85,12 @@ AFRAME.registerComponent('brush-shelf', {
       await Util.whenLoaded(button)
     }
 
+
     if ((BrushList.filter(b => !b.hidden).indexOf(brush) % BRUSHES_PER_ROW) == BRUSHES_PER_ROW - 1)
     {
       if (defaultBrush)
       {
+        await Util.delay(10)
         this.brushRow.setAttribute('icon-row', 'autoPosition: false; mergeButtons: true')
       }
       this.brushRow = document.createElement('a-entity')

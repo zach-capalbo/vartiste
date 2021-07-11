@@ -601,6 +601,9 @@ AFRAME.registerComponent('icon-row', {
   events: {
     object3dset: function(e) {
       if (this.data.mergeButtons) this.merge()
+    },
+    materialtextureloaded: function(e) {
+      if (this.data.mergeButtons) this.merge()
     }
   },
   init() {

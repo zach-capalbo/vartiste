@@ -529,6 +529,8 @@ class VARTISTEUtil {
       throw e
     }
   }
+
+  async delay(t) { return new Promise(r => setTimeout(r, t)); }
 }
 
 const Util = new VARTISTEUtil();
