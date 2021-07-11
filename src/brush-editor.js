@@ -50,7 +50,7 @@ AFRAME.registerSystem('brush-system', {
       new Brush.FillBrush('fill2', {mode: "source-atop", previewSrc: require('./assets/masked-bucket.png')}),
       new Brush.FxBrush('scatter', {baseBrush: new Brush.ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true}), type: 'scatter'}),
       new Brush.NoiseBrush('noise1', {hidden: true}),
-      new Brush.NoiseBrush('noise2', {round: true}),
+      new Brush.FxBrush('noise2', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'noise', previewSrc: require('./assets/dice-6.png')}),
       new Brush.ProceduralBrush('default', {connected: true, hqBlending: true, tooltip: "Default", mode: 'destination-out', tooltip: 'Eraser'}),
 
       new Brush.FxBrush('blur1', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'blur', previewSrc: require('./assets/blur-preview.png')}),

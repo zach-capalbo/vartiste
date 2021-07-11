@@ -66,7 +66,8 @@ const BRUSH_FX = [
   'blur',
   'nudge',
   'scatter',
-  'hq-blending'
+  'noise',
+  'hq-blending',
 ]
 
 const CAMERA_LAYERS = {
