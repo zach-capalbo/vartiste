@@ -37,8 +37,15 @@ void main() {
   opacity = opacity < 0.000001 ? -99.0 : opacity;
   opacity += 4.0 * (rand(brushUv) - 0.5) / 256.0
 
+  if (rand(vUv * 2.1394786121788317696) > brushColor[3] * u_opacity) opacity = 0.0;
+
+  if (opacity > 0.001) {
+    opacity = max(0.25, opacity);
+  }
+
   opacity = (brushUv.x > 1.0 || brushUv.y > 1.0) ? 0.0 : opacity;
   opacity = (brushUv.x < 0.0 || brushUv.y < 0.0) ? 0.0 : opacity;
+
 
   opacity = clamp(opacity, 0.0, 1.0);
 
