@@ -413,7 +413,7 @@ export class ImageBrush extends ProceduralBrush{
       image: {
         type: 'map',
         store: (img) => {
-          if (img.src.startsWith('blob:'))
+          if (img.src.startsWith('blob:') || img.src.startsWith('http'))
           {
             return Util.cloneCanvas(img).toDataURL()
           }
@@ -668,10 +668,31 @@ export class NoiseBrush extends ProceduralBrush {
 }
 
 export class FxBrush extends Brush {
-  constructor(baseid, {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
+  static schema() {
+    return Object.assign({
+      baseBrush: {
+        type: 'brush',
+        store: (brush) => {
+          return brush.fullStore()
+        },
+        restore: (src) => {
+          return Brush.fullRestore(src)
+        }
+      },
+      type: {default: 'blur'}
+    }, super.schema())
+  }
+  constructor(baseid, opts) {
     super(baseid)
+    if (typeof opts === 'undefined')
+    {
+      opts = baseid
+      baseid = opts.baseid
+    }
+    let {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined} = opts;
     this.baseBrush = baseBrush
     this.dragRotate = dragRotate
+    this.type = type
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
 
     this.tooltip = tooltip || (baseBrush.tooltip ? `${baseBrush.tooltip} (${type})` : Util.titleCase(type))

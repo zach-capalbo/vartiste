@@ -103,6 +103,8 @@ AFRAME.registerComponent('brush-editor', {
     textured: {default: false, passthrough: true},
     mode: {default: 'source-over', passthrough: true},
 
+    fx: {default: "scatter"},
+
     // ImageBrush
     connected: {default: true, passthrough: true},
     autoRotate: {default: false, passthrough: true},
@@ -153,10 +155,23 @@ AFRAME.registerComponent('brush-editor', {
     })
 
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
+      if (!this.el.getAttribute('visible')) return;
       let brush = e.detail.brush
       if (brush.previewSrc instanceof Image)
       {
-        this.setImage(brush.previewSrc)
+        if (brush.previewSrc.src.startsWith('blob:') || brush.previewSrc.src.startsWith('http'))
+        {
+          let img = new Image();
+          img.src = brush.previewSrc.src
+          img.src = Util.cloneCanvas(img).toDataURL()
+          img.width = brush.previewSrc.width
+          img.height = brush.previewSrc.height
+          this.setImage(img)
+        }
+        else
+        {
+          this.setImage(brush.previewSrc)
+        }
       }
       else
       {
@@ -239,12 +254,17 @@ AFRAME.registerComponent('brush-editor', {
       opts.width = 24 * this.image.width / this.image.height
     }
 
+    let brush;
     if (this.data.type === 'FxBrush')
     {
       opts.baseBrush = new Brush.ImageBrush(shortid.generate(), this.image, opts)
+      opts.type = this.data.fx
+      brush = new Brush[this.data.type](shortid.generate(), opts)
     }
-
-    let brush = new Brush[this.data.type](shortid.generate(), this.image, opts)
+    else
+    {
+      brush = new Brush[this.data.type](shortid.generate(), this.image, opts)
+    }
     brush.user = true
     return brush
   },
