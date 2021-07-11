@@ -35,11 +35,11 @@ AFRAME.registerComponent('settings-shelf', {
     //   this.el.querySelector('.message').setAttribute('text', {value: `${e.detail}`})
     // })
 
-    this.el.sceneEl.addEventListener('stabilizationchanged', e => {
-      this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 0.4)
-      this.el.querySelector('[click-action="mediumStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.4 && e.detail.stabilization < 0.9)
-      this.el.querySelector('[click-action="maxStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.9)
-    })
+    // this.el.sceneEl.addEventListener('stabilizationchanged', e => {
+    //   this.el.querySelector('[click-action="noStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization < 0.4)
+    //   this.el.querySelector('[click-action="mediumStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.4 && e.detail.stabilization < 0.9)
+    //   this.el.querySelector('[click-action="maxStabilization"]').components['toggle-button'].setToggle(e.detail.stabilization >= 0.9)
+    // })
 
     this.el.sceneEl.addEventListener('qualitychanged', e => {
       this.el.querySelector('[click-action="lowQuality"]').components['toggle-button'].setToggle(e.detail.quality <= 0.25)

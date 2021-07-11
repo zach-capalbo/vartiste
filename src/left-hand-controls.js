@@ -2,6 +2,9 @@ import {ButtonMaps, JoystickDirections} from './joystick-directions'
 import {Sfx} from './sfx.js'
 
 AFRAME.registerComponent('left-hand-controls', {
+  schema: {
+    enableSpeech: {default: false}
+  },
   init() {
     JoystickDirections.install(this)
     this.el.setAttribute('smooth-controller', "")
@@ -45,7 +48,7 @@ AFRAME.registerComponent('left-hand-controls', {
     this.el.addEventListener('ybuttondown', () => {
       if (!this.el.is("grabbing"))
       {
-        if (this.el.sceneEl.systems['speech'].recognition)
+        if (this.data.enableSpeech && this.el.sceneEl.systems['speech'].recognition)
         {
           this.el.sceneEl.systems['speech'].listen()
         }

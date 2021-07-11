@@ -13,6 +13,7 @@ export class Brush {
       opacity: {default: 1.0},
       scale: {default: 1.0},
       tooltip: {type: 'string'},
+      hidden: {default: false}
     }
   }
   constructor(baseid) {
@@ -139,6 +140,7 @@ export class ProceduralBrush extends Brush {
     minMovement=undefined,
     tooltip=undefined,
     user=false,
+    hidden=false,
     mode='source-over',
     ...options} = {})
   {
@@ -163,6 +165,7 @@ export class ProceduralBrush extends Brush {
     this.tooltip = tooltip
     this.user = user
     this.mode = mode
+    this.hidden = hidden
 
     let overlayCanvas = document.createElement("canvas")
     overlayCanvas.width = width
@@ -410,7 +413,7 @@ export class ImageBrush extends ProceduralBrush{
       image: {
         type: 'map',
         store: (img) => {
-          if (img.src.startsWith('blob:'))
+          if (img.src.startsWith('blob:') || img.src.startsWith('http'))
           {
             return Util.cloneCanvas(img).toDataURL()
           }
@@ -665,10 +668,31 @@ export class NoiseBrush extends ProceduralBrush {
 }
 
 export class FxBrush extends Brush {
-  constructor(baseid, {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined}) {
+  static schema() {
+    return Object.assign({
+      baseBrush: {
+        type: 'brush',
+        store: (brush) => {
+          return brush.fullStore()
+        },
+        restore: (src) => {
+          return Brush.fullRestore(src)
+        }
+      },
+      type: {default: 'blur'}
+    }, super.schema())
+  }
+  constructor(baseid, opts) {
     super(baseid)
+    if (typeof opts === 'undefined')
+    {
+      opts = baseid
+      baseid = opts.baseid
+    }
+    let {baseBrush, type, previewSrc, dragRotate = false, tooltip = undefined} = opts;
     this.baseBrush = baseBrush
     this.dragRotate = dragRotate
+    this.type = type
     this.fx = new CanvasShaderProcessor({source: require(`./shaders/brush/${type}.glsl`)})
 
     this.tooltip = tooltip || (baseBrush.tooltip ? `${baseBrush.tooltip} (${type})` : Util.titleCase(type))

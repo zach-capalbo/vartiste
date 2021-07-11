@@ -950,7 +950,7 @@ AFRAME.registerComponent('slot-machine', {
     this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
   },
   tick(t, dt) {
-    if (!this.el.grabbed && this.el.components.lever.value > 0) {
+    if (!this.el.components.lever.grip.is("grabbed") && this.el.components.lever.value > 0) {
       this.el.components.lever.value = THREE.Math.clamp((this.el.components.lever.value || 0.0) - this.data.resetSpeed * dt / 1000, 0, 1)
       this.el.components.lever.setValue(this.el.components.lever.value)
     }

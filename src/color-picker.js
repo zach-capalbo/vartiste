@@ -220,6 +220,34 @@ AFRAME.registerComponent("show-current-brush", {
   },
 })
 
+// Provides a little display for the current brush scale in the [`paint-system`](#paint-system)
+AFRAME.registerComponent("show-current-brush-scale", {
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.el.sceneEl.addEventListener('brushscalechanged', e => {
+      this.el.setAttribute('text', 'value', `x${Math.round(Math.log(e.detail.brushScale) * 4)}`)
+    })
+  },
+})
+
+AFRAME.registerComponent("brush-scale-lever", {
+  dependencies: ['lever'],
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    this.tick = AFRAME.utils.throttleTick(this.tick, 30, this)
+  },
+  tick(t,dt) {
+    if (Math.abs(this.el.components['lever'].value) > 0)
+    {
+      this.system.scaleBrush(this.el.components['lever'].value * dt)
+      if (!this.el.components['lever'].grip.is("grabbed")) {
+        this.el.components.lever.value = 0;
+        this.el.components.lever.setValue(0);
+      }
+    }
+  }
+})
+
 // Provides a preset-color picker for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("palette", {
   schema: {
