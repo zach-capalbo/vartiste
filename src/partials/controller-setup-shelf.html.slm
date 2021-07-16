@@ -1,4 +1,4 @@
-a-entity shelf="name: Controller Setup" scale="0.1 0.1 0.1"
+a-entity shelf="name: Controller Setup; closeable: true" scale="0.1 0.1 0.1"
   a-entity shelf-content=""
     a-entity icon-row=""
       a-entity system-click-action="system: pencil-tool; action: toggleGrabRotation" icon-button="#asset-rotate-orbit" tooltip="Toggle Grab Rotation Lock"

@@ -135,8 +135,18 @@ sections:
           - url: https://twitter.com/zach_geek/status/1262196742587547653
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">VARTISTE quality of life feature: Pop out individual layers and pin things to your hands. Great for making a color mixing palette / scratch area. <a href="https://t.co/vf8K0NJlJd">pic.twitter.com/vf8K0NJlJd</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1262196742587547653?ref_src=twsrc%5Etfw">May 18, 2020</a></blockquote>
+      - name: Controller Smoothing
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1414361865556213760
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, controller settings now have their own dedicated shelf, and you can use levers to set motion smoothing on each controller exactly to your liking. Also, a brush size indicator and lever, in case you can&#39;t or don&#39;t want to use the joystick. <a href="https://t.co/BSICvlN8lS">pic.twitter.com/BSICvlN8lS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414361865556213760?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
   - name: Brushes
     features:
+      - name: FX Brush Updates
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1414333143037927431
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Moderately size <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update today. A bunch of helpful things, mostly relating to brushes.<br>- new scatter &amp; eraser brushes<br>- brush editor can create fx brushes<br>- tweaks for noise and blur brushes <a href="https://t.co/Z5fKS22CmR">pic.twitter.com/Z5fKS22CmR</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414333143037927431?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
       - name: Brush Packs
         tweets:
           - url: https://twitter.com/zach_geek/status/1400572970075103244

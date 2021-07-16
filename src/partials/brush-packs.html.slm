@@ -1,6 +1,6 @@
 a-entity shelf="name: Brush Packs; closeable: true"
   a-entity shelf-content=""
-    - for p of [{name: "Misc", file: 'misc.vartiste-brushez'}, {name: "Fire", file: 'fire.vartiste-brushez'}]
+    - for p of [{name: "Misc", file: 'misc.vartiste-brushez'}, {name: "Fire", file: 'fire.vartiste-brushez'}, {name: "Cloudy", file: 'cloudy.vartiste-brushez'}]
       a-entity icon-row=""
         a-entity icon-button="#asset-brush" tooltip="Load ${p.name} Brush Pack" popup-action="close" onclick="this.sceneEl.systems['brush-system'].loadPack('${p.file}')"
         a-entity position="0.4 0 0" text="value: ${p.name} Brush Pack; anchor: left; width: 2.5; wrapCount: 20"
