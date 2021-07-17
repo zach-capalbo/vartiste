@@ -128,7 +128,7 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (Compositor.el.getAttribute('material').shader === 'flat')
     {
-      Compositor.el.setAttribute('material', 'shader', 'matcap')
+      Compositor.el.setAttribute('material', 'shader', 'standard')
     }
 
     for (let shape of shapes)
