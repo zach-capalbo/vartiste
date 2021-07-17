@@ -142,6 +142,9 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, controller settings now have their own dedicated shelf, and you can use levers to set motion smoothing on each controller exactly to your liking. Also, a brush size indicator and lever, in case you can&#39;t or don&#39;t want to use the joystick. <a href="https://t.co/BSICvlN8lS">pic.twitter.com/BSICvlN8lS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414361865556213760?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
   - name: Brushes
     features:
+      - name: Cloud Brush Pack
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1416154990121529344
       - name: FX Brush Updates
         tweets:
           - url: https://twitter.com/zach_geek/status/1414333143037927431

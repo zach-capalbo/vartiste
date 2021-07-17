@@ -90,6 +90,7 @@ require('./xbox-controller.js')
 require('./art-physics.js')
 require('./busy.js')
 require('./avatar.js')
+require('./primitive-constructs.js')
 // require('./text')
 
 require('./hubs-connector-shim.js')

@@ -136,6 +136,26 @@ class VARTISTEUtil {
     Util.applyMatrix(destMat, obj)
   }
 
+  keepingWorldPosition(object3D, fn) {
+    let positioner = this.pool('positioner', THREE.Object3D)
+    object3D.el.sceneEl.object3D.add(positioner);
+    let wm = new THREE.Matrix4;
+    wm.copy(object3D.matrixWorld);
+    let res = fn();
+    if (res && typeof res.then === 'function')
+    {
+      return res.then(() => {
+        Util.applyMatrix(wm, positioner);
+        Util.positionObject3DAtTarget(object3D, positioner)
+      })
+    }
+
+    Util.applyMatrix(wm, positioner);
+    Util.positionObject3DAtTarget(object3D, positioner)
+
+    return res;
+  }
+
   autoScaleViewer(rootObj, viewer)
   {
     let boundingBox = this.pool('boundingBox', THREE.Box3)

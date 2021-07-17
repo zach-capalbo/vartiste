@@ -52,3 +52,5 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
   a-entity#material-packs.grab-root position="4 0 0" visible="false"
     a-entity.clickable#droptext propogate-grab="" text="width: 3; value: Drag and drop images to create new material packs" geometry="primitive: plane; width: 3; height: 0.5" material="src: #asset-shelf" position="0 0.52 0" frame="closable: true; pinnable: false" scale="0.3 0.3 0.3"
     a-entity.pack-container position="-0.2 0.2 0" scale="0.3 0.3 0.3"
+  a-entity#primitive-shapes.grab-root position="4 0 0" visible="true"
+    a-entity primitive-construct-placeholder=""
