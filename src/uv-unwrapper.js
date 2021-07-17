@@ -549,6 +549,13 @@ AFRAME.registerComponent('axis-handles', {
   init() {
     this.handles = {}
   },
+  remove() {
+    for (let handle of Object.values(this.handles))
+    {
+      handle.parentEl.remove(handle)
+    }
+    this.handles = {}
+  },
   update(oldData) {
     console.log('updating handles', JSON.stringify(this.data))
     for (let axis of ['x', 'y', 'z'])
@@ -624,9 +631,9 @@ AFRAME.registerComponent('axis-handle-control', {
     this.offset = 0.08
     switch (this.data.axis)
     {
-      case 'x': this.el.setAttribute('position', `${box.max.x + this.offset} 0 0`); break;
-      case 'y': this.el.setAttribute('position', `0 ${box.max.y + this.offset} 0`); break;
-      case 'z': this.el.setAttribute('position', `0 0 ${box.max.z + this.offset}`); break;
+      case 'x': this.el.setAttribute('position', `${box.max.x * this.target.scale.x + this.offset} 0 0`); break;
+      case 'y': this.el.setAttribute('position', `0 ${box.max.y * this.target.scale.y + this.offset} 0`); break;
+      case 'z': this.el.setAttribute('position', `0 0 ${box.max.z * this.target.scale.z  + this.offset}`); break;
     }
   }
 })
