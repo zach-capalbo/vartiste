@@ -1,16 +1,34 @@
 import {Util} from './util.js'
 import {Undo} from './undo.js'
+import {CAMERA_LAYERS} from './layer-modes.js'
 
 Util.registerComponentSystem('timer-system', {
   schema: {
     switchReferences: {default: false},
     shuffleReferences: {default: false},
     freshLayer: {default: false},
+    hideSpectatorReferences: {default: false},
   },
   update(oldData) {
     if (this.data.switchReferences !== oldData.switchReferences && !this.data.switchReferences)
     {
       document.querySelectorAll('.reference-image').forEach(el => el.setAttribute('visible', true))
+    }
+
+    if (this.data.hideSpectatorReferences !== oldData.hideSpectatorReferences)
+    {
+      document.querySelectorAll('.reference-image').forEach(el => {
+        if (this.data.hideSpectatorReferences)
+        {
+          el.getObject3D('mesh').layers.disable(CAMERA_LAYERS.DEFAULT)
+          el.getObject3D('mesh').layers.enable(CAMERA_LAYERS.LEFT_EYE)
+          el.getObject3D('mesh').layers.enable(CAMERA_LAYERS.RIGHT_EYE)
+        }
+        else
+        {
+          el.getObject3D('mesh').layers.enable(CAMERA_LAYERS.DEFAULT)
+        }
+      })
     }
   },
   playTimer() {
