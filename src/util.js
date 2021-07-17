@@ -327,6 +327,44 @@ class VARTISTEUtil {
     return val
   }
 
+  applyUVBox(box, geometry) {
+    let attr = geometry.attributes.uv;
+
+    if (attr.data)
+    {
+      for (let i = 0; i < attr.count; ++i)
+      {
+        attr.setXY(i,
+          THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, box.min.x, box.max.x),
+          THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, box.min.y, box.max.y))
+      }
+    }
+    else
+    {
+      let indices = {has: function() { return true; }}
+      if (geometry.index)
+      {
+        indices = new Set(geometry.index.array)
+      }
+
+      for (let i in geometry.attributes.uv.array) {
+        if (!indices.has(Math.floor(i / 2))) continue;
+
+        if (i %2 == 0) {
+          attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, box.min.x, box.max.x)
+        }
+        else
+        {
+          attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, box.min.y, box.max.y)
+        }
+      }
+    }
+
+    attr.needsUpdate = true
+
+    return geometry;
+  }
+
   // Resolves all the manipulator grap redirections on `targetEl` and returns
   // the final element that should actually be grabbed when `targetEl` is
   // grabbed.

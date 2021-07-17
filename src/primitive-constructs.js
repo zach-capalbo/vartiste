@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Layer} from './layer.js'
 
 const unwrappedUvs = [0.3333333432674408, 1, 0.3333333432674408, 0.5, 0, 1, 0, 0.5, 0, 0.5, 0, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0, 0.6666666865348816, 0.5, 0.6666666865348816, 1, 1, 0.5, 1, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 1, 0.5, 1, 0, 0.3333333432674408, 1, 0.3333333432674408, 0.5, 0.6666666865348816, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0];
 
@@ -20,6 +21,15 @@ AFRAME.registerGeometry('unwrapped-box', {
   }
 });
 
+AFRAME.registerComponent('floating-trash-can', {
+  init() {
+    this.el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
+  },
+  remove() {
+    this.el.removeAttribute('frame')
+  }
+})
+
 Util.registerComponentSystem('primitive-constructs', {
   grabConstruct(el) {
     if (el === this.lastGrabbed) return;
@@ -27,50 +37,103 @@ Util.registerComponentSystem('primitive-constructs', {
     if (this.lastGrabbed)
     {
       this.lastGrabbed.removeAttribute('axis-handles')
+      this.lastGrabbed.removeAttribute('floating-trash-can')
     }
     this.lastGrabbed = el
 
     if (!el) return;
 
     el.setAttribute('axis-handles', '')
+    el.setAttribute('floating-trash-can', '')
+  },
+  makeReference() {
+    this.grabConstruct(null);
+    let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
+
+    let el = document.createElement('a-entity')
+    el.classList.add('reference-glb')
+    el.classList.add('clickable')
+    document.querySelector('#reference-spawn').append(el)
+
+    let targetObj = new THREE.Object3D;
+    el.setObject3D('mesh', targetObj);
+
+    Util.whenLoaded(el, () => {
+      el.object3D.updateMatrixWorld()
+      for (let shape of shapes)
+      {
+        let mesh = shape.getObject3D('mesh').clone();
+        mesh.el = el
+        targetObj.add(mesh)
+        Util.positionObject3DAtTarget(mesh, shape.getObject3D('mesh'))
+        shape.parentEl.removeChild(shape)
+      }
+
+      console.log("Made reference", el)
+    })
   },
   makeDrawable() {
     this.grabConstruct(null);
     let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
 
-    console.log(shapes)
+    console.log("Making shapes drawable", shapes)
 
-    let preserveExistingMesh = Compositor.nonCanvasMeshes.length > 0
+    let preserveExistingMesh = false && Compositor.nonCanvasMeshes.length > 0
 
     let boxes = Util.divideCanvasRegions(preserveExistingMesh ? shapes.length + 1 : shapes.length, {margin: 0.01})
 
-    let targetObj = document.getElementById('composition-view').getObject3D('mesh')
+    let targetObj = new THREE.Object3D;
+    targetObj.el = this.el;
+    Compositor.mesh.parent.add(targetObj)
 
-    if (!targetObj) {
-      targetObj = new THREE.Object3D;
-      document.getElementById('composition-view').setObject3D('mesh', targetObj)
-    }
+    let {width, height} = Compositor.component
+    let layer = new Layer(width, height)
+    let layerCtx = layer.canvas.getContext('2d')
 
     for (let i = 0; i < shapes.length; i++)
     {
       let el = shapes[i];
       let currentBox = boxes[preserveExistingMesh ? i + 1 : i]
-      let mesh = el.getObject3D('mesh')
+      let mesh = el.getObject3D('mesh').clone()
+      mesh.el = el;
+      el.object3D.add(mesh);
       mesh.geometry = mesh.geometry.clone();
-      let attr = mesh.geometry.attributes.uv
-
-      for (let i = 0; i < attr.count; ++i)
-      {
-        attr.setXY(i,
-          THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
-          THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
-      }
-
-      attr.needsUpdate = true
-
+      Util.applyUVBox(currentBox, mesh.geometry);
       Util.keepingWorldPosition(mesh, () => {
-        this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: false})
+        mesh.parent.remove(mesh)
+        targetObj.add(mesh)
       })
+
+      layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
+      layerCtx.fillRect(Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
+                        Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
+                        Math.ceil(currentBox.max.x * width) + 1,
+                        Math.ceil(currentBox.max.y * height) + 1)
+    }
+
+    if (preserveExistingMesh)
+    {
+      for (let mesh of Compositor.nonCanvasMeshes)
+      {
+        mesh.geometry = mesh.geometry.clone();
+        Util.applyUVBox(boxes[0], mesh.geometry)
+      }
+    }
+
+    Util.keepingWorldPosition(targetObj, () => {
+      this.el.sceneEl.systems['settings-system'].addModelView({scene: targetObj}, {replace: false})
+    })
+
+    Compositor.component.addLayer(0, {layer})
+
+    if (Compositor.el.getAttribute('material').shader === 'flat')
+    {
+      Compositor.el.setAttribute('material', 'shader', 'matcap')
+    }
+
+    for (let shape of shapes)
+    {
+      shape.parentEl.removeChild(shape)
     }
   }
 })
@@ -91,7 +154,13 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
         }
         this.system.grabConstruct(this.el)
       }
-    }
+    },
+    'bbuttonup': function(e) {
+      if (this.el.is("grabbed"))
+      {
+        this.detachCopy()
+      }
+    },
   },
   init() {
     this.system = this.el.sceneEl.systems['primitive-constructs'];

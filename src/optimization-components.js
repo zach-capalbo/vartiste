@@ -114,7 +114,7 @@ AFRAME.registerComponent('raycast-bvh', {
   },
   compute() {
     this.el.object3D.traverse(o => {
-      if (o.geometry && !o.geometry.boundsTree) {
+      if (o.geometry && !o.geometry.boundsTree && o.geometry.attributes.position) {
         o.geometry.computeBoundsTree();
       }
     })

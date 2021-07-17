@@ -52,6 +52,7 @@ AFRAME.registerComponent("frame", {
     // If set, uses the selector element as the source of the geometry for the frame,
     // rather than the current element
     geometryTarget: {type: 'selector'},
+    useBounds: {default: false},
 
     // If true, sets the element to be grabbable by [`manipulator`](#manipulator)
     grabbable: {default: true},
@@ -70,9 +71,8 @@ AFRAME.registerComponent("frame", {
   },
   init() {
     let target = (this.data.geometryTarget || this.el)
-    let {width, height} = target.getAttribute('geometry')
-    this.width = width
-    this.height = height
+    this.updateBounds();
+    let {width, height} = this;
 
     target.addEventListener('componentinitialized', (e) => {
       if (e.detail.name === 'geometry')
@@ -91,12 +91,39 @@ AFRAME.registerComponent("frame", {
   },
   remove() {
     if (this.lineObject) {
-      this.lineObject.parent.remove(this.lineObject)
+      if (this.lineObject.parent)
+      {
+        this.lineObject.parent.remove(this.lineObject)
+      }
     }
+    for (let object of this.objects)
+    {
+      if (object.parentEl)
+      {
+        object.parentEl.remove(object)
+      }
+    }
+    this.objects = []
+  },
+  updateBounds() {
+    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
+
+    if (this.data.useBounds)
+    {
+      let target = (this.data.geometryTarget || this.el)
+      target.getObject3D('mesh').geometry.computeBoundingBox()
+      let box = target.getObject3D('mesh').geometry.boundingBox
+      width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
+      height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
+      console.log("Bounds", box, width, height)
+    }
+    this.width = width;
+    this.height = height;
   },
   update(oldData) {
     if (!this.objects) return
-    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
+    this.updateBounds();
+    let {width, height} = this;
 
     if (this.data.closable && !oldData.closable)
     {

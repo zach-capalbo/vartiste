@@ -456,38 +456,13 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
           if (attr.data)
           {
             if (adjustedArrays.has(attr.data)) return;
-
-            for (let i = 0; i < attr.count; ++i)
-            {
-              attr.setXY(i,
-                THREE.Math.mapLinear(attr.getX(i) % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x),
-                THREE.Math.mapLinear(attr.getY(i) % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y))
-            }
-
+            Util.applyUVBox(currentBox, geometry);
             adjustedArrays.add(attr.data)
           }
           else
           {
             if (adjustedArrays.has(geometry.attributes.uv.array)) return;
-
-            let indices = {has: function() { return true; }}
-            if (geometry.index)
-            {
-              indices = new Set(geometry.index.array)
-            }
-
-            for (let i in geometry.attributes.uv.array) {
-              if (!indices.has(Math.floor(i / 2))) continue;
-
-              if (i %2 == 0) {
-                attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.x, currentBox.max.x)
-              }
-              else
-              {
-                attr.array[i] = THREE.Math.mapLinear(attr.array[i] % 1.00000000000001, 0, 1, currentBox.min.y, currentBox.max.y)
-              }
-            }
-
+            Util.applyUVBox(currentBox, geometry);
             if (!geometry.index) adjustedArrays.add(geometry.attributes.uv.array)
           }
           //o.geometry = geometry
