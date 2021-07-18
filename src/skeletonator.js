@@ -26,21 +26,24 @@ AFRAME.registerComponent('skeletonator', {
     this.system.skeletonatorEl = this.el
 
     this.mesh = this.el.getObject3D('mesh').getObjectByProperty("type", "SkinnedMesh")
+    this.allBones = []
 
     let rootBone
     if (this.mesh)
     {
       rootBone = this.mesh.skeleton.bones[0]
+      this.allBones = this.allBones.concat(this.mesh.skeleton.bones)
     }
     else
     {
       rootBone = new THREE.Bone();
       rootBone.name = "root";
       Compositor.meshRoot.add(rootBone)
-      Util.positionObject3DAtTarget(rootBone, Compositor.meshRoot)
+      this.allBones.push(rootBone)
+      // Util.positionObject3DAtTarget(rootBone, Compositor.meshRoot)
       // Util.applyMatrix(Compositor.meshRoot.matrixWorld, rootBone)
-      Compositor.meshRoot.matrix.identity()
-      Util.applyMatrix(Compositor.meshRoot.matrix, Compositor.meshRoot)
+      // Compositor.meshRoot.matrix.identity()
+      // Util.applyMatrix(Compositor.meshRoot.matrix, Compositor.meshRoot)
     }
     this.rootBone = rootBone
 
@@ -97,14 +100,16 @@ AFRAME.registerComponent('skeletonator', {
       console.log("mat", mat.elements)
 
       let meshRootBone = new THREE.Bone
+      this.allBones.push(meshRootBone)
       meshRootBone.name = skinnedMesh.name + "_root"
       rootBone.add(meshRootBone)
       Util.positionObject3DAtTarget(meshRootBone, mesh)
 
       skinnedMesh.bind(new THREE.Skeleton([rootBone, meshRootBone], [new THREE.Matrix4, new THREE.Matrix4]), new THREE.Matrix4)
 
-      mesh.parent.remove(mesh)
       meshRootBone.add(skinnedMesh)
+      Util.positionObject3DAtTarget(skinnedMesh, mesh)
+      mesh.parent.remove(mesh)
 
       this.meshes.push(skinnedMesh)
       if (!this.mesh) this.mesh = skinnedMesh
@@ -325,6 +330,7 @@ AFRAME.registerComponent('skeletonator', {
   },
   deleteBone(bone) {
     bone.parent.remove(bone)
+    this.allBones.splice(this.allBones.indexOf(bone), 1)
     this.boneToHandle[bone.name].parentEl.removeChild(this.boneToHandle[bone.name])
     delete this.boneToHandle[bone.name]
     delete this.boneTracks[bone.name]
@@ -562,6 +568,7 @@ AFRAME.registerComponent('skeletonator', {
           this.el.emit('keyframeadded', {bone, frame: frameIdx})
         }
       }
+      bone.updateMatrix()
       this.boneTracks[bone.name][frameIdx].copy(bone.matrix)
     }
   },
@@ -575,7 +582,7 @@ AFRAME.registerComponent('skeletonator', {
   },
   onFrameChange() {
     let frameIdx = this.currentFrameIdx()
-    for (let bone of this.mesh.skeleton.bones)
+    for (let bone of this.allBones)
     {
       if (this.boneToHandle[bone.name].is("grabbed")) continue
 
@@ -1089,6 +1096,7 @@ AFRAME.registerComponent("new-bone-wand", {
     destMat.premultiply(invMat)
 
     let bone = new THREE.Bone()
+    this.allBones.push(bone)
     bone.name = shortid.generate()
     Util.applyMatrix(destMat, bone)
 
