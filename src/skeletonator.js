@@ -795,6 +795,23 @@ AFRAME.registerComponent('skeletonator', {
   }
 })
 
+Util.registerComponentSystem('bone-handle-system', {
+  schema: {
+    radius: {default: 0.02}
+  },
+  update(oldData) {
+    if (typeof Skeletonator === 'undefined') return;
+    
+    if (this.data.radius !== oldData.radius)
+    {
+      for (let handle of Object.values(Skeletonator.boneToHandle))
+      {
+        handle.setAttribute('geometry', 'radius', this.data.radius)
+      }
+    }
+  }
+})
+
 AFRAME.registerComponent("bone-handle", {
   events: {
     stateadded: function(e) {
@@ -851,7 +868,8 @@ AFRAME.registerComponent("bone-handle", {
   },
   init() {
     Pool.init(this)
-    this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.02')
+    this.system = this.el.sceneEl.systems['bone-handle-system']
+    this.el.setAttribute('geometry', `primitive: tetrahedron; radius: ${this.system.data.radius}`)
     this.el.setAttribute('grab-options', 'showHand: false')
     if (this.el.skeletonator.activeBone == this.el.bone)
     {

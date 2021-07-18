@@ -38,6 +38,7 @@ a-entity.grab-root shelf="name: Skeletonator" summoner-position="el: #quick-menu
   a-entity position="0 2.0 0"
     a-sphere.clickable.globe-control radius="0.6" material="wireframe: true" tooltip="Grab Object"
     a-entity.spawn-point position="0 1.4 0" scale="0.8 0.8 0.8"
+  a-entity position="-2 0 0" rotation="0 180 0" lever="axis: x; target: a-scene; component: bone-handle-system; property: radius; valueRange: 0.05 0.001; initialValue: 0.02" tooltip="Bone Handle Size" tooltip-style="rotation: 0 -180 0"
   a-entity.grab-root position="3.0 0 0" skeletonator-keyframes=""
   a-entity new-bone-wand="" position="2.7 0 0" preactivate-tooltip="New Bone (Click to create)" scale="5 5 5" tooltip-style="scale: 0.5 0.5 0.5"
   a-entity ik-handle-tool="" position="3.0 0 0" rotation="-15 0 0" preactivate-tooltip="IK Solver" scale="5 5 5" tooltip-style="scale: 0.5 0.5 0.5"
