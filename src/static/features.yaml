@@ -3,6 +3,9 @@ sections:
     features:
       - name: 2D Animation
         tweets:
+          - url: https://twitter.com/zach_geek/status/1417278325786087424
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another old <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature that deserves its own feature demo: The Animation Shelf, where you can access much of the animation functionality.<br>(video shows animation tools like onion skins, layers w/different frame counts, live animated drawing, and moving animated layers) <a href="https://t.co/oXwtgED4jk">pic.twitter.com/oXwtgED4jk</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1417278325786087424?ref_src=twsrc%5Etfw">July 20, 2021</a></blockquote>
           - url: https://twitter.com/zach_geek/status/1225835188015583233
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I added animation to my VR drawing app!  <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a> <a href="https://t.co/Tb1wdjJ6lI">pic.twitter.com/Tb1wdjJ6lI</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1225835188015583233?ref_src=twsrc%5Etfw">February 7, 2020</a></blockquote>
@@ -145,6 +148,8 @@ sections:
       - name: Cloud Brush Pack
         tweets:
           - url: https://twitter.com/zach_geek/status/1416154990121529344
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> &quot;Cloudy&quot; brush pack is out now at <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a>. Here&#39;s a demo of those brushes painting a cloudy landscape on a vase from <a href="https://twitter.com/polyhaven?ref_src=twsrc%5Etfw">@polyhaven</a>.<a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXRCeramics?src=hash&amp;ref_src=twsrc%5Etfw">#WebXRCeramics</a> <a href="https://t.co/awBavGB3f5">pic.twitter.com/awBavGB3f5</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1416154990121529344?ref_src=twsrc%5Etfw">July 16, 2021</a></blockquote>
       - name: FX Brush Updates
         tweets:
           - url: https://twitter.com/zach_geek/status/1414333143037927431
@@ -471,6 +476,11 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a new, VR-centric method for unwrapping UV maps in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/3dmodeling?src=hash&amp;ref_src=twsrc%5Etfw">#3dmodeling</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/uvwUaFfKTo">pic.twitter.com/uvwUaFfKTo</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1292625794376904704?ref_src=twsrc%5Etfw">August 10, 2020</a></blockquote>
   - name: Skeletonator
     features:
+      - name: Animated Primitives
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1416816756501405696
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">To put this in perspective, though, it means you can now go from nothing to a painted, textured, rigged, and animated 3D model in a single VR session in a single <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a>/<a href="https://twitter.com/threejs?ref_src=twsrc%5Etfw">@threejs</a> app.<a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://twitter.com/hashtag/VRAnimation?src=hash&amp;ref_src=twsrc%5Etfw">#VRAnimation</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/eTIqScaNPE">pic.twitter.com/eTIqScaNPE</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1416816756501405696?ref_src=twsrc%5Etfw">July 18, 2021</a></blockquote>
       - name: Keyframe display
         tweets:
           - url: https://twitter.com/zach_geek/status/1332406942946516993
