@@ -5,7 +5,11 @@ try {
 }
 catch (e)
 {
- buildInfo = require('!!val-loader!./build-info.js')
+ // buildInfo = require('!!val-loader!./build-info.js')
+ buildInfo = {
+   version: "DEV",
+   date: new Date().toString()
+ }
 }
 
 AFRAME.registerSystem('vartiste-version-info', {
