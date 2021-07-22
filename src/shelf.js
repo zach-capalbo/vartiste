@@ -64,6 +64,8 @@ AFRAME.registerComponent('shelf', {
     this.container = container
     this.el.prepend(container)
 
+    this.el.setAttribute('bypass-hidden-updates', '')
+
     if (this.data.grabRoot)
     {
       this.el.classList.add('grab-root')

@@ -68,6 +68,7 @@ const BRUSH_FX = [
   'scatter',
   'noise',
   'hq-blending',
+  'drip',
 ]
 
 const CAMERA_LAYERS = {
