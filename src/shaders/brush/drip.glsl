@@ -41,14 +41,14 @@ void main() {
   vec4 downColor = texture2D(u_input, vUv + vec2(0, 1) / u_height);
 
   /* currentColor = mix(currentColor, nudgeColor, nudgeAmmount); */
-  currentColor = mix(currentColor, brushColor, opacity);
+  /* currentColor = mix(currentColor, brushColor, opacity); */
 
   float resistance = downColor[3];
   /* float stickPct = downColor[3] + currentColor[3]; */
 
   /* stickPct = (vUv.y >= (u_height - 10.0) / u_height) ? 1.0 : stickPct; */
 
-  resistance = (vUv.y >= (u_height - 10.0) / u_height) ? 1.0 : resistance;
+  resistance = (vUv.y >= (u_height - 1.0) / u_height) ? 1.0 : resistance;
 
   /* vec4 res = vec4(currentColor.xyz * (1.0 - abs(stickPct - currentColor[3])), stickPct); */
   vec4 res = currentColor;

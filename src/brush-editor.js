@@ -120,6 +120,7 @@ AFRAME.registerComponent('brush-editor', {
         if (this.el.getAttribute('visible'))
         {
           this.el.sceneEl.systems['file-upload'].fileInterceptors.push(this.interceptFile)
+          this.useBrush(this.el.sceneEl.systems['paint-system'].brush)
         }
         else
         {
@@ -157,28 +158,7 @@ AFRAME.registerComponent('brush-editor', {
     this.el.sceneEl.addEventListener('brushchanged', (e) => {
       if (!this.el.getAttribute('visible')) return;
       let brush = e.detail.brush
-      if (brush.previewSrc instanceof Image)
-      {
-        if (brush.previewSrc.src.startsWith('blob:') || brush.previewSrc.src.startsWith('http'))
-        {
-          let img = new Image();
-          img.src = brush.previewSrc.src
-          img.src = Util.cloneCanvas(img).toDataURL()
-          img.width = brush.previewSrc.width
-          img.height = brush.previewSrc.height
-          this.setImage(img)
-        }
-        else
-        {
-          this.setImage(brush.previewSrc)
-        }
-      }
-      else
-      {
-        let img = new Image();
-        img.src = brush.previewSrc
-        this.setImage(img)
-      }
+      this.useBrush(brush)
     })
   },
   interceptFile(items)
@@ -214,6 +194,30 @@ AFRAME.registerComponent('brush-editor', {
     let img = new Image();
     img.src = Util.autoCropCanvas(Compositor.drawableCanvas).toDataURL()
     this.setImage(img)
+  },
+  useBrush(brush) {
+    if (brush.previewSrc instanceof Image)
+    {
+      if (brush.previewSrc.src.startsWith('blob:') || brush.previewSrc.src.startsWith('http'))
+      {
+        let img = new Image();
+        img.src = brush.previewSrc.src
+        img.src = Util.cloneCanvas(img).toDataURL()
+        img.width = brush.previewSrc.width
+        img.height = brush.previewSrc.height
+        this.setImage(img)
+      }
+      else
+      {
+        this.setImage(brush.previewSrc)
+      }
+    }
+    else
+    {
+      let img = new Image();
+      img.src = brush.previewSrc
+      this.setImage(img)
+    }
   },
   setImage(img) {
     console.log("Setting image")
