@@ -52,6 +52,28 @@ let config = {
         use: { loader: "worker-loader" },
       },
       {
+        test: /\@ffmpeg.*\.wasm/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: '[name].[ext]'
+          }
+        }]
+      },
+      {
+        test: /\@ffmpeg.*\.worker\.js$/,
+        type: 'javascript/auto',
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: '[name].[ext]'
+          }
+        }]
+      },
+      {
         test: /wasm.*\.wasm/,
         type: 'javascript/auto',
         use: [{
