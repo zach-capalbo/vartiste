@@ -57,6 +57,7 @@ class VartisteHubsConnector extends HubsBot {
 
     await this.evaluate((pencilId) => {
       this.pencil = document.getElementById(pencilId)
+      if (!this.pencil || !this.pencil.getObject3D('mesh')) return;
       this.pencil.getObject3D('mesh').rotation.x = Math.PI
     }, this.pencil)
 
@@ -119,7 +120,7 @@ class VartisteHubsConnector extends HubsBot {
 
 let bot = new VartisteHubsConnector({
   headless: false,
-  name: "VARTISTE"
+  name: "paint - pirate"
 })
 
 bot.enterRoom(process.argv[2], {manual: true}).then(() => {

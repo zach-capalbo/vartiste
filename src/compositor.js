@@ -21,11 +21,11 @@ function createTexture() {
 AFRAME.registerComponent('compositor', {
   dependencies: ['material', 'geometry'],
   schema: {
-    width: {default: 1024},
-    height: {default: 512},
+    width: {default: AFRAME.utils.device.isMobileVR() ? 512 : 1024},
+    height: {default: AFRAME.utils.device.isMobileVR() ? 128 : 512},
     baseWidth: {default: 1024},
     geometryWidth: {default: 80},
-    throttle: {default: 10},
+    throttle: {default: AFRAME.utils.device.isMobileVR() ? 15 : 10},
     textureScale: {default: 1},
     frameRate: {default: 10},
     onionSkin: {default: false},
