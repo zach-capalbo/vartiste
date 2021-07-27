@@ -155,6 +155,14 @@ sections:
           - url: https://twitter.com/zach_geek/status/1414333143037927431
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Moderately size <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update today. A bunch of helpful things, mostly relating to brushes.<br>- new scatter &amp; eraser brushes<br>- brush editor can create fx brushes<br>- tweaks for noise and blur brushes <a href="https://t.co/Z5fKS22CmR">pic.twitter.com/Z5fKS22CmR</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414333143037927431?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
+      - name: Drip Brush
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1418217123390885888
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> Brush Effect: &quot;Drip&quot;, accessible via the brush editor. Surprisingly fun to play with.<a href="https://twitter.com/hashtag/VRPainting?src=hash&amp;ref_src=twsrc%5Etfw">#VRPainting</a> <a href="https://twitter.com/hashtag/VRSpecialFX?src=hash&amp;ref_src=twsrc%5Etfw">#VRSpecialFX</a> <a href="https://t.co/xa7SFyQukr">pic.twitter.com/xa7SFyQukr</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1418217123390885888?ref_src=twsrc%5Etfw">July 22, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1418720060605095940
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a demo of using the drip brush to paint a tree.<a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://twitter.com/hashtag/WebXRPainting?src=hash&amp;ref_src=twsrc%5Etfw">#WebXRPainting</a> <a href="https://t.co/o99DnAEH3p">pic.twitter.com/o99DnAEH3p</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1418720060605095940?ref_src=twsrc%5Etfw">July 23, 2021</a></blockquote>
       - name: Brush Packs
         tweets:
           - url: https://twitter.com/zach_geek/status/1400572970075103244

@@ -13,6 +13,11 @@
       bar, then typing `xr` into the search field, and then setting
       "Force WebXr Runtime" to _Open XR_
 
+      You may also need to start the browser using the `--disable-features=XRSandbox`
+      command line flag. E.g.:
+
+      `chrome.exe --disable-features=XRSandbox https://vartiste.xyz`
+
   markdown:
     There are some instructions for common headset types listed below:
 

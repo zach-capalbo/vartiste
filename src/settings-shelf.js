@@ -52,6 +52,11 @@ AFRAME.registerComponent('settings-shelf', {
       this.el.querySelector('.height').setAttribute('text', {value: e.detail.height})
     })
 
+    Util.whenLoaded([this.el, Compositor.el], () => {
+      this.el.querySelector('.width').setAttribute('text', {value: Compositor.component.width})
+      this.el.querySelector('.height').setAttribute('text', {value: Compositor.component.height})
+    })
+
     // if (!this.el.sceneEl.systems.sketchfab.loggedIn())
     // {
     //   this.el.querySelector('.sketchfab-button').setAttribute('tooltip', "Log in to Sketchfab")
