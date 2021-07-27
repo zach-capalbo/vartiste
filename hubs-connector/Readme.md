@@ -17,7 +17,7 @@ node hubs-connector.js URL_OF_HUBS_ROOM
 ```
 
 where `URL_OF_HUBS_ROOM` is the full url of the room you want the bot to enter.
-A chromium window will pop up, and enter the spectator portion of the room.
+A chromium window will pop up, and enter the lobby of the room.
 
 At this point, you can go ahead and manually enter the room using the hubs UI.
 Be sure to set your microphone and speakers, and give it the necessary permissions.
