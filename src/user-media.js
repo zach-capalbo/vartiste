@@ -69,6 +69,17 @@ AFRAME.registerSystem('user-media', {
       viewer.components['stop-media-on-removed'].mediaStream = mediaStream
     })
     return viewer
+  },
+  async skyStream()
+  {
+    let mediaStream = await navigator.mediaDevices.getDisplayMedia()
+
+    let video = document.createElement('video')
+    video.srcObject = mediaStream
+
+    await video.play()
+
+    document.querySelector('a-sky').setAttribute('material', 'src', video)
   }
 })
 

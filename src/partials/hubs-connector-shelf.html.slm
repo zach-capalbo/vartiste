@@ -1,0 +1,5 @@
+a-entity shelf="name: Hubs Connector; closeable: true; height: 1"
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity icon-button="" tooltip="Connect to Hubs Connector"
+      a-entity icon-button="" tooltip="Set canvas mode for sharing"
