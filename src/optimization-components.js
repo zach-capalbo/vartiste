@@ -121,3 +121,81 @@ AFRAME.registerComponent('raycast-bvh', {
   },
   tick(t, dt) {}
 })
+
+AFRAME.registerSystem('low-power', {
+  schema: {
+    lowPower: {default: AFRAME.utils.device.isMobileVR()}
+  },
+  init() {
+    let params = new URLSearchParams(document.location.search)
+    if (params.get("lowPower"))
+    {
+      this.data.lowPower = true;
+    }
+
+    if (params.get("highPower"))
+    {
+      this.data.lowPower = false;
+    }
+
+    console.info("Low power mode is", this.data.lowPower ? "on" : "off")
+  },
+  isLowPower() {
+    return this.data.lowPower;
+  }
+})
+
+AFRAME.registerComponent('set-low-power', {
+  multiple: true,
+  schema: {
+    target: {default: null},
+    component: {type: 'string'},
+  },
+  updateSchema(newData) {
+    let target = newData.target || this.el;
+    if (!newData.component) return;
+
+    console.log("extending schema", target.components[newData.component].schema)
+    let newSchema = {}
+
+    for (let key in target.components[newData.component].schema)
+    {
+      newSchema[key] = {default: null}
+    }
+    this.extendSchema(newSchema)
+  },
+  update(oldData) {
+    let target = this.data.target || this.el;
+    if (!target || !this.data.component) return;
+    if (!this.el.sceneEl.systems['low-power'].isLowPower()) return;
+    let diff = {};
+    AFRAME.utils.diff(oldData, this.data, diff)
+    // Util.whenComponentInitialized(target, this.data.component, () => {
+      for (let key in diff)
+      {
+        if (key === 'component' || key === 'target') continue;
+        if (diff[key] === null) continue;
+        target.setAttribute(this.data.component, key, diff[key])
+      }
+    // })
+  }
+})
+
+AFRAME.registerComponent('hide-low-power', {
+  init() {
+    if (!this.el.sceneEl.systems['low-power'].isLowPower()) return;
+
+    this.el.setAttribute('bypass-hidden-updates', '')
+    this.el.setAttribute('visible', 'false')
+  }
+})
+
+AFRAME.registerComponent('delete-low-power', {
+  init() {
+    if (!this.el.sceneEl.systems['low-power'].isLowPower()) return;
+
+    Util.whenLoaded(this.el, () => {
+      this.el.parentEl.removeChild(this.el)
+    })
+  }
+})
