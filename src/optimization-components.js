@@ -155,10 +155,11 @@ AFRAME.registerComponent('set-low-power', {
     let target = newData.target || this.el;
     if (!newData.component) return;
 
-    console.log("extending schema", target.components[newData.component].schema)
+    let component = (target.components[newData.component] || target.systems[newData.component]);
+    console.log("extending schema", component.schema)
     let newSchema = {}
 
-    for (let key in target.components[newData.component].schema)
+    for (let key in component.schema)
     {
       newSchema[key] = {default: null}
     }
