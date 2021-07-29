@@ -540,7 +540,7 @@ AFRAME.registerComponent('compositor', {
     this.data.onionSkin = !this.data.onionSkin
   },
   tick(t, dt) {
-    if (dt > 25 && (t - this.drawnT) < 1000) {
+    if (dt > 25 && (t - this.drawnT) < 1000 && !this.el.sceneEl.systems['low-power'].isLowPower()) {
       this.slowCount = Math.min(this.slowCount + 1, 20)
       return
     }
