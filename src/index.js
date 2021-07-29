@@ -116,6 +116,11 @@ if (Util.isLowPower())
   scene.setAttribute('renderer', scene.getAttribute('low-power-renderer'))
 }
 
+if (!AFRAME.utils.device.isOculusBrowser() && typeof WebXRLayersPolyfill !== 'undefined')
+{
+  new WebXRLayersPolyfill()
+}
+
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
 document.getElementById('left-hand').setAttribute('left-hand-controls', "")
 
