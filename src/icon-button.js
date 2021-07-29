@@ -173,12 +173,19 @@ AFRAME.registerSystem('icon-button', {
     this.width = 0.4
     this.depth = 0.05
     // this.geometry = new THREE.BufferGeometry().fromGeometry(RoundEdgedBox(this.width, this.width, this.depth - 0.005))
-    // this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.005)
-    new THREE.GLTFLoader().load(document.getElementById('asset-button').getAttribute('src'), (gltf) => {
-      let scaleMatrix = new THREE.Matrix4().makeScale(this.width, this.width, this.depth - 0.005)
-      this.geometry = gltf.scene.getObjectByProperty('type', 'Mesh').geometry
-      this.geometry.applyMatrix4(scaleMatrix)
-    })
+
+    if (Util.isLowPower())
+    {
+      this.geometry = new THREE.BoxBufferGeometry(this.width, this.width, this.depth - 0.005)
+    }
+    else
+    {
+      new THREE.GLTFLoader().load(document.getElementById('asset-button').getAttribute('src'), (gltf) => {
+        let scaleMatrix = new THREE.Matrix4().makeScale(this.width, this.width, this.depth - 0.005)
+        this.geometry = gltf.scene.getObjectByProperty('type', 'Mesh').geometry
+        this.geometry.applyMatrix4(scaleMatrix)
+      })
+    }
     this.frontGeometry = new THREE.PlaneBufferGeometry(this.width - 0.01, this.width - 0.01)
     this.colorManagement = this.el.getAttribute('renderer').colorManagement;
 
