@@ -18,6 +18,29 @@ Util.registerComponentSystem('settings-system', {
     exportJPEG: {default: false},
     compressProject: {default: true},
   },
+  events: {
+    startcanvasdrawing: function(e) {
+      if (!this.el.systems['low-power'].isLowPower()) return;
+      console.log("startdraw", e)
+      let uiRoot = this.uiRoot || document.querySelector('#ui')
+      this.uiRoot = uiRoot
+      this.wasUIShown = uiRoot.getAttribute('visible')
+      if (this.wasUIShown)
+      {
+        uiRoot.setAttribute('visible', false)
+      }
+    },
+    enddrawing: function(e) {
+      if (!this.el.systems['low-power'].isLowPower()) return;
+      let uiRoot = this.uiRoot || document.querySelector('#ui')
+      this.uiRoot = uiRoot
+      if (this.wasUIShown)
+      {
+        uiRoot.setAttribute('visible', true)
+      }
+      delete this.wasUIShown
+    }
+  },
   init() {
     console.log("Starting settings")
     this.projectName = "vartiste-project"
@@ -368,7 +391,8 @@ Util.registerComponentSystem('settings-system', {
     this.el.emit('projectnamechanged', {name})
   },
   toggleUIAction() {
-    let uiRoot = document.querySelector('#ui')
+    let uiRoot = this.uiRoot || document.querySelector('#ui')
+    this.uiRoot = uiRoot
     uiRoot.setAttribute('visible', !uiRoot.getAttribute('visible'))
     //document.querySelector('#unhide-ui').setAttribute('visible', !uiRoot.getAttribute('visible'))
     for (let el of document.querySelectorAll('*[raycaster]'))
