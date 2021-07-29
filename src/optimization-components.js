@@ -124,20 +124,9 @@ AFRAME.registerComponent('raycast-bvh', {
 
 AFRAME.registerSystem('low-power', {
   schema: {
-    lowPower: {default: AFRAME.utils.device.isMobileVR()}
+    lowPower: {default: Util.isLowPower()}
   },
   init() {
-    let params = new URLSearchParams(document.location.search)
-    if (params.get("lowPower"))
-    {
-      this.data.lowPower = true;
-    }
-
-    if (params.get("highPower"))
-    {
-      this.data.lowPower = false;
-    }
-
     console.info("Low power mode is", this.data.lowPower ? "on" : "off")
   },
   isLowPower() {
@@ -155,11 +144,9 @@ AFRAME.registerComponent('set-low-power', {
     let target = newData.target || this.el;
     if (!newData.component) return;
 
-    let component = (target.components[newData.component] || target.systems[newData.component]);
-    console.log("extending schema", component.schema)
     let newSchema = {}
 
-    for (let key in component.schema)
+    for (let key in target.components[newData.component].schema)
     {
       newSchema[key] = {default: null}
     }
