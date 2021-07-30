@@ -801,7 +801,7 @@ AFRAME.registerComponent('lever', {
     let grip = document.createElement('a-sphere')
     grip.setAttribute('position', `0 ${this.data.handleLength} 0`)
     grip.setAttribute('radius', this.data.gripRadius)
-    grip.setAttribute('segments-radial', 6)
+    grip.setAttribute('segments-radial', Util.isLowPower() ? 4 : 6)
     grip.setAttribute('segments-height', 4)
     grip.setAttribute('material', 'side: double; metalness: 0.7; roughness: 0.3')
     grip.setAttribute('grab-options', 'showHand: false; scalable: false')

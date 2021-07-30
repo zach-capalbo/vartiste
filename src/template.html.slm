@@ -25,6 +25,7 @@ html
     script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.9.0/aframe-enviropacks.js"
     /script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"
     /script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"
+    /script src="https://cdn.jsdelivr.net/npm/webxr-layers-polyfill@1.0.2/build/webxr-layers-polyfill.min.js"
   body
     header#need-help-notification.hidden-in-vr
       h2 VARTISTE - WebXR Drawing, Texturing, and more!

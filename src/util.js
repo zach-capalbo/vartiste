@@ -589,6 +589,21 @@ class VARTISTEUtil {
   }
 
   async delay(t) { return new Promise(r => setTimeout(r, t)); }
+
+  isLowPower() {
+    let lowPower = AFRAME.utils.device.isMobileVR();
+    let params = new URLSearchParams(document.location.search)
+    if (params.get("lowPower"))
+    {
+      lowPower = true;
+    }
+
+    if (params.get("highPower"))
+    {
+      lowPower = false;
+    }
+    return lowPower;
+  }
 }
 
 const Util = new VARTISTEUtil();

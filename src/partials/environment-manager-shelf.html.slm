@@ -11,7 +11,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
     a-entity icon-button="#asset-blur-preview" system-click-action="action: installMatcap" tooltip="Use Matcap Shading"
     a-entity icon-button="#asset-brightness-4" system-click-action="action: use3DShading" tooltip="Use 3D Shading"
   a-entity position="0.7 -0.5 0"
-    a-entity icon-button="#asset-bed" toggle-button="target: #environment-place; component: visible" tooltip="Show floor"
+    a-entity icon-button="#asset-bed" toggle-button="target: #environment-place; component: visible" tooltip="Show floor" hide-low-power=""
     /a-entity icon-button="#asset-blur-preview" system-click-action="action: installPBMatcap" tooltip="Use Matcap Shading"
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
@@ -21,7 +21,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
   a-entity.renderer-exposure tooltip="Camera Exposure" lever="valueRange: 2 0; initialValue: 1.0; target: a-scene; component:  environment-manager; property: rendererExposure" position="-0.8 0.3 0" scale="2 2 2"
   /a-plane.clickable.bg-exposure width="0.3" height="1.9" position="-1.35 0.3 0" brightness-picker="" propogate-grab="" tooltip="Adjust Background Brightness" tooltip-style="offset: 0 1 0"
   /a-plane.clickable.renderer-exposure width="0.3" height="1.9" position="-0.8 0.3 0" brightness-picker="" propogate-grab="" tooltip="Camera Exposure" tooltip-style="offset: 0 1 0"
-  a-entity position="2.7 0 0" rotation="40 0 0"
+  a-entity position="2.7 0 0" rotation="40 0 0" delete-low-power=""
     a-entity light-tool="" preactivate-tooltip="Spot Light"
     a-entity position="1 0 0" light-tool="" preactivate-tooltip="Soft Light" light-tool-light="shadowRadius: 5; penumbra: 0.5"
     a-entity position="2 0 0" light-bauble="" scale="1 1 1" preactivate-tooltip="Sun" _tooltip-style="scale: 0.2 0.2 0.2"

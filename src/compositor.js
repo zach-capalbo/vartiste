@@ -355,6 +355,7 @@ AFRAME.registerComponent('compositor', {
   },
   drawOverlay(ctx) {
     if (!this.data.drawOverlay) return
+    if (this.el.sceneEl.systems['low-power'].isLowPower() && this.uiRoot && this.uiRoot.getAttribute('visible')) return
     ctx.save()
     const {width, height} = this
 
@@ -540,7 +541,17 @@ AFRAME.registerComponent('compositor', {
     this.data.onionSkin = !this.data.onionSkin
   },
   tick(t, dt) {
-    if (dt > 25 && (t - this.drawnT) < 1000) {
+    if (this.el.sceneEl.systems['low-power'].isLowPower())
+    {
+      let uiRoot = this.uiRoot || document.querySelector('#ui')
+      this.uiRoot = uiRoot
+      if (uiRoot.getAttribute('visible') && (t - this.drawnT) < 200)
+      {
+        return;
+      }
+    }
+
+    if (dt > 25 && (t - this.drawnT) < 1000 && !this.el.sceneEl.systems['low-power'].isLowPower()) {
       this.slowCount = Math.min(this.slowCount + 1, 20)
       return
     }

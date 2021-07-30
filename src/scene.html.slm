@@ -1,8 +1,10 @@
-a-scene renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;" kromophone="source: paint" physx="gravity: 0 0 0" brush-system="autoLoadBrushes: true"
+a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" low-power-renderer="maxCanvasWidth: 1200; maxCanvasHeight: 1200; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;" kromophone="source: paint" physx="gravity: 0 0 0" brush-system="autoLoadBrushes: true"
   a-assets#assets timeout="${60 * 1000 * 5}"
     a-mixin#shelf-handle material="shader:pbmatcap"
-  a-sky color="#333" hide-in-ar-mode=""
+  a-sky color="#333" hide-in-ar-mode="" geometry="segmentsWidth: 16; segmentsHeight: 12" set-low-power="component: geometry; segmentsWidth: 6; segmentsHeight: 4" _hide-low-power=""
   /a-entity light="type: directional; castShadow: true; intensity: 10" position="1 1 0" fix-light-shadow=""
+
+  /a-entity layer="src: #asset-colorful_studio; type: monocubemap"
 
   == partial('./partials/artist-root.html.slm')
 

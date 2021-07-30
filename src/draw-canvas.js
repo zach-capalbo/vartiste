@@ -129,6 +129,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     if (firstDraw && sourceEl)
     {
+      this.el.emit('startcanvasdrawing')
       Undo.pushCanvas(canvas)
       sourceEl.addEventListener('enddrawing', (e) => {
         this.wasDrawing = false

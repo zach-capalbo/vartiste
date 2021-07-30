@@ -107,8 +107,19 @@ if (location.host === "zach-geek.gitlab.io" && (location.pathname === '/vartiste
 const {loadAllAssets} = require('./assets.js')
 
 // loadAllAssets()
-
+import {Util} from './util.js'
 document.write(require('./scene.html.slm'));
+
+let scene = document.querySelector('a-scene')
+if (Util.isLowPower())
+{
+  scene.setAttribute('renderer', scene.getAttribute('low-power-renderer'))
+}
+
+if (!AFRAME.utils.device.isOculusBrowser() && typeof WebXRLayersPolyfill !== 'undefined')
+{
+  new WebXRLayersPolyfill()
+}
 
 document.getElementById('right-hand').setAttribute('right-hand-controls', "")
 document.getElementById('left-hand').setAttribute('left-hand-controls', "")
