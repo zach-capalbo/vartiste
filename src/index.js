@@ -1,4 +1,4 @@
-// require('./framework/aframe.js')
+require('file-loader?name=aframe.js!./framework/aframe.js')
 // require('aframe-environment-component')
 // require('aframe-leap-hands');
 
