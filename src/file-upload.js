@@ -3,6 +3,7 @@ import shortid from 'shortid'
 import {THREED_MODES} from './layer-modes.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 import Pako from 'pako'
 import JSZip from 'jszip'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
@@ -579,7 +580,7 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
 
 export function setupGlbReferenceEntity(entity) {
   entity.classList.add("clickable")
-  entity.classList.add("reference-glb")
+  entity.setAttribute("reference-glb", '')
 
   if (!document.querySelector('a-scene').getAttribute('renderer').colorManagement)
   {
@@ -955,4 +956,22 @@ Util.registerComponentSystem('file-upload', {
   browse() {
     this.inputEl.click()
   },
+})
+
+AFRAME.registerComponent('reference-glb', {
+  events: {
+    // object3dset: function(e) {
+    //   let m = this.pool('inv', THREE.Matrix4)
+    //   let box = Util.recursiveBoundingBox(this.el.getObject3D('mesh'))
+    //   m.copy(this.el.object3D.matrixWorld).invert()
+    //   box.applyMatrix4(m)
+    //   box.getCenter(this.el.getObject3D('mesh').position)
+    //   this.el.getObject3D('mesh').position.multiplyScalar(-1)
+    // }
+  },
+  init() {
+    Pool.init(this)
+    this.el.classList.add('reference-glb')
+    this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
+  }
 })

@@ -54,6 +54,9 @@ AFRAME.registerComponent("frame", {
     geometryTarget: {type: 'selector'},
     useBounds: {default: false},
 
+    autoHide: {default: false},
+    autoHideTimeout: {default: 500},
+
     // If true, sets the element to be grabbable by [`manipulator`](#manipulator)
     grabbable: {default: true},
 
@@ -67,10 +70,29 @@ AFRAME.registerComponent("frame", {
         this[e.target.getAttribute('frame-action')](e)
         e.stopPropagation()
       }
-    }
+    },
+    'raycaster-intersected': function(e) {
+      if (this.data.autoHide)
+      {
+        if (this.hideTiemout)
+        {
+          window.clearTimeout(this.hideTiemout)
+          this.hideTiemout = null
+        }
+        this.unhide()
+      }
+    },
+    'raycaster-intersected-cleared': function(e) {
+      if (this.data.autoHide)
+      {
+        this.startAutoHide()
+      }
+    },
   },
   init() {
+    Pool.init(this)
     let target = (this.data.geometryTarget || this.el)
+    this.center = new THREE.Vector3;
     this.updateBounds();
     let {width, height} = this;
 
@@ -81,13 +103,17 @@ AFRAME.registerComponent("frame", {
       }
     })
 
-    Pool.init(this)
     this.buttonCount = 0
 
     this.buttonRow = document.createElement('a-entity')
     this.el.append(this.buttonRow)
 
     this.objects = []
+
+    if (this.data.autoHide)
+    {
+      Util.whenLoaded(this.el, () => this.startAutoHide())
+    }
   },
   remove() {
     if (this.lineObject) {
@@ -106,16 +132,37 @@ AFRAME.registerComponent("frame", {
     this.objects = []
   },
   updateBounds() {
-    let {width, height} = (this.data.geometryTarget || this.el).getAttribute('geometry')
+    let width, height;
 
     if (this.data.useBounds)
     {
       let target = (this.data.geometryTarget || this.el)
-      target.getObject3D('mesh').geometry.computeBoundingBox()
-      let box = target.getObject3D('mesh').geometry.boundingBox
-      width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
-      height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
+      let box;
+      if (!target.getObject3D('mesh') || !target.getObject3D('mesh').geometry)
+      {
+        let m = this.pool('inv', THREE.Matrix4)
+        box = Util.recursiveBoundingBox(target.object3D)
+        m.copy(target.object3D.matrixWorld).invert()
+        box.applyMatrix4(m)
+        box.expandByScalar(0.3)
+        box.getCenter(this.center)
+        width = (box.max.x - box.min.x)
+        height = (box.max.y - box.min.y)
+      }
+      else
+      {
+        target.getObject3D('mesh').geometry.computeBoundingBox()
+        box = target.getObject3D('mesh').geometry.boundingBox
+        width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
+        height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
+      }
       console.log("Bounds", box, width, height)
+    }
+    else
+    {
+      let geometry = (this.data.geometryTarget || this.el).getAttribute('geometry')
+      width = geometry.width
+      height = geometry.height
     }
     this.width = width;
     this.height = height;
@@ -153,7 +200,7 @@ AFRAME.registerComponent("frame", {
       let title = document.createElement('a-entity')
       title.setAttribute('geometry', 'primitive: plane; height: 0; width: 0')
       title.setAttribute('material', 'color: #26211c; shader: flat')
-      title.setAttribute('position', `${- width / 4 + 0.055} ${height / 2 + 0.055} 0`)
+      title.setAttribute('position', `${- width / 4 + 0.055 + this.center.x} ${height / 2 + 0.055 + this.center.y} ${this.center.z}`)
       title.setAttribute('text', `color: #FFF; width: ${width / 2}; align: left; value: ${this.data.name}; wrapCount: 20; zOffset: 0.005`)
       title.setAttribute('class', 'raycast-invisible')
       this.el.append(title)
@@ -209,6 +256,11 @@ AFRAME.registerComponent("frame", {
     this.width = width
     this.height = height
     this.relayout()
+
+    if (this.data.autoHide)
+    {
+      Util.whenLoaded(this.el, () => this.startAutoHide())
+    }
   },
   addButton(icon) {
     let {width, height} = this
@@ -238,6 +290,9 @@ AFRAME.registerComponent("frame", {
     {
       b.setAttribute('position', `${width / 2 - 0.055 - i++ * 0.6} ${height / 2 + 0.055} 0`)
     }
+
+    if (this.lineObject) this.lineObject.position.copy(this.center)
+    this.buttonRow.object3D.position.copy(this.center)
   },
   closeFrame() {
     if (this.data.closePopup)
@@ -330,4 +385,8 @@ AFRAME.registerComponent("frame", {
       o.visible = true
     }
   },
+  startAutoHide() {
+    if (this.hideTiemout) return;
+    this.hideTiemout = window.setTimeout(() => this.hide(), this.data.autoHideTimeout)
+  }
 })

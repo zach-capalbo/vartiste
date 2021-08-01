@@ -93,56 +93,60 @@ Util.registerComponentSystem('avatar', {
         {
           this.scene.parent.remove(this.scene)
         }
-        this.scene = model.scene || model.scenes[0]
-        this.animations = model.animations
-        this.el.sceneEl.object3D.add(this.scene)
-        this.scene.traverse(o => {
-          if (!this.data.debug)
-          {
-            o.layers.disableAll()
-            o.layers.enable(CAMERA_LAYERS.SPECTATOR)
-          }
-
-          o.frustumCulled = false
-
-          if (!(o instanceof THREE.Mesh)) { return; }
-          o.castShadow = true
-          o.receiveShadow = true
-        })
-
-        this.leftHand = Util.traverseFind(this.scene, o => o.name === "LeftHand")
-        this.rightHand = Util.traverseFind(this.scene, o => o.name === "RightHand")
-        this.head = Util.traverseFind(this.scene, o => o.name === "Head")
-        this.hips = Util.traverseFind(this.scene, o => o.name === 'Hips')
-
-        if (this.head && this.hips)
-        {
-          let hipPos = new THREE.Vector3()
-          let headPos = new THREE.Vector3()
-          this.hips.getWorldPosition(hipPos)
-          this.head.getWorldPosition(headPos)
-          headPos.sub(hipPos)
-          this.headToHip = headPos
-        }
-
-        this.mixer = null
-        if (this.animations.length > 0)
-        {
-          this.mixer = new THREE.AnimationMixer(this.scene)
-          let leftGripClip = this.animations.find(a => a.name === "allGrip_L")
-          this.leftGripAnim = leftGripClip ? this.mixer.clipAction(leftGripClip) : null
-
-          let rightGripClip = this.animations.find(a => a.name === "allGrip_R")
-          this.rightGripAnim = rightGripClip ? this.mixer.clipAction(rightGripClip) : null
-
-          this.mixer.setTime(10)
-        }
-
-        this.startAudioMonitoring()
+        await this.setAvatarModel(model)
       })();
 
       return true
     }
+  },
+  async setAvatarModel(model)
+  {
+    this.scene = model.scene || model.scenes[0] || model
+    this.animations = model.animations
+    this.el.sceneEl.object3D.add(this.scene)
+    this.scene.traverse(o => {
+      if (!this.data.debug)
+      {
+        o.layers.disableAll()
+        o.layers.enable(CAMERA_LAYERS.SPECTATOR)
+      }
+
+      o.frustumCulled = false
+
+      if (!(o instanceof THREE.Mesh)) { return; }
+      o.castShadow = true
+      o.receiveShadow = true
+    })
+
+    this.leftHand = Util.traverseFind(this.scene, o => o.name === "LeftHand")
+    this.rightHand = Util.traverseFind(this.scene, o => o.name === "RightHand")
+    this.head = Util.traverseFind(this.scene, o => o.name === "Head")
+    this.hips = Util.traverseFind(this.scene, o => o.name === 'Hips')
+
+    if (this.head && this.hips)
+    {
+      let hipPos = new THREE.Vector3()
+      let headPos = new THREE.Vector3()
+      this.hips.getWorldPosition(hipPos)
+      this.head.getWorldPosition(headPos)
+      headPos.sub(hipPos)
+      this.headToHip = headPos
+    }
+
+    this.mixer = null
+    if (this.animations.length > 0)
+    {
+      this.mixer = new THREE.AnimationMixer(this.scene)
+      let leftGripClip = this.animations.find(a => a.name === "allGrip_L")
+      this.leftGripAnim = leftGripClip ? this.mixer.clipAction(leftGripClip) : null
+
+      let rightGripClip = this.animations.find(a => a.name === "allGrip_R")
+      this.rightGripAnim = rightGripClip ? this.mixer.clipAction(rightGripClip) : null
+
+      this.mixer.setTime(10)
+    }
+
+    this.startAudioMonitoring()
   },
   async startAudioMonitoring() {
     if (!Tone) {

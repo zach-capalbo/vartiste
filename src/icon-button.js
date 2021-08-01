@@ -497,13 +497,13 @@ AFRAME.registerComponent('toggle-button', {
         this.componentchangedlistener = (e) => {
           if (e.detail.name === this.data.component)
           {
-            this.setToggle(!!this.data.target.getAttribute(this.data.component)[this.data.property], {update: false})
+            this.setToggle(!!(this.data.property ? this.data.target.getAttribute(this.data.component)[this.data.property] : this.data.target.getAttribute(this.data.component)), {update: false})
           }
         }
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
 
         Util.whenLoaded([this.el, this.data.target], () => {
-          this.setToggle(!!this.data.target.getAttribute(this.data.component)[this.data.property], {update: false})
+          this.setToggle(!!(this.data.property ? this.data.target.getAttribute(this.data.component)[this.data.property] : this.data.target.getAttribute(this.data.component)), {update: false})
         })
       }
       else

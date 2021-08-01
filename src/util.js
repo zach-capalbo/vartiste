@@ -555,12 +555,31 @@ class VARTISTEUtil {
     })
   }
 
-  // recursiveBoundingBox(object, {box = undefined} = {})
-  // {
-  //   if (!box) box = new THREE.Box3
-  //
-  //
-  // }
+  recursiveBoundingBox(rootObj, {box = undefined} = {})
+  {
+    let boundingBox = box || this.pool('boundingBox', THREE.Box3)
+    let tmpBox = this.pool('tmpBox', THREE.Box3)
+    let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
+
+    rootObj.updateMatrixWorld()
+
+    firstModel.geometry.computeBoundingBox()
+    boundingBox.copy(firstModel.geometry.boundingBox)
+    firstModel.updateMatrixWorld()
+    boundingBox.applyMatrix4(firstModel.matrixWorld)
+
+    rootObj.traverse(m => {
+      if (!m.geometry) return
+      m.geometry.computeBoundingBox()
+      m.updateMatrixWorld()
+      tmpBox.copy(m.geometry.boundingBox)
+      tmpBox.applyMatrix4(m.matrixWorld)
+      boundingBox.union(tmpBox)
+    })
+
+    return boundingBox
+  }
+
   emitsEvents(component) {
     component.emitDetails = AFRAME.utils.clone(Object.getPrototypeOf(component).emits)
     const debugEmitDocs = false;

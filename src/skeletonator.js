@@ -801,7 +801,7 @@ Util.registerComponentSystem('bone-handle-system', {
   },
   update(oldData) {
     if (typeof Skeletonator === 'undefined') return;
-    
+
     if (this.data.radius !== oldData.radius)
     {
       for (let handle of Object.values(Skeletonator.boneToHandle))
@@ -1021,6 +1021,9 @@ AFRAME.registerComponent("skeletonator-control-panel", {
       })
     ), new THREE.Matrix4)
     }
+  },
+  puppeteer() {
+    this.el.sceneEl.systems['avatar'].setAvatarModel(Compositor.meshRoot)
   },
   deleteActiveBone() {
     this.el.skeletonator.deleteBone(this.el.skeletonator.activeBone)

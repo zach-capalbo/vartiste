@@ -218,7 +218,7 @@ Util.registerComponentSystem('mesh-tools', {
         mat.copy(positionHelper.matrix)
         let entity = document.createElement('a-entity')
         entity.classList.add('clickable')
-        entity.classList.add('reference-glb')
+        entity.setAttribute('reference-glb', '')
         container.append(entity)
         mesh.parent.remove(mesh)
         entity.setObject3D('mesh', mesh)
@@ -231,7 +231,7 @@ Util.registerComponentSystem('mesh-tools', {
   },
   cloneAsReference() {
     let el = document.createElement('a-entity')
-    el.classList.add('reference-glb')
+    el.setAttribute('reference-glb', '')
     el.classList.add('clickable')
     document.querySelector('#reference-spawn').append(el)
 
