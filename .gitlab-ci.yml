@@ -43,6 +43,7 @@ test:
     - zip -ur ../chromium-vartiste.zip *
     - popd
   artifacts:
+    expire_in: 1 day
     paths:
       - chromium/*.zip
 
@@ -70,6 +71,7 @@ pages:
     - mkdir -p public
     - mv dist/* public
   artifacts:
+    expire_in: 1 week
     paths:
       - public
   only:

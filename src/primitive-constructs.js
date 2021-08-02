@@ -51,9 +51,8 @@ Util.registerComponentSystem('primitive-constructs', {
     let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
 
     let el = document.createElement('a-entity')
-    el.classList.add('reference-glb')
-    el.classList.add('clickable')
     document.querySelector('#reference-spawn').append(el)
+    el.classList.add('clickable')
 
     let targetObj = new THREE.Object3D;
     el.setObject3D('mesh', targetObj);
@@ -69,6 +68,7 @@ Util.registerComponentSystem('primitive-constructs', {
         shape.parentEl.removeChild(shape)
       }
 
+      el.setAttribute('reference-glb', '')
       console.log("Made reference", el)
     })
   },
