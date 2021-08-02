@@ -1,6 +1,6 @@
 a-entity.standard-sizes shelf="name: Standard Sizes; closeable: true"
   a-entity position="0 1 0"
-    - for (let size of [[1024, 768], [1024, 1024], [2048, 2048], [1024, 1325]])
+    - for (let size of [[1024, 768], [1024, 1024], [2048, 2048], [1024, 1325], [1920, 1080]])
       a-entity icon-row=""
         a-entity text="width: 2; anchor: right; value: ${size[0]}x${size[1]}; wrapCount: 10"
         a-entity click-action="newComposition" icon-button="#asset-file-outline" position="0.5 0 0" tooltip="New Composition" size="width: ${size[0]}; height: ${size[1]}" popup-action="close"
