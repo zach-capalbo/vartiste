@@ -18,7 +18,18 @@ document.querySelectorAll('.expand-feature').forEach(el => {
         tweetEl.innerHTML = tweetEl.getAttribute('data-html')
         tweetEl.classList.remove('collapsed-tweet')
       })
-      twttr.widgets.load()
+      twttr.widgets.load().catch(e => console.error("Couldn't fix tweets", e))
+
+      // Work around twitter embed samesite cookie problem
+      window.setTimeout(() => {
+        console.log("Fixing height")
+        document.querySelectorAll('*[title="Twitter Tweet"]').forEach(el => {
+          if (el.style.height === '0px')
+          {
+            el.style.height = null
+          }
+        })
+      }, 3000)
     }
     else
     {

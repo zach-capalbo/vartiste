@@ -61,7 +61,7 @@ export function addImageReferenceViewer(image) {
   viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
   viewer.setAttribute('material', {src: image, shader: 'flat', transparent: true, side: 'double'})
   viewer.setAttribute('position')
-  viewer.setAttribute('frame', 'closable: true')
+  viewer.setAttribute('frame', 'closable: true; autoHide: true')
   viewer.classList.add("clickable")
   viewer.classList.add("reference-image")
   document.querySelector('#reference-spawn').append(viewer)
