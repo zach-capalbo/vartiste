@@ -37,6 +37,7 @@ Util.registerComponentSystem('primitive-constructs', {
     if (this.lastGrabbed)
     {
       this.lastGrabbed.removeAttribute('axis-handles')
+      this.lastGrabbed.removeAttribute('vertex-handles')
       this.lastGrabbed.removeAttribute('floating-trash-can')
     }
     this.lastGrabbed = el
@@ -44,6 +45,7 @@ Util.registerComponentSystem('primitive-constructs', {
     if (!el) return;
 
     el.setAttribute('axis-handles', '')
+    el.setAttribute('vertex-handles', '')
     el.setAttribute('floating-trash-can', '')
   },
   makeReference() {
@@ -97,7 +99,7 @@ Util.registerComponentSystem('primitive-constructs', {
       let mesh = el.getObject3D('mesh').clone()
       mesh.el = el;
       el.object3D.add(mesh);
-      mesh.geometry = mesh.geometry.clone();
+      // mesh.geometry = mesh.geometry.clone();
       Util.applyUVBox(currentBox, mesh.geometry);
       Util.keepingWorldPosition(mesh, () => {
         mesh.parent.remove(mesh)
@@ -200,6 +202,8 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       this.el.object3D.parent.remove(this.el.object3D)
       this.el.sceneEl.object3D.add(this.el.object3D)
     })
+
+    this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
   },
   makeReal() {
   },

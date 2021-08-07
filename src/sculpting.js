@@ -299,11 +299,13 @@ AFRAME.registerComponent('vertex-handles', {
 
     let nearVertices = []
 
+    this.handles = []
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
       if (skipSet.has(i)) continue;
       let el = document.createElement('a-entity')
       this.el.append(el)
+      this.handles.push(el)
 
       if (this.data.mergeVertices)
       {
@@ -325,6 +327,12 @@ AFRAME.registerComponent('vertex-handles', {
       {
         el.setAttribute('vertex-handle', `vertices: ${i}`)
       }
+    }
+  },
+  remove() {
+    for (let el of this.handles)
+    {
+      this.el.removeChild(el)
     }
   }
 })
