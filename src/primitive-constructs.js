@@ -21,15 +21,6 @@ AFRAME.registerGeometry('unwrapped-box', {
   }
 });
 
-AFRAME.registerComponent('floating-trash-can', {
-  init() {
-    this.el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
-  },
-  remove() {
-    this.el.removeAttribute('frame')
-  }
-})
-
 Util.registerComponentSystem('primitive-constructs', {
   grabConstruct(el) {
     if (el === this.lastGrabbed) return;
@@ -38,15 +29,24 @@ Util.registerComponentSystem('primitive-constructs', {
     {
       this.lastGrabbed.removeAttribute('axis-handles')
       this.lastGrabbed.removeAttribute('vertex-handles')
-      this.lastGrabbed.removeAttribute('floating-trash-can')
+      this.lastGrabbed.removeAttribute('frame')
     }
     this.lastGrabbed = el
 
     if (!el) return;
 
     el.setAttribute('axis-handles', '')
-    el.setAttribute('vertex-handles', '')
-    el.setAttribute('floating-trash-can', '')
+    el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
+    Util.whenComponentInitialized(el, 'frame', () => {
+      let button = el.components.frame.addButton('#asset-cylinder')
+      button.setAttribute('tooltip', 'Edit Vertices')
+      button.addEventListener('click', () => {
+        el.setAttribute('vertex-handles', '')
+        el.removeAttribute('axis-handles')
+        el.removeAttribute('frame')
+      })
+      this.el.sceneEl.emit('refreshobjects')
+    })
   },
   makeReference() {
     this.grabConstruct(null);
@@ -160,7 +160,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     'bbuttonup': function(e) {
       if (this.el.is("grabbed"))
       {
-        this.detachCopy()
+        this.makeClone()
       }
     },
   },
@@ -204,6 +204,20 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     })
 
     this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
+  },
+  makeClone() {
+    console.log("Cloning", this.el)
+    let newPlaceHolder = document.createElement('a-entity')
+    this.el.parentEl.append(newPlaceHolder)
+    newPlaceHolder.setAttribute('geometry', this.el.getAttribute('geometry'))
+    newPlaceHolder.setAttribute('primitive-construct-placeholder', this.el.getAttribute('primitive-construct-placeholder'))
+    this.el.setAttribute('primitive-construct-placeholder', 'detached', true)
+    Util.whenLoaded(newPlaceHolder, () => {
+      this.el.sceneEl.object3D.add(newPlaceHolder.object3D)
+      Util.positionObject3DAtTarget(newPlaceHolder.object3D, this.el.object3D)
+      newPlaceHolder.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
+      newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.clone()
+    })
   },
   makeReal() {
   },

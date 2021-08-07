@@ -261,6 +261,8 @@ AFRAME.registerComponent('vertex-handle', {
       return;
     }
 
+    // this.startNormal.fromBufferAttribute(this.mesh.geometry.attributes.normal, this.vertices[0])
+
     this.system.grabbed.add(this)
   },
   stopGrab() {
@@ -273,6 +275,9 @@ AFRAME.registerComponent('vertex-handle', {
       this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
     }
     this.mesh.geometry.attributes.position.needsUpdate = true
+    this.mesh.geometry.computeVertexNormals()
+    this.mesh.geometry.computeFaceNormals()
+    this.mesh.geometry.attributes.normal.needsUpdate = true
   }
 })
 
@@ -308,6 +313,14 @@ AFRAME.registerComponent('vertex-handles', {
 
     let nearVertices = []
 
+    let useBVH = mesh.geometry.attributes.position.count >= 200
+
+    let bvh
+    if (useBVH) {
+      console.info("Using BVH for bounds")
+      bvh = mesh.geometry.computeBoundsTree()
+    }
+
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
       if (skipSet.has(i)) continue;
@@ -317,16 +330,60 @@ AFRAME.registerComponent('vertex-handles', {
 
       if (this.data.mergeVertices)
       {
+        const mergeDistance = 0.001;
         nearVertices = [i]
         p1.fromBufferAttribute(mesh.geometry.attributes.position, i)
-        for (let j = i + 1; j < mesh.geometry.attributes.position.count; ++j)
+
+        if (!useBVH)
         {
-          p2.fromBufferAttribute(mesh.geometry.attributes.position, j)
-          if (p1.distanceTo(p2) < 0.001)
+          for (let j = i + 1; j < mesh.geometry.attributes.position.count; ++j)
           {
-            nearVertices.push(j)
-            skipSet.add(j)
+            p2.fromBufferAttribute(mesh.geometry.attributes.position, j)
+            if (p1.distanceTo(p2) < mergeDistance)
+            {
+              nearVertices.push(j)
+              skipSet.add(j)
+            }
           }
+        }
+        else
+        {
+          let indexAttr = mesh.geometry.index
+          bvh.shapecast(null, {
+            intersectsBounds: function(box, isLeaf, score, depth, idx) {
+              if (box.containsPoint(p1))
+              {
+                return 2
+              }
+              return 0
+            },
+            intersectsTriangle: function(triangle, index, contained, depth) {
+              const i3 = 3 * index;
+    				const a = i3 + 0;
+    				const b = i3 + 1;
+    				const c = i3 + 2;
+    				const va = indexAttr.getX( a );
+    				const vb = indexAttr.getX( b );
+    				const vc = indexAttr.getX( c );
+              if (triangle.a.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(va)
+                skipSet.add(va)
+                // console.log("Merge", i, va, index, p1.toArray(), triangle.a.toArray())
+              }
+              if (triangle.b.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(vb)
+                skipSet.add(vb)
+              }
+              if (triangle.c.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(vc)
+                skipSet.add(vc)
+              }
+              return false;
+            }
+          })
         }
 
         el.setAttribute('vertex-handle', 'mesh', mesh)
