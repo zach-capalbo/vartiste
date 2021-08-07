@@ -268,6 +268,17 @@ class VARTISTEUtil {
     return outputArray;
   }
 
+  visibleWithAncestors(obj)
+  {
+    if (!obj.visible) return false
+    while (obj.parent)
+    {
+      obj = obj.parent
+      if (!obj.visible) return false
+    }
+    return true
+  }
+
   // Uppercases the first letter of each word
   titleCase(str) {
     return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))

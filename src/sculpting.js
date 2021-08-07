@@ -180,11 +180,13 @@ AFRAME.registerComponent('sculpt-move-tool', {
 
 AFRAME.registerSystem('vertex-handle', {
   init() {
-    this.grabbed = null
+    this.grabbed = new Set()
   },
   tick(t, dt) {
-    if (!this.grabbed) return
-    this.grabbed.move(t,dt)
+    for (let v of this.grabbed.values())
+    {
+      v.move(t,dt)
+    }
   }
 })
 
@@ -192,6 +194,7 @@ AFRAME.registerComponent('vertex-handle', {
   schema: {
     vertex: {type: 'int'},
     vertices: {type: 'array'},
+    mesh: {default: null}
   },
   events: {
     stateadded: function (e) {
@@ -242,8 +245,11 @@ AFRAME.registerComponent('vertex-handle', {
   resetPosition() {
     if (!this.mesh)
     {
-      this.mesh = this.el.parentEl.getObject3D('mesh')
-      this.mesh
+      this.mesh = this.data.mesh || this.el.parentEl.getObject3D('mesh')
+      if (this.mesh.type !== 'Mesh' && this.mesh.type !== 'SkinnedMesh')
+      {
+        return;
+      }
     }
     Util.applyMatrix(this.mesh.matrix, this.el.object3D)
     this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
@@ -255,13 +261,10 @@ AFRAME.registerComponent('vertex-handle', {
       return;
     }
 
-    this.system.grabbed = this
+    this.system.grabbed.add(this)
   },
   stopGrab() {
-    if (this.system.grabbed === this)
-    {
-      this.system.grabbed = null
-    }
+    this.system.grabbed.delete(this)
   },
   move(t,dt)
   {
@@ -279,8 +282,14 @@ AFRAME.registerComponent('vertex-handles', {
     mergeVertices: {default: true},
   },
   init() {
-    let mesh = this.el.getObject3D('mesh')
+    this.handles = []
 
+    for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
+    {
+      this.setupMesh(mesh)
+    }
+  },
+  setupMesh(mesh) {
     if (!mesh)
     {
       console.warn("Can't set vertex handles before mesh yet")
@@ -299,7 +308,6 @@ AFRAME.registerComponent('vertex-handles', {
 
     let nearVertices = []
 
-    this.handles = []
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
       if (skipSet.has(i)) continue;
@@ -321,6 +329,7 @@ AFRAME.registerComponent('vertex-handles', {
           }
         }
 
+        el.setAttribute('vertex-handle', 'mesh', mesh)
         el.setAttribute('vertex-handle', 'vertices', nearVertices)
       }
       else

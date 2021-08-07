@@ -1066,6 +1066,7 @@ AFRAME.registerComponent('selection-box-tool', {
         localPos.copy(worldPos)
         this.box.getObject3D('mesh').worldToLocal(localPos)
         if (!boundingBox.containsPoint(localPos)) continue
+        if (!Util.visibleWithAncestors(target.object3D)) continue
       }
       else
       {
@@ -1101,6 +1102,11 @@ AFRAME.registerComponent('selection-box-tool', {
       this.grabbed[obj.uuid] = target
       this.grabberId[obj.uuid] = obj
 
+      if (this.data.grabElements)
+      {
+        target.addState('grabbed')
+      }
+
       if (this.grabVertices)
       {
         let grabChild = new THREE.Object3D
@@ -1129,6 +1135,13 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   stopGrab() {
     this.tick = function(){};
+    if (this.data.grabElements)
+    {
+      for (let el of Object.values(this.grabbed))
+      {
+        el.removeState('grabbed')
+      }
+    }
     if (this.data.duplicateOnGrab && this.grabbing)
     {
       this.toggleGrabbing(false)
