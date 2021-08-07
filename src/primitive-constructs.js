@@ -1,25 +1,6 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
-
-const unwrappedUvs = [0.3333333432674408, 1, 0.3333333432674408, 0.5, 0, 1, 0, 0.5, 0, 0.5, 0, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0, 0.6666666865348816, 0.5, 0.6666666865348816, 1, 1, 0.5, 1, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 1, 0.5, 1, 0, 0.3333333432674408, 1, 0.3333333432674408, 0.5, 0.6666666865348816, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0];
-
-AFRAME.registerGeometry('unwrapped-box', {
-  schema: {
-    depth: {default: 1, min: 0},
-    height: {default: 1, min: 0},
-    width: {default: 1, min: 0},
-    segmentsHeight: {default: 1, min: 1, max: 20, type: 'int'},
-    segmentsWidth: {default: 1, min: 1, max: 20, type: 'int'},
-    segmentsDepth: {default: 1, min: 1, max: 20, type: 'int'}
-  },
-
-  init: function (data) {
-    this.geometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
-    console.log(this.geometry.attributes.uv)
-    this.geometry.attributes.uv.array.set(unwrappedUvs)
-    this.geometry.attributes.uv.needsUpdate = true
-  }
-});
+import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
   grabConstruct(el) {

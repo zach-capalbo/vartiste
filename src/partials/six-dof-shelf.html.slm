@@ -61,4 +61,4 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
       a-entity primitive-construct-placeholder="" geometry="primitive: unwrapped-box"
       a-entity position="1.25 0 0" primitive-construct-placeholder="" geometry="primitive: sphere; radius: 0.5; segmentsWidth: 10; segmentsHeight: 12"
       a-entity position="2.5 0 0" primitive-construct-placeholder="" geometry="primitive: cylinder; radius: 0.5; segmentsHeight: 1; segmentsRadial: 10"
-      a-entity position="0 -1.25 0" primitive-construct-placeholder="" geometry="primitive: dodecahedron; radius: 0.5"
+      a-entity position="0 -1.25 0" primitive-construct-placeholder="" geometry="primitive: unwrapped-dodecahedron; radius: 0.5"
