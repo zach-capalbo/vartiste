@@ -91,6 +91,7 @@ require('./art-physics.js')
 require('./busy.js')
 require('./avatar.js')
 require('./primitive-constructs.js')
+require('./sculpting.js')
 // require('./text')
 
 require('./hubs-connector-shim.js')
