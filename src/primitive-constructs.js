@@ -1,34 +1,6 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
-
-const unwrappedUvs = [0.3333333432674408, 1, 0.3333333432674408, 0.5, 0, 1, 0, 0.5, 0, 0.5, 0, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0, 0.6666666865348816, 0.5, 0.6666666865348816, 1, 1, 0.5, 1, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 1, 0.5, 1, 0, 0.3333333432674408, 1, 0.3333333432674408, 0.5, 0.6666666865348816, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0];
-
-AFRAME.registerGeometry('unwrapped-box', {
-  schema: {
-    depth: {default: 1, min: 0},
-    height: {default: 1, min: 0},
-    width: {default: 1, min: 0},
-    segmentsHeight: {default: 1, min: 1, max: 20, type: 'int'},
-    segmentsWidth: {default: 1, min: 1, max: 20, type: 'int'},
-    segmentsDepth: {default: 1, min: 1, max: 20, type: 'int'}
-  },
-
-  init: function (data) {
-    this.geometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
-    console.log(this.geometry.attributes.uv)
-    this.geometry.attributes.uv.array.set(unwrappedUvs)
-    this.geometry.attributes.uv.needsUpdate = true
-  }
-});
-
-AFRAME.registerComponent('floating-trash-can', {
-  init() {
-    this.el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
-  },
-  remove() {
-    this.el.removeAttribute('frame')
-  }
-})
+import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
   grabConstruct(el) {
@@ -37,14 +9,25 @@ Util.registerComponentSystem('primitive-constructs', {
     if (this.lastGrabbed)
     {
       this.lastGrabbed.removeAttribute('axis-handles')
-      this.lastGrabbed.removeAttribute('floating-trash-can')
+      this.lastGrabbed.removeAttribute('vertex-handles')
+      this.lastGrabbed.removeAttribute('frame')
     }
     this.lastGrabbed = el
 
     if (!el) return;
 
     el.setAttribute('axis-handles', '')
-    el.setAttribute('floating-trash-can', '')
+    el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
+    Util.whenComponentInitialized(el, 'frame', () => {
+      let button = el.components.frame.addButton('#asset-cylinder')
+      button.setAttribute('tooltip', 'Edit Vertices')
+      button.addEventListener('click', () => {
+        el.setAttribute('vertex-handles', '')
+        el.removeAttribute('axis-handles')
+        el.removeAttribute('frame')
+      })
+      this.el.sceneEl.emit('refreshobjects')
+    })
   },
   makeReference() {
     this.grabConstruct(null);
@@ -97,7 +80,7 @@ Util.registerComponentSystem('primitive-constructs', {
       let mesh = el.getObject3D('mesh').clone()
       mesh.el = el;
       el.object3D.add(mesh);
-      mesh.geometry = mesh.geometry.clone();
+      // mesh.geometry = mesh.geometry.clone();
       Util.applyUVBox(currentBox, mesh.geometry);
       Util.keepingWorldPosition(mesh, () => {
         mesh.parent.remove(mesh)
@@ -158,7 +141,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     'bbuttonup': function(e) {
       if (this.el.is("grabbed"))
       {
-        this.detachCopy()
+        this.makeClone()
       }
     },
   },
@@ -199,6 +182,22 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     Util.keepingWorldPosition(this.el.object3D, () => {
       this.el.object3D.parent.remove(this.el.object3D)
       this.el.sceneEl.object3D.add(this.el.object3D)
+    })
+
+    this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
+  },
+  makeClone() {
+    console.log("Cloning", this.el)
+    let newPlaceHolder = document.createElement('a-entity')
+    this.el.parentEl.append(newPlaceHolder)
+    newPlaceHolder.setAttribute('geometry', this.el.getAttribute('geometry'))
+    newPlaceHolder.setAttribute('primitive-construct-placeholder', this.el.getAttribute('primitive-construct-placeholder'))
+    this.el.setAttribute('primitive-construct-placeholder', 'detached', true)
+    Util.whenLoaded(newPlaceHolder, () => {
+      this.el.sceneEl.object3D.add(newPlaceHolder.object3D)
+      Util.positionObject3DAtTarget(newPlaceHolder.object3D, this.el.object3D)
+      newPlaceHolder.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
+      newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.clone()
     })
   },
   makeReal() {

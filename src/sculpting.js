@@ -177,3 +177,228 @@ AFRAME.registerComponent('sculpt-move-tool', {
 
   }
 })
+
+AFRAME.registerSystem('vertex-handle', {
+  init() {
+    this.grabbed = new Set()
+  },
+  tick(t, dt) {
+    for (let v of this.grabbed.values())
+    {
+      v.move(t,dt)
+    }
+  }
+})
+
+AFRAME.registerComponent('vertex-handle', {
+  schema: {
+    vertex: {type: 'int'},
+    vertices: {type: 'array'},
+    mesh: {default: null}
+  },
+  events: {
+    stateadded: function (e) {
+      if (e.detail === 'grabbed')
+      {
+        this.startGrab()
+      }
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.stopGrab()
+      }
+    }
+  },
+  init() {
+    this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
+    this.el.setAttribute('grab-options', 'showHand: false')
+    this.el.setAttribute('material', 'color: #e58be5; shader: flat')
+    this.el.classList.add('clickable')
+
+    this.startPosition = new THREE.Vector3
+  },
+  update(oldData) {
+    if (this.data.vertices.length === 0)
+    {
+      this.vertices = [this.data.vertex]
+      this.isSequential = true
+    }
+    else
+    {
+      this.vertices = this.data.vertices.map(i => parseInt(i))
+      this.isSequential = true
+      for (let i = 1; i < this.vertices.length; ++i)
+      {
+        if (this.vertices[i - 1] !== this.vertices[i])
+        {
+          this.isSequential = false;
+          break
+        }
+      }
+    }
+
+    Util.whenLoaded(this.el.parentEl, () => {
+      this.resetPosition()
+    })
+  },
+  resetPosition() {
+    if (!this.mesh)
+    {
+      this.mesh = this.data.mesh || this.el.parentEl.getObject3D('mesh')
+      if (this.mesh.type !== 'Mesh' && this.mesh.type !== 'SkinnedMesh')
+      {
+        return;
+      }
+    }
+    Util.applyMatrix(this.mesh.matrix, this.el.object3D)
+    this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
+  },
+  startGrab() {
+    if (!this.mesh)
+    {
+      console.warn("Grabbed vertex before mesh was set")
+      return;
+    }
+
+    // this.startNormal.fromBufferAttribute(this.mesh.geometry.attributes.normal, this.vertices[0])
+
+    this.system.grabbed.add(this)
+  },
+  stopGrab() {
+    this.system.grabbed.delete(this)
+  },
+  move(t,dt)
+  {
+    for (let v of this.vertices)
+    {
+      this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+    }
+    this.mesh.geometry.attributes.position.needsUpdate = true
+    this.mesh.geometry.computeVertexNormals()
+    this.mesh.geometry.computeFaceNormals()
+    this.mesh.geometry.attributes.normal.needsUpdate = true
+  }
+})
+
+AFRAME.registerComponent('vertex-handles', {
+  schema: {
+    cloneGeometry: {default: false},
+    mergeVertices: {default: true},
+  },
+  init() {
+    this.handles = []
+
+    for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
+    {
+      this.setupMesh(mesh)
+    }
+  },
+  setupMesh(mesh) {
+    if (!mesh)
+    {
+      console.warn("Can't set vertex handles before mesh yet")
+      return;
+    }
+
+    if (this.data.cloneGeometry)
+    {
+      mesh.geometry = mesh.geometry.clone()
+    }
+
+    let skipSet = new Set();
+
+    let p2 = new THREE.Vector3;
+    let p1 = new THREE.Vector3;
+
+    let nearVertices = []
+
+    let useBVH = mesh.geometry.attributes.position.count >= 200
+
+    let bvh
+    if (useBVH) {
+      console.info("Using BVH for bounds")
+      bvh = mesh.geometry.computeBoundsTree()
+    }
+
+    for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
+    {
+      if (skipSet.has(i)) continue;
+      let el = document.createElement('a-entity')
+      this.el.append(el)
+      this.handles.push(el)
+
+      if (this.data.mergeVertices)
+      {
+        const mergeDistance = 0.001;
+        nearVertices = [i]
+        p1.fromBufferAttribute(mesh.geometry.attributes.position, i)
+
+        if (!useBVH)
+        {
+          for (let j = i + 1; j < mesh.geometry.attributes.position.count; ++j)
+          {
+            p2.fromBufferAttribute(mesh.geometry.attributes.position, j)
+            if (p1.distanceTo(p2) < mergeDistance)
+            {
+              nearVertices.push(j)
+              skipSet.add(j)
+            }
+          }
+        }
+        else
+        {
+          let indexAttr = mesh.geometry.index
+          bvh.shapecast(null, {
+            intersectsBounds: function(box, isLeaf, score, depth, idx) {
+              if (box.containsPoint(p1))
+              {
+                return 2
+              }
+              return 0
+            },
+            intersectsTriangle: function(triangle, index, contained, depth) {
+              const i3 = 3 * index;
+    				const a = i3 + 0;
+    				const b = i3 + 1;
+    				const c = i3 + 2;
+    				const va = indexAttr.getX( a );
+    				const vb = indexAttr.getX( b );
+    				const vc = indexAttr.getX( c );
+              if (triangle.a.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(va)
+                skipSet.add(va)
+                // console.log("Merge", i, va, index, p1.toArray(), triangle.a.toArray())
+              }
+              if (triangle.b.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(vb)
+                skipSet.add(vb)
+              }
+              if (triangle.c.distanceTo(p1) < mergeDistance)
+              {
+                nearVertices.push(vc)
+                skipSet.add(vc)
+              }
+              return false;
+            }
+          })
+        }
+
+        el.setAttribute('vertex-handle', 'mesh', mesh)
+        el.setAttribute('vertex-handle', 'vertices', nearVertices)
+      }
+      else
+      {
+        el.setAttribute('vertex-handle', `vertices: ${i}`)
+      }
+    }
+  },
+  remove() {
+    for (let el of this.handles)
+    {
+      this.el.removeChild(el)
+    }
+  }
+})

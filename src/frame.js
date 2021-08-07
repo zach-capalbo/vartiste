@@ -48,6 +48,7 @@ AFRAME.registerComponent("frame", {
     // If true, there's a visible border around the entity
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
+    tooltipStyle: {type: 'string', default: "scale: 3 3 3; offset: 0 1.0 0"},
 
     // If set, uses the selector element as the source of the geometry for the frame,
     // rather than the current element
@@ -177,7 +178,7 @@ AFRAME.registerComponent("frame", {
       let closeButton = this.addButton('#asset-close-circle-outline')
       closeButton.setAttribute('frame-action', "closeFrame")
       closeButton.setAttribute('tooltip', "Close")
-      closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
+      closeButton.setAttribute('tooltip-style', this.data.tooltipStyle)
     }
     else if (!this.data.closable && oldData.closable)
     {
@@ -188,7 +189,7 @@ AFRAME.registerComponent("frame", {
       let closeButton = this.addButton('#asset-hand-right')
       closeButton.setAttribute('frame-action', "pinFrame")
       closeButton.setAttribute('tooltip', "Pin / Unpin to opposite hand")
-      closeButton.setAttribute('tooltip-style', "scale: 3 3 3; offset: 0 1.0 0")
+      closeButton.setAttribute('tooltip-style', this.data.tooltipStyle)
     }
     else if (!this.data.pinnable && oldData.pinnable) {
       this.removeButton('#asset-close-circle-outline')
@@ -269,6 +270,7 @@ AFRAME.registerComponent("frame", {
     button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
     button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
     button.setAttribute('scale', `0.3 0.3 0.3`)
+    button.setAttribute('tooltip-style', this.data.tooltipStyle)
     this.buttonRow.append(button)
     this.objects.push(button)
     return button

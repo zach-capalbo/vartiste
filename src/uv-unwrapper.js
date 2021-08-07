@@ -598,7 +598,7 @@ AFRAME.registerComponent('axis-handle-control', {
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
     this.el.setAttribute('grab-options', 'showHand: false')
-    this.el.setAttribute('material', 'color: #9ae58b; shader: standard')
+    this.el.setAttribute('material', 'color: #9ae58b; shader: flat')
     this.el.classList.add('clickable')
 
     this.startPosition = new THREE.Vector3
