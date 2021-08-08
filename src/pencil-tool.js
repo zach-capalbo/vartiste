@@ -1154,6 +1154,11 @@ AFRAME.registerComponent('selection-box-tool', {
 
     for (let obj of Object.values(this.grabbers))
     {
+      if (!this.grabbed[obj.uuid].object3D)
+      {
+        console.warn("Grabbed object disappeared", obj)
+        continue;
+      }
       Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
 
       //?

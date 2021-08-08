@@ -6,7 +6,8 @@ import shortid from 'shortid'
 AFRAME.registerSystem('networking', {
   schema: {
     enabled: {default: true},
-    host: {default: "http://localhost:3000"},
+    host: {default: "localhost"},
+    port: {default: 3000},
     frameRate: {default: 15},
     connectAttemptDowntime: {default: 10000},
   },
@@ -23,6 +24,8 @@ AFRAME.registerSystem('networking', {
 
     this.callingPeers = []
     this.answeringPeers = []
+
+    this.remoteAvatars = {}
 
     this.startupPeer()
     .then(() => {
@@ -119,9 +122,16 @@ AFRAME.registerSystem('networking', {
     return `vartiste-answerTo-${id}-x`.replace(/_/g, "").replace(/-+/g, '-')
   },
 
+  onpose(id, d) {
+    if (!(id in this.remoteAvatars))
+    {
+      
+    }
+  },
+
   async callFor(id, {onvideo, onalpha, onpeer, onerror, onsize}) {
     console.log("Calling for", id)
-    let peer = new this.peerjs.Peer(this.callForName(id))
+    let peer = new this.peerjs.Peer(this.callForName(id), {host: this.data.host, port: this.data.port})
 
     peer.on('error', (e) => {
       console.log("Failed to call", e)
@@ -148,7 +158,17 @@ AFRAME.registerSystem('networking', {
 
     connection.on('data', (d) => {
       console.log("Received connection data", d)
-      onsize(d)
+
+      switch (d.msg)
+      {
+      case 'size':
+        onsize(d)
+        break;
+      case 'pos':
+        this.onpose(id, d)
+        break;
+      }
+
     })
 
 
@@ -224,7 +244,7 @@ AFRAME.registerSystem('networking', {
       alphaStream = alphaCanvas.captureStream(this.data.frameRate)
     }
 
-    let peer = new this.peerjs.Peer(this.answerToName(id))
+    let peer = new this.peerjs.Peer(this.answerToName(id), {host: this.data.host, port: this.data.port})
     console.log('answer peer', peer)
 
     peer.on('error', (e) => {
@@ -249,7 +269,7 @@ AFRAME.registerSystem('networking', {
 
     peer.on('connection', (connection) => {
       console.log("Got a data connection")
-      connection.send({width: canvas.width, height: canvas.height})
+      connection.send({width: canvas.width, height: canvas.height, msg: 'size'})
     })
 
     return peer

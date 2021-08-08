@@ -6,6 +6,9 @@
     VARTISTE works best with OpenXR, so please makes sure you've got the right
     OpenXR provider configured.
 
+    Please make sure your headset is plugged-in and active *before* loading this
+    page. If not you may need to refresh the page before you can enter VR.
+
   .chrome-only
     markdown:
       For Chrome/Chromium on the desktop, please make sure the run time is set

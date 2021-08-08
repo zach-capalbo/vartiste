@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
 var Tone;
@@ -224,5 +225,102 @@ Util.registerComponentSystem('avatar', {
         o.morphTargetInfluences[o.morphTargetDictionary[hubsData.name]] = mappedLevel;
       })
     }
+  }
+})
+
+Util.registerComponentSystem('avatar-pose-export-provider', {
+  schema: {
+    throttle: {default: 10},
+  },
+  init() {
+    Pool.init(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
+
+    this.needsUpdate = false
+    this.hasUpdatedThisTick = false
+
+    this.updateEmitData = {
+      leftHand: {
+        // position: new THREE.Vector3(),
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
+      },
+      rightHand: {
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
+      },
+      head: {
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: new THREE.Matrix4(),
+      },
+      canvas: {
+        matrix: null,
+        width: null,
+        height: null
+      },
+      tool: {matrix: null},
+    }
+
+    this.poserEl = document.createElement('a-entity')
+    this.el.append(this.poserEl)
+    this.poser = this.poserEl.object3D
+
+    Util.whenLoaded(this.el, async () => {
+      this.rightHandEl = document.querySelector('#right-hand')
+      this.leftHandEl = document.querySelector('#left-hand')
+    })
+  },
+  updatePose() {
+    if (!this.needsUpdate) return
+    if (this.hasUpdatedThisTick) return
+
+    let canvasLocation = this.pool('canvasLocation', THREE.Vector3)
+    // Compositor.el.object3D.getWorldPosition(canvasLocation)
+    Compositor.el.object3D.updateMatrixWorld()
+    this.updateEmitData.canvas.matrix = Compositor.el.object3D.matrix
+    this.updateEmitData.canvas.width = Compositor.el.getAttribute('geometry').width
+    this.updateEmitData.canvas.height = Compositor.el.getAttribute('geometry').height
+
+    let lastGrabbed = this.el.sceneEl.systems['pencil-tool'].lastGrabbed;
+
+    if (lastGrabbed && lastGrabbed.el.is('grabbed'))
+    {
+      this.updateEmitData.tool.matrix = lastGrabbed.el.object3D.matrixWorld.elements
+    }
+    else
+    {
+      this.updateEmitData.tool.matrix = null
+    }
+
+    this.updateObj(this.leftHandEl, this.updateEmitData.leftHand)
+    this.updateObj(this.rightHandEl, this.updateEmitData.rightHand)
+    this.updateObj(Util.cameraObject3D(), this.updateEmitData.head)
+
+    this.needsUpdate = false
+    this.hasUpdatedThisTick = true
+
+    return this.updateEmitData
+  },
+  updateObj(el, data) {
+    if (!(el instanceof THREE.Object3D)) {
+      el = el.object3D
+    }
+    Util.positionObject3DAtTarget(this.poser, el)
+    this.poser.updateMatrixWorld();
+    data.matrix.copy(this.poser.matrixWorld)
+    // Util.applyMatrix(el.matrixWorld, this.poser)
+    // data.position.copy(this.poser.position)
+    // data.rotation.x = this.poser.rotation.x * 180 / Math.PI
+    // data.rotation.y = this.poser.rotation.y * 180 / Math.PI
+    // data.rotation.z = this.poser.rotation.z * 180 / Math.PI
+
+  },
+  tick(t, dt) {
+    this.updatePose()
+  },
+  tock() {
+    this.hasUpdatedThisTick = false
   }
 })
