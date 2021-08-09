@@ -6,14 +6,16 @@ import shortid from 'shortid'
 AFRAME.registerSystem('networking', {
   schema: {
     enabled: {default: true},
-    host: {default: "localhost"},
-    port: {default: 3000},
-    frameRate: {default: 15},
+    host: {default: "zachcapalbo.com"},
+    port: {default: 8381},
+    frameRate: {default: 12},
     connectAttemptDowntime: {default: 10000},
   },
   init() {
     Pool.init(this)
     this.tick = AFRAME.utils.throttleTick(this.tick, Math.round(1000 / this.data.frameRate), this)
+
+    this.poseSendData = {msg: 'pose'}
 
     let emptyCanvas = document.createElement('canvas')
     emptyCanvas.width = 5
@@ -26,6 +28,8 @@ AFRAME.registerSystem('networking', {
     this.answeringPeers = []
 
     this.remoteAvatars = {}
+
+    this.dataConnections = new Set()
 
     this.startupPeer()
     .then(() => {
@@ -69,6 +73,11 @@ AFRAME.registerSystem('networking', {
     let peerPackage = await import('peerjs');
     this.peerjs = peerPackage.peerjs
     window.PeerJS = this.peerjs
+  },
+  autoStartMultiplayer() {
+    this.addBroadcastTo(shortid.generate())
+    this.addReceiveFrom(shortid.generate())
+    Compositor.el.setAttribute('compositor', 'useNodes', true)
   },
 
   presentationMode() {
@@ -125,8 +134,15 @@ AFRAME.registerSystem('networking', {
   onpose(id, d) {
     if (!(id in this.remoteAvatars))
     {
-      
+      console.log("Adding remote avatar for", id)
+      let el = document.createElement('a-entity')
+      document.querySelector('#remote-avatar-root').append(el)
+      el.setAttribute('remote-avatar', 'id', id)
+      this.remoteAvatars[id] = el
     }
+
+    if (!this.remoteAvatars[id].hasLoaded) return;
+    this.remoteAvatars[id].components['remote-avatar'].updatePose(d.data)
   },
 
   async callFor(id, {onvideo, onalpha, onpeer, onerror, onsize}) {
@@ -154,17 +170,17 @@ AFRAME.registerSystem('networking', {
 
     this.callingPeers.push(peer)
 
-    let connection = peer.connect(this.answerToName(id), {reliable: true})
+    let connection = peer.connect(this.answerToName(id), {reliable: false, serialization: 'binary'})
 
     connection.on('data', (d) => {
-      console.log("Received connection data", d)
+      // console.log("Received connection data", d)
 
       switch (d.msg)
       {
       case 'size':
         onsize(d)
         break;
-      case 'pos':
+      case 'pose':
         this.onpose(id, d)
         break;
       }
@@ -270,6 +286,7 @@ AFRAME.registerSystem('networking', {
     peer.on('connection', (connection) => {
       console.log("Got a data connection")
       connection.send({width: canvas.width, height: canvas.height, msg: 'size'})
+      this.dataConnections.add(connection)
     })
 
     return peer
@@ -297,17 +314,26 @@ AFRAME.registerSystem('networking', {
       }
     }
 
-    for (let peer of this.callingPeers)
+    for (let connection of this.dataConnections.values())
     {
-      for (let connection of Array.from(peer._connections))
-      {
-        if (connection[1][0].peerConnection.connectionState === 'disconnected')
-        {
-          console.log("Closing dangling connection", peer)
-          peer.destroy()
-        }
-      }
+      this.el.sceneEl.systems['avatar-pose-export-provider'].needsUpdate = true
+      let updateData = this.el.sceneEl.systems['avatar-pose-export-provider'].updatePose()
+      this.poseSendData.data = updateData
+
+      connection.send(this.poseSendData)
     }
+    //
+    // for (let peer of this.callingPeers)
+    // {
+    //   for (let connection of Array.from(peer._connections))
+    //   {
+    //     if (connection[1][0].peerConnection.connectionState === 'disconnected')
+    //     {
+    //       console.log("Closing dangling connection", peer)
+    //       peer.destroy()
+    //     }
+    //   }
+    // }
   }
 })
 

@@ -565,7 +565,7 @@ export class NetworkInputNode extends CanvasNode {
   updateCanvas(frame) {
     if (!this.networkData.video) return
 
-    this.updateTime = document.querySelector('a-scene').time
+    this.updateTime = Compositor.el.sceneEl.time
 
     if (this.canvas.width === 0 || this.canvas.height === 0)
     {
@@ -594,12 +594,15 @@ export class NetworkInputNode extends CanvasNode {
       return
     }
 
-    this.networkData.alphaVideo.width = this.canvas.width
-    this.networkData.alphaVideo.height = this.canvas.height
-    this.networkData.alphaProcessor.canvas.width = this.canvas.width
-    this.networkData.alphaProcessor.canvas.height = this.canvas.height
+    if (this.networkData.alphaVideo.width !== this.canvas.width || this.networkData.alphaVideo.height !== this.canvas.height)
+    {
+      this.networkData.alphaVideo.width = this.canvas.width
+      this.networkData.alphaVideo.height = this.canvas.height
+      this.networkData.alphaProcessor.canvas.width = this.canvas.width
+      this.networkData.alphaProcessor.canvas.height = this.canvas.height
+    }
 
-    try {
+    // try {
       ctx.drawImage(this.networkData.video, 0, 0, ctx.canvas.width, ctx.canvas.height)
 
       if (this.networkData.alphaVideo && this.networkData.alphaVideo.width && this.networkData.alphaVideo.readyState >= 3)
@@ -610,13 +613,13 @@ export class NetworkInputNode extends CanvasNode {
         ctx.drawImage(this.networkData.alphaProcessor.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.globalCompositeOperation = 'source-over'
       }
-    } catch (e)
-    {
-      console.error(this.canvas.width, this.canvas.height, this.video, e)
-    }
+    // } catch (e)
+    // {
+    //   console.error(this.canvas.width, this.canvas.height, this.video, e)
+    // }
   }
   touch() {
-    this.updateTime = document.querySelector('a-scene').time
+    this.updateTime = Compositor.el.sceneEl.time
   }
 }
 
@@ -682,7 +685,7 @@ export class NetworkOutputNode extends CanvasNode {
 
     if (!this.checkIfUpdateNeeded(frame)) return
 
-    this.updateTime = document.querySelector('a-scene').time
+    this.updateTime = Compositor.el.sceneEl.time
 
     // No transparency in peerjs right now. grr
     let ctx = this.canvas.getContext('2d')
@@ -704,5 +707,5 @@ class MaskNode extends CanvasNode {
 }
 
 class VectorLayer extends Layer {
-  
+
 }
