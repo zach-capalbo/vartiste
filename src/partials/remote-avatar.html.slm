@@ -1,5 +1,7 @@
 a-entity.remote-head
   a-entity.clickable propogate-grab="" gltf-model="#asset-headset" position="0 0 0" scale="0.05 0.05 0.05"
-a-entity.remote-left gltf-model="#asset-hand" scale="0.01 0.01 0.01" propogate-grab=""
-a-entity.remote-right gltf-model="#asset-hand" scale="0.01 0.01 0.01" propogate-grab=""
+a-entity.remote-left
+  a-entity.clickable gltf-model="#asset-hand" scale="0.1 0.1 0.1" propogate-grab=""
+a-entity.remote-right
+  a-entity.clickable gltf-model="#asset-hand" scale="0.01 0.01 0.01" propogate-grab=""
 a-entity.remote-canvas composition-view="compositor: #canvas-view" geometry="primitive: plane; width: 80; height: 35" propogate-grab=""

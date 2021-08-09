@@ -180,8 +180,9 @@ AFRAME.registerComponent('manipulator', {
       this.objects.length = j
     }
 
+    this.refreshNeeded = true
     this.el.sceneEl.addEventListener('refreshobjects', e => {
-      this.raycaster.refreshObjects()
+      this.refreshNeeded = true
     })
 
     // Default grab-options
@@ -389,6 +390,12 @@ AFRAME.registerComponent('manipulator', {
     }
   },
   tick(t, dt) {
+    if (this.refreshNeeded)
+    {
+      this.raycaster.refreshObjects()
+      this.refreshNeeded = false
+    }
+
     if (this.target) {
       if (Math.abs(this.zoomAmmount) > 0.08)
       {

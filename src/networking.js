@@ -8,7 +8,7 @@ AFRAME.registerSystem('networking', {
     enabled: {default: true},
     host: {default: "zachcapalbo.com"},
     port: {default: 8381},
-    frameRate: {default: 12},
+    frameRate: {default: 16},
     connectAttemptDowntime: {default: 10000},
   },
   init() {

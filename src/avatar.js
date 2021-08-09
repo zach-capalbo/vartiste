@@ -337,7 +337,7 @@ Util.registerComponentSystem('avatar-pose-export-provider', {
 AFRAME.registerComponent('remote-avatar', {
   schema: {
     id: {type: 'string'},
-    throttle: {default: 750}
+    throttle: {default: 100}
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
