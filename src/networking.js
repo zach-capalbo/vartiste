@@ -6,8 +6,8 @@ import shortid from 'shortid'
 AFRAME.registerSystem('networking', {
   schema: {
     enabled: {default: true},
-    host: {default: "zachcapalbo.com"},
-    port: {default: 8381},
+    host: {default: "0.peerjs.com"},
+    port: {default: 443},
     frameRate: {default: 16},
     connectAttemptDowntime: {default: 10000},
   },
@@ -75,9 +75,14 @@ AFRAME.registerSystem('networking', {
     window.PeerJS = this.peerjs
   },
   autoStartMultiplayer() {
-    this.addBroadcastTo(shortid.generate())
-    this.addReceiveFrom(shortid.generate())
+    let b = this.addBroadcastTo(shortid.generate())
+    let r = this.addReceiveFrom(shortid.generate())
     Compositor.el.setAttribute('compositor', 'useNodes', true)
+    Compositor.el.emit('nodeadded', {node: b})
+    Compositor.el.emit('nodeadded', {node: r})
+    Compositor.el.emit('nodeconnectionschanged', {node: b})
+    Compositor.el.emit('nodeconnectionschanged', {node: Compositor.component.allNodes[1]})
+    this.createSymmetricLink()
   },
 
   presentationMode() {
@@ -111,6 +116,7 @@ AFRAME.registerSystem('networking', {
     node.shelfMatrix.fromArray([0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0.6533299092054572, 0.009472981401967163, 0.31182788983072185, 1])
     node.shelfMatrix.setPosition((Compositor.component.allNodes.length - 2) * 0.65, 0, 0.3)
     node.connectDestination(Compositor.component.layers[1])
+    return node
   },
 
   addReceiveFrom(id) {
@@ -121,6 +127,7 @@ AFRAME.registerSystem('networking', {
     let compositionNode = Compositor.component.allNodes[1]
     compositionNode.connectInput(node, {type: 'source', index: compositionNode.sources.length})
     // node.connectDestination(Compositor.component.layers[1])
+    return node
   },
 
   callForName(id) {
