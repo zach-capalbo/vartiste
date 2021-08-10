@@ -70,6 +70,8 @@ const BRUSH_FX = [
   'hq-blending',
   'drip',
   'ryb-blend',
+  'dilate',
+  // 'erode',
 ]
 
 const CAMERA_LAYERS = {

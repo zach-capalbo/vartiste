@@ -37,3 +37,23 @@ vec3 hsv2rgb(vec3 c) {
   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
+
+vec4 mixByBrush(vec4 color) {
+  vec4 canvasBaseColor = texture2D(u_input, vUv);
+  vec2 brushUv = calcBrushUv(u_x, u_y);
+  vec4 brushColor = texture2D(u_brush, brushUv);
+
+  float opacity = brushColor[3];
+  opacity = opacity * u_opacity;
+  opacity = opacity < 0.000001 ? -99.0 : opacity;
+  opacity += 4.0 * (rand(brushUv) - 0.5) / 256.0
+
+  opacity = (brushUv.x > 1.0 || brushUv.y > 1.0) ? 0.0 : opacity;
+  opacity = (brushUv.x < 0.0 || brushUv.y < 0.0) ? 0.0 : opacity;
+
+  opacity = clamp(opacity, 0.0, 1.0);
+
+  return mix( canvasBaseColor,
+                      color ,
+                      opacity );
+}
