@@ -934,7 +934,7 @@ export class StretchBrush extends LineBrush {
   }
   updateBrush() {
     this.uvStretcher.setInputCanvas(this.image, {resize: false})
-    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.toArray())
+    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.clone().convertLinearToSRGB().toArray())
   }
   drawTo(ctx, x, y, {scale = 1.0, pressure = 1.0} = {}) {
     if (!this.lineData.endPoint || (Math.abs(this.lineData.endPoint - x) > 1
@@ -1038,7 +1038,7 @@ export class StretchBrush extends LineBrush {
     this.uvStretcher.createMesh(this.lineData.allPoints)
 
     this.uvStretcher.initialUpdate()
-    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.toArray())
+    this.uvStretcher.setUniform("u_color", "uniform3fv", this.color3.clone().convertLinearToSRGB().toArray())
     this.uvStretcher.update()
 
     let oldAlpha = ctx.globalAlpha

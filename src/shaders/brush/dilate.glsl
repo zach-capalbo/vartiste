@@ -35,6 +35,6 @@ vec4 maxByAlpha(vec4 c1, vec4 c2, vec4 c3, vec4 c4, vec4 c5)
 }
 
 void main() {
-  vec4 color = maxByAlpha(pick(vec2(1.0, 0.0)), pick(vec2(0.0, -1.0)), pick(vec2(-1.0, 0.0)), pick(vec2(0.0, 1.0)), pick(vec2(0.0, 0.0)));
+  vec4 color = maxByAlpha(pick(vec2(0.0, 0.0)), pick(vec2(1.0, 0.0)), pick(vec2(0.0, -1.0)), pick(vec2(-1.0, 0.0)), pick(vec2(0.0, 1.0)));
   gl_FragColor = mixByBrush(color);
 }
