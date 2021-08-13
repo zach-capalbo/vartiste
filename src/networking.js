@@ -6,13 +6,16 @@ import shortid from 'shortid'
 AFRAME.registerSystem('networking', {
   schema: {
     enabled: {default: true},
-    host: {default: "http://localhost:3000"},
-    frameRate: {default: 15},
+    host: {default: "0.peerjs.com"},
+    port: {default: 443},
+    frameRate: {default: 16},
     connectAttemptDowntime: {default: 10000},
   },
   init() {
     Pool.init(this)
     this.tick = AFRAME.utils.throttleTick(this.tick, Math.round(1000 / this.data.frameRate), this)
+
+    this.poseSendData = {msg: 'pose'}
 
     let emptyCanvas = document.createElement('canvas')
     emptyCanvas.width = 5
@@ -23,6 +26,10 @@ AFRAME.registerSystem('networking', {
 
     this.callingPeers = []
     this.answeringPeers = []
+
+    this.remoteAvatars = {}
+
+    this.dataConnections = new Set()
 
     this.startupPeer()
     .then(() => {
@@ -67,6 +74,16 @@ AFRAME.registerSystem('networking', {
     this.peerjs = peerPackage.peerjs
     window.PeerJS = this.peerjs
   },
+  autoStartMultiplayer() {
+    let b = this.addBroadcastTo(shortid.generate())
+    let r = this.addReceiveFrom(shortid.generate())
+    Compositor.el.setAttribute('compositor', 'useNodes', true)
+    Compositor.el.emit('nodeadded', {node: b})
+    Compositor.el.emit('nodeadded', {node: r})
+    Compositor.el.emit('nodeconnectionschanged', {node: b})
+    Compositor.el.emit('nodeconnectionschanged', {node: Compositor.component.allNodes[1]})
+    this.createSymmetricLink()
+  },
 
   presentationMode() {
     document.body.append(Compositor.component.preOverlayCanvas)
@@ -99,6 +116,7 @@ AFRAME.registerSystem('networking', {
     node.shelfMatrix.fromArray([0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0, 0, 0, 0.15805415874294995, 0, 0.6533299092054572, 0.009472981401967163, 0.31182788983072185, 1])
     node.shelfMatrix.setPosition((Compositor.component.allNodes.length - 2) * 0.65, 0, 0.3)
     node.connectDestination(Compositor.component.layers[1])
+    return node
   },
 
   addReceiveFrom(id) {
@@ -109,6 +127,7 @@ AFRAME.registerSystem('networking', {
     let compositionNode = Compositor.component.allNodes[1]
     compositionNode.connectInput(node, {type: 'source', index: compositionNode.sources.length})
     // node.connectDestination(Compositor.component.layers[1])
+    return node
   },
 
   callForName(id) {
@@ -119,9 +138,23 @@ AFRAME.registerSystem('networking', {
     return `vartiste-answerTo-${id}-x`.replace(/_/g, "").replace(/-+/g, '-')
   },
 
+  onpose(id, d) {
+    if (!(id in this.remoteAvatars))
+    {
+      console.log("Adding remote avatar for", id)
+      let el = document.createElement('a-entity')
+      document.querySelector('#remote-avatar-root').append(el)
+      el.setAttribute('remote-avatar', 'id', id)
+      this.remoteAvatars[id] = el
+    }
+
+    if (!this.remoteAvatars[id].hasLoaded) return;
+    this.remoteAvatars[id].components['remote-avatar'].updatePose(d.data)
+  },
+
   async callFor(id, {onvideo, onalpha, onpeer, onerror, onsize}) {
     console.log("Calling for", id)
-    let peer = new this.peerjs.Peer(this.callForName(id))
+    let peer = new this.peerjs.Peer(this.callForName(id), {host: this.data.host, port: this.data.port})
 
     peer.on('error', (e) => {
       console.log("Failed to call", e)
@@ -144,11 +177,21 @@ AFRAME.registerSystem('networking', {
 
     this.callingPeers.push(peer)
 
-    let connection = peer.connect(this.answerToName(id), {reliable: true})
+    let connection = peer.connect(this.answerToName(id), {reliable: false, serialization: 'binary'})
 
     connection.on('data', (d) => {
-      console.log("Received connection data", d)
-      onsize(d)
+      // console.log("Received connection data", d)
+
+      switch (d.msg)
+      {
+      case 'size':
+        onsize(d)
+        break;
+      case 'pose':
+        this.onpose(id, d)
+        break;
+      }
+
     })
 
 
@@ -224,7 +267,7 @@ AFRAME.registerSystem('networking', {
       alphaStream = alphaCanvas.captureStream(this.data.frameRate)
     }
 
-    let peer = new this.peerjs.Peer(this.answerToName(id))
+    let peer = new this.peerjs.Peer(this.answerToName(id), {host: this.data.host, port: this.data.port})
     console.log('answer peer', peer)
 
     peer.on('error', (e) => {
@@ -249,7 +292,8 @@ AFRAME.registerSystem('networking', {
 
     peer.on('connection', (connection) => {
       console.log("Got a data connection")
-      connection.send({width: canvas.width, height: canvas.height})
+      connection.send({width: canvas.width, height: canvas.height, msg: 'size'})
+      this.dataConnections.add(connection)
     })
 
     return peer
@@ -277,17 +321,26 @@ AFRAME.registerSystem('networking', {
       }
     }
 
-    for (let peer of this.callingPeers)
+    for (let connection of this.dataConnections.values())
     {
-      for (let connection of Array.from(peer._connections))
-      {
-        if (connection[1][0].peerConnection.connectionState === 'disconnected')
-        {
-          console.log("Closing dangling connection", peer)
-          peer.destroy()
-        }
-      }
+      this.el.sceneEl.systems['avatar-pose-export-provider'].needsUpdate = true
+      let updateData = this.el.sceneEl.systems['avatar-pose-export-provider'].updatePose()
+      this.poseSendData.data = updateData
+
+      connection.send(this.poseSendData)
     }
+    //
+    // for (let peer of this.callingPeers)
+    // {
+    //   for (let connection of Array.from(peer._connections))
+    //   {
+    //     if (connection[1][0].peerConnection.connectionState === 'disconnected')
+    //     {
+    //       console.log("Closing dangling connection", peer)
+    //       peer.destroy()
+    //     }
+    //   }
+    // }
   }
 })
 

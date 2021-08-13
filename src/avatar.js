@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 
 var Tone;
@@ -223,6 +224,160 @@ Util.registerComponentSystem('avatar', {
 
         o.morphTargetInfluences[o.morphTargetDictionary[hubsData.name]] = mappedLevel;
       })
+    }
+  }
+})
+
+Util.registerComponentSystem('avatar-pose-export-provider', {
+  schema: {
+    throttle: {default: 100},
+  },
+  init() {
+    Pool.init(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+
+    this.needsUpdate = false
+    this.hasUpdatedThisTick = false
+
+    this.updateEmitData = {
+      leftHand: {
+        // position: new THREE.Vector3(),
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: {elements: new Float32Array(16)},
+        visible: false,
+      },
+      rightHand: {
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: {elements: new Float32Array(16)},
+        visible: false,
+      },
+      head: {
+        // position: new THREE.Vector3,
+        // rotation: {x: 0, y: 0, z: 0},
+        matrix: {elements: new Float32Array(16)},
+        visible: true
+      },
+      canvas: {
+        matrix: {elements: new Float32Array(16)},
+        width: null,
+        height: null,
+        visible: true,
+      },
+      tool: {matrix: null},
+    }
+
+    this.poserEl = document.createElement('a-entity')
+    this.el.append(this.poserEl)
+    this.poser = this.poserEl.object3D
+
+    Util.whenLoaded(this.el, async () => {
+      this.rightHandEl = document.querySelector('#right-hand')
+      this.leftHandEl = document.querySelector('#left-hand')
+    })
+  },
+  updatePose() {
+    if (!this.needsUpdate) return this.updateEmitData;
+    if (this.hasUpdatedThisTick) return this.updateEmitData;
+
+    let canvasLocation = this.pool('canvasLocation', THREE.Vector3)
+    // Compositor.el.object3D.getWorldPosition(canvasLocation)
+    Compositor.el.object3D.updateMatrixWorld()
+    this.updateEmitData.canvas.matrix.elements.set(Compositor.el.object3D.matrix.elements)
+    this.updateEmitData.canvas.width = Compositor.el.getAttribute('geometry').width
+    this.updateEmitData.canvas.height = Compositor.el.getAttribute('geometry').height
+
+    let lastGrabbed = this.el.sceneEl.systems['pencil-tool'].lastGrabbed;
+
+    if (lastGrabbed && lastGrabbed.el.is('grabbed'))
+    {
+      this.updateEmitData.tool.matrix = lastGrabbed.el.object3D.matrixWorld.elements
+    }
+    else
+    {
+      this.updateEmitData.tool.matrix = null
+    }
+
+    this.updateObj(this.leftHandEl, this.updateEmitData.leftHand)
+    this.updateObj(this.rightHandEl, this.updateEmitData.rightHand)
+    this.updateObj(Util.cameraObject3D(), this.updateEmitData.head)
+
+    this.updateEmitData.leftHand.visible = !!this.leftHandEl.getObject3D('mesh')
+    this.updateEmitData.rightHand.visible = !!this.rightHandEl.getObject3D('mesh')
+
+    this.needsUpdate = false
+    this.hasUpdatedThisTick = true
+
+    return this.updateEmitData
+  },
+  updateObj(el, data) {
+    if (!(el instanceof THREE.Object3D)) {
+      el = el.object3D
+    }
+    Util.positionObject3DAtTarget(this.poser, el)
+    this.poser.updateMatrixWorld();
+
+    // TODO use buffers to not need json serialization in networking
+    data.matrix.elements.set(this.poser.matrixWorld.elements)
+    // Util.applyMatrix(el.matrixWorld, this.poser)
+    // data.position.copy(this.poser.position)
+    // data.rotation.x = this.poser.rotation.x * 180 / Math.PI
+    // data.rotation.y = this.poser.rotation.y * 180 / Math.PI
+    // data.rotation.z = this.poser.rotation.z * 180 / Math.PI
+
+  },
+  tick(t, dt) {
+    this.updatePose()
+  },
+  tock() {
+    this.hasUpdatedThisTick = false
+  }
+})
+
+AFRAME.registerComponent('remote-avatar', {
+  schema: {
+    id: {type: 'string'},
+    throttle: {default: 100}
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.el.innerHTML = require('./partials/remote-avatar.html.slm')
+    Util.whenLoaded(this.el, () => {
+      this.head = this.el.querySelector('.remote-head')
+      this.leftHand = this.el.querySelector('.remote-left')
+      this.rightHand = this.el.querySelector('.remote-right')
+      this.canvas = this.el.querySelector('.remote-canvas')
+    })
+    this.el.classList.add('grab-root')
+  },
+  updateObj(dataObj, object3D)
+  {
+    if (!dataObj) return;
+    object3D.matrix.fromArray(new Float32Array(dataObj.matrix.elements) || dataObj.matrix)
+    object3D.matrix.decompose(
+      object3D.position,
+      object3D.quaternion,
+      object3D.scale
+    )
+    object3D.visible = dataObj.visible !== false
+  },
+  updatePose(data) {
+    this.poseData = data
+  },
+  _updatePose(data) {
+    if (!this.head) return
+    // console.log(data)
+
+    this.updateObj(data.head, this.head.object3D)
+    this.updateObj(data.rightHand, this.rightHand.object3D)
+    this.updateObj(data.leftHand, this.leftHand.object3D)
+    this.updateObj(data.canvas, this.canvas.object3D)
+  },
+  tick(t, dt){
+    if (this.poseData)
+    {
+      this._updatePose(this.poseData)
+      this.poseData = null
     }
   }
 })

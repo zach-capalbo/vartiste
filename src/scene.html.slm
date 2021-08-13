@@ -19,6 +19,8 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
 
     /a-plane material="src: #asset-shelf" rotation="-90 0 0" position="0 0.01 0" _artist-shadow="" scale="2 2 2" ammo-body="type: static" ammo-shape="type: box"
 
+    a-entity#remote-avatar-root position="0 0 -0.2"
+
     a-entity position="1.1 0 -0.5" scale="0.3 0.3 0.3"
       a-entity position="-3.58310806712082 3.300659561600941 2.1625126248120847" rotation="0 0 0" scale="1 1 1"
         /a-entity preactivate-tooltip="Perspective Camera" camera-tool="" position="0.2 0.1 0.4" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3" manipulator-weight="weight: 0.7; type: slow"

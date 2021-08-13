@@ -17,6 +17,7 @@ uniform float u_t;
 varying vec2 vUv;
 
 #pragma loader: import {calcBrushUv, rand} from './util.glsl'
+#pragma loader: import {mixByBrush} from './util.glsl'
 
 vec4 scatter() {
   vec2 uv = vec2(vUv.x + (rand(vUv) - 0.5) * u_brush_width / u_width * 0.5,
@@ -44,23 +45,5 @@ void main() {
   color += 0.5 * (blur(vec2(2.0, 0.0)) + blur(vec2(0.0, -2.0)) + blur(vec2(2.0, -2.0)) + blur(vec2(2.0, 2.0)))
   color /= 6.0;
 
-  vec4 canvasBaseColor = texture2D(u_input, vUv);
-  vec2 brushUv = calcBrushUv(u_x, u_y);
-  vec4 brushColor = texture2D(u_brush, brushUv);
-
-  float opacity = brushColor[3];
-  opacity = opacity * u_opacity;
-  opacity = opacity < 0.000001 ? -99.0 : opacity;
-  opacity += 4.0 * (rand(brushUv) - 0.5) / 256.0
-
-  opacity = (brushUv.x > 1.0 || brushUv.y > 1.0) ? 0.0 : opacity;
-  opacity = (brushUv.x < 0.0 || brushUv.y < 0.0) ? 0.0 : opacity;
-
-  opacity = clamp(opacity, 0.0, 1.0);
-
-  vec4 resColor = mix( canvasBaseColor,
-                      color ,
-                      opacity );
-
-  gl_FragColor = resColor;
+  gl_FragColor = mixByBrush(color);
 }

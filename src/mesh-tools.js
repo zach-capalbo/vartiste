@@ -134,6 +134,40 @@ Util.registerComponentSystem('mesh-tools', {
 
     if (destinationCanvas.touch) destinationCanvas.touch()
   },
+  applyDisplacement() {
+    for (let mesh of Compositor.meshes)
+    {
+      if (mesh === Compositor.el.getObject3D('mesh')) continue
+      let vertexUvs = mesh.geometry.attributes.uv
+      let uv = new THREE.Vector2()
+      let colors = []
+      let {width, height} = Compositor.component
+      let flipY = Compositor.component.data.flipY
+      let threeColor = new THREE.Color()
+      let srgb = this.el.sceneEl.getAttribute('renderer').colorManagement
+      let p = new THREE.Vector3
+      let normal = new THREE.Vector3
+      for (let vi = 0; vi < vertexUvs.count; vi ++ )
+      {
+        let x = Math.round(uv.x * width)
+        let y = Math.round(uv.y * height)
+        if (flipY) y = Math.round((1.0 - uv.y) * height)
+        uv.fromBufferAttribute(vertexUvs, vi)
+        let color = Compositor.component.preOverlayCanvas.getContext('2d').getImageData(x, y, 1,1)
+
+        normal.fromBufferAttribute(mesh.geometry.attributes.normal, vi)
+        p.fromBufferAttribute(mesh.geometry.attributes.normal, vi)
+        p.addScaledVector(normal, color.data[0] / 256.0 * color.data[3] / 256.0)
+        mesh.geometry.attributes.position.setXYZ(vi, p.x, p.y, p.z)
+        // colors.push(threeColor.r)
+        // colors.push(threeColor.g)
+        // colors.push(threeColor.b)
+      }
+
+      mesh.geometry.attributes.position.needsUpdate = true
+
+    }
+  },
   applyTransformation() {
     let obj = Compositor.meshTransformRoot
     let parent = Compositor.meshRoot.parent
