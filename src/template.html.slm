@@ -49,6 +49,7 @@ html
       a href="https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=Loading%20Error" Please file a bug report if you’re feeling charitable
     == partial('./partials/desktop-controls.html.slm')
     == partial('./partials/loading-page.html.slm')
+    #drag-and-drop-overlay
     #drag-and-drop.minimized.hidden-in-vr
       | Drop file here to load
       img title="Drag and drop file here to load" alt="drag and drop indicator" src="./assets/drag-and-drop.png"
