@@ -52,3 +52,4 @@ html
     #drag-and-drop.minimized.hidden-in-vr
       | Drop file here to load
       img title="Drag and drop file here to load" alt="drag and drop indicator" src="./assets/drag-and-drop.png"
+    #drag-and-drop-overlay
