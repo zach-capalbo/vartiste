@@ -8,6 +8,11 @@ const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap'
 Util.registerComponentSystem('material-pack-system', {
   events: {
     layerupdated: function(e) {
+      if (this.addingLayer)
+      {
+        // this.addingLayer = false
+        return
+      }
       if (!this.activeMaterialMask) return;
       if (this.activeMaterialMask.isApplying) return;
       this.activeMaterialMask.deactivateMask()
@@ -17,6 +22,7 @@ Util.registerComponentSystem('material-pack-system', {
       if (!this.activeMaterialMask || !Undo.enabled || this.oldUndo) return
       this.oldUndo = Undo.pushCanvas
       this.undid = true
+
       Undo.pushCanvas = () => {
         console.log("Trying to push material undo")
         Undo.pushCanvas = this.oldUndo
@@ -43,7 +49,7 @@ Util.registerComponentSystem('material-pack-system', {
     }
   },
   init() {
-    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, Util.isLowPower() ? 300 : 50, this)
     let packRootEl = this.el.sceneEl.querySelector('#material-packs')
     this.loadPacks = this.loadPacks.bind(this)
     packRootEl.addEventListener('summoned', this.loadPacks)
@@ -151,7 +157,7 @@ Util.registerComponentSystem('material-pack-system', {
       if (map in attr) continue;
       attr[map] = this.defaultMap[map]
     }
-    
+
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
     let el = document.createElement('a-entity')
@@ -235,12 +241,16 @@ Util.registerComponentSystem('material-pack-system', {
     })
   },
   activateMaterialMask(mask) {
+
     this.activeMaterialMask = mask
     Compositor.el.setAttribute('material', 'shader', 'standard')
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
     {
       Undo.collect(() => {
-        Undo.pushCanvas(Compositor.drawableCanvas)
+        // Undo.pushCanvas(Compositor.drawableCanvas)
+        this.addingLayer = true
+        Compositor.component.addLayer(Math.max(0, Compositor.component.layers.indexOf(Compositor.component.activeLayer) - 1))
+        this.addingLayer = false
         Undo.push(() => {
           if (this.activeMaterialMask)
           {
