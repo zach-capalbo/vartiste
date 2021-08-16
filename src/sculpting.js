@@ -294,7 +294,7 @@ AFRAME.registerComponent('vertex-handles', {
       this.setupMesh(mesh)
     }
   },
-  setupMesh(mesh) {
+  async setupMesh(mesh) {
     if (!mesh)
     {
       console.warn("Can't set vertex handles before mesh yet")
@@ -323,6 +323,10 @@ AFRAME.registerComponent('vertex-handles', {
 
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
+      if ((i + 1) % 100 === 0)
+      {
+        await Util.callLater()
+      }
       if (skipSet.has(i)) continue;
       let el = document.createElement('a-entity')
       this.el.append(el)
@@ -400,5 +404,30 @@ AFRAME.registerComponent('vertex-handles', {
     {
       this.el.removeChild(el)
     }
+  }
+})
+
+Util.registerComponentSystem('cutout-canvas', {
+  events: {
+    shapecreated: function(e) {
+      this.handleShape(e.detail)
+    }
+  },
+  handleShape(shape)
+  {
+    let geometry = new THREE.ShapeBufferGeometry(shape, 3)
+    let uvAttr = geometry.attributes.uv
+    let uv = new THREE.Vector2()
+    for (let i = 0; i < uvAttr.count; ++i)
+    {
+      uv.fromBufferAttribute(uvAttr, i)
+      uv.x = uv.x / Compositor.component.width
+      uv.y = uv.y / Compositor.component.height
+      uvAttr.setXY(i, uv.x, - uv.y)
+    }
+    let mesh = new THREE.Mesh(geometry, Compositor.material)
+    mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
+    mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
+    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: false})
   }
 })

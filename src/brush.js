@@ -1057,4 +1057,87 @@ export class StretchBrush extends LineBrush {
   }
 }
 
+export class VectorBrush extends Brush {
+  constructor(baseid, {
+    tooltip=undefined,
+    previewSrc
+  } = {}) {
+    super(baseid)
+    this.opacity = 1.0
+    this.tooltip = tooltip
+    this.outlineScale = 1
+    if (previewSrc)
+    {
+      this.previewSrc = previewSrc
+    }
+    else
+    {
+      let canvas = document.createElement('canvas')
+      canvas.width = 32
+      canvas.height = 32
+      let ctx = canvas.getContext('2d')
+
+      ctx.strokeStyle = "#FFF"
+      ctx.beginPath()
+      ctx.moveTo(0, 0)
+      ctx.arcTo(32, 16, 32, 32, 12)
+      ctx.lineWidth = 3
+      ctx.stroke()
+      this.previewSrc = canvas.toDataURL()
+    }
+    this.endPoint = new THREE.Vector2;
+  }
+  changeColor(color) {
+    this.color = color
+    this.color3 = new THREE.Color(this.color)
+    this.ccolor = Color(color)
+  }
+
+  changeScale(scale) {
+    this.scale = scale
+  }
+  changeOpacity(opacity) {
+    this.opacity = opacity
+  }
+  drawTo(ctx, x, y, opts = {}) {
+    this.endPoint.set(x, -y)
+    if (this.shape.currentPoint.distanceTo(this.endPoint) > 5)
+    {
+      this.shape.lineTo(x, -y)
+    }
+  }
+  startDrawing(ctx, x, y) {
+    this.solo = true
+    this.shape = new THREE.Shape();
+    ctx.moveTo(x, y)
+    this.shape.moveTo(x, -y)
+  }
+  endDrawing(ctx) {
+    this.solo = false
+    Compositor.el.emit('shapecreated', this.shape)
+    console.log("Shape", this.shape)
+    this.shape = undefined
+  }
+  drawOutline(ctx, x, y) {
+    if (!this.shape || this.shape.curves.length === 0)
+    {
+      ctx.beginPath()
+      ctx.arc(x, y, this.scale * this.outlineScale, 0, 2 * Math.PI, false)
+      ctx.strokeStyle = '#FFFFFF'
+      ctx.lineWidth = 1
+      ctx.stroke()
+      return
+    }
+
+    ctx.strokeStyle = '#FFFFFF'
+    ctx.lineWidth = 1
+    ctx.moveTo(this.shape.curves[0].v1.x, - this.shape.curves[0].v1.y)
+    for (let line of this.shape.curves)
+    {
+      ctx.lineTo(line.v2.x, - line.v2.y)
+    }
+    ctx.stroke()
+  }
+}
+
 const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};

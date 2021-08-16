@@ -487,7 +487,7 @@ class VARTISTEUtil {
     return dest
   }
 
-  callLater(fn) {
+  callLater(fn = function(){}) {
     return new Promise((r, e) => {
       window.setTimeout(() => {
         fn()
