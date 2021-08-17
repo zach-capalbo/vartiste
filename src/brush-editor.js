@@ -69,6 +69,7 @@ AFRAME.registerSystem('brush-system', {
       new Brush.StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false, switchbackAngle: 90}),
       new Brush.StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
+    // new Brush.VectorBrush('vector'),
 
 
     // Hidden Brushes

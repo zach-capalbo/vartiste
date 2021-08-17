@@ -56,8 +56,17 @@ AFRAME.registerSystem('paint-system', {
 
   // Selects the brush at position `index` from [`BrushList`](https://gitlab.com/zach-geek/vartiste/-/blob/release/src/brush-list.js)
   selectBrush(index) {
-    this.data.brushIndex = index
-    this.brush = BrushList[this.data.brushIndex]
+    if (index instanceof Brush.Brush)
+    {
+      this.data.brushIndex = BrushList.indexOf(index)
+      this.brush = index
+      index = this.data.brushIndex
+    }
+    else
+    {
+      this.data.brushIndex = index
+      this.brush = BrushList[this.data.brushIndex]
+    }
     this.brush.changeColor(this.data.color)
     this.brush.changeScale(this.data.brushScale)
     this.brush.changeOpacity(this.data.opacity)

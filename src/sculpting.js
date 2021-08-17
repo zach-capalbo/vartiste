@@ -1,6 +1,6 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
-
+import {VectorBrush} from './brush.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -294,7 +294,7 @@ AFRAME.registerComponent('vertex-handles', {
       this.setupMesh(mesh)
     }
   },
-  setupMesh(mesh) {
+  async setupMesh(mesh) {
     if (!mesh)
     {
       console.warn("Can't set vertex handles before mesh yet")
@@ -321,8 +321,18 @@ AFRAME.registerComponent('vertex-handles', {
       bvh = mesh.geometry.computeBoundsTree()
     }
 
+    let scale = new THREE.Vector3;
+    mesh.getWorldScale(scale);
+    scale = 1 / Math.max(scale.x, scale.y, scale.z)
+    console.log("Scale", scale)
+
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
+      if ((i + 1) % 100 === 0)
+      {
+        console.log("P", i)
+        await Util.callLater()
+      }
       if (skipSet.has(i)) continue;
       let el = document.createElement('a-entity')
       this.el.append(el)
@@ -388,10 +398,12 @@ AFRAME.registerComponent('vertex-handles', {
 
         el.setAttribute('vertex-handle', 'mesh', mesh)
         el.setAttribute('vertex-handle', 'vertices', nearVertices)
+        el.setAttribute('geometry', 'radius', scale)
       }
       else
       {
         el.setAttribute('vertex-handle', `vertices: ${i}`)
+        el.setAttribute('geometry', 'radius', scale)
       }
     }
   },
@@ -400,5 +412,64 @@ AFRAME.registerComponent('vertex-handles', {
     {
       this.el.removeChild(el)
     }
+  }
+})
+
+Util.registerComponentSystem('cutout-canvas', {
+  schema: {
+    extrude: {default: true},
+  },
+  events: {
+    shapecreated: function(e) {
+      this.handleShape(e.detail)
+    }
+  },
+  init() {
+    this.cutBrush = new VectorBrush('vector')
+  },
+  handleShape(shape)
+  {
+    let geometry;
+
+    if (this.data.extrude)
+    {
+      const extrudeSettings = {
+      	steps: 2,
+      	depth: 48,
+      	bevelEnabled: false,
+      	bevelThickness: 1,
+      	bevelSize: 1,
+      	bevelOffset: 0,
+      	bevelSegments: 1
+      };
+      geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings)
+    }
+    else
+    {
+      geometry = new THREE.ShapeBufferGeometry(shape, 3)
+    }
+    let uvAttr = geometry.attributes.uv
+    let uv = new THREE.Vector2()
+    for (let i = 0; i < uvAttr.count; ++i)
+    {
+      uv.fromBufferAttribute(uvAttr, i)
+      uv.x = uv.x / Compositor.component.width
+      uv.y = uv.y / Compositor.component.height
+      uvAttr.setXY(i, uv.x, - uv.y)
+    }
+    let mesh = new THREE.Mesh(geometry, Compositor.material)
+    mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
+    mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
+    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: false})
+
+    if (this.oldBrush)
+    {
+      this.el.sceneEl.systems['paint-system'].selectBrush(this.oldBrush)
+      this.oldBrush = null
+    }
+  },
+  startCutout() {
+    this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
   }
 })
