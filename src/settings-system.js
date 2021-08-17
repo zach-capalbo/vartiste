@@ -301,14 +301,14 @@ Util.registerComponentSystem('settings-system', {
       delete this.compositeRecorder
     }
   },
-  addModelView(model, {replace = true} = {}) {
+  addModelView(model, {replace = true, forceAutoScale = undefined} = {}) {
     let viewer = document.getElementById('composition-view')
 
     let rootObj = model.scene || model.scenes[0]
 
     if (!viewer.getObject3D('mesh')) replace = true
 
-    if (this.el.sceneEl.components['file-upload'].data.autoscaleModel && replace)
+    if (forceAutoScale || (this.el.sceneEl.components['file-upload'].data.autoscaleModel && replace))
     {
       Util.autoScaleViewer(rootObj, viewer)
     }
