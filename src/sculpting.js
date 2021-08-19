@@ -250,9 +250,17 @@ AFRAME.registerComponent('vertex-handle', {
       {
         return;
       }
+      this.mesh.parent.add(this.el.object3D)
     }
-    Util.applyMatrix(this.mesh.matrix, this.el.object3D)
+    // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
     this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
+    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+    if (!this.mesh.matrixInverse)
+    {
+      this.mesh.matrixInverse = new THREE.Matrix4
+    }
+    this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
+
   },
   startGrab() {
     if (!this.mesh)
@@ -270,10 +278,12 @@ AFRAME.registerComponent('vertex-handle', {
   },
   move(t,dt)
   {
+    this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
     for (let v of this.vertices)
     {
       this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
     }
+    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
     this.mesh.geometry.attributes.position.needsUpdate = true
     this.mesh.geometry.computeVertexNormals()
     this.mesh.geometry.computeFaceNormals()
@@ -325,7 +335,7 @@ AFRAME.registerComponent('vertex-handles', {
     }
 
     let scale = new THREE.Vector3;
-    mesh.getWorldScale(scale);
+    mesh.parent.getWorldScale(scale);
     scale = 0.004 / Math.max(scale.x, scale.y, scale.z)
     console.log("Scale", scale)
 
