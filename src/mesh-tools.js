@@ -6,8 +6,30 @@ import {THREED_MODES} from './layer-modes.js'
 import './framework/TessellateModifier'
 
 Util.registerComponentSystem('mesh-tools', {
+  schema: {
+    editMeshVertices: {default: false},
+  },
   init()  {
     Pool.init(this)
+  },
+  update(oldData) {
+    if (this.data.editMeshVertices !== oldData.editMeshVertices)
+    {
+      if (this.data.editMeshVertices)
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.setAttribute('vertex-handles', '')
+        }
+      }
+      else
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.removeAttribute('vertex-handles')
+        }
+      }
+    }
   },
   exportAll() {
     Compositor.el.object3D.visible = false

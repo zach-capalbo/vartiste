@@ -38,7 +38,9 @@ a-entity.grab-root shelf="name: Mesh Tools Shelf; closeable: true" scale="0.3 0.
       a-entity icon-button="#asset-skeletonator" tooltip="Morph Targets" popup-button="popup: morph-target-shelf; deferred: true; scale: 0.05 0.05 0.05"
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-transition-masked" tooltip="3D Cutout" system-click-action="system: cutout-canvas; action: startCutout"
-      a-entity icon-button="#asset-cylinder" tooltip="Extrude 3D Cutout" toggle-button="target: a-scene; component: cutout-canvas; property: extrude"
+      a-entity icon-button="#asset-arrow-up-bold" tooltip="Extrude 3D Cutout" toggle-button="target: a-scene; component: cutout-canvas; property: extrude"
+      a-entity icon-button="#asset-cylinder" tooltip="Edit Mesh Vertices" toggle-button="target: a-scene; component: mesh-tools; property: editMeshVertices"
+
 
   a-entity position="2.6 0.3 0" scale="4 4 4"
     a-entity hide-mesh-tool="" rotation="-25 0 0" preactivate-tooltip="Mesh Hiding Tool" action-tooltips="trigger: Hide Mesh"

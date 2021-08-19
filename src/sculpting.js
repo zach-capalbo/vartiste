@@ -250,9 +250,17 @@ AFRAME.registerComponent('vertex-handle', {
       {
         return;
       }
+      this.mesh.parent.add(this.el.object3D)
     }
-    Util.applyMatrix(this.mesh.matrix, this.el.object3D)
+    // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
     this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
+    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+    if (!this.mesh.matrixInverse)
+    {
+      this.mesh.matrixInverse = new THREE.Matrix4
+    }
+    this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
+
   },
   startGrab() {
     if (!this.mesh)
@@ -270,10 +278,12 @@ AFRAME.registerComponent('vertex-handle', {
   },
   move(t,dt)
   {
+    this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
     for (let v of this.vertices)
     {
       this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
     }
+    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
     this.mesh.geometry.attributes.position.needsUpdate = true
     this.mesh.geometry.computeVertexNormals()
     this.mesh.geometry.computeFaceNormals()
@@ -285,9 +295,12 @@ AFRAME.registerComponent('vertex-handles', {
   schema: {
     cloneGeometry: {default: false},
     mergeVertices: {default: true},
+    throttle: {default: 5000},
   },
   init() {
     this.handles = []
+    this.meshes = []
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
     for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
     {
@@ -322,15 +335,14 @@ AFRAME.registerComponent('vertex-handles', {
     }
 
     let scale = new THREE.Vector3;
-    mesh.getWorldScale(scale);
-    scale = 1 / Math.max(scale.x, scale.y, scale.z)
+    mesh.parent.getWorldScale(scale);
+    scale = 0.004 / Math.max(scale.x, scale.y, scale.z)
     console.log("Scale", scale)
 
     for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
     {
       if ((i + 1) % 100 === 0)
       {
-        console.log("P", i)
         await Util.callLater()
       }
       if (skipSet.has(i)) continue;
@@ -398,13 +410,13 @@ AFRAME.registerComponent('vertex-handles', {
 
         el.setAttribute('vertex-handle', 'mesh', mesh)
         el.setAttribute('vertex-handle', 'vertices', nearVertices)
-        el.setAttribute('geometry', 'radius', scale)
       }
       else
       {
         el.setAttribute('vertex-handle', `vertices: ${i}`)
-        el.setAttribute('geometry', 'radius', scale)
       }
+      Util.whenLoaded(el, () => el.setAttribute('geometry', 'radius', scale))
+      this.meshes.push(mesh)
     }
   },
   remove() {
@@ -412,6 +424,11 @@ AFRAME.registerComponent('vertex-handles', {
     {
       this.el.removeChild(el)
     }
+    this.meshes.length = 0
+  },
+  tick(t, dt)
+  {
+    return;
   }
 })
 
@@ -434,13 +451,14 @@ Util.registerComponentSystem('cutout-canvas', {
     if (this.data.extrude)
     {
       const extrudeSettings = {
-      	steps: 2,
-      	depth: 48,
+      	steps: 1,
+      	depth: 0.002,
       	bevelEnabled: false,
       	bevelThickness: 1,
       	bevelSize: 1,
       	bevelOffset: 0,
-      	bevelSegments: 1
+      	bevelSegments: 1,
+        curveSegments: 3
       };
       geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings)
     }
@@ -457,10 +475,21 @@ Util.registerComponentSystem('cutout-canvas', {
       uv.y = uv.y / Compositor.component.height
       uvAttr.setXY(i, uv.x, - uv.y)
     }
+
+    let scaleMatrix = new THREE.Matrix4;
+    scaleMatrix.makeScale(
+      1.0 / Compositor.component.width,
+      Compositor.el.getAttribute('geometry').height / Compositor.component.height / Compositor.el.getAttribute('geometry').width,
+      // Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width,
+      1,
+    )
+    console.log("ScaleMatrix", scaleMatrix.elements)
+    geometry.attributes.position.applyMatrix4(scaleMatrix)
+
     let mesh = new THREE.Mesh(geometry, Compositor.material)
-    mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
-    mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
-    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: false})
+    // mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
+    // mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
+    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: true, undo: true})
 
     if (this.oldBrush)
     {
