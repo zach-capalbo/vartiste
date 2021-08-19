@@ -301,7 +301,7 @@ Util.registerComponentSystem('settings-system', {
       delete this.compositeRecorder
     }
   },
-  addModelView(model, {replace = true, forceAutoScale = undefined} = {}) {
+  addModelView(model, {replace = true, forceAutoScale = undefined, undo = true} = {}) {
     let viewer = document.getElementById('composition-view')
 
     let rootObj = model.scene || model.scenes[0]
@@ -314,6 +314,28 @@ Util.registerComponentSystem('settings-system', {
     }
 
     viewer.setAttribute('shadow', 'cast: true; receive: true')
+
+    if (undo) {
+      let oldObject = viewer.getObject3D('mesh')
+      Undo.collect(() => {
+          Undo.pushObjectMatrix(Compositor.el.object3D)
+          Undo.push(() => {
+            let o = model.scene || model.scenes[0]
+            if (!replace)
+            {
+            }
+            else if (oldObject)
+            {
+              viewer.setObject3D('mesh', oldObject)
+            }
+            else
+            {
+              delete viewer.object3DMap.mesh
+            }
+            o.parent.remove(o)
+          })
+      })
+    }
 
     if (replace)
     {
@@ -338,7 +360,7 @@ Util.registerComponentSystem('settings-system', {
       }
     })
 
-    let mainCanvas = document.getElementById('canvas-view')
+    let mainCanvas = Compositor.el
     // mainCanvas.setAttribute("position", "0 0.6 3.14")
     // mainCanvas.setAttribute("rotation", "0 180 0")
     mainCanvas.setAttribute('position', "-0.33131340738157977 0.6952806276999972 0.33044786242701646")

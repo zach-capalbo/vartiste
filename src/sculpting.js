@@ -479,7 +479,7 @@ Util.registerComponentSystem('cutout-canvas', {
     let mesh = new THREE.Mesh(geometry, Compositor.material)
     // mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
     // mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
-    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: true})
+    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: true, undo: true})
 
     if (this.oldBrush)
     {
