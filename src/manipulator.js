@@ -467,7 +467,7 @@ AFRAME.registerComponent('manipulator', {
 
       this.endPoint.getWorldQuaternion(quart)
 
-      if (this.el.is('rotating') || this.el.is('orbiting'))
+      if (!this.grabOptions.lockRotation && this.el.is('rotating') || this.el.is('orbiting'))
       {
         let id = this.pool('identity', THREE.Matrix4)
         id.identity()
@@ -584,7 +584,9 @@ AFRAME.registerComponent('grab-options', {
 
     // If true, grabbing this element will add an undo action to restore its
     // initial location to the undo stack
-    undoable: {type: 'boolean', default: false}
+    undoable: {type: 'boolean', default: false},
+
+    lockRotation: {default: false},
   }
 })
 

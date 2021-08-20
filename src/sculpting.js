@@ -196,7 +196,8 @@ AFRAME.registerComponent('vertex-handle', {
     vertices: {type: 'array'},
     mesh: {default: null},
     attribute: {default: 'position', oneOf: ['position', 'uv']},
-    offset: {default: 0},
+    offset: {default: 2},
+    drawLines: {default: true},
   },
   events: {
     stateadded: function (e) {
@@ -277,9 +278,14 @@ AFRAME.registerComponent('vertex-handle', {
       this.el.object3D.position.x -= 0.5
       this.el.object3D.position.y -= 0.5
       this.el.object3D.position.x *= Compositor.el.getAttribute('geometry').width
-      this.el.object3D.position.y *= Compositor.el.getAttribute('geometry').height
+      this.el.object3D.position.y *= - Compositor.el.getAttribute('geometry').height
       this.el.object3D.position.z = this.data.offset
-      console.log("P:", this.el.object3D.position)
+
+      if (this.data.drawLines)
+      {
+        this.el.setAttribute('grab-options', 'scalable: false; lockRotation: true')
+        this.el.setAttribute('line', `start: 0 0 0; end: 0 0 -${2 * this.data.offset}`)
+      }
     }
 
   },
@@ -315,12 +321,17 @@ AFRAME.registerComponent('vertex-handle', {
     else if (this.data.attribute === 'uv')
     {
       let x = this.el.object3D.position.x / Compositor.el.getAttribute('geometry').width + 0.5
-      let y = this.el.object3D.position.y / Compositor.el.getAttribute('geometry').height + 0.5
+      let y = - this.el.object3D.position.y / Compositor.el.getAttribute('geometry').height + 0.5
       for (let v of this.vertices)
       {
         this.mesh.geometry.attributes.uv.setXY(v, x, y)
       }
       this.mesh.geometry.attributes.uv.needsUpdate = true
+
+      if (this.data.drawLines)
+      {
+        this.el.setAttribute('line', 'end', `0 0 -${this.el.object3D.position.z}`)
+      }
     }
   }
 })
@@ -329,13 +340,15 @@ AFRAME.registerComponent('vertex-handles', {
   schema: {
     cloneGeometry: {default: false},
     mergeVertices: {default: true},
-    throttle: {default: 5000},
-    attribute: {default: 'position'}
+    throttle: {default: 500},
+    attribute: {default: 'position'},
+    drawLines: {default: false},
   },
   init() {
     this.handles = []
     this.meshes = []
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.meshLines = new Map();
 
     for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
     {
@@ -348,6 +361,8 @@ AFRAME.registerComponent('vertex-handles', {
       console.warn("Can't set vertex handles before mesh yet")
       return;
     }
+
+    console.log("Setting up vertex handles for mesh", mesh)
 
     if (this.data.cloneGeometry)
     {
@@ -385,6 +400,18 @@ AFRAME.registerComponent('vertex-handles', {
 
     scale = 0.004 / Math.max(scale.x, scale.y, scale.z)
     console.log("Scale", scale)
+
+    let meshLine = {mesh}
+    if (this.data.drawLines && this.data.attribute === 'uv')
+    {
+      meshLine.elIndex = this.handles.length
+      meshLine.geometry = new THREE.BufferGeometry()
+      meshLine.attr = new THREE.BufferAttribute(new Float32Array(mesh.geometry.index.count * 3), 3, false)
+      meshLine.geometry.setAttribute('position', meshLine.attr)
+      meshLine.line = new THREE.Line(meshLine.geometry, new THREE.LineBasicMaterial({color: new THREE.Color('#e58be5')}))
+      this.meshLines.set(mesh, meshLine)
+      Compositor.el.object3D.add(meshLine.line)
+    }
 
     for (let i = 0; i < attr.count; ++i)
     {
@@ -461,7 +488,9 @@ AFRAME.registerComponent('vertex-handles', {
       }
       else
       {
-        el.setAttribute('vertex-handle', `vertices: ${i}; attribute: ${this.data.attribute}`)
+        el.setAttribute('vertex-handle', 'attribute', this.data.attribute)
+        el.setAttribute('vertex-handle', 'mesh', mesh)
+        el.setAttribute('vertex-handle', 'vertices', [i])
       }
       Util.whenLoaded(el, () => el.setAttribute('geometry', 'radius', scale))
       this.meshes.push(mesh)
@@ -476,7 +505,44 @@ AFRAME.registerComponent('vertex-handles', {
   },
   tick(t, dt)
   {
-    return;
+    if (this.data.attribute === 'uv')
+    {
+      Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
+      this.el.sceneEl.systems['uv-unwrapper'].drawUVs()
+      Compositor.component.activeLayer.touch()
+    };
+
+    if (!this.data.drawLines || this.data.attribute !== 'uv')
+    {
+      return;
+    }
+
+    for (let mesh of this.meshes)
+    {
+        let meshLine = this.meshLines.get(mesh);
+        for (let i = 0; i < meshLine.mesh.geometry.index.count; ++i)
+        {
+          let v = meshLine.mesh.geometry.index.array[i];
+          if (v + meshLine.elIndex > this.handles.length || !this.handles[v + meshLine.elIndex])
+          {
+            // console.log("OOB", v, meshLine.elIndex)
+            continue
+          }
+          let pos = this.handles[v + meshLine.elIndex].object3D.position;
+          meshLine.attr.setXYZ(v, pos.x, pos.y, pos.z)
+        }
+        meshLine.attr.needsUpdate = true
+    }
+    // for (let mesh of this.meshes)
+    // {
+    //     let meshLine = this.meshLines.get(mesh);
+    //     for (let i = meshLine.elIndex; i < meshLine.attr.count; ++i)
+    //     {
+    //       let pos = this.handles[i].object3D.position;
+    //       meshLine.attr.setXYZ(i - meshLine.elIndex, pos.x, pos.y, pos.z)
+    //     }
+    //     meshLine.attr.needsUpdate = true
+    // }
   }
 })
 
