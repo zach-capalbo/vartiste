@@ -194,7 +194,9 @@ AFRAME.registerComponent('vertex-handle', {
   schema: {
     vertex: {type: 'int'},
     vertices: {type: 'array'},
-    mesh: {default: null}
+    mesh: {default: null},
+    attribute: {default: 'position', oneOf: ['position', 'uv']},
+    offset: {default: 0},
   },
   events: {
     stateadded: function (e) {
@@ -250,16 +252,35 @@ AFRAME.registerComponent('vertex-handle', {
       {
         return;
       }
-      this.mesh.parent.add(this.el.object3D)
+
+      if (this.data.attribute === 'position')
+      {
+        this.mesh.parent.add(this.el.object3D)
+      }
     }
-    // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
-    this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
-    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
-    if (!this.mesh.matrixInverse)
+
+    if (this.data.attribute === 'position')
     {
-      this.mesh.matrixInverse = new THREE.Matrix4
+      // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
+      this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
+      this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+      if (!this.mesh.matrixInverse)
+      {
+        this.mesh.matrixInverse = new THREE.Matrix4
+      }
+      this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
     }
-    this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
+    else if (this.data.attribute === 'uv')
+    {
+      Compositor.el.object3D.add(this.el.object3D)
+      this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.uv, this.vertices[0])
+      this.el.object3D.position.x -= 0.5
+      this.el.object3D.position.y -= 0.5
+      this.el.object3D.position.x *= Compositor.el.getAttribute('geometry').width
+      this.el.object3D.position.y *= Compositor.el.getAttribute('geometry').height
+      this.el.object3D.position.z = this.data.offset
+      console.log("P:", this.el.object3D.position)
+    }
 
   },
   startGrab() {
@@ -278,16 +299,29 @@ AFRAME.registerComponent('vertex-handle', {
   },
   move(t,dt)
   {
-    this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
-    for (let v of this.vertices)
+    if (this.data.attribute === 'position')
     {
-      this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+      this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
+      for (let v of this.vertices)
+      {
+        this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+      }
+      this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+      this.mesh.geometry.attributes.position.needsUpdate = true
+      this.mesh.geometry.computeVertexNormals()
+      this.mesh.geometry.computeFaceNormals()
+      this.mesh.geometry.attributes.normal.needsUpdate = true
     }
-    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
-    this.mesh.geometry.attributes.position.needsUpdate = true
-    this.mesh.geometry.computeVertexNormals()
-    this.mesh.geometry.computeFaceNormals()
-    this.mesh.geometry.attributes.normal.needsUpdate = true
+    else if (this.data.attribute === 'uv')
+    {
+      let x = this.el.object3D.position.x / Compositor.el.getAttribute('geometry').width + 0.5
+      let y = this.el.object3D.position.y / Compositor.el.getAttribute('geometry').height + 0.5
+      for (let v of this.vertices)
+      {
+        this.mesh.geometry.attributes.uv.setXY(v, x, y)
+      }
+      this.mesh.geometry.attributes.uv.needsUpdate = true
+    }
   }
 })
 
@@ -296,6 +330,7 @@ AFRAME.registerComponent('vertex-handles', {
     cloneGeometry: {default: false},
     mergeVertices: {default: true},
     throttle: {default: 5000},
+    attribute: {default: 'position'}
   },
   init() {
     this.handles = []
@@ -319,14 +354,28 @@ AFRAME.registerComponent('vertex-handles', {
       mesh.geometry = mesh.geometry.clone()
     }
 
+    let attr, p1, p2;
+    let scale = new THREE.Vector3;
+    if (this.data.attribute === 'position')
+    {
+      attr = mesh.geometry.attributes.position;
+      p2 = new THREE.Vector3;
+      p1 = new THREE.Vector3;
+      mesh.parent.getWorldScale(scale);
+    }
+    else if (this.data.attribute === 'uv')
+    {
+      attr = mesh.geometry.attributes.uv;
+      p1 = new THREE.Vector2
+      p2 = new THREE.Vector2
+      Compositor.el.object3D.getWorldScale(scale);
+    }
+
+
     let skipSet = new Set();
-
-    let p2 = new THREE.Vector3;
-    let p1 = new THREE.Vector3;
-
     let nearVertices = []
 
-    let useBVH = mesh.geometry.attributes.position.count >= 200
+    let useBVH = this.data.attribute === 'position' && attr.count >= 200
 
     let bvh
     if (useBVH) {
@@ -334,12 +383,10 @@ AFRAME.registerComponent('vertex-handles', {
       bvh = mesh.geometry.computeBoundsTree()
     }
 
-    let scale = new THREE.Vector3;
-    mesh.parent.getWorldScale(scale);
     scale = 0.004 / Math.max(scale.x, scale.y, scale.z)
     console.log("Scale", scale)
 
-    for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
+    for (let i = 0; i < attr.count; ++i)
     {
       if ((i + 1) % 100 === 0)
       {
@@ -354,13 +401,13 @@ AFRAME.registerComponent('vertex-handles', {
       {
         const mergeDistance = 0.001;
         nearVertices = [i]
-        p1.fromBufferAttribute(mesh.geometry.attributes.position, i)
+        p1.fromBufferAttribute(attr, i)
 
         if (!useBVH)
         {
-          for (let j = i + 1; j < mesh.geometry.attributes.position.count; ++j)
+          for (let j = i + 1; j < attr.count; ++j)
           {
-            p2.fromBufferAttribute(mesh.geometry.attributes.position, j)
+            p2.fromBufferAttribute(attr, j)
             if (p1.distanceTo(p2) < mergeDistance)
             {
               nearVertices.push(j)
@@ -408,12 +455,13 @@ AFRAME.registerComponent('vertex-handles', {
           })
         }
 
+        el.setAttribute('vertex-handle', 'attribute', this.data.attribute)
         el.setAttribute('vertex-handle', 'mesh', mesh)
         el.setAttribute('vertex-handle', 'vertices', nearVertices)
       }
       else
       {
-        el.setAttribute('vertex-handle', `vertices: ${i}`)
+        el.setAttribute('vertex-handle', `vertices: ${i}; attribute: ${this.data.attribute}`)
       }
       Util.whenLoaded(el, () => el.setAttribute('geometry', 'radius', scale))
       this.meshes.push(mesh)
