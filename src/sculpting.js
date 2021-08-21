@@ -1,6 +1,7 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {VectorBrush} from './brush.js'
+import {Layer} from './layer.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -221,6 +222,9 @@ AFRAME.registerComponent('vertex-handle', {
 
     this.startPosition = new THREE.Vector3
   },
+  remove() {
+    this.el.object3D.parent.remove(this.el.object3D)
+  },
   update(oldData) {
     if (this.data.vertices.length === 0)
     {
@@ -386,6 +390,12 @@ AFRAME.registerComponent('vertex-handles', {
       Compositor.el.object3D.getWorldScale(scale);
     }
 
+    if (!attr)
+    {
+      console.warn("No attribute for", this.data.attribute, mesh)
+      return
+    }
+
 
     let skipSet = new Set();
     let nearVertices = []
@@ -502,21 +512,15 @@ AFRAME.registerComponent('vertex-handles', {
       this.el.removeChild(el)
     }
     this.meshes.length = 0
+
+    if (this.uvLayer)
+    {
+      Compositor.component.deleteLayer(this.uvLayer)
+      this.uvLayer = undefined
+    }
   },
   tick(t, dt)
   {
-    if (this.data.attribute === 'uv')
-    {
-      if (!this.uvLayer)
-      {
-        this.uvLayer = new Layer(Compositor.component.width, Compositor.component.height)
-        Compositor.component.addLayer(undefined, {layer: this.uvLayer})
-      }
-      Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
-      this.el.sceneEl.systems['uv-unwrapper'].drawUVs()
-      Compositor.component.activeLayer.touch()
-    };
-
     if (!this.data.drawLines || this.data.attribute !== 'uv')
     {
       return;
@@ -619,5 +623,78 @@ Util.registerComponentSystem('cutout-canvas', {
   startCutout() {
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  }
+})
+
+Util.registerComponentSystem('vertex-editing', {
+  schema: {
+    editMeshVertices: {default: false},
+    editMeshUVs: {default: false},
+  },
+  events: {
+    startdrawing: function(e) {
+      this.el.setAttribute('vertex-editing', 'editMeshUVs', false)
+    },
+    layerupdated: function(e) {
+      this.el.setAttribute('vertex-editing', 'editMeshUVs', false)
+    }
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 200, this)
+  },
+  update(oldData) {
+    if (this.data.editMeshVertices !== oldData.editMeshVertices)
+    {
+      if (this.data.editMeshVertices)
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.setAttribute('vertex-handles', '')
+        }
+      }
+      else
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.removeAttribute('vertex-handles')
+        }
+      }
+    }
+    if (this.data.editMeshUVs !== oldData.editMeshUVs)
+    {
+      if (this.data.editMeshUVs)
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.setAttribute('vertex-handles', 'attribute: uv')
+        }
+      }
+      else
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.removeAttribute('vertex-handles')
+        }
+
+        if (this.uvLayer)
+        {
+          Compositor.component.deleteLayer(this.uvLayer)
+          delete this.uvLayer
+        }
+      }
+    }
+  },
+  tick(t, dt) {
+    if (this.data.editMeshUVs)
+    {
+      if (!this.uvLayer)
+      {
+        this.uvLayer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(undefined, {layer: this.uvLayer})
+      }
+      Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
+      this.el.sceneEl.systems['uv-unwrapper'].drawUVs()
+      Compositor.component.activeLayer.touch()
+    };
   }
 })
