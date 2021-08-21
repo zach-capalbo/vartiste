@@ -507,6 +507,11 @@ AFRAME.registerComponent('vertex-handles', {
   {
     if (this.data.attribute === 'uv')
     {
+      if (!this.uvLayer)
+      {
+        this.uvLayer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(undefined, {layer: this.uvLayer})
+      }
       Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
       this.el.sceneEl.systems['uv-unwrapper'].drawUVs()
       Compositor.component.activeLayer.touch()
