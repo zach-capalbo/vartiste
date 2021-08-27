@@ -458,9 +458,15 @@ Util.registerComponentSystem('uv-unwrapper', {
     // geometry.attributes.uv.array = new Float32Array(coords);
     return geometry
   },
-  drawUVs() {
-    let canvas = Compositor.drawableCanvas
-    Undo.pushCanvas(canvas)
+  drawUVs({canvas, undo=true} = {}) {
+    if (!canvas)
+    {
+      canvas = Compositor.drawableCanvas
+    }
+    if (undo)
+    {
+      Undo.pushCanvas(canvas)
+    }
 
     let ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)

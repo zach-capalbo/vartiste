@@ -1,6 +1,7 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {VectorBrush} from './brush.js'
+import {Layer} from './layer.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -194,7 +195,10 @@ AFRAME.registerComponent('vertex-handle', {
   schema: {
     vertex: {type: 'int'},
     vertices: {type: 'array'},
-    mesh: {default: null}
+    mesh: {default: null},
+    attribute: {default: 'position', oneOf: ['position', 'uv']},
+    offset: {default: 2},
+    drawLines: {default: true},
   },
   events: {
     stateadded: function (e) {
@@ -217,6 +221,9 @@ AFRAME.registerComponent('vertex-handle', {
     this.el.classList.add('clickable')
 
     this.startPosition = new THREE.Vector3
+  },
+  remove() {
+    this.el.object3D.parent.remove(this.el.object3D)
   },
   update(oldData) {
     if (this.data.vertices.length === 0)
@@ -250,16 +257,40 @@ AFRAME.registerComponent('vertex-handle', {
       {
         return;
       }
-      this.mesh.parent.add(this.el.object3D)
+
+      if (this.data.attribute === 'position')
+      {
+        this.mesh.parent.add(this.el.object3D)
+      }
     }
-    // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
-    this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
-    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
-    if (!this.mesh.matrixInverse)
+
+    if (this.data.attribute === 'position')
     {
-      this.mesh.matrixInverse = new THREE.Matrix4
+      // Util.applyMatrix(this.mesh.matrix, this.el.object3D)
+      this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.position, this.vertices[0])
+      this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+      if (!this.mesh.matrixInverse)
+      {
+        this.mesh.matrixInverse = new THREE.Matrix4
+      }
+      this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
     }
-    this.mesh.matrixInverse.copy(this.mesh.matrix).invert()
+    else if (this.data.attribute === 'uv')
+    {
+      Compositor.el.object3D.add(this.el.object3D)
+      this.el.object3D.position.fromBufferAttribute(this.mesh.geometry.attributes.uv, this.vertices[0])
+      this.el.object3D.position.x -= 0.5
+      this.el.object3D.position.y -= 0.5
+      this.el.object3D.position.x *= Compositor.el.getAttribute('geometry').width
+      this.el.object3D.position.y *= - Compositor.el.getAttribute('geometry').height
+      this.el.object3D.position.z = this.data.offset
+
+      if (this.data.drawLines)
+      {
+        this.el.setAttribute('grab-options', 'scalable: false; lockRotation: true')
+        this.el.setAttribute('line', `start: 0 0 0; end: 0 0 -${2 * this.data.offset}`)
+      }
+    }
 
   },
   startGrab() {
@@ -278,16 +309,34 @@ AFRAME.registerComponent('vertex-handle', {
   },
   move(t,dt)
   {
-    this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
-    for (let v of this.vertices)
+    if (this.data.attribute === 'position')
     {
-      this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+      this.el.object3D.position.applyMatrix4(this.mesh.matrixInverse)
+      for (let v of this.vertices)
+      {
+        this.mesh.geometry.attributes.position.setXYZ(v, this.el.object3D.position.x, this.el.object3D.position.y, this.el.object3D.position.z)
+      }
+      this.el.object3D.position.applyMatrix4(this.mesh.matrix)
+      this.mesh.geometry.attributes.position.needsUpdate = true
+      this.mesh.geometry.computeVertexNormals()
+      this.mesh.geometry.computeFaceNormals()
+      this.mesh.geometry.attributes.normal.needsUpdate = true
     }
-    this.el.object3D.position.applyMatrix4(this.mesh.matrix)
-    this.mesh.geometry.attributes.position.needsUpdate = true
-    this.mesh.geometry.computeVertexNormals()
-    this.mesh.geometry.computeFaceNormals()
-    this.mesh.geometry.attributes.normal.needsUpdate = true
+    else if (this.data.attribute === 'uv')
+    {
+      let x = this.el.object3D.position.x / Compositor.el.getAttribute('geometry').width + 0.5
+      let y = - this.el.object3D.position.y / Compositor.el.getAttribute('geometry').height + 0.5
+      for (let v of this.vertices)
+      {
+        this.mesh.geometry.attributes.uv.setXY(v, x, y)
+      }
+      this.mesh.geometry.attributes.uv.needsUpdate = true
+
+      if (this.data.drawLines)
+      {
+        this.el.setAttribute('line', 'end', `0 0 -${this.el.object3D.position.z}`)
+      }
+    }
   }
 })
 
@@ -295,12 +344,15 @@ AFRAME.registerComponent('vertex-handles', {
   schema: {
     cloneGeometry: {default: false},
     mergeVertices: {default: true},
-    throttle: {default: 5000},
+    throttle: {default: 500},
+    attribute: {default: 'position'},
+    drawLines: {default: false},
   },
   init() {
     this.handles = []
     this.meshes = []
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.meshLines = new Map();
 
     for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
     {
@@ -314,19 +366,41 @@ AFRAME.registerComponent('vertex-handles', {
       return;
     }
 
+    console.log("Setting up vertex handles for mesh", mesh)
+
     if (this.data.cloneGeometry)
     {
       mesh.geometry = mesh.geometry.clone()
     }
 
+    let attr, p1, p2;
+    let scale = new THREE.Vector3;
+    if (this.data.attribute === 'position')
+    {
+      attr = mesh.geometry.attributes.position;
+      p2 = new THREE.Vector3;
+      p1 = new THREE.Vector3;
+      mesh.parent.getWorldScale(scale);
+    }
+    else if (this.data.attribute === 'uv')
+    {
+      attr = mesh.geometry.attributes.uv;
+      p1 = new THREE.Vector2
+      p2 = new THREE.Vector2
+      Compositor.el.object3D.getWorldScale(scale);
+    }
+
+    if (!attr)
+    {
+      console.warn("No attribute for", this.data.attribute, mesh)
+      return
+    }
+
+
     let skipSet = new Set();
-
-    let p2 = new THREE.Vector3;
-    let p1 = new THREE.Vector3;
-
     let nearVertices = []
 
-    let useBVH = mesh.geometry.attributes.position.count >= 200
+    let useBVH = this.data.attribute === 'position' && attr.count >= 200
 
     let bvh
     if (useBVH) {
@@ -334,12 +408,22 @@ AFRAME.registerComponent('vertex-handles', {
       bvh = mesh.geometry.computeBoundsTree()
     }
 
-    let scale = new THREE.Vector3;
-    mesh.parent.getWorldScale(scale);
     scale = 0.004 / Math.max(scale.x, scale.y, scale.z)
     console.log("Scale", scale)
 
-    for (let i = 0; i < mesh.geometry.attributes.position.count; ++i)
+    let meshLine = {mesh}
+    if (this.data.drawLines && this.data.attribute === 'uv')
+    {
+      meshLine.elIndex = this.handles.length
+      meshLine.geometry = new THREE.BufferGeometry()
+      meshLine.attr = new THREE.BufferAttribute(new Float32Array(mesh.geometry.index.count * 3), 3, false)
+      meshLine.geometry.setAttribute('position', meshLine.attr)
+      meshLine.line = new THREE.Line(meshLine.geometry, new THREE.LineBasicMaterial({color: new THREE.Color('#e58be5')}))
+      this.meshLines.set(mesh, meshLine)
+      Compositor.el.object3D.add(meshLine.line)
+    }
+
+    for (let i = 0; i < attr.count; ++i)
     {
       if ((i + 1) % 100 === 0)
       {
@@ -354,13 +438,13 @@ AFRAME.registerComponent('vertex-handles', {
       {
         const mergeDistance = 0.001;
         nearVertices = [i]
-        p1.fromBufferAttribute(mesh.geometry.attributes.position, i)
+        p1.fromBufferAttribute(attr, i)
 
         if (!useBVH)
         {
-          for (let j = i + 1; j < mesh.geometry.attributes.position.count; ++j)
+          for (let j = i + 1; j < attr.count; ++j)
           {
-            p2.fromBufferAttribute(mesh.geometry.attributes.position, j)
+            p2.fromBufferAttribute(attr, j)
             if (p1.distanceTo(p2) < mergeDistance)
             {
               nearVertices.push(j)
@@ -408,12 +492,15 @@ AFRAME.registerComponent('vertex-handles', {
           })
         }
 
+        el.setAttribute('vertex-handle', 'attribute', this.data.attribute)
         el.setAttribute('vertex-handle', 'mesh', mesh)
         el.setAttribute('vertex-handle', 'vertices', nearVertices)
       }
       else
       {
-        el.setAttribute('vertex-handle', `vertices: ${i}`)
+        el.setAttribute('vertex-handle', 'attribute', this.data.attribute)
+        el.setAttribute('vertex-handle', 'mesh', mesh)
+        el.setAttribute('vertex-handle', 'vertices', [i])
       }
       Util.whenLoaded(el, () => el.setAttribute('geometry', 'radius', scale))
       this.meshes.push(mesh)
@@ -425,10 +512,46 @@ AFRAME.registerComponent('vertex-handles', {
       this.el.removeChild(el)
     }
     this.meshes.length = 0
+
+    if (this.uvLayer)
+    {
+      Compositor.component.deleteLayer(this.uvLayer)
+      this.uvLayer = undefined
+    }
   },
   tick(t, dt)
   {
-    return;
+    if (!this.data.drawLines || this.data.attribute !== 'uv')
+    {
+      return;
+    }
+
+    for (let mesh of this.meshes)
+    {
+        let meshLine = this.meshLines.get(mesh);
+        for (let i = 0; i < meshLine.mesh.geometry.index.count; ++i)
+        {
+          let v = meshLine.mesh.geometry.index.array[i];
+          if (v + meshLine.elIndex > this.handles.length || !this.handles[v + meshLine.elIndex])
+          {
+            // console.log("OOB", v, meshLine.elIndex)
+            continue
+          }
+          let pos = this.handles[v + meshLine.elIndex].object3D.position;
+          meshLine.attr.setXYZ(v, pos.x, pos.y, pos.z)
+        }
+        meshLine.attr.needsUpdate = true
+    }
+    // for (let mesh of this.meshes)
+    // {
+    //     let meshLine = this.meshLines.get(mesh);
+    //     for (let i = meshLine.elIndex; i < meshLine.attr.count; ++i)
+    //     {
+    //       let pos = this.handles[i].object3D.position;
+    //       meshLine.attr.setXYZ(i - meshLine.elIndex, pos.x, pos.y, pos.z)
+    //     }
+    //     meshLine.attr.needsUpdate = true
+    // }
   }
 })
 
@@ -500,5 +623,78 @@ Util.registerComponentSystem('cutout-canvas', {
   startCutout() {
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  }
+})
+
+Util.registerComponentSystem('vertex-editing', {
+  schema: {
+    editMeshVertices: {default: false},
+    editMeshUVs: {default: false},
+  },
+  events: {
+    startdrawing: function(e) {
+      this.el.setAttribute('vertex-editing', 'editMeshUVs', false)
+    },
+    layerupdated: function(e) {
+      this.el.setAttribute('vertex-editing', 'editMeshUVs', false)
+    }
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 200, this)
+  },
+  update(oldData) {
+    if (this.data.editMeshVertices !== oldData.editMeshVertices)
+    {
+      if (this.data.editMeshVertices)
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.setAttribute('vertex-handles', '')
+        }
+      }
+      else
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.removeAttribute('vertex-handles')
+        }
+      }
+    }
+    if (this.data.editMeshUVs !== oldData.editMeshUVs)
+    {
+      if (this.data.editMeshUVs)
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.setAttribute('vertex-handles', 'attribute: uv')
+        }
+      }
+      else
+      {
+        for (let m of Compositor.nonCanvasMeshes)
+        {
+          m.el.removeAttribute('vertex-handles')
+        }
+
+        if (this.uvLayer)
+        {
+          Compositor.component.deleteLayer(this.uvLayer)
+          delete this.uvLayer
+        }
+      }
+    }
+  },
+  tick(t, dt) {
+    if (this.data.editMeshUVs)
+    {
+      if (!this.uvLayer)
+      {
+        this.uvLayer = new Layer(Compositor.component.width, Compositor.component.height)
+        Compositor.component.addLayer(undefined, {layer: this.uvLayer})
+      }
+      Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
+      this.el.sceneEl.systems['uv-unwrapper'].drawUVs()
+      Compositor.component.activeLayer.touch()
+    };
   }
 })
