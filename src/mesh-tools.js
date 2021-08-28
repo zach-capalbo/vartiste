@@ -508,5 +508,3 @@ AFRAME.registerComponent('mesh-fill-tool', {
     }
   }
 })
-
-AFRAME.registerComponent('scissors-tool', {})

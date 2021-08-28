@@ -1,5 +1,6 @@
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
+import {INTERSECTED, CONTAINED, NOT_INTERSECTED} from './framework/three-mesh-bvh.js'
 const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
@@ -633,6 +634,109 @@ class VARTISTEUtil {
       lowPower = false;
     }
     return lowPower;
+  }
+
+  meshPointsInContainerMesh(mesh, container) {
+    if (mesh.type !== 'Mesh' || container.type !== 'Mesh') {
+      console.warn("meshPointsInContainerMesh only works on meshes!", mesh, container)
+    }
+    const inverseMatrix = new THREE.Matrix4();
+    inverseMatrix.copy( mesh.matrixWorld ).invert();
+
+    container.geometry.computeBoundingSphere();
+    const sphere = new THREE.Sphere();
+    container.getWorldPosition(sphere.center).applyMatrix4( inverseMatrix );
+    sphere.radius = container.geometry.boundingSphere.radius;
+
+    let meshToContainer = new THREE.Matrix4;
+    meshToContainer.copy(container.matrixWorld).invert();
+    meshToContainer.premultiply(mesh.matrixWorld);
+
+    let bvh = mesh.geometry.computeBoundsTree();
+    let containerBvh = container.geometry.computeBoundsTree();
+
+    let indices = []
+
+    let tempVec = new THREE.Vector3();
+
+    let index = mesh.geometry.index.array
+
+    let raycaster = new THREE.Raycaster;
+    raycaster.ray.direction.set(1, 0.1, 0);
+
+    let oldSided = container.material.side;
+
+    container.material.side = THREE.DoubleSide;
+
+    bvh.shapecast(mesh, {
+      intersectsBounds: box => {
+        // console.log("Checking box", box, sphere)
+        const intersects = sphere.intersectsBox( box );
+        const { min, max } = box;
+        if ( intersects ) {
+          for ( let x = 0; x <= 1; x ++ ) {
+            for ( let y = 0; y <= 1; y ++ ) {
+              for ( let z = 0; z <= 1; z ++ ) {
+                tempVec.set(
+                  x === 0 ? min.x : max.x,
+                  y === 0 ? min.y : max.y,
+                  z === 0 ? min.z : max.z
+                );
+                if ( ! sphere.containsPoint( tempVec ) ) {
+                  return INTERSECTED;
+                }
+              }
+            }
+          }
+          return CONTAINED;
+        }
+
+        return intersects ? INTERSECTED : NOT_INTERSECTED;
+      },
+
+      intersectsTriangle: ( tri, i, contained ) => {
+        if ( contained || tri.intersectsSphere( sphere ) ) {
+          const i3 = 3 * i;
+          // tri.a.applyMatrix4(meshToContainer)
+          // tri.b.applyMatrix4(meshToContainer)
+          // tri.c.applyMatrix4(meshToContainer)
+          raycaster.ray.origin.copy(tri.a)
+          mesh.localToWorld(raycaster.ray.origin)
+          let intersections = [];
+
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3] )
+          }
+
+          intersections.length = 0
+          raycaster.ray.origin.copy(tri.b)
+          mesh.localToWorld(raycaster.ray.origin)
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3 + 1] )
+          }
+          intersections.length = 0
+          raycaster.ray.origin.copy(tri.c)
+          mesh.localToWorld(raycaster.ray.origin)
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3 + 2] )
+          }
+        }
+        return false;
+      }
+    } );
+
+    container.material.side = oldSided;
+
+    return indices;
   }
 }
 

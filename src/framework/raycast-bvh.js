@@ -4,3 +4,5 @@ import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from './thre
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+THREE.MeshBVH = require('./three-mesh-bvh.js')

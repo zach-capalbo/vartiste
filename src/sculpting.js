@@ -182,6 +182,7 @@ AFRAME.registerComponent('sculpt-move-tool', {
 AFRAME.registerSystem('vertex-handle', {
   init() {
     this.grabbed = new Set()
+    this.selectors = []
   },
   tick(t, dt) {
     for (let v of this.grabbed.values())
@@ -217,7 +218,7 @@ AFRAME.registerComponent('vertex-handle', {
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
     this.el.setAttribute('grab-options', 'showHand: false')
-    this.el.setAttribute('material', 'color: #e58be5; shader: flat')
+    this.el.setAttribute('material', 'color: #e58be5; shader: matcap')
     this.el.classList.add('clickable')
 
     this.startPosition = new THREE.Vector3
@@ -351,6 +352,7 @@ AFRAME.registerComponent('vertex-handles', {
   init() {
     this.handles = []
     this.meshes = []
+    this.system = this.el.sceneEl.systems['vertex-handle']
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
     this.meshLines = new Map();
 
@@ -423,13 +425,44 @@ AFRAME.registerComponent('vertex-handles', {
       Compositor.el.object3D.add(meshLine.line)
     }
 
-    for (let i = 0; i < attr.count; ++i)
+    let selectors = this.system.selectors.slice()
+    let selectedSet
+
+    if (selectors.length)
     {
-      if ((i + 1) % 100 === 0)
+      selectedSet = new Set();
+
+      for (let s of selectors)
+      {
+        s.selectPoints(mesh, selectedSet)
+      }
+    }
+
+    let itCount = attr.count;
+    let i;
+    if (selectedSet)
+    {
+      selectedSet = Array.from(selectedSet)
+      itCount = selectedSet.length
+    }
+
+    for (let ii = 0; ii < itCount; ++ii)
+    {
+      if (selectedSet)
+      {
+        i = selectedSet[ii]
+      }
+      else
+      {
+        i = ii;
+      }
+
+      if ((ii + 1) % 100 === 0)
       {
         await Util.callLater()
       }
       if (skipSet.has(i)) continue;
+
       let el = document.createElement('a-entity')
       this.el.append(el)
       this.handles.push(el)

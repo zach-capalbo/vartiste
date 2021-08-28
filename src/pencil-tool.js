@@ -54,8 +54,18 @@ AFRAME.registerSystem('pencil-tool', {
       }
     })
   },
-  createHandle({radius, height}) {
+  createHandle({radius, height, parentEl}) {
     let cylinder = document.createElement('a-cylinder')
+
+    if (parentEl)
+    {
+      parentEl.append(cylinder)
+    }
+    else
+    {
+      console.warn("Should specify a parent el to avoid more warnings")
+    }
+
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', height)
     cylinder.setAttribute('segments-radial', 10)
@@ -970,6 +980,7 @@ AFRAME.registerComponent('selection-box-tool', {
     selector: {type: 'string', default: '.clickable, .canvas'},
     grabElements: {default: true},
     grabVertices: {default: false},
+    selectVertices: {default: false},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
   },
@@ -1028,6 +1039,25 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       this.stopGrab()
     }
+
+    if (this.data.selectVertices)
+    {
+      if (newGrabbing)
+      {
+        this.el.sceneEl.systems['vertex-handle'].selectors.push(this)
+      }
+      else
+      {
+        this.el.sceneEl.systems['vertex-handle'].selectors.splice(this.el.sceneEl.systems['vertex-handle'].selectors.indexOf(this), 1)
+      }
+    }
+  },
+  selectPoints(mesh, selectedSet)
+  {
+    for (let p of Util.meshPointsInContainerMesh(Compositor.mesh, this.box.getObject3D('mesh')))
+    {
+      selectedSet.add(p)
+    }
   },
   selectObjects() {
     let objects = document.querySelectorAll(this.data.selector)
@@ -1044,6 +1074,8 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   preprocessContainedTarget(target) {},
   startGrab() {
+    if (this.data.selectVertices) return;
+
     let objects = this.selectObjects();
     this.grabbers = {}
     this.grabbed = {}
@@ -1134,6 +1166,9 @@ AFRAME.registerComponent('selection-box-tool', {
     this.tick = this._tick;
   },
   stopGrab() {
+    if (this.data.selectVertices) {
+      return;
+    }
     this.tick = function(){};
     if (this.data.grabElements)
     {
@@ -1181,5 +1216,68 @@ AFRAME.registerComponent('dynamic-pencil-weight', {
     let ratio = intersection.distance / far
     this.el.components['manipulator-weight'].data.weight = THREE.Math.mapLinear(easing(ratio), easing(0), easing(1.0), 0.999, 0.1)
     console.log("Setting weight", this.el.components['manipulator-weight'].data.weight)
+  }
+})
+
+AFRAME.registerComponent('desk-registration-tool', {
+  events: {
+    bbuttonup: function(e) {
+      this.addPoint()
+    },
+    click: function(e) {
+      this.addPoint()
+    }
+  },
+  init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.04, height: 0.3, parentEl: this.el})
+
+    let tip = document.createElement('a-entity')
+    this.el.append(tip)
+    tip.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.02')
+    tip.setAttribute('position', `0 -0.3 0`)
+    this.tip = tip
+
+    this.el.sceneEl.systems['button-caster'].install(['bbutton'])
+    this.points = []
+  },
+  addPoint() {
+    let p
+    if (this.points.length >= 3)
+    {
+      p = this.points.shift()
+    }
+    else {
+      p = new THREE.Vector3()
+    }
+
+    this.tip.object3D.getWorldPosition(p)
+
+    this.points.push(p)
+
+    if (this.points.length >= 3)
+    {
+      this.regress()
+    }
+    console.log("Desk point", p.toArray())
+  },
+  regress() {
+
+    let plane = new THREE.Plane();
+    plane.setFromCoplanarPoints(...this.points)
+
+    console.log("Aligning to desk", this.points, plane)
+
+    let avg = new THREE.Vector3()
+
+    let target = Compositor.el.object3D
+    target.lookAt(plane.normal)
+    avg.copy(this.points[0])
+    avg.multiplyScalar(1.0 / 3.0)
+    avg.addScaledVector(this.points[1], 1.0 / 3.0)
+    avg.addScaledVector(this.points[2], 1.0 / 3.0)
+    plane.projectPoint(avg, target.position)
+    // target.position.worldToLocal(plane.normal)
+    // target.position.multiplyScalar(plane.constant)
   }
 })

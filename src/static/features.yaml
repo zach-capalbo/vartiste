@@ -493,6 +493,8 @@ sections:
           - url: https://twitter.com/zach_geek/status/1292625794376904704
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a new, VR-centric method for unwrapping UV maps in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/3dmodeling?src=hash&amp;ref_src=twsrc%5Etfw">#3dmodeling</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://t.co/uvwUaFfKTo">pic.twitter.com/uvwUaFfKTo</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1292625794376904704?ref_src=twsrc%5Etfw">August 10, 2020</a></blockquote>
+      - name: UV Editing
+        tweets: https://twitter.com/zach_geek/status/1431287301213237252
   - name: Skeletonator
     features:
       - name: Animated Primitives
