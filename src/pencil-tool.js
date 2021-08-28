@@ -1262,6 +1262,7 @@ AFRAME.registerComponent('desk-registration-tool', {
     {
       this.regress()
     }
+    console.log("Desk point", p.toArray())
   },
   regress() {
 

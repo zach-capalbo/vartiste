@@ -218,7 +218,7 @@ AFRAME.registerComponent('vertex-handle', {
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
     this.el.setAttribute('grab-options', 'showHand: false')
-    this.el.setAttribute('material', 'color: #e58be5; shader: flat')
+    this.el.setAttribute('material', 'color: #e58be5; shader: matcap')
     this.el.classList.add('clickable')
 
     this.startPosition = new THREE.Vector3

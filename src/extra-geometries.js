@@ -1,3 +1,20 @@
+import {Util} from './util.js'
+import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
+
+class GeometryHelper {
+  fromMesh(name, mesh = undefined) {
+    if (!mesh) mesh = Compositor.mesh;
+
+    return `
+AFRAME.registerGeometry("${name}", {
+  init: function()
+})
+`
+  }
+}
+
+Util.GeometryHelper = new GeometryHelper();
+
 const unwrappedUvs = [0.3333333432674408, 1, 0.3333333432674408, 0.5, 0, 1, 0, 0.5, 0, 0.5, 0, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0, 0.6666666865348816, 0.5, 0.6666666865348816, 1, 1, 0.5, 1, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 1, 0.5, 1, 0, 0.3333333432674408, 1, 0.3333333432674408, 0.5, 0.6666666865348816, 1, 0.6666666865348816, 0.5, 0.6666666865348816, 0.5, 0.6666666865348816, 0, 0.3333333432674408, 0.5, 0.3333333432674408, 0];
 
 AFRAME.registerGeometry('unwrapped-box', {
@@ -35,3 +52,30 @@ AFRAME.registerGeometry('unwrapped-dodecahedron', {
     this.geometry.attributes.uv.needsUpdate = true
   }
 });
+
+(async () => {
+  window.Pako = await import('pako')
+})();
+
+var headGeo = null;
+var headMerged = false;
+
+(function() {
+  new THREE.GLTFLoader().load(require('./assets/head-base.glb'), (model) => {
+    headGeo = model.scene.getObjectByProperty('type', 'Mesh').geometry;
+  })
+})();
+
+AFRAME.registerGeometry('head-base', {
+  init: function (data) {
+    if (!headGeo) {
+      console.error("Loading head-base too soon!!")
+    }
+    if (!headMerged)
+    {
+      headGeo = BufferGeometryUtils.mergeVertices(headGeo,  1.0e-2)
+      headMerged = true
+    }
+    this.geometry = headGeo;
+  }
+})
