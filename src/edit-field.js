@@ -493,3 +493,36 @@ AFRAME.registerComponent('dropdown-button', {
     }
   }
 })
+
+AFRAME.registerComponent('deferred-load', {
+  schema: {
+    loaded: {default: false},
+    onVisible: {default: false},
+  },
+  events: {
+    componentchanged: function(e) {
+      if (e.detail.name === 'visible')
+      {
+        if (this.data.onVisible && this.el.getAttribute('visible'))
+        {
+          this.load()
+        }
+      }
+    }
+  },
+  update(oldData)
+  {
+    if (this.data.loaded) this.load();
+  },
+  load() {
+    if (this.loaded) return;
+
+    let script = this.el.querySelector('script')
+
+    console.log("Loading script", script, this.el)
+
+    this.el.innerHTML = script.text
+
+    this.loaded = true;
+  }
+})
