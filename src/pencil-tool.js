@@ -1170,6 +1170,7 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   stopGrab() {
     if (this.data.selectVertices) {
+      console.log(Util.meshPointsInContainerMesh(Compositor.mesh, this.box.getObject3D('mesh')))
       return;
     }
     this.tick = function(){};
