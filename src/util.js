@@ -643,9 +643,14 @@ class VARTISTEUtil {
     const inverseMatrix = new THREE.Matrix4();
     inverseMatrix.copy( mesh.matrixWorld ).invert();
 
+    container.geometry.computeBoundingSphere();
     const sphere = new THREE.Sphere();
     container.getWorldPosition(sphere.center).applyMatrix4( inverseMatrix );
-    sphere.radius = 0.01;
+    sphere.radius = container.geometry.boundingSphere.radius;
+
+    let meshToContainer = new THREE.Matrix4;
+    meshToContainer.copy(container.matrixWorld).invert();
+    meshToContainer.premultiply(mesh.matrixWorld);
 
     let bvh = mesh.geometry.computeBoundsTree();
     let containerBvh = container.geometry.computeBoundsTree();
@@ -656,9 +661,16 @@ class VARTISTEUtil {
 
     let index = mesh.geometry.index.array
 
+    let raycaster = new THREE.Raycaster;
+    raycaster.ray.direction.set(1, 0.1, 0);
+
+    let oldSided = container.material.side;
+
+    container.material.side = THREE.DoubleSide;
+
     bvh.shapecast(mesh, {
       intersectsBounds: box => {
-        console.log("Checking box", box, sphere)
+        // console.log("Checking box", box, sphere)
         const intersects = sphere.intersectsBox( box );
         const { min, max } = box;
         if ( intersects ) {
@@ -685,11 +697,44 @@ class VARTISTEUtil {
       intersectsTriangle: ( tri, i, contained ) => {
         if ( contained || tri.intersectsSphere( sphere ) ) {
           const i3 = 3 * i;
-          indices.push( index[i3], index[i3 + 1], index[i3 + 2] );
+          // tri.a.applyMatrix4(meshToContainer)
+          // tri.b.applyMatrix4(meshToContainer)
+          // tri.c.applyMatrix4(meshToContainer)
+          raycaster.ray.origin.copy(tri.a)
+          mesh.localToWorld(raycaster.ray.origin)
+          let intersections = [];
+
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3] )
+          }
+
+          intersections.length = 0
+          raycaster.ray.origin.copy(tri.b)
+          mesh.localToWorld(raycaster.ray.origin)
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3 + 1] )
+          }
+          intersections.length = 0
+          raycaster.ray.origin.copy(tri.c)
+          mesh.localToWorld(raycaster.ray.origin)
+          raycaster.intersectObject(container, false, intersections)
+
+          if (intersections.length % 2 == 1)
+          {
+            indices.push( index[i3 + 2] )
+          }
         }
         return false;
       }
     } );
+
+    container.material.side = oldSided;
 
     return indices;
   }

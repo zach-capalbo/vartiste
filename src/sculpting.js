@@ -426,24 +426,42 @@ AFRAME.registerComponent('vertex-handles', {
     }
 
     let selectors = this.system.selectors.slice()
+    let selectedSet
 
-    for (let i = 0; i < attr.count; ++i)
+    if (selectors.length)
     {
-      if ((i + 1) % 100 === 0)
+      selectedSet = new Set();
+
+      for (let s of selectors)
+      {
+        s.selectPoints(mesh, selectedSet)
+      }
+    }
+
+    let itCount = attr.count;
+    let i;
+    if (selectedSet)
+    {
+      selectedSet = Array.from(selectedSet)
+      itCount = selectedSet.length
+    }
+
+    for (let ii = 0; ii < itCount; ++ii)
+    {
+      if (selectedSet)
+      {
+        i = selectedSet[ii]
+      }
+      else
+      {
+        i = ii;
+      }
+
+      if ((ii + 1) % 100 === 0)
       {
         await Util.callLater()
       }
       if (skipSet.has(i)) continue;
-
-      let shouldSkip = false;
-      for (let s of selectors)
-      {
-        if (s.shouldSkip(mesh, i)) {
-          shouldSkip = true;
-          break
-        }
-      }
-      if (shouldSkip) continue;
 
       let el = document.createElement('a-entity')
       this.el.append(el)

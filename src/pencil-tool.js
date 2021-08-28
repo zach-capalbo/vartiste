@@ -1052,15 +1052,12 @@ AFRAME.registerComponent('selection-box-tool', {
       }
     }
   },
-  shouldSkip(mesh, vertexIndex)
+  selectPoints(mesh, selectedSet)
   {
-    let p = this.pool('p', THREE.Vector3)
-    p.fromBufferAttribute(mesh.geometry.attributes.position, vertexIndex)
-    mesh.localToWorld(p)
-    let box = this.box.getObject3D('mesh')
-    box.geometry.computeBoundingBox()
-    box.worldToLocal(p)
-    return !box.geometry.boundingBox.containsPoint(p)
+    for (let p of Util.meshPointsInContainerMesh(Compositor.mesh, this.box.getObject3D('mesh')))
+    {
+      selectedSet.add(p)
+    }
   },
   selectObjects() {
     let objects = document.querySelectorAll(this.data.selector)
@@ -1170,7 +1167,6 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   stopGrab() {
     if (this.data.selectVertices) {
-      console.log(Util.meshPointsInContainerMesh(Compositor.mesh, this.box.getObject3D('mesh')))
       return;
     }
     this.tick = function(){};
