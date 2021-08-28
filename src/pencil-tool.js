@@ -970,6 +970,7 @@ AFRAME.registerComponent('selection-box-tool', {
     selector: {type: 'string', default: '.clickable, .canvas'},
     grabElements: {default: true},
     grabVertices: {default: false},
+    selectVertices: {default: false},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
   },
@@ -1028,6 +1029,28 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       this.stopGrab()
     }
+
+    if (this.data.selectVertices)
+    {
+      if (newGrabbing)
+      {
+        this.el.sceneEl.systems['vertex-handle'].selectors.push(this)
+      }
+      else
+      {
+        this.el.sceneEl.systems['vertex-handle'].selectors.splice(this.el.sceneEl.systems['vertex-handle'].selectors.indexOf(this), 1)
+      }
+    }
+  },
+  shouldSkip(mesh, vertexIndex)
+  {
+    let p = this.pool('p', THREE.Vector3)
+    p.fromBufferAttribute(mesh.geometry.attributes.position, vertexIndex)
+    mesh.localToWorld(p)
+    let box = this.box.getObject3D('mesh')
+    box.geometry.computeBoundingBox()
+    box.worldToLocal(p)
+    return !box.geometry.boundingBox.containsPoint(p)
   },
   selectObjects() {
     let objects = document.querySelectorAll(this.data.selector)
@@ -1044,6 +1067,8 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   preprocessContainedTarget(target) {},
   startGrab() {
+    if (this.data.selectVertices) return;
+
     let objects = this.selectObjects();
     this.grabbers = {}
     this.grabbed = {}
@@ -1134,6 +1159,9 @@ AFRAME.registerComponent('selection-box-tool', {
     this.tick = this._tick;
   },
   stopGrab() {
+    if (this.data.selectVertices) {
+      return;
+    }
     this.tick = function(){};
     if (this.data.grabElements)
     {

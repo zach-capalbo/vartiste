@@ -182,6 +182,7 @@ AFRAME.registerComponent('sculpt-move-tool', {
 AFRAME.registerSystem('vertex-handle', {
   init() {
     this.grabbed = new Set()
+    this.selectors = []
   },
   tick(t, dt) {
     for (let v of this.grabbed.values())
@@ -351,6 +352,7 @@ AFRAME.registerComponent('vertex-handles', {
   init() {
     this.handles = []
     this.meshes = []
+    this.system = this.el.sceneEl.systems['vertex-handle']
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
     this.meshLines = new Map();
 
@@ -423,6 +425,8 @@ AFRAME.registerComponent('vertex-handles', {
       Compositor.el.object3D.add(meshLine.line)
     }
 
+    let selectors = this.system.selectors.slice()
+
     for (let i = 0; i < attr.count; ++i)
     {
       if ((i + 1) % 100 === 0)
@@ -430,6 +434,17 @@ AFRAME.registerComponent('vertex-handles', {
         await Util.callLater()
       }
       if (skipSet.has(i)) continue;
+
+      let shouldSkip = false;
+      for (let s of selectors)
+      {
+        if (s.shouldSkip(mesh, i)) {
+          shouldSkip = true;
+          break
+        }
+      }
+      if (shouldSkip) continue;
+
       let el = document.createElement('a-entity')
       this.el.append(el)
       this.handles.push(el)
