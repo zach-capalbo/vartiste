@@ -1,15 +1,4 @@
-a-entity.grab-root shelf="name: Volumetrics; height: 1.4; width: 2; closeable: true" scale="0.3 0.3 0.3"
-  a-entity icon-row="mergeButtons: true" position="-0.65 0.3 0"
-    a-entity icon-button="#asset-undo" toggle-button="target:a-scene; component: volumetrics; property: undoEnabled" tooltip="Enable / Disable Undo"
-    a-entity icon-button="#asset-transition" toggle-button="target:a-scene; component: volumetrics; property: onion" tooltip="Shell Only"
-    a-entity icon-button="#asset-blur-linear" toggle-button="target:a-scene; component: volumetrics; property: bumpy" tooltip="Bumpy"
-    a-entity icon-button="#asset-blur-preview" toggle-button="target:a-scene; component: volumetrics; property: hard" tooltip="Hard"
-  a-entity icon-row="mergeButtons: true" position="-0.65 0.3 0"
-    a-entity icon-button="#asset-blur-linear" toggle-button="target:a-scene; component: volumetrics; property: noisy" tooltip="Noisy"
-    a-entity icon-button="#asset-brush" toggle-button="target:a-scene; component: volumetrics; property: bristles" tooltip="Bristles"
-    a-entity icon-button="#asset-nudge-brush" toggle-button="target:a-scene; component: volumetrics; property: autoDilate" tooltip="Close seams"
-
-  a-entity scale="${1.0 / 0.3} ${1.0 / 0.3} ${1.0 / 0.3}" position="-0.7 1.3 0"
+  a-entity position="-0.23 0.43 0"
     a-entity scale="0.7 0.7 0.7"
       - x = 0
       - spacing = 0.3

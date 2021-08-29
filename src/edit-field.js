@@ -373,9 +373,17 @@ AFRAME.registerComponent('v-bind', {
     source: {type: 'selector'},
     sourceComponent: {type: 'string'},
     sourceProperty: {type: 'string'},
+
+    setOnLoad: {default: false},
   },
   init() {
     this.handleUpdate = this.handleUpdate.bind(this)
+    if (this.data.setOnLoad)
+    {
+      Util.whenLoaded([this.el, this.data.source], () => {
+        this.forceUpdate()
+      })
+    }
   },
   update(oldData) {
     let source = this.data.source || this.el.sceneEl
