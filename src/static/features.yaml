@@ -91,6 +91,14 @@ sections:
           - url: https://twitter.com/zach_geek/status/1406762608879886336
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update changes the default background / lighting. Also adds a new easel painting starter template.<a href="https://t.co/wW1xZ5Bp7m">https://t.co/wW1xZ5Bp7m</a> <a href="https://t.co/kIO6aHGzTt">pic.twitter.com/kIO6aHGzTt</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1406762608879886336?ref_src=twsrc%5Etfw">June 20, 2021</a></blockquote>
+      - name: Head Studies
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1431760956825260032
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I gave this a try using <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>... I could use some more practice, but this is a great tutorial!<a href="https://twitter.com/hashtag/VRDrawing?src=hash&amp;ref_src=twsrc%5Etfw">#VRDrawing</a> <a href="https://twitter.com/hashtag/CardboardCutout?src=hash&amp;ref_src=twsrc%5Etfw">#CardboardCutout</a> <a href="https://t.co/6I2X0Sk2LU">https://t.co/6I2X0Sk2LU</a> <a href="https://t.co/sEYg2UnBdO">pic.twitter.com/sEYg2UnBdO</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1431760956825260032?ref_src=twsrc%5Etfw">August 28, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1432478951394398215
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> head study, this time in 3D!<a href="https://twitter.com/hashtag/VRPainting?src=hash&amp;ref_src=twsrc%5Etfw">#VRPainting</a> <a href="https://twitter.com/hashtag/3DModelling?src=hash&amp;ref_src=twsrc%5Etfw">#3DModelling</a> <a href="https://twitter.com/hashtag/WebXRFlatShadedPaintingInVRWithVARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#WebXRFlatShadedPaintingInVRWithVARTISTE</a> <a href="https://t.co/jXd9UWoGKH">pic.twitter.com/jXd9UWoGKH</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1432478951394398215?ref_src=twsrc%5Etfw">August 30, 2021</a></blockquote>
   - name: UI
     features:
       - name: UI Overhaul
@@ -452,6 +460,8 @@ sections:
       - name: Cavnas Cutouts
         tweets:
           - url: https://twitter.com/zach_geek/status/1427440081447657475
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another way to create 3D geometry in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>: Canvas cut-outs!<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRModelling?src=hash&amp;ref_src=twsrc%5Etfw">#VRModelling</a> <a href="https://t.co/x5s0NaXWRw">pic.twitter.com/x5s0NaXWRw</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1427440081447657475?ref_src=twsrc%5Etfw">August 17, 2021</a></blockquote>
       - name: Morph Targets
         tweets:
           - url: https://twitter.com/zach_geek/status/1335765647066882050
@@ -496,8 +506,11 @@ sections:
       - name: UV Editing
         tweets:
           - url: https://twitter.com/zach_geek/status/1431287301213237252
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I&#39;ve just added a UV editor to <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. It could still use quite a bit more polish and optimization, but at least now you can edit your mesh&#39;s UV map without having to leave VR! <a href="https://t.co/XZwnB7JMG9">pic.twitter.com/XZwnB7JMG9</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1431287301213237252?ref_src=twsrc%5Etfw">August 27, 2021</a></blockquote>
           - url: https://twitter.com/zach_geek/status/1431723536486445062
-
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New tool in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>: a filter for selecting which vertices to edit with the edit Vertex or UV buttons. Helpful for narrowing things down, especially with (slightly)higher-poly meshes. <a href="https://t.co/xOcc4zpJbP">pic.twitter.com/xOcc4zpJbP</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1431723536486445062?ref_src=twsrc%5Etfw">August 28, 2021</a></blockquote>
   - name: Skeletonator
     features:
       - name: Animated Primitives
