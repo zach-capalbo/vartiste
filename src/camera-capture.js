@@ -784,6 +784,7 @@ AFRAME.registerComponent('spray-can-tool', {
     materialProjector: {default: false},
     canvasSize: {type: 'vec2', default: {x: 64, y: 64}},
     autoDilate: {default: true},
+    orthographic: {default: false},
 
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
@@ -799,7 +800,7 @@ AFRAME.registerComponent('spray-can-tool', {
   },
   init() {
     Pool.init(this)
-    this.el.setAttribute('camera-tool', {autoCamera: false})
+    this.el.setAttribute('camera-tool', {autoCamera: false, orthographic: this.data.orthographic})
     this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
     this.el.components['camera-tool'].takePicture = this.takePicture;
     this.el.setAttribute('action-tooltips', 'trigger: Spray Paint');
@@ -813,7 +814,9 @@ AFRAME.registerComponent('spray-can-tool', {
       this.targetCanvas.height = 512
       this.sprayCanTool = self
 
-      let camera = new THREE.PerspectiveCamera(5, 1, 0.1, 1)
+      let camera = this.data.orthographic ?
+          new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 1)
+        : new THREE.PerspectiveCamera(5, 1, 0.1, 1)
       camera.layers.set(CAMERA_LAYERS.SPRAY_PAINT_MASK)
       this.el.object3D.add(camera)
       this.camera = camera
@@ -899,9 +902,21 @@ AFRAME.registerComponent('spray-can-tool', {
 
       this.brushData = brush.overlayCanvas.getContext("2d").getImageData(0, 0, brush.width, brush.height)
 
-      this.camera.fov = 5 * brush.width / brush.baseWidth
-      this.camera.aspect = brush.width / brush.height
-      this.camera.near = this.data.near
+      if (this.data.orthographic)
+      {
+        const mult = 0.1
+        this.camera.left = - brush.width / brush.baseWidth / 2.0 * mult
+        this.camera.right = - this.camera.left
+        this.camera.top = brush.height / brush.baseHeight / 2.0 * mult
+        this.camera.bottom = - this.camera.top
+        this.camera.near = this.data.near
+      }
+      else
+      {
+        this.camera.fov = 5 * brush.width / brush.baseWidth
+        this.camera.aspect = brush.width / brush.height
+        this.camera.near = this.data.near
+      }
       this.camera.updateProjectionMatrix()
 
       this.helper.update()
