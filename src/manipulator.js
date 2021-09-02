@@ -558,6 +558,9 @@ AFRAME.registerComponent('propogate-grab', {
         break;
       }
     }
+  },
+  remove() {
+    delete this.el['redirect-grab'];
   }
 })
 
