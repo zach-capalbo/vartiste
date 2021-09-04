@@ -1284,9 +1284,110 @@ AFRAME.registerComponent('desk-registration-tool', {
 
 AFRAME.registerComponent('straight-edge-tool', {
   schema: {
-    
+    object: {type: 'selector'},
+    lockMostRecentTool: {default: false},
   },
   init() {
+    Pool.init(this)
+    this.el.setAttribute('geometry', 'primitive: plane; width: 0.03; height: 0.1')
+    this.el.setAttribute('material', 'shader: standard; src: #asset-shelf')
 
+    let indicator = document.createElement('a-entity')
+    this.el.append(indicator)
+    indicator.setAttribute('geometry', 'primitive: plane; width: 0.01; height: 0.1')
+    indicator.setAttribute('material', 'shader: standard; src: #asset-shelf; side: double')
+    indicator.setAttribute('rotation', '0 90 0')
+    indicator.setAttribute('position', '0.015 0 0')
+
+    this.startingPosition = new THREE.Vector3
+    this.startingQuaternion = new THREE.Quaternion
+    this.plane = new THREE.Plane(new THREE.Vector3(1, 0, 0));
+    this.obj = new THREE.Object3D
+    this.el.object3D.add(this.obj)
+
+    this.el.classList.add("clickable")
+
+    this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.moveObj.bind(this))
+    this.constraint = this.constraint.bind(this)
+
+    let constraintButton = document.createElement('a-entity')
+    this.el.append(constraintButton)
+    constraintButton.setAttribute('icon-button', '#asset-lead-pencil')
+    constraintButton.setAttribute('tooltip', 'Lock Last Used Tool')
+    constraintButton.setAttribute('toggle-button', {component: 'straight-edge-tool', property: 'lockMostRecentTool', target: this.el})
+    constraintButton.setAttribute('scale', '0.05 0.05 0.05')
+    constraintButton.setAttribute('position', '0 0.032 -0.047')
+
+    let rectifyButton = document.createElement('a-entity')
+    this.el.append(rectifyButton)
+    rectifyButton.setAttribute('icon-button', '#asset-rotate-3d-variant')
+    rectifyButton.setAttribute('tooltip', 'Align Angle')
+    rectifyButton.setAttribute('scale', '0.05 0.05 0.05')
+    rectifyButton.setAttribute('position', '-0.45 0.0 -0.047')
+    rectifyButton.addEventListener('click', () => {
+      let r = this.el.getAttribute('rotation')
+      const a = 45
+      this.el.setAttribute('rotation', `${Math.round(r.x / a) * a} ${Math.round(r.y / a) * a} ${Math.round(r.z / a) * a}`)
+    })
+  },
+  update(oldData) {
+    if (this.data.object !== oldData.object)
+    {
+      if (this.object)
+      {
+        this.el.sceneEl.systems['manipulator'].removeConstraint(this.object, this.constraint)
+        this.ready = false
+        this.object = null
+      }
+
+      if (this.data.object)
+      {
+        console.log("Locking", this.data.object)
+        this.el.sceneEl.systems['manipulator'].installConstraint(this.data.object, this.constraint)
+        this.object = this.data.object
+      }
+    }
+
+    if (this.data.lockMostRecentTool !== oldData && this.el.sceneEl.systems['pencil-tool'].lastGrabbed)
+    {
+      if (this.data.lockMostRecentTool)
+      {
+        this.el.setAttribute('straight-edge-tool', 'object', this.el.sceneEl.systems['pencil-tool'].lastGrabbed.el)
+        this.constraint()
+      }
+      else if (this.object === this.el.sceneEl.systems['pencil-tool'].lastGrabbed.el )
+      {
+        this.el.setAttribute('straight-edge-tool', 'object', null)
+      }
+    }
+  },
+  constraint(t, dt, localOffset)
+  {
+    if (!this.ready) {
+      this.ready = true
+      this.startingPosition.copy(this.data.object.object3D.position)
+      this.startingQuaternion.copy(this.data.object.object3D.quaternion)
+
+      Util.positionObject3DAtTarget(this.obj, this.data.object.object3D)
+      this.plane.constant = 0
+      this.plane.constant = - this.el.getAttribute('geometry').width / 2//- this.plane.distanceToPoint(this.obj.position)
+
+
+    }
+    // console.log("straight constraint", this.data.object.object3D.position.toArray(), localOffset.toArray(), this.plane)
+    // this.data.object.object3D.position.y = this.startingPosition.y
+    // this.data.object.object3D.position.z = this.startingPosition.z
+    Util.positionObject3DAtTarget(this.obj, this.data.object.object3D)
+    this.startingPosition.copy(this.obj.position)
+    this.plane.projectPoint(this.startingPosition, this.obj.position)
+    this.obj.rotation.set(Math.PI / 2, 0, 0)
+    Util.positionObject3DAtTarget(this.data.object.object3D, this.obj)
+    // this.data.object.object3D.quaternion.copy(this.startingQuaternion)
+  },
+  moveObj() {
+    if (this.data.object && this.ready)
+    {
+      Util.positionObject3DAtTarget(this.data.object.object3D, this.obj)
+    }
   }
 })

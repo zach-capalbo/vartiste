@@ -679,35 +679,6 @@ AFRAME.registerComponent('lock-up', {
     localOffset.applyQuaternion(obj.quaternion)
 
     obj.position.sub(localOffset)
-
-
-    return
-
-    forward.set(0, 0, 1)
-    forward.applyQuaternion(obj.quaternion)
-    forward.y = 0
-    forward.normalize()
-
-    let originalScale = this.pool('originalScale', THREE.Vector3)
-    originalScale.copy(obj.scale)
-
-    let originalPosition = this.pool('originalPosition', THREE.Vector3)
-    originalPosition.copy(obj.position)
-
-    let origin = this.pool('origin', THREE.Vector3)
-    // origin.copy(localOffset)
-    origin.copy(this.el.grabbingManipulator.offset)
-    origin.multiplyScalar(-1)
-    forward.add(origin)
-    obj.matrix.lookAt(forward, origin, this.el.sceneEl.object3D.up)
-    Util.applyMatrix(obj.matrix, obj)
-    obj.scale.copy(originalScale)
-    obj.position.copy(originalPosition)
-    obj.position.sub(origin)
-    // obj.quaternion.setFromRotationMatrix(obj.matrix)
-
-    // obj.getWorldDirection(forward)
-
   }
 })
 
