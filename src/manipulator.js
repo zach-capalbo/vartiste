@@ -94,6 +94,9 @@ AFRAME.registerComponent('manipulator', {
     selector: {type: 'string'},
     // Note: **Don't Use**
     useRay: {type:'boolean', default: true},
+
+    useIntersections: {default: false},
+
     // Logs debug messages to the console
     printUpdates: {type: 'boolean', default: false},
 
@@ -337,6 +340,40 @@ AFRAME.registerComponent('manipulator', {
     this.readyToRelease = false
 
     this.gripClosedTime = this.el.sceneEl.time
+
+    if (this.data.useIntersections)
+    {
+      let thisMesh = this.el.getObject3D('mesh')
+      for (let obj of this.raycaster.objects)
+      {
+        if (Util.objectsIntersect(thisMesh, obj))
+        {
+          let targetEl = obj.el
+
+          if (this.data.printUpdates)
+          {
+            console.log("GRABBING from intersection")
+          }
+
+          this.target = targetEl
+
+          for (let redirection = targetEl['redirect-grab']; redirection; redirection = this.target['redirect-grab'])
+          {
+            if (this.data.printUpdates)
+            {
+              console.log("Redirecting grab to", typeof(redirection), redirection)
+            }
+            this.target = redirection
+          }
+
+          this.offset.set(0, 0, 0)
+
+          this.startGrab()
+
+          return;
+        }
+      }
+    }
 
     if (this.data.useRay)
     {

@@ -738,6 +738,59 @@ class VARTISTEUtil {
 
     return indices;
   }
+
+  meshesIntersect(meshA, meshB)
+  {
+    let bvh;
+
+    if (meshA.geometry.attributes.position.itemSize !== 3) return;
+    if (meshB.geometry.attributes.position.itemSize !== 3) return;
+
+    bvh = meshA.geometry.computeBoundsTree()
+    meshB.geometry.computeBoundsTree()
+
+    let matrix = this.pool('matrix', THREE.Matrix4)
+
+    meshA.updateMatrixWorld()
+    meshB.updateMatrixWorld()
+    matrix.copy(meshA.matrixWorld)
+    matrix.invert()
+    matrix.multiply(meshB.matrixWorld)
+
+    return bvh.intersectsGeometry(meshA, meshB.geometry, matrix)
+  }
+
+  objectsIntersect(objA, objB, {visibleOnly = true, intersectionInfo} = {})
+  {
+    if (objA.object3D) objA = objA.object3D;
+    if (objB.object3D) objB = objB.object3D;
+
+    let intersected = false
+    objA.traverseVisible(oA => {
+      if (intersected) return
+      if (!oA.isMesh) return;
+      if (visibleOnly && oA.el && oA.el.className.includes("raycast-invisible")) return
+      if (visibleOnly && !oA.visible) return
+
+      objB.traverseVisible(oB => {
+        if (intersected) return
+        if (!oB.isMesh) return;
+        if (visibleOnly && !oB.visible) return
+        if (visibleOnly && oB.el && oB.el.className.includes("raycast-invisible")) return
+        if (this.meshesIntersect(oA, oB))
+        {
+          if (intersectionInfo)
+          {
+            intersectionInfo.objectA = oA
+            intersectionInfo.objectB = oB
+          }
+          intersected = true
+        }
+      })
+    })
+
+    return intersected
+  }
 }
 
 const Util = new VARTISTEUtil();

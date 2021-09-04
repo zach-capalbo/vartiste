@@ -1283,7 +1283,10 @@ AFRAME.registerComponent('desk-registration-tool', {
 })
 
 AFRAME.registerComponent('straight-edge-tool', {
-  init() {
+  schema: {
     
+  },
+  init() {
+
   }
 })
