@@ -123,10 +123,8 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
 
     let rotation = 0
-    let useNormal = true || this.system.brush.useNormal;
+    let useNormal = false || this.system.brush.useNormal;
     let rotateBrush = this.system.data.rotateBrush;
-
-    console.log(intersection)
 
     let objRot = this.pool('objRot', THREE.Quaternion)
     let objUp = this.pool('objUp', THREE.Vector3)

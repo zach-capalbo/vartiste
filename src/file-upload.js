@@ -651,7 +651,10 @@ Util.registerComponentSystem('file-upload', {
     document.body.ondragover = (e) => {
       // console.log("Drag over", e.detail, e.target)
       e.preventDefault()
-      this.dragIndicator.className = ""
+      if (this.dragIndicator)
+      {
+        this.dragIndicator.className = ""
+      }
       this.dragSet.add(e.target)
     }
 
@@ -664,7 +667,7 @@ Util.registerComponentSystem('file-upload', {
       }
 
       this.clearTimeout = window.setTimeout(() => {
-        if (this.dragSet.size === 0)
+        if (this.dragSet.size === 0 && this.dragIndicator)
         {
           this.dragIndicator.className = "minimized"
         }
@@ -675,7 +678,9 @@ Util.registerComponentSystem('file-upload', {
     document.body.ondrop = (e) => {
       console.log("Drop", e.detail)
       e.preventDefault()
-      this.dragIndicator.className = "minimized"
+      if (this.dragIndicator) {
+        this.dragIndicator.className = "minimized"
+      }
       let referenceIdx = 0
       let items = Array.from(e.dataTransfer.items)
 

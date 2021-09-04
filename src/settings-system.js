@@ -161,7 +161,11 @@ Util.registerComponentSystem('settings-system', {
     let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
     let compositor = document.getElementById('canvas-view').components.compositor;
     let saveObj = await ProjectFile.save({compositor})
-    document.getElementById('composition-view').emit('updatemesh')
+    let compositionView = document.getElementById('composition-view')
+    if (compositionView) {
+      compositionView.emit('updatemesh')
+    }
+
     let json = JSON.stringify(saveObj)
     if (this.data.compressProject)
     {
@@ -387,7 +391,7 @@ Util.registerComponentSystem('settings-system', {
     return date.toJSON().split(":")[0]
   },
   setQuality(scale) {
-    document.getElementById('canvas-view').setAttribute('compositor', {textureScale: scale})
+    Compositor.el.setAttribute('compositor', {textureScale: scale})
     this.quality = scale
     this.el.emit('qualitychanged', {quality: scale})
   },

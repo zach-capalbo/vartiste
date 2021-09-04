@@ -91,7 +91,12 @@ AFRAME.registerComponent('compositor', {
     this.el.setAttribute("draw-canvas", {canvas: this.layers[0].canvas, compositor: this})
     this.activateLayer(this.activeLayer)
 
-    this.redirector = this.el.querySelector('#move-layer-redirection')
+    this.redirector = document.createElement('a-entity')//this.el.querySelector('#move-layer-redirection')
+    this.el.append(this.redirector)
+    this.redirector.setAttribute('geometry', this.el.getAttribute('geometry'))
+    this.redirector.setAttribute('visible', false)
+    this.redirector.setAttribute('material', "wireframe: true; color: red")
+    this.redirector.classList.add('raycast-invisible')
     this.redirector.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed') {
         this.updateRedirectorTransformation()
@@ -697,7 +702,7 @@ AFRAME.registerComponent('compositor', {
       let modesUsed = this.pool('modesUsed', Set)
       modesUsed.clear()
 
-      let canSetSkybox = this.el.sceneEl.systems['environment-manager'].canInstallSkybox()
+      let canSetSkybox = this.el.sceneEl.systems['environment-manager'] ? this.el.sceneEl.systems['environment-manager'].canInstallSkybox() : false
 
       let wrapType = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
@@ -799,7 +804,10 @@ AFRAME.registerComponent('compositor', {
             }
             break
           case "envMap":
-            this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
+            if (canInstallSkybox)
+            {
+              this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
+            }
             material.envMap.mapping = THREE.SphericalReflectionMapping
             break
         }
