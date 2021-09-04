@@ -506,6 +506,8 @@ AFRAME.registerComponent('deferred-load', {
   schema: {
     loaded: {default: false},
     onVisible: {default: false},
+
+    popup: {type: 'string', default: ''}
   },
   events: {
     componentchanged: function(e) {
@@ -524,6 +526,12 @@ AFRAME.registerComponent('deferred-load', {
   },
   load() {
     if (this.loaded) return;
+
+    if (this.data.popup.length)
+    {
+      this.el.innerHTML = require(`./partials/${this.data.popup}.html.slm`)
+      return
+    }
 
     let script = this.el.querySelector('script')
 

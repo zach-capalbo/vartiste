@@ -1281,3 +1281,9 @@ AFRAME.registerComponent('desk-registration-tool', {
     // target.position.multiplyScalar(plane.constant)
   }
 })
+
+AFRAME.registerComponent('straight-edge-tool', {
+  init() {
+    
+  }
+})

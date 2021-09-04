@@ -116,6 +116,7 @@ if (VARTISTE_TOOLKIT.includeCompositor)
   if (checkFile('./settings-system')) require('./settings-system')
   if (checkFile('./file-upload')) require('./file-upload')
   if (checkFile('./busy')) require('./busy')
+  if (checkFile('./brush-shelf')) require('./brush-shelf')
 }
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
