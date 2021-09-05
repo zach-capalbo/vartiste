@@ -1283,7 +1283,7 @@ AFRAME.registerComponent('desk-registration-tool', {
 })
 
 AFRAME.registerComponent('straight-edge-tool', {
-  dependencies: ['grab-activate'],
+  dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
     object: {type: 'selector'},
     lockMostRecentTool: {default: false},
