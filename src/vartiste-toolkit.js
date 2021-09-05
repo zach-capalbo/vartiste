@@ -112,6 +112,11 @@ if (VARTISTE_TOOLKIT.includeCompositor)
 {
   require('./compositor.js')
   VARTISTE.Compositor = Compositor
+
+  if (checkFile('./settings-system')) require('./settings-system')
+  if (checkFile('./file-upload')) require('./file-upload')
+  if (checkFile('./busy')) require('./busy')
+  if (checkFile('./brush-shelf')) require('./brush-shelf')
 }
 
 // Applies the base VARTISTE button mapping for the manipulator and rotation
@@ -134,12 +139,20 @@ AFRAME.registerComponent('vartiste-rotation-button-mapping', {
 AFRAME.registerComponent('vartiste-user-root', {
   schema: {
     // Object to use for positioning the user on position reset
-    resetPositioner: {default: '#camera-reset-el'}
+    resetPositioner: {default: '#camera-reset-el'},
+    speed: {default: 1.0},
   },
   init() {
     this.el.innerHTML = require('./partials/artist-root.html.slm')
     this.el.querySelector('#right-hand').setAttribute('joystick-turn', "target: #artist-root")
     this.el.sceneEl.setAttribute('artist-positioner', 'resetPositioner', this.data.resetPositioner)
+
+    this.desktopControls = this.el.querySelector('*[desktop-controls]')
+  },
+  update(oldData) {
+    VARTISTE.Util.whenLoaded(this.desktopControls, () => {
+      this.desktopControls.setAttribute('wasd-controls', 'acceleration', this.data.speed)
+    })
   }
 })
 

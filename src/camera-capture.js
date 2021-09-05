@@ -334,7 +334,7 @@ AFRAME.registerComponent('camera-tool', {
     const depth = 0.1
     const cameraWidth = 0.3
 
-    Util.whenLoaded(Compositor.el, () => {
+    Util.whenLoaded([Compositor.el, this.el.sceneEl], () => {
       if (!this.data.autoCamera) return
 
       let {width, height} = Compositor.el.getAttribute('geometry')

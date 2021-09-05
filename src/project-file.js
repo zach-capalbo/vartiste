@@ -76,44 +76,51 @@ class ProjectFile {
     settings.setProjectName(obj.projectName)
     settings.el.setAttribute('settings-system', {'exportJPEG': obj.exportJPEG})
 
-    document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
+    if (document.querySelector('#project-palette')) {
+      document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
+    }
 
     let environmentManager = compositor.el.sceneEl.systems['environment-manager']
-    if (obj.environment.state === 'reset') {
-      environmentManager.reset()
-      document.querySelector('a-sky').setAttribute('material', 'color', obj.backgroundColor)
-    }
-    else if (obj.environment.state === 'preset-hdri')
+    if (document.querySelector('a-sky') && environmentManager)
     {
-      environmentManager.usePresetHDRI()
-    }
-    else if (obj.environment.state == 'STATE_HDRI')
-    {
-      console.log("Reloading HDRI")
-      let hdriTexture = new THREE.DataTexture(
-        await new Uint8Array(await base64ToBufferAsync(obj.environment.image.data)),
-        obj.environment.image.width,
-        obj.environment.image.height,
-        obj.environment.image.format,
-        obj.environment.image.type,
-        obj.environment.image.mapping,
-        false,
-        false,
-        undefined,
-        undefined,
-        false,
-        obj.environment.image.encoding,
-      )
-      hdriTexture.flipY = obj.environment.image.flipY
-      hdriTexture.needsUpdate = true
-      environmentManager.installHDREnvironment(hdriTexture)
-    }
-    else if (obj.environment.state === 'STATE_ENVIROPACK')
-    {
-      environmentManager.useEnviropack(obj.environment.substate)
+      if (obj.environment.state === 'reset') {
+        environmentManager.reset()
+        document.querySelector('a-sky').setAttribute('material', 'color', obj.backgroundColor)
+      }
+      else if (obj.environment.state === 'preset-hdri')
+      {
+        environmentManager.usePresetHDRI()
+      }
+      else if (obj.environment.state == 'STATE_HDRI')
+      {
+        console.log("Reloading HDRI")
+        let hdriTexture = new THREE.DataTexture(
+          await new Uint8Array(await base64ToBufferAsync(obj.environment.image.data)),
+          obj.environment.image.width,
+          obj.environment.image.height,
+          obj.environment.image.format,
+          obj.environment.image.type,
+          obj.environment.image.mapping,
+          false,
+          false,
+          undefined,
+          undefined,
+          false,
+          obj.environment.image.encoding,
+        )
+        hdriTexture.flipY = obj.environment.image.flipY
+        hdriTexture.needsUpdate = true
+        environmentManager.installHDREnvironment(hdriTexture)
+      }
+      else if (obj.environment.state === 'STATE_ENVIROPACK')
+      {
+        environmentManager.useEnviropack(obj.environment.substate)
+      }
     }
 
-    document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
+    if (document.querySelector('#environment-place')) {
+      document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
+    }
 
     await compositor.load(obj)
     compositor.el.setAttribute('material', {shader: obj.shader})
@@ -147,27 +154,31 @@ class ProjectFile {
 
     let referenceContainer = document.querySelector('#reference-spawn')
     let objectLoader = new THREE.ObjectLoader();
-    for (let refJson of obj.referenceModels)
-    {
-      console.log("Loading reference model")
-      let newEl = document.createElement('a-entity')
-      referenceContainer.append(newEl)
-      newEl.object3D.copy(objectLoader.parse(refJson))
-      newEl.setObject3D('mesh', newEl.object3D.children[0])
-      setupGlbReferenceEntity(newEl)
-    }
 
-    let glbLoader = new THREE.GLTFLoader()
-    for (let glb of obj.referenceGLBs)
+    if (referenceContainer)
     {
-      console.log("Loading reference glb")
-      let buffer = await base64ToBufferAsync(glb)
-      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
-      let newEl = document.createElement('a-entity')
-      referenceContainer.append(newEl)
-      newEl.object3D.copy(model.scenes[0].children[0])
-      newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
-      setupGlbReferenceEntity(newEl)
+      for (let refJson of obj.referenceModels)
+      {
+        console.log("Loading reference model")
+        let newEl = document.createElement('a-entity')
+        referenceContainer.append(newEl)
+        newEl.object3D.copy(objectLoader.parse(refJson))
+        newEl.setObject3D('mesh', newEl.object3D.children[0])
+        setupGlbReferenceEntity(newEl)
+      }
+
+      let glbLoader = new THREE.GLTFLoader()
+      for (let glb of obj.referenceGLBs)
+      {
+        console.log("Loading reference glb")
+        let buffer = await base64ToBufferAsync(glb)
+        let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+        let newEl = document.createElement('a-entity')
+        referenceContainer.append(newEl)
+        newEl.object3D.copy(model.scenes[0].children[0])
+        newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
+        setupGlbReferenceEntity(newEl)
+      }
     }
 
     if ('skeletonator' in obj)
@@ -217,22 +228,27 @@ class ProjectFile {
     obj.exportJPEG = settings.data.exportJPEG
     Object.assign(obj, this.saveCompositor())
 
-    let glbMesh = document.getElementById('composition-view').getObject3D('mesh')
-    if (glbMesh)
+    let compositionView = document.getElementById('composition-view')
+    if (compositionView)
     {
-      let material = new THREE.MeshBasicMaterial()
-      glbMesh.traverse(o => {
-        if (o.type == "Mesh") { o.material = material}
-      })
+      let glbMesh = compositionView.getObject3D('mesh')
+      if (glbMesh)
+      {
+        let material = new THREE.MeshBasicMaterial()
+        glbMesh.traverse(o => {
+          if (o.type == "Mesh") { o.material = material}
+        })
 
-      let exporter = new THREE.GLTFExporter()
-      let glb = await new Promise((r, e) => {
-        exporter.parse(glbMesh, r, {binary: true})
-      })
-      obj.glb = base64ArrayBuffer(glb)
+        let exporter = new THREE.GLTFExporter()
+        let glb = await new Promise((r, e) => {
+          exporter.parse(glbMesh, r, {binary: true})
+        })
+        obj.glb = base64ArrayBuffer(glb)
+      }
     }
 
-    obj.palette = document.querySelector('#project-palette').getAttribute('palette').colors
+    obj.palette = document.querySelector('#project-palette') ? document.querySelector('#project-palette').getAttribute('palette').colors
+                                                             : []
 
     obj.referenceImages = []
     let referenceCanvas = document.createElement('canvas')
@@ -276,7 +292,7 @@ class ProjectFile {
       obj.skeletonator = Compositor.el.skeletonatorSavedSettings
     }
 
-    let environmentManager = Compositor.el.sceneEl.systems['environment-manager']
+    let environmentManager = Compositor.el.sceneEl.systems['environment-manager'] || {}
     if (environmentManager.substate == 'preset-hdri')
     {
       obj.environment = {state: 'preset-hdri'}
@@ -308,8 +324,10 @@ class ProjectFile {
     {
       obj.environment = {state: 'reset'}
     }
-    obj.environment.showFloor = document.querySelector('#environment-place').getAttribute('visible')
-    obj.backgroundColor = document.querySelector('a-sky').getAttribute('material').color
+    obj.environment.showFloor = document.querySelector('#environment-place') ?
+                                    document.querySelector('#environment-place').getAttribute('visible')
+                                  : false
+    obj.backgroundColor = document.querySelector('a-sky') ? document.querySelector('a-sky').getAttribute('material').color : "#eee"
 
     obj.userBrushes = []
 

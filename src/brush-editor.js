@@ -77,7 +77,12 @@ AFRAME.registerSystem('brush-system', {
     ].filter(b => !b.invalid))
   },
   addUserBrushes(brushes) {
-    let brushShelf = document.querySelector('*[brush-shelf]').components['brush-shelf']
+    let brushShelf = document.querySelector('*[brush-shelf]') ?
+                        document.querySelector('*[brush-shelf]').components['brush-shelf']
+                        : null
+
+    if (!brushShelf) return;
+
     for (let b of brushes) {
       brushShelf.addBrush(Brush.Brush.fullRestore(b))
     }

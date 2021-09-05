@@ -452,7 +452,14 @@ export class ImageBrush extends ProceduralBrush{
     try {
       image.decoding = 'sync'
       image.loading = 'eager'
-      if (!image.src) image.src = require(`./brushes/${name}.png`)
+      if (!image.src) {
+        let assetSrc = require(`./brushes/${name}.png`)
+        if (assetSrc.startsWith("brushes/") && window.VARTISTE_TOOLKIT_URL)
+        {
+          assetSrc = `${VARTISTE_TOOLKIT_URL}/${assetSrc}`
+        }
+        image.src = assetSrc
+      }
       let width, height;
       if ('width' in options && 'height' in options) {
         width = options.width

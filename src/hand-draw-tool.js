@@ -123,32 +123,37 @@ AFRAME.registerComponent('hand-draw-tool', {
     }
 
     let rotation = 0
+    let useNormal = false || this.system.brush.useNormal;
+    let rotateBrush = this.system.data.rotateBrush;
 
-    if (this.system.data.rotateBrush)
+    let objRot = this.pool('objRot', THREE.Quaternion)
+    let objUp = this.pool('objUp', THREE.Vector3)
+    let objDir = this.pool('objForward', THREE.Vector3)
+    let objRight = this.pool('objRight', THREE.Vector3)
+    let thisRot = this.pool('thisRot', THREE.Quaternion)
+    let thisUp = this.pool('thisUp', THREE.Vector3)
+    if (rotateBrush || useNormal)
     {
-      let objRot = this.pool('objRot', THREE.Quaternion)
       intersection.object.getWorldQuaternion(objRot)
-      let objUp = this.pool('objUp', THREE.Vector3)
       objUp.set(0, 1, 0)
       objUp.applyQuaternion(objRot)
 
-      let objDir = this.pool('objForward', THREE.Vector3)
       objDir.copy(intersection.point)
       let thisPos = this.pool('thisPos', THREE.Vector3)
       this.el.object3D.getWorldPosition(thisPos)
       objDir.sub(thisPos)
       objDir.normalize()
 
-      let objRight = this.pool('objRight', THREE.Vector3)
       objRight.crossVectors(objDir, objUp)
 
 
-      let thisRot = this.pool('thisRot', THREE.Quaternion)
       this.el.object3D.getWorldQuaternion(thisRot)
-      let thisUp = this.pool('thisUp', THREE.Vector3)
       thisUp.copy(this.el.object3D.up)
       thisUp.applyQuaternion(thisRot)
+    }
 
+    if (rotateBrush)
+    {
       rotation = Math.atan2(thisUp.dot(objUp), thisUp.dot(objRight))
 
       if (intersection.object.el.hasAttribute('geometry'))
@@ -159,6 +164,11 @@ AFRAME.registerComponent('hand-draw-tool', {
       {
         rotation = Math.PI / 2 + rotation
       }
+    }
+
+    if (useNormal)
+    {
+      this.pressure = thisUp.dot(objUp)
     }
 
     let params = this.params

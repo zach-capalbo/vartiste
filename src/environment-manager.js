@@ -22,6 +22,7 @@ Util.registerComponentSystem('environment-manager', {
     rendererExposure: {default: 0.724},
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
+    initialState: {default: STATE_PRESET}
   },
   events: {
     anglechanged: function (e) {
@@ -47,7 +48,14 @@ Util.registerComponentSystem('environment-manager', {
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
     this.hasSwitched = false
-    Util.whenLoaded(this.el, () => this.usePresetHDRI({initial: true}))
+    Util.whenLoaded(this.el, () => {
+      this.usePresetHDRI({initial: true})
+
+      if (this.data.initialState !== STATE_PRESET)
+      {
+        this.useEnviropack("tankfarm")
+      }
+    })
   },
   update() {
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure

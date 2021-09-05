@@ -1,25 +1,13 @@
-a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" low-power-renderer="maxCanvasWidth: 1200; maxCanvasHeight: 1200; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" _physics="driver: ammo; debug: true; debugDrawMode: 1;" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;" kromophone="source: paint" physx="gravity: 0 0 0" brush-system="autoLoadBrushes: true"
+a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" low-power-renderer="maxCanvasWidth: 1200; maxCanvasHeight: 1200; colorManagement: true; physicallyCorrectLights: true; sortObjects: true; highRefreshRate: true" shadow="enabled: false" settings-system="" icon-button="shader: matcap; matcap: #asset-button-matcap" remove-audio-listener="" edit-field="scale: 0.05 0.05 0.05" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/v1/decoders/;" kromophone="source: paint" physx="gravity: 0 0 0; autoLoad: true" brush-system="autoLoadBrushes: true" environment-manager="initialState: tankfarm"
   a-assets#assets timeout="${60 * 1000 * 5}"
     a-mixin#shelf-handle material="shader:pbmatcap"
   a-sky color="#333" hide-in-ar-mode="" geometry="segmentsWidth: 16; segmentsHeight: 12" set-low-power="component: geometry; segmentsWidth: 6; segmentsHeight: 4" _hide-low-power=""
-  /a-entity light="type: directional; castShadow: true; intensity: 10" position="1 1 0" fix-light-shadow=""
-
-  /a-entity layer="src: #asset-colorful_studio; type: monocubemap"
 
   == partial('./partials/artist-root.html.slm')
 
-  /a-entity#brush-list
-    /a-entity brush-loader="brushType: ImageBrush"
 
   a-entity#world-root
-    /a-entity position="0 0 -2.5"
-    /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
-
-    a-entity#environment-place gltf-model="#asset-place" visible="false" _ammo-body="type: static" _ammo-shape="type: mesh" shadow="receive: true; cast: false"
-
-    /a-plane material="src: #asset-shelf" rotation="-90 0 0" position="0 0.01 0" _artist-shadow="" scale="2 2 2" ammo-body="type: static" ammo-shape="type: box"
-
-    a-entity#remote-avatar-root position="0 1.1 0.2"
+    a-entity#remote-avatar-root position="0 0 -0.2"
 
     a-entity position="1.1 0 -0.5" scale="0.3 0.3 0.3"
       a-entity position="-3.58310806712082 3.300659561600941 2.1625126248120847" rotation="0 0 0" scale="1 1 1"
@@ -42,11 +30,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
 
     a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.21243601320796098"
-      a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; _name: UI Toggle Shelf"
-        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" lag-tooltip="" scale="2 2 2"
     a-entity#ui bypass-hidden-updates=""
-      a-entity position="0 1.1 -0.5"
-        == partial('./partials/quick-menu.html.slm')
       a-entity#left-shelf position="-2 0 -1" rotation="0 90 0"
           a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" long-doc="The color selection shelf contains controls for picking and selecting the color" position="-1.2237972376022719 1.1089245377853298 1.5950361276901273" rotation="8.414556064744165 -43.40889617288809 0" scale="0.059734986610044456 0.059734986610044456 0.059734986610044456"
             a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
@@ -64,18 +48,6 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
           a-entity position="-1.5 -3 0"
             == partial('./partials/mesh-tools-shelf.html.slm')
           a-entity#six-dof-root position="-2.2 1.9 0"
-            /a-entity.clickable gltf-model="#asset-toolbox" material="shader:matcap; src: #asset-shelf" apply-material-to-mesh="" scale="0.3 0.3 0.3" position="-0.3 -1.3 0" redirect-grab="#six-dof-root" summonable="once: false" preactivate-tooltip="Summon 6DoF Tools" tooltip-style="offset:0 1 -1.3"
-
-            /a-entity preactivate-tooltip="Hammer" hammer-tool="" position="-0.6 0 0" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 0"
-
-            /a-entity preactivate-tooltip="Pencil Broom" pencil-broom="" position="-0.55 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-            /a-entity preactivate-tooltip="Pencil Spike Ball" spike-ball="" position="-0.1 -0.45 -0.1" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.2 -1.3"
-
-            /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
-      a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
-        a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
-          == partial('./partials/node-control-panel.html.slm')
       a-entity position="0.03 1.0545312767040833 0.121"
         /== partial('./partials/welcome-shelf.html.slm')
         /== partial('./partials/sketchfab-shelf.html.slm')
@@ -87,7 +59,9 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
         position="0.03 1.0545312767040833 0.11243601320796098" rotation="0 0 0" scale="0.0085 0.0085 0.0085"
         compositor=""
       ]
-        a-entity
+        /position="0.09054198417802356 0.7048865773264197 0.2444668512173652" rotation="-40.66462661636558 4.7810367846616595 1.2064391677368893" scale="0.01017476950911433 0.010174769509113717 0.010174769509113718"
+        /
+        a-entity#move-layer-redirection.raycast-invisible geometry="primitive: plane; width: 80; height: 35" visible="false" material="wireframe: true; color: red"
       a-entity position="0.03 1.0545312767040833 0.11243601320796098"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false" raycast-bvh="throttle: 2000"
       a-entity#reference-spawn position="0 1.6 -0.7"

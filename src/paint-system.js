@@ -109,7 +109,7 @@ AFRAME.registerComponent('set-brush', {
     this.activate = this.activate.bind(this)
   },
   updateSchema(newData) {
-    console.log("Brush schema", this.data, newData)
+    // console.log("Brush schema", this.data, newData)
     if (!this.data || newData.brushType !== this.data.brushType)
     {
       this.extendSchema(Brush[newData.brushType].schema())

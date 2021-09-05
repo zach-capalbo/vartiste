@@ -94,6 +94,9 @@ AFRAME.registerComponent('manipulator', {
     selector: {type: 'string'},
     // Note: **Don't Use**
     useRay: {type:'boolean', default: true},
+
+    useIntersections: {default: false},
+
     // Logs debug messages to the console
     printUpdates: {type: 'boolean', default: false},
 
@@ -338,6 +341,40 @@ AFRAME.registerComponent('manipulator', {
 
     this.gripClosedTime = this.el.sceneEl.time
 
+    if (this.data.useIntersections)
+    {
+      let thisMesh = this.el.getObject3D('mesh')
+      for (let obj of this.raycaster.objects)
+      {
+        if (Util.objectsIntersect(thisMesh, obj))
+        {
+          let targetEl = obj.el
+
+          if (this.data.printUpdates)
+          {
+            console.log("GRABBING from intersection")
+          }
+
+          this.target = targetEl
+
+          for (let redirection = targetEl['redirect-grab']; redirection; redirection = this.target['redirect-grab'])
+          {
+            if (this.data.printUpdates)
+            {
+              console.log("Redirecting grab to", typeof(redirection), redirection)
+            }
+            this.target = redirection
+          }
+
+          this.offset.set(0, 0, 0)
+
+          this.startGrab()
+
+          return;
+        }
+      }
+    }
+
     if (this.data.useRay)
     {
       if (!this.raycaster.intersectedEls.length > 0)
@@ -558,6 +595,9 @@ AFRAME.registerComponent('propogate-grab', {
         break;
       }
     }
+  },
+  remove() {
+    delete this.el['redirect-grab'];
   }
 })
 
@@ -639,35 +679,6 @@ AFRAME.registerComponent('lock-up', {
     localOffset.applyQuaternion(obj.quaternion)
 
     obj.position.sub(localOffset)
-
-
-    return
-
-    forward.set(0, 0, 1)
-    forward.applyQuaternion(obj.quaternion)
-    forward.y = 0
-    forward.normalize()
-
-    let originalScale = this.pool('originalScale', THREE.Vector3)
-    originalScale.copy(obj.scale)
-
-    let originalPosition = this.pool('originalPosition', THREE.Vector3)
-    originalPosition.copy(obj.position)
-
-    let origin = this.pool('origin', THREE.Vector3)
-    // origin.copy(localOffset)
-    origin.copy(this.el.grabbingManipulator.offset)
-    origin.multiplyScalar(-1)
-    forward.add(origin)
-    obj.matrix.lookAt(forward, origin, this.el.sceneEl.object3D.up)
-    Util.applyMatrix(obj.matrix, obj)
-    obj.scale.copy(originalScale)
-    obj.position.copy(originalPosition)
-    obj.position.sub(origin)
-    // obj.quaternion.setFromRotationMatrix(obj.matrix)
-
-    // obj.getWorldDirection(forward)
-
   }
 })
 

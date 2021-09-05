@@ -12,6 +12,7 @@
       /*excludeFiles: ['icon-button'], */ // Will exclude all components found in  aframe-vartiste-toolkit source file 'icon-button.js'
       /*includeFiles: ['icon-button'], */ // Will include *only* the components found in  aframe-vartiste-toolkit source file 'icon-button.js'
       /*assetUrl: 'https://example.com:8080/', */ // Will load vartiste assets from https://example.com:8080/ rather than the script's location
+      // includeCompositor: true
     }</script>
   <!--Just include the toolkit js file-->
   <script src="/vartiste-toolkit.js"></script>
@@ -111,6 +112,12 @@
               geometry="primitive: plane; width: 2; height: 1.75"
               material="shader: flat; src: #draw-canvas-asset; npot: true"
               position="3.1 0 -2.4" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"></a-entity>
+    <!-- <a-entity id="canvas-view" class="clickable"
+              compositor="geometryWidth: 2"
+              frame=""
+              geometry="primitive: plane; width: 2; height: 1.75"
+              material="shader: flat; src: #draw-canvas-asset; npot: true"
+              position="3.1 0 -2.4" tooltip="Draw Here" tooltip-style="offset: 0 0.75 0"></a-entity> -->
     <a-entity class="clickable" color-picker="" geometry="primitive: circle; radius: 1; height: 1.75" position="3.1 2 -2.4"></a-entity>
     <a-entity position="4.5 2 -2.4" icon-button="#asset-brush" tooltip="Change brush" set-brush="brushType: ImageBrush; image: #asset-brush; color: blue; scale: 5; activationEvent: click"></a-entity>
     <a-entity position="3.1 0 -1.4" rotation="90 0 0" scale="2 2 2" pencil-tool="" tooltip="Grabbable Pencil" set-brush="brushType: ImageBrush; image: #asset-lead-pencil; color: green; scale: 5"></a-entity>

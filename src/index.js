@@ -109,7 +109,17 @@ const {loadAllAssets} = require('./assets.js')
 
 // loadAllAssets()
 import {Util} from './util.js'
-document.write(require('./scene.html.slm'));
+
+let params = new URLSearchParams(document.location.search)
+
+if (params.get("simplified"))
+{
+  document.write(require('./simplified-interface.html.slm'))
+}
+else
+{
+  document.write(require('./scene.html.slm'));
+}
 
 let scene = document.querySelector('a-scene')
 if (Util.isLowPower())
