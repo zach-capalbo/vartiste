@@ -39,6 +39,12 @@ AFRAME.registerComponent('tooltip', {
     {
       tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}`)
     }
+
+    // tooltip.setAttribute('troika-text', 'outlineBlur', 0.01)
+    // tooltip.setAttribute('troika-text', 'outlineColor', '#637ecf')
+    // tooltip.setAttribute('troika-text', 'outlineWidth', 0.030)
+    // tooltip.setAttribute('troika-text', 'outlineOpacity', 0.9)
+
     tooltip.setAttribute('class', 'raycast-invisible')
     tooltip.setAttribute('visible', false)
     this.el.append(tooltip)
