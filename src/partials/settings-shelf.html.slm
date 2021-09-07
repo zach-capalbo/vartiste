@@ -28,7 +28,7 @@ a-entity position="0.15 -0.6 0" icon-row="mergeButtons: true; autoPosition: fals
 
 a-entity position="-1.6 -1.2 0" icon-row="mergeButtons: true; autoPosition: false"
   a-entity click-action="newComposition" icon-button="#asset-file-outline" tooltip="New Composition"
-  a-entity click-action="resample" icon-button="#asset-resize"  tooltip="Resample Composition"
+  a-entity click-action="resample" icon-button="#asset-resize"  tooltip="Resize"
   a-entity click-action="resizeCanvas" icon-button="#asset-arrow-all" tooltip="Resize Canvas Only"
   a-entity click-action="resizeCanvasToCurrentLayer" icon-button="#asset-drag-and-drop"  tooltip="Resize Canvas to Current Layer"
   a-entity icon-button="#asset-archive-arrow-down-outline" tooltip="Standard Sizes" popup-button="popup: standard-sizes; autoScale: true; offset: 0 1 0.5"

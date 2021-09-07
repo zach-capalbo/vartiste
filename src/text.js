@@ -1,6 +1,7 @@
+require('aframe-troika-text');
+
 ((replaceText) => {
 if (!replaceText) return
-require('aframe-troika-text')
 const TEXT_SCHEMA = AFRAME.components['text'].schema
 delete AFRAME.components.text
 
@@ -19,6 +20,8 @@ AFRAME.registerComponent('text', {
         troikaData[propName] = this.data[propName]
       }
     }
+
+    troikaData.value = troikaData.value.toString()
 
     if (this.data.width == 'auto')
     {

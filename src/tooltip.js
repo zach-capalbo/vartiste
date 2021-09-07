@@ -27,7 +27,16 @@ AFRAME.registerComponent('tooltip', {
     tooltip.setAttribute('geometry', 'primitive: plane; height: 0; width: 0')
     tooltip.setAttribute('material', 'color: #abe; shader: flat')
     tooltip.setAttribute('position', '0 0.4 0.004')
-    tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}`)
+
+    if (AFRAME.components['troika-text'])
+    {
+      tooltip.setAttribute('troika-text', `color: #000; maxWidth: 1; align: center; value: ${this.data}`)
+      this.tooltip.setAttribute('geometry', `primitive: plane; height: 0.06; width: 1`)
+    }
+    else
+    {
+      tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}`)
+    }
     tooltip.setAttribute('class', 'raycast-invisible')
     tooltip.setAttribute('visible', false)
     this.el.append(tooltip)
@@ -35,7 +44,25 @@ AFRAME.registerComponent('tooltip', {
   update(oldData) {
     if (!this.el.hasLoaded) return
 
-    this.tooltip.setAttribute('text', `color: #000;width: 1; align: center; value: ${this.data}`)
+    if (AFRAME.components['troika-text'])
+    {
+      this.tooltip.setAttribute('troika-text', `color: #000; maxWidth: 2; align: center; value: ${this.translate(this.data)}; depthOffset: -0.1`)
+
+      Util.whenComponentInitialized(this.tooltip, 'troika-text', () => {
+        let g = this.tooltip.components['troika-text'].troikaTextMesh.geometry
+        this.tooltip.components['troika-text'].troikaTextMesh.position.z = 0.01
+        this.tooltip.components['troika-text'].troikaTextMesh._needsSync = true
+        this.tooltip.components['troika-text'].troikaTextMesh.sync(() => {
+          g.computeBoundingBox()
+          let bb = g.boundingBox;
+          this.tooltip.setAttribute('geometry', `primitive: plane; height: ${(bb.max.y - bb.min.y) + 0.1}; width: ${(bb.max.x - bb.min.x) + 0.1}`)
+        })
+      })
+    }
+    else
+    {
+      this.tooltip.setAttribute('text', `color: #000;width: 1; align: center; value: ${this.translate(this.data)}`)
+    }
   },
   remove() {
     this.el.removeChild(this.tooltip)
@@ -51,6 +78,11 @@ AFRAME.registerComponent('tooltip', {
     this.tooltip.object3D.position.y = -99999999
     this.tooltip.setAttribute('visible', false)
     // this.el.sceneEl.emit('refreshobjects')
+  },
+  translate(str) {
+    if (!this.el.sceneEl.systems['ui-translation']) return str;
+
+    return this.el.sceneEl.systems['ui-translation'].translate(str, this.el)
   }
 })
 
