@@ -50,6 +50,7 @@ AFRAME.registerComponent('tooltip', {
 
       Util.whenComponentInitialized(this.tooltip, 'troika-text', () => {
         let g = this.tooltip.components['troika-text'].troikaTextMesh.geometry
+        this.tooltip.components['troika-text'].troikaTextMesh.position.z = 0.01
         this.tooltip.components['troika-text'].troikaTextMesh._needsSync = true
         this.tooltip.components['troika-text'].troikaTextMesh.sync(() => {
           g.computeBoundingBox()
