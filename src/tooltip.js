@@ -1,5 +1,7 @@
 import {Util} from './util.js'
 
+const USE_TROIKA_DIRECT = false;
+
 // Shows some text when hovered by the mouse or controller laser pointer. Can be
 // styled with [tooltip-style](#tooltip-style). If [speech](#speech) is enabled,
 // the tooltip will be read with text-to-speech when hovered.
@@ -28,7 +30,7 @@ AFRAME.registerComponent('tooltip', {
     tooltip.setAttribute('material', 'color: #abe; shader: flat')
     tooltip.setAttribute('position', '0 0.4 0.004')
 
-    if (AFRAME.components['troika-text'])
+    if (USE_TROIKA_DIRECT)
     {
       tooltip.setAttribute('troika-text', `color: #000; maxWidth: 1; align: center; value: ${this.data}`)
       this.tooltip.setAttribute('geometry', `primitive: plane; height: 0.06; width: 1`)
@@ -44,7 +46,7 @@ AFRAME.registerComponent('tooltip', {
   update(oldData) {
     if (!this.el.hasLoaded) return
 
-    if (AFRAME.components['troika-text'])
+    if (USE_TROIKA_DIRECT)
     {
       this.tooltip.setAttribute('troika-text', `color: #000; maxWidth: 2; align: center; value: ${this.translate(this.data)}; depthOffset: -0.1`)
 
