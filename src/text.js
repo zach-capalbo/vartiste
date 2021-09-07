@@ -80,7 +80,8 @@ AFRAME.registerComponent('text', {
       if (!geometryComponent.height) this.setHeight = true;
     }
 
-
+    mesh.position.x = this.data.xOffset
+    mesh.position.y = this.data.yOffset
     mesh._needsSync = true
     mesh.sync()
   },
@@ -107,7 +108,6 @@ AFRAME.registerComponent('text', {
         if (this.data.anchor === 'left') { el.getObject3D('mesh').position.x = width / 2 / 1.1}
         if (this.data.anchor === 'right') { el.getObject3D('mesh').position.x = - width / 2 / 1.1}
       }
-
   }
 })
 

@@ -108,7 +108,7 @@ AFRAME.registerComponent('shelf', {
             pinnable: this.data.pinnable,
             hideOnly: this.data.hideOnly,
             geometryTarget: this.container.querySelector('.bg'),
-            name: this.data.name
+            name: Util.translate(this.data.name)
           })
         })
       }
