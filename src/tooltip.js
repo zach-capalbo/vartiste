@@ -46,7 +46,7 @@ AFRAME.registerComponent('tooltip', {
 
     if (AFRAME.components['troika-text'])
     {
-      this.tooltip.setAttribute('troika-text', `color: #000; maxWidth: 1; align: center; value: ${this.translate(this.data)}; depthOffset: -0.05`)
+      this.tooltip.setAttribute('troika-text', `color: #000; maxWidth: 2; align: center; value: ${this.translate(this.data)}; depthOffset: -0.1`)
 
       Util.whenComponentInitialized(this.tooltip, 'troika-text', () => {
         let g = this.tooltip.components['troika-text'].troikaTextMesh.geometry

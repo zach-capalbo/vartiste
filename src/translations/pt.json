@@ -9,8 +9,57 @@
   "2D Animation": "Animação 2D",
   "Mesh Tools": "Ferramenta de malha",
   "Reference Photos": "Imagens de referência",
-  "Experiments / Utils": "Utilitários Experimentais",
+  "Experiments / Utils": "Utilitários experimentais",
+  "Node Compositing System": "Editor de nós",
+  "Quick Start Paper Template": "Modelo de papel",
+  "Quick Start Hubs Avatar": "Modelo de MozillaHubs",
+  "Quick Start Painting Template": "Modelo de pintura",
 
+
+  "Load": "Carregar",
+  "Download project": "Salvar em arquivo",
+  "Save Project to Browser": "Salvar em navegador",
+  "Export as PNG": "Exportar para PNG",
+  "Export as GLB": "Exportar para GLB",
+  "Use JPEG Compression": "Gera a saída de imagem no formato JPEG",
+  "Low Quality": "Baixa qualidade",
+  "Medium Quality": "Média qualidade",
+  "Full Quality": "Alta qualidade",
+  "Toggle Reference Import":"Importar para referência",
+  "Edit Project Name": "Nome do arquivo",
+  "Edit Width": "Largura",
+  "Edit Height": "Altura",
+  "New Composition": "Novo projeto",
+  "Resize": "Redimensionar",
+  "Resize Canvas Only": "Redimensionar tela apenas",
+  "Resize Canvas to Current Layer": "Redimensionar a tela para a camada ativa",
+  "Standard Sizes": "Tamanhos padrão",
+
+  "Toggle Wrap X": "Envolve em X",
+  "Toggle Wrap Y": "Envolve em Y",
+  "Increase Brush Size": "Aumentar pincel",
+  "Decrease Brush Size": "Diminuir pincel",
+  "Brush Editor": "Editor de pincéis",
+  "Clear Active Layer": "Limpar camada",
+  "Load Brush Packs": "Carregar pincéis",
+
+  "Toggle UI": "Oculta / revela interface de usuário",
+
+  "Add color to project palette": "Adicionar para a paleta",
+
+  "Hide Layer": "Ocultar camada",
+  "Activate Layer": "Ativar camada",
+  "Grab Layer": "Mover camada",
+  "Duplicate Layer": "Duplicar camada",
+  "Delete Layer": "Apagar camada",
+  "Move Layer Up": "Move a camada acima",
+  "Move Layer Down": "Move a camada abaixo",
+  "New Layer": "Nova camada",
+  "Change layer blend mode": "Modo de composição",
+  "Stamp layer downward": "Combinar com a de baixo",
+
+
+  "Import as Reference Photos":"Importar para referência",
 
   "":""
 }
