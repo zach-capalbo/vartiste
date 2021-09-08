@@ -37,6 +37,7 @@
   "Resize Canvas to Current Layer": "Redimensionar a tela para a camada ativa",
   "Standard Sizes": "Tamanhos padrão",
 
+  "Brush Shelf": "Painel de pincéis",
   "Toggle Wrap X": "Envolve em X",
   "Toggle Wrap Y": "Envolve em Y",
   "Increase Brush Size": "Aumentar pincel",
@@ -47,10 +48,13 @@
 
   "Toggle UI": "Oculta / revela interface de usuário",
 
+  "Color Selection Shelf": "Painel de cor",
   "Add color to project palette": "Adicionar para a paleta",
   "-  Opacity  +": "- Opacidade +",
   "Precise Color Selection": "Mais",
+  "Color Picker": "Seletor de cores",
 
+  "Layer Control": "Camada",
   "Hide Layer": "Ocultar camada",
   "Activate Layer": "Ativar camada",
   "Grab Layer": "Mover camada",
