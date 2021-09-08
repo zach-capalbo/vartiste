@@ -22,7 +22,7 @@ AFRAME.registerComponent('tooltip', {
     'mouseleave': function() {this.hide();},
   },
   init() {
-    this.targetY = 0.4
+    this.targetY = 0.3
 
     let tooltip = document.createElement('a-entity')
     this.tooltip = tooltip
@@ -37,7 +37,7 @@ AFRAME.registerComponent('tooltip', {
     }
     else
     {
-      tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}`)
+      tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}; baseline: bottom`)
     }
 
     // tooltip.setAttribute('troika-text', 'outlineBlur', 0.01)

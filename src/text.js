@@ -106,7 +106,9 @@ AFRAME.registerComponent('text', {
       if (this.setWidth || this.setHeight)
       {
         if (this.data.anchor === 'left') { el.getObject3D('mesh').position.x = width / 2 / 1.1}
-        if (this.data.anchor === 'right') { el.getObject3D('mesh').position.x = - width / 2 / 1.1}
+        else if (this.data.anchor === 'right') { el.getObject3D('mesh').position.x = - width / 2 / 1.1}
+        if (this.data.baseline === 'top') { el.getObject3D('mesh').position.y = - height / 2 / 1.1}
+        else if (this.data.baseline === 'bottom') { el.getObject3D('mesh').position.y = height / 2 / 1.1}
       }
   }
 })
