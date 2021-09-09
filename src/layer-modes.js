@@ -67,10 +67,11 @@ const BRUSH_FX = [
   'nudge',
   'scatter',
   'noise',
-  'hq-blending',
   'drip',
-  'ryb-blend',
   'dilate',
+  'hq-blending',
+  'ryb-blend',
+  'oklab-blend',
   // 'erode',
 ]
 
