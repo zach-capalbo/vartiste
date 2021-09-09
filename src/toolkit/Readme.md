@@ -2,26 +2,12 @@
 
 The VARTISTE toolkit is a collection of components developed while creating
 [VARTISTE](https://vartiste.xyz). I've compiled them into a stand-alone module
-in the hopes that it might be useable to folks to jump start their own projects.
+in the hopes that it might help folks to jump start their own projects.
 
 # Installation / Use
 
 The easiest way to use it is to include the `.js` file from a CDN, such as
-unpkg:
-
-```html
-<html>
-<head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@latest/vartiste-toolkit.js"></script>
-</head>
-...
-</html>
-```
-
-Including the javascript file automatically registers the components and
-systems.
-
-**Note:** It is recommended to specify a version instead of using _latest_, in order to avoid unexpected changes. E.g:
+unpkg, specifying the version using _@version_:
 
 ```html
 <html>
@@ -32,62 +18,86 @@ systems.
 </html>
 ```
 
+Including the javascript file automatically registers the components and
+systems.
+
+**Note:** You can access the most up to date version using _@latest_, but this
+is not recommended as it may cause unexpected changes.
+
 ## New Project vs. Existing Project
 
-If you're creating a new project, the aframe-vartiste-toolkit has a lot of
-features and functionality, and I recommend pulling in the whole thing. This is
-the default behavior when including the toolkit script. The components and
-systems can work together to provide more functionality when everything is
-available.
+When creating a new project, I recommend pulling the entirety of
+aframe-vartiste-toolkit. The toolkit contains a wide variety of features and 
+some components and systems rely on others for full functionality. Including
+the entire toolkit allows components and systems to work together to their
+full extent.
 
 If you're bringing aframe-vartiste-toolkit into an existing project, you can
 either [bring in specific pieces of the toolkit](#customization), or you can
 bring in the whole thing. If possible, I recommend pulling in the whole toolkit,
-since some components may depend on other components or systems, but if there's
-concern for naming or functionality conflicts, most components can also operate
-on their own.
+since components may depend on other components or systems. If there's concern
+for naming or functionality conflicts, most components can also operate on their
+own.
 
 # Toolkit Overview
 
-The *aframe-vartiste-toolkit* has a lot of stuff in it. It's built by exporting
-every little bit and piece of the [VARTISTE](https://vartiste.xyz) app, and so
-[VARTISTE](https://vartiste.xyz) and the [VARTISTE source
+The *aframe-vartiste-toolkit* contains a wide variety of elements. It's built by
+exporting every little bit and piece of the [VARTISTE](https://vartiste.xyz) app,
+so [VARTISTE](https://vartiste.xyz) and the [VARTISTE source
 code](https://gitlab.com/zach-geek/vartiste) are ultimately the best places to
 see what's available and how it works. Nonetheless, I've written some
-documentation as a best-spare-time-effort. Here's some of the key things to get you started.
+documentation as a best-spare-time-effort. Here are some of the essentials to get
+you started.
 
 ## Philosophy and Terms
 
 VARTISTE leans pretty heavily into the entity-component-system framework that
-a-frame makes available; most things are components, which use systems when
-needed, and can be attached to entities pretty readily. Plenty of components
-also spawn their own children entities.
+a-frame makes available; it consists mostly of components, which use systems when
+needed, and can be attached to entities pretty readily. Many components also spawn
+their own children entities.
 
-There are a few notable exceptions in the form of utility classes, such as [`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes are exposed under the `VARTISTE` global variable.
+There are a few notable exceptions in the form of utility classes, such as
+[`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes
+can be used when creating components or anywhere you'd like in your Javascript code.
+They are exposed under the VARTISTE object, which is created as a property in the 
+global `window`, so you can access them from anywhere. For instance, to access the
+`whenLoaded` method of [`Util`](#util.js), you can call
+`VARTISTE.Util.whenLoaded(...)` anywhere in your code.
 
 Most components (but not all) respond correctly to updates via
-`setAttribute`; fewer things respond entirely correctly to `remove()` so if you
+`setAttribute()`; fewer things respond entirely correctly to `remove()` so if you
 run into issues, double check the docs here or the source.
 
 One extension to the ECS framework in VARTISTE is "component systems", created
 via [`VARTISTE.Util.registerComponentSystem`](#util.js). These are basically
 components for the `a-scene` which get automatically attached (like systems do).
 They have the full schema and update abilities of components, with the
-auto-attach convenience of systems. They are accessible via `sceneEl.systems` *and* `sceneEl.components`.
+auto-attach convenience of systems. These are registered as both systems _and_ 
+components and can be accessed either by the scene `components` object 
+(e.g., `sceneEl.components["COMPONENT NAME"]`) or the scene `systems` object 
+(e.g., `sceneEl.systems["COMPONENT NAME"]`) within your code.
 
 ## UI Components
 
-VARTISTE has a quick-and-dirty user interface, focused around the [`icon-button`](#icon-button), a button with an icon on it. These are usually collected into an [`icon-row`](#icon-row), where they're automatically layed-out horizontally. Most clickable things have a [`tooltip`](#tooltip), which also has the advantage of being able to be ready by the built-in [text-to-speech](#speech.js) system.
+VARTISTE has a quick-and-dirty user interface, focused around the 
+[`icon-button`](#icon-button). These are usually collected into an
+[`icon-row`](#icon-row), where they're automatically laid out 
+horizontally. Most clickable elements have a [`tooltip`](#tooltip), which also has 
+the advantage of being able to be read by the built-in [text-to-speech](#speech.js) 
+system.
 
-In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field) and [`lever`s](#lever) for providing input.
+In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field)
+for text input and [`lever`s](#lever) for adjusting values.
 
-All of these components are usually arranged on a [`shelf`](#shelf) which provides a background and frame, and allows for easy closing or pinning to the a controller.
+All of these components are arranged on a [`shelf`](#shelf) which provides a
+background and frame. Shelves can also be closed or pinned to the a controller to
+easily manage the workspace.
 
 ## User Rig
 
-VARTISTE is based on a laser-pointer type interface. I've created a user rig
-layout based on the laser-pointer concept, and you can incorporate it all with
-just the [`vartiste-user-root`](#vartiste-user-root) component. Some of the things it includes:
+I created VARTISTE's user rig layout based on a laser-pointer type interface. 
+You can incorporate the entire rig with the [`vartiste-user-root`](#vartiste-user-root)
+component. It includes:
 
 - Automatic "Press any key to reset orientation" when entering VR.
 - Cool "VR Goggles" that show up in the spectator camera (but not during normal
@@ -105,7 +115,7 @@ Note this user rig uses the
 `laser-controls`. I found the [webxr-input-profiles
 motion-controllers](https://github.com/immersive-web/webxr-input-profiles) to be
 more consistent and up-to-date than the components built into a-frame, so I
-built the [`webxr-input-profiles`](#webxr-input-profiles) systen to use that
+built the [`webxr-input-profiles`](#webxr-input-profiles) system to use that
 instead.
 
 ## Interaction Components
@@ -115,25 +125,27 @@ elements have the `clickable` HTML class set, which makes them visible to the
 raycasters. `click` events are emitted when these elements are clicked.
 
 Every `clickable` entity, by default, can also be grabbed and moved. Grabbing
-and moving is handled via the [`manipulator`](#manipulator) component, which is installed on the user motion controllers or mouse controls. A lot more info can be found at the documentation for [`manipulator`](#manipulator)
+and moving is handled via the [`manipulator`](#manipulator) component, which 
+is installed on the user motion controllers or mouse controls. More info can 
+be found in the documentation for [`manipulator`](#manipulator)
 
-There's also a bunch of built-in constraints, which can be set on entities to
+There are also a bunch of built-in constraints, which can be set on entities to
 restrict how they move when grabbed. For instance
 [`manipulator-weight`](#manipulator-weight) makes entities feel "heavy" by
 slowing down their movement when grabbed.
 
 ## Drawing Components
 
-[VARTISTE](https://vartiste.xyz) of course is a drawing and image editing
-application. I've brought many of the drawing components into the toolkit to
+[VARTISTE](https://vartiste.xyz) is, of course, a drawing and image editing
+application. I've brought many drawing components into the toolkit to
 allow easily adding drawing to other A-Frame applications.
 
-The easiest way to get started adding drawing to your app is to add the
+The easiest way to add drawing to your app is to add the
 [`drawable`](#drawable) component to whatever you want to be able to draw on,
 and the [`hand-draw-tool`](#hand-draw-tool) component to whichever raycasters
 you want to be able to draw. These are already set up if you use the
 [`vartiste-user-root`](#vartiste-user-root) component. Additionally, you can
-create [`pencil-tool`](#pencil-tool) components to create grabbable pencils that
+create [`pencil-tool`](#pencil-tool) components to create grab-bable pencils that
 can be easier to use in VR.
 
 You can create your own brushes with the [`set-brush`](#set-brush) component.
@@ -142,23 +154,25 @@ Scene-wide drawing parameters are managed by the
 
 ## Other cool stuff
 
-There's lots of other nifty components and systems, for instance
+There are lots of other nifty components and systems, for instance
 [`canvas-fx`](#canvas-fx), which lets you quickly apply special effects to a
 canvas, or [`glb-exporter`](#glb-exporter) which will let you download any
-arbitrary entity or `THREE.Object3D` as a glb file in a single function call. There's even a PhysX-based [physics system](#physics.js)!
+arbitrary entity or `THREE.Object3D` as a glb file in a single function call. 
+There's even a PhysX-based [physics system](#physics.js)!
 
 Ultimately, the best way to find out everything that's available is to read
 through these documents, play around with the examples and VARTISTE itself, and
-failing that to read the source code.
+failing that, to read the source code.
 
-Also, VARTISTE uses a bunch of premade environments, these are packaged separately in the [aframe-enviropacks](https://www.npmjs.com/package/aframe-enviropacks) package.
+Also, VARTISTE uses a bunch of premade environments. These are packaged separately 
+in the [aframe-enviropacks](https://www.npmjs.com/package/aframe-enviropacks) package.
 
 ## Assets
 
 Assets required for some of the basic component use are automatically included
 by the javascript source file.
 
-If you want to include *all* VARTISTE assets in your project, you just need an
+If you want to include *all* VARTISTE assets in your project, you will need an
 `a-asset` with a `vartiste-assets` property, like this:
 
 ```html
@@ -174,7 +188,9 @@ If you want to include *all* VARTISTE assets in your project, you just need an
 ## Customization
 
 You can optionally customize which components and systems are registered by the
-aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefined` (default) or be an object having any of the following properties:
+aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the 
+vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefined` 
+(default) or be an object having any of the following properties:
 
 - `excludeComponents`: Array of strings specifying which components, systems, or
   systemComponents specifically to exclude from being registered
