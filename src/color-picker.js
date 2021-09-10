@@ -2,19 +2,23 @@
 const Color = require('color')
 const {Undo} = require('./undo.js')
 import {Util} from './util.js'
+import {okhsl_to_srgb, srgb_to_okhsl} from './framework/oklab.js'
 
 const INDICATOR_GEOMETRY = {"metadata":{"version":4.5,"type":"BufferGeometry","generator":"BufferGeometry.toJSON"},"uuid":"DB0461DE-8349-4483-B90E-210136A9DA19","type":"BufferGeometry","data":{"attributes":{"position":{"itemSize":3,"type":"Float32Array","array":[0,0.05000000074505806,0.009999999776482582,-0.05000000074505806,0.20000000298023224,0.009999999776482582,0.05000000074505806,0.20000000298023224,0.009999999776482582],"normalized":false},"normal":{"itemSize":3,"type":"Float32Array","array":[0,0,0,0,0,0,0,0,0],"normalized":false},"color":{"itemSize":3,"type":"Float32Array","array":[1,1,1,1,1,1,1,1,1],"normalized":false}},"groups":[{"start":0,"materialIndex":0,"count":3}],"boundingSphere":{"center":[0,0.125,0.01],"radius":0.09013878188659974}}};
 
 // Adds a colorwheel for picking colors for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("color-picker", {
   dependencies: ['material', 'geometry'],
-  schema: {brightness: {type: 'float', default: 0.5}},
+  schema: {
+    brightness: {type: 'float', default: 0.5},
+    colorSpace: {default: 'oklab', oneOf: ['rgb', 'oklab']}
+  },
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
     var vertexShader = require('./shaders/pass-through.vert')
 
-    var fragmentShader = require('./shaders/color-wheel.glsl')
+    var fragmentShader = require(`./shaders/color-wheel-${this.data.colorSpace}.glsl`)
 
     var material = new THREE.ShaderMaterial({
       uniforms: {
@@ -45,8 +49,7 @@ AFRAME.registerComponent("color-picker", {
       h = angle / 360;
       s = polarPosition.r;
       l = this.data.brightness;
-
-      var color = Color({h: h * 360, s: s * 100,v:l * 100}).rgb().hex()
+      var color = Color(okhsl_to_srgb(h, s, l)).hex()
       this.handleColor(color)
     })
 
@@ -63,15 +66,23 @@ AFRAME.registerComponent("color-picker", {
 // Picks the brightness for a [`color-wheel`](#color-wheel)
 AFRAME.registerComponent("brightness-picker", {
   // The element with a `color-wheel` component to set the brightness on
-  schema: {target: {type: 'selector'}},
+  schema: {
+    target: {type: 'selector'}
+  },
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
     var vertexShader = require('./shaders/pass-through.vert')
 
-    var fragmentShader = require('./shaders/brightness-ramp.glsl')
+    var fragmentShader = require('./shaders/brightness-ramp-oklab.glsl')
 
     var material = new THREE.ShaderMaterial({
+      uniforms: {
+        u_color: {
+          type: 'vec3',
+          value: new THREE.Vector3(1, 1, 1)
+        }
+      },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader
     });
@@ -82,6 +93,14 @@ AFRAME.registerComponent("brightness-picker", {
 
     this.el.setAttribute('action-tooltips', 'trigger: Change Brightness')
 
+    this.onColorChanged = (e) => {
+      let c = Color(this.system.data.color).rgb()
+      this.mesh.material.uniforms.u_color.value.set(c.red() / 255, c.green() / 255, c.blue() / 255)
+    }
+
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
+
+
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
 
@@ -89,8 +108,9 @@ AFRAME.registerComponent("brightness-picker", {
       {
         this.data.target.setAttribute("color-picker", {brightness: point.y})
 
-        let color = this.system.data.color
-        this.system.selectColor(Color(color).value(100 * point.y).rgb().hex())
+        let color = Color(this.system.data.color).rgb()
+        let c = srgb_to_okhsl(color.red() , color.green(), color.blue())
+        this.system.selectColor(Color(okhsl_to_srgb(c[0], c[1], point.y)).hex())
       }
       else
       {
@@ -98,6 +118,9 @@ AFRAME.registerComponent("brightness-picker", {
         this.el.emit('brightnesschanged', {brightness: this.brightness})
       }
     })
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('colorchanged', this.onColorChanged)
   }
 })
 

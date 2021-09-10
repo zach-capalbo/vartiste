@@ -791,6 +791,10 @@ class VARTISTEUtil {
 
     return intersected
   }
+  translate(str) {
+    if (!this.el.sceneEl.systems['ui-translation']) return str
+    return this.el.sceneEl.systems['ui-translation'].translate(str)
+  }
 }
 
 const Util = new VARTISTEUtil();
@@ -798,5 +802,11 @@ const Util = new VARTISTEUtil();
 Pool.init(Util)
 
 window.VARTISTE = {Util, Color}
+
+AFRAME.registerSystem('vartiste-util', {
+  init() {
+    Util.el = this.el.sceneEl
+  }
+})
 
 export {Util}

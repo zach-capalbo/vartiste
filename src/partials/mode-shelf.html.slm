@@ -9,4 +9,4 @@ a-entity shelf="frame: false" scale="0.35 0.35 0.35"
         - for (let mode of container)
           a-entity position="0 ${- i++ * 0.5} 0"
             a-entity layer-mode=mode icon-button="#asset-blur-linear" scale="0.7 0.7 1" position="-0.7 0 0" hidden-tooltip=mode
-            a-entity text="value: ${mode}; width: 1; wrapCount: 15"
+            a-entity text="value: ${mode}; width: 1; wrapCount: 15; anchor: left" position="-0.43 0 0"

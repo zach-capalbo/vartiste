@@ -118,7 +118,7 @@ let config = {
           }
         }]
       },
-      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr|webp)$/i,
+      {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr|webp|woff)$/i,
         use: [
           {
             loader: 'url-loader',

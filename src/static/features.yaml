@@ -327,6 +327,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1424060700641710080
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s another bit of <a href="https://twitter.com/hashtag/3DModelling?src=hash&amp;ref_src=twsrc%5Etfw">#3DModelling</a> features creeping into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. You can now edit the vertices of the shape constructs before converting them into drawable or reference meshes <a href="https://t.co/kGvItMJRLi">pic.twitter.com/kGvItMJRLi</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1424060700641710080?ref_src=twsrc%5Etfw">August 7, 2021</a></blockquote>
+      - name: Straight Edge
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1434640755117674497
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Need help drawing a straight line or a right angle? The new straight edge tool in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> will help with that! <a href="https://t.co/IXTqYpCzCD">pic.twitter.com/IXTqYpCzCD</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1434640755117674497?ref_src=twsrc%5Etfw">September 5, 2021</a></blockquote>
   - name: Import / Export
     features:
       - name: GLB Export
@@ -394,6 +399,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1406664691028574212
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Poly Haven is a super useful resource, and works great with <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>! HDRIs, Textures, and Models, all work great!<br><br>(video alt: downloading vase 3d model, importing to VARTISTE, and painting on it in VR) <a href="https://t.co/xegHrU58nO">https://t.co/xegHrU58nO</a> <a href="https://t.co/m5ckLtuA6M">pic.twitter.com/m5ckLtuA6M</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1406664691028574212?ref_src=twsrc%5Etfw">June 20, 2021</a></blockquote>
+      - name: Townscaper
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1434872309828001796
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Playing with <a href="https://twitter.com/hashtag/Townscaper?src=hash&amp;ref_src=twsrc%5Etfw">#Townscaper</a> towns in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. Thanks <a href="https://twitter.com/OskSta?ref_src=twsrc%5Etfw">@OskSta</a> for adding the export feature! <a href="https://t.co/9tSjewD9pW">pic.twitter.com/9tSjewD9pW</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1434872309828001796?ref_src=twsrc%5Etfw">September 6, 2021</a></blockquote>
       - name: Sketchfab
         tweets:
           - url: https://twitter.com/zach_geek/status/1382316167625383936

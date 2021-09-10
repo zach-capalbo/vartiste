@@ -44,6 +44,16 @@ Util.registerComponentSystem('ui-translation', {
     document.querySelectorAll('a-entity[tooltip]').forEach(el => {
       el.components['tooltip'].update()
     })
+
+    document.querySelectorAll('a-entity[shelf]').forEach(el => {
+      let name = el.getAttribute('shelf').name
+      if (!name) return;
+      el.setAttribute('frame', 'name', this.translate(name, el))
+    })
+
+    document.querySelectorAll('a-entity[translate-text]').forEach(el => {
+      el.setAttribute('text', 'value', this.translate(el.components['translate-text'].originalText, el))
+    })
   },
   loadLanguage(lang) {
     if (lang === this.data.baseLanguage) return;
@@ -61,5 +71,11 @@ Util.registerComponentSystem('ui-translation', {
     })();
 
     return this.pendingTranslations[lang];
+  }
+})
+
+AFRAME.registerComponent('translate-text', {
+  init() {
+    this.originalText = this.el.getAttribute('text').value
   }
 })

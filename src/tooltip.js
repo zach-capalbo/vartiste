@@ -1,5 +1,7 @@
 import {Util} from './util.js'
 
+const USE_TROIKA_DIRECT = false;
+
 // Shows some text when hovered by the mouse or controller laser pointer. Can be
 // styled with [tooltip-style](#tooltip-style). If [speech](#speech) is enabled,
 // the tooltip will be read with text-to-speech when hovered.
@@ -20,7 +22,7 @@ AFRAME.registerComponent('tooltip', {
     'mouseleave': function() {this.hide();},
   },
   init() {
-    this.targetY = 0.4
+    this.targetY = 0.3
 
     let tooltip = document.createElement('a-entity')
     this.tooltip = tooltip
@@ -28,15 +30,21 @@ AFRAME.registerComponent('tooltip', {
     tooltip.setAttribute('material', 'color: #abe; shader: flat')
     tooltip.setAttribute('position', '0 0.4 0.004')
 
-    if (AFRAME.components['troika-text'])
+    if (USE_TROIKA_DIRECT)
     {
       tooltip.setAttribute('troika-text', `color: #000; maxWidth: 1; align: center; value: ${this.data}`)
       this.tooltip.setAttribute('geometry', `primitive: plane; height: 0.06; width: 1`)
     }
     else
     {
-      tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}`)
+      tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}; baseline: bottom`)
     }
+
+    // tooltip.setAttribute('troika-text', 'outlineBlur', 0.01)
+    // tooltip.setAttribute('troika-text', 'outlineColor', '#637ecf')
+    // tooltip.setAttribute('troika-text', 'outlineWidth', 0.030)
+    // tooltip.setAttribute('troika-text', 'outlineOpacity', 0.9)
+
     tooltip.setAttribute('class', 'raycast-invisible')
     tooltip.setAttribute('visible', false)
     this.el.append(tooltip)
@@ -44,7 +52,7 @@ AFRAME.registerComponent('tooltip', {
   update(oldData) {
     if (!this.el.hasLoaded) return
 
-    if (AFRAME.components['troika-text'])
+    if (USE_TROIKA_DIRECT)
     {
       this.tooltip.setAttribute('troika-text', `color: #000; maxWidth: 2; align: center; value: ${this.translate(this.data)}; depthOffset: -0.1`)
 
