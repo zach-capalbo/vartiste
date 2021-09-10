@@ -39,7 +39,7 @@ vec3 oklab_mix( vec3 colA, vec3 colB, float h )
     // lerp
     vec3 lms = mix( lmsA, lmsB, h );
     // gain in the middle (no oaklab anymore, but looks better?)
-    lms *= 1.0+0.2*h*(1.0-h);
+    /* lms *= 1.0+0.2*h*(1.0-h); */
     // cone to rgb
     return kLMStoCONE*(lms*lms*lms);
 }
@@ -98,6 +98,6 @@ void main() {
   resColor[1] = remix1(resColor, canvasBaseColor, opacity, brushUv);
   resColor[2] = remix2(resColor, canvasBaseColor, opacity, brushUv); */
 
-  float resOpacity = mix(canvasBaseColor[3], opacity, opacity);
+  float resOpacity = 1.0; //mix(canvasBaseColor[3], opacity, opacity);
   gl_FragColor = opacity < 1.0 / 256.0 ? canvasBaseColor  : vec4(resColor, resOpacity);
 }

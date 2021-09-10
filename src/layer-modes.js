@@ -70,8 +70,8 @@ const BRUSH_FX = [
   'drip',
   'dilate',
   'hq-blending',
-  'ryb-blend',
-  'oklab-blend',
+  // 'ryb-blend',
+  // 'oklab-blend',
   // 'erode',
 ]
 

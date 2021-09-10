@@ -66,15 +66,23 @@ AFRAME.registerComponent("color-picker", {
 // Picks the brightness for a [`color-wheel`](#color-wheel)
 AFRAME.registerComponent("brightness-picker", {
   // The element with a `color-wheel` component to set the brightness on
-  schema: {target: {type: 'selector'}},
+  schema: {
+    target: {type: 'selector'}
+  },
   init() {
     this.system = document.querySelector('a-scene').systems['paint-system']
 
     var vertexShader = require('./shaders/pass-through.vert')
 
-    var fragmentShader = require('./shaders/brightness-ramp.glsl')
+    var fragmentShader = require('./shaders/brightness-ramp-oklab.glsl')
 
     var material = new THREE.ShaderMaterial({
+      uniforms: {
+        u_color: {
+          type: 'vec3',
+          value: new THREE.Vector3(1, 1, 1)
+        }
+      },
       vertexShader: vertexShader,
       fragmentShader: fragmentShader
     });
@@ -84,6 +92,14 @@ AFRAME.registerComponent("brightness-picker", {
     this.mesh.material = material;
 
     this.el.setAttribute('action-tooltips', 'trigger: Change Brightness')
+
+    this.onColorChanged = (e) => {
+      let c = Color(this.system.data.color).rgb()
+      this.mesh.material.uniforms.u_color.value.set(c.red() / 255, c.green() / 255, c.blue() / 255)
+    }
+
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
+
 
     this.el.addEventListener("draw", (e)=>{
       let point = e.detail.intersection.uv
@@ -102,6 +118,9 @@ AFRAME.registerComponent("brightness-picker", {
         this.el.emit('brightnesschanged', {brightness: this.brightness})
       }
     })
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('colorchanged', this.onColorChanged)
   }
 })
 
