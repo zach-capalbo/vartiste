@@ -241,6 +241,52 @@ AFRAME.registerComponent('toolbox-shelf', {
       }
     })
   },
+  drawNormalAction() {
+    if (this.onEndDrawingCleanup)
+    {
+      this.onEndDrawingCleanup()
+      return;
+    }
+
+
+    let normalLayer = Compositor.component.layers.find(l => l.mode === 'normalMap');
+
+    if (!normalLayer)
+    {
+      normalLayer = Compositor.component.addLayer()
+      normalLayer.mode = 'normalMap'
+      Compositor.el.emit('layerupdated', {layer: normalLayer})
+    }
+
+    if (Compositor.el.getAttribute('material').shader === 'flat')
+    {
+      Compositor.el.setAttribute('material', 'shader', 'matcap')
+    }
+
+    let activeLayer = Compositor.component.addLayer(Compositor.component.layers.indexOf(normalLayer));
+    let normalCtx = normalLayer.canvas.getContext('2d')
+    let activeCtx = activeLayer.canvas.getContext('2d')
+    this.onEndDrawing = () => {
+      let shouldInvert = this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
+      Undo.stack.pop()
+      Undo.pushCanvas(normalLayer.canvas)
+      bumpCanvasToNormalCanvas(activeLayer.canvas, {normalCanvas: activeLayer.canvas, bumpScale: Math.pow(activeLayer.opacity, 2.2), invert: shouldInvert})
+
+      normalCtx.globalCompositeOperation = 'hard-light'
+      normalCtx.drawImage(activeLayer.canvas, 0, 0)
+      activeCtx.clearRect(0, 0, activeLayer.canvas.width, activeLayer.canvas.height)
+      normalLayer.canvas.touch()
+      activeLayer.canvas.touch()
+    };
+    this.el.sceneEl.addEventListener('endcanvasdrawing', this.onEndDrawing);
+
+    this.onEndDrawingCleanup = () => {
+      this.el.sceneEl.removeEventListener('endcanvasdrawing', this.onEndDrawing)
+      delete this.onEndDrawing
+      Compositor.component.deleteLayer(activeLayer)
+      delete this.onEndDrawingCleanup
+    };
+  },
   defaultSpectatorAction() {
     // let camera = this.el.sceneEl.querySelector('#perspective-camera')
     // camera.emit('activate')
@@ -283,7 +329,7 @@ AFRAME.registerComponent('toolbox-shelf', {
 
     for (let geo of geos)
     {
-      
+
     }
 
     mesh.geometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geos, false)

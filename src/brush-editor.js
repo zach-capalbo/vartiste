@@ -68,6 +68,7 @@ AFRAME.registerSystem('brush-system', {
       new Brush.StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "Pencil Stroke", textured: false}),
       new Brush.StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false, switchbackAngle: 90}),
       new Brush.StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
+      // new Brush.FxBrush('oklab', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'oklab-blend', previewSrc: require('./assets/blur-preview.png')}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
     // new Brush.VectorBrush('vector'),
 

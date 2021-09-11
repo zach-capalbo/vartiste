@@ -7,7 +7,7 @@ import './framework/GLTFExporter.js'
 // accessible via VARTISTE.MaterialTransformations.
 class MaterialTransformations {
   // Converts a bumpMap to a normalMap
-  static bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale} = {}) {
+  static bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale, invert = false} = {}) {
     let bumpCtx = bumpCanvas.getContext('2d')
     let bumpData = bumpCtx.getImageData(0, 0, bumpCanvas.width, bumpCanvas.height)
 
@@ -29,6 +29,19 @@ class MaterialTransformations {
       normalData.data[4*(j * normalCanvas.width + i) + 1] = v.y * 255
       normalData.data[4*(j * normalCanvas.width + i) + 2] = v.z * 255
       normalData.data[4*(j * normalCanvas.width + i) + 3]  = 255
+    }
+
+    let setNormalSwizzle = (x,y,v) => {
+      let i = Math.floor(x / bumpCanvas.width * normalCanvas.width)
+      let j = Math.floor(y / bumpCanvas.height * normalCanvas.height)
+      normalData.data[4*(j * normalCanvas.width + i) + 0] = v.x * 255
+      normalData.data[4*(j * normalCanvas.width + i) + 1] = (1.0 - v.y) * 255
+      normalData.data[4*(j * normalCanvas.width + i) + 2] = v.z * 255
+      normalData.data[4*(j * normalCanvas.width + i) + 3]  = 255
+    }
+
+    if (invert) {
+      setNormal = setNormalSwizzle
     }
 
     let vec = new THREE.Vector3()

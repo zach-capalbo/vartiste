@@ -50,7 +50,7 @@ AFRAME.registerComponent('draw-canvas', {
     this.wrappedDraw = this.wrappedDraw.bind(this)
   },
   update(oldData) {
-    if (this.data.canvas !== oldData.canvas) {
+    if (this.data.canvas !== oldData.canvas && this.data.canvas) {
       this.ctx = this.data.canvas.getContext('2d')
     }
   },
@@ -137,6 +137,7 @@ AFRAME.registerComponent('draw-canvas', {
           brush.endDrawing(ctx)
         }
         delete this.imageData
+        this.el.emit('endcanvasdrawing')
       }, {once: true})
       this.undoFrame = this.currentFrame
       let recentColors = document.getElementById('recent-colors')

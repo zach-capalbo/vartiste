@@ -48,6 +48,7 @@ AFRAME.registerComponent("layer-shelves", {
     })
     container.setAttribute('scale', {x: 0.3, y: 0.3, z: 0.3})
     container.querySelector('*[canvas-updater]').setAttribute('layer-preview', AFRAME.utils.styleParser.stringify({compositor: `#${this.data.compositor.id}`, layer: layer.id}))
+    Util.whenLoaded(container, () => container.querySelector('*[canvas-updater]').setAttribute('draw-canvas', 'canvas', layer.canvas))
     container.addEventListener('stateremoved', e => {
       if (e.detail === 'grabbed')
       {
