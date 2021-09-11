@@ -250,6 +250,7 @@ AFRAME.registerComponent('toolbox-shelf', {
 
 
     let normalLayer = Compositor.component.layers.find(l => l.mode === 'normalMap');
+    let originalLayer = Compositor.component.activeLayer;
 
     if (!normalLayer)
     {
@@ -266,11 +267,16 @@ AFRAME.registerComponent('toolbox-shelf', {
     let activeLayer = Compositor.component.addLayer(Compositor.component.layers.indexOf(normalLayer));
     let normalCtx = normalLayer.canvas.getContext('2d')
     let activeCtx = activeLayer.canvas.getContext('2d')
+    let originalCtx = originalLayer.canvas.getContext('2d')
     this.onEndDrawing = () => {
       let shouldInvert = this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
+      let keepColor = this.el.querySelector('#color-normal-draw').getAttribute('toggle-button').toggled;
       Undo.stack.pop()
       Undo.pushCanvas(normalLayer.canvas)
-      bumpCanvasToNormalCanvas(activeLayer.canvas, {normalCanvas: activeLayer.canvas, bumpScale: Math.pow(activeLayer.opacity, 2.2), invert: shouldInvert})
+      if (keepColor) {
+        originalCtx.drawImage(activeLayer.canvas, 0, 0)
+      }
+      bumpCanvasToNormalCanvas(activeLayer.canvas, {normalCanvas: activeLayer.canvas, bumpScale: Math.pow(activeLayer.opacity, 2.2), invert: shouldInvert, alphaOnly: (keepColor && !this.el.sceneEl.systems['paint-system'].brush.textured)})
 
       normalCtx.globalCompositeOperation = 'hard-light'
       normalCtx.drawImage(activeLayer.canvas, 0, 0)

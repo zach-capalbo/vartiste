@@ -7,11 +7,13 @@ import './framework/GLTFExporter.js'
 // accessible via VARTISTE.MaterialTransformations.
 class MaterialTransformations {
   // Converts a bumpMap to a normalMap
-  static bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale, invert = false} = {}) {
+  static bumpCanvasToNormalCanvas(bumpCanvas, {normalCanvas, bumpScale, invert = false, alphaOnly = false} = {}) {
     let bumpCtx = bumpCanvas.getContext('2d')
     let bumpData = bumpCtx.getImageData(0, 0, bumpCanvas.width, bumpCanvas.height)
 
-    let sampleBump = (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
+    let sampleBump = alphaOnly ?
+                      (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
+                    : (i,j) => bumpData.data[4*(j * bumpCanvas.width + i) + 0] / 255 * bumpData.data[4*(j * bumpCanvas.width + i) + 3] / 255.0 + 0.5
 
     if (typeof normalCanvas === 'undefined') {
       normalCanvas = document.createElement('canvas')

@@ -60,6 +60,7 @@ const FX = [
   'srgb-to-linear',
   'linear-to-srgb',
   'swizzle',
+  'bump-to-normal'
 ]
 
 const BRUSH_FX = [
