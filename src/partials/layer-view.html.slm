@@ -10,7 +10,7 @@ a-entity.layer-shelf shelf="frame: true; name: Layer Control; pinnable: false"
     a-entity.clickable click-action="moveDown" icon-button="#asset-arrow-down-bold" tooltip="Move Layer Down"
     a-entity.clickable click-action="new" icon-button="#asset-plus-box-outline" tooltip="New Layer"
 
-  a-entity material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
+  a-entity.canvas material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800" draw-canvas=""
 
   a-entity.active-indicator visible="false"
     - for e of [{pos: -2.1, rot: -90}, {pos: 2.1, rot: 90}]

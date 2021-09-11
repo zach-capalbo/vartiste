@@ -154,6 +154,7 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layeradded', {layer})
     this.activateLayer(layer)
     Undo.push(e=> this.deleteLayer(layer))
+    return layer;
   },
 
   duplicateLayer(layer) {
@@ -174,6 +175,7 @@ AFRAME.registerComponent('compositor', {
     this.el.emit('layeradded', {layer: newLayer})
     this.activateLayer(newLayer)
     Undo.push(e=> this.deleteLayer(newLayer))
+    return newLayer;
   },
 
   activateLayer(layer) {

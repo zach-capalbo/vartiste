@@ -60,6 +60,7 @@ const FX = [
   'srgb-to-linear',
   'linear-to-srgb',
   'swizzle',
+  'bump-to-normal'
 ]
 
 const BRUSH_FX = [
@@ -71,7 +72,7 @@ const BRUSH_FX = [
   'dilate',
   'hq-blending',
   // 'ryb-blend',
-  // 'oklab-blend',
+  'oklab-blend',
   // 'erode',
 ]
 

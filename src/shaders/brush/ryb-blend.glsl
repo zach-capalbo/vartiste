@@ -139,7 +139,9 @@ void main() {
 
   opacity = clamp(opacity, 0.0, 1.0);
 
-  vec3 resColor = mixRYB( canvasBaseColor.xyz / canvasBaseColor.a,
+  float resOpacity = clamp(opacity  + canvasBaseColor.a * (1.0 - opacity), 0.0, 1.0);
+
+  vec3 resColor = mixRYB( canvasBaseColor.xyz,
                       u_color ,
                       opacity );
 
@@ -147,6 +149,6 @@ void main() {
   resColor[1] = remix1(resColor, canvasBaseColor, opacity, brushUv);
   resColor[2] = remix2(resColor, canvasBaseColor, opacity, brushUv); */
 
-  float resOpacity = mix(canvasBaseColor[3], 1.0, opacity);
+  /* float resOpacity = mix(canvasBaseColor[3], 1.0, opacity); */
   gl_FragColor = opacity < 1.0 / 256.0 ? canvasBaseColor  : vec4(resColor, resOpacity);
 }
