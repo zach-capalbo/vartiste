@@ -797,3 +797,14 @@ AFRAME.registerComponent('radio-button', {
     }
   }
 })
+
+AFRAME.registerComponent('icon-row-text', {
+  schema: {default: "", type: 'string'},
+  init() {
+    this.el.setAttribute('text', 'anchor: left; align: left')
+    this.el.setAttribute('translate-text', '')
+  },
+  update() {
+    this.el.setAttribute('text', 'value', this.data)
+  }
+})
