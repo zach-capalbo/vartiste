@@ -537,3 +537,44 @@ AFRAME.registerComponent("layer-shelves", {
     this.shelves[node.id].querySelector('.grabbing-indicator').setAttribute('visible', node.grabbed)
   }
 })
+
+
+AFRAME.registerComponent('compact-layer-shelf', {
+  events: {
+    click: function(e) {
+      if (e.target.hasAttribute('click-action'))
+      {
+        this[e.target.getAttribute('click-action')]()
+      }
+    }
+  },
+  init() {
+    this.el.innerHTML = require('./partials/compact-layer-shelf.html.slm')
+    this.onLayerChanged = this.onLayerChanged.bind(this)
+    Util.whenLoaded(this.el.children[0], () => {
+      Compositor.el.addEventListener('layerupdated', this.onLayerChanged)
+      this.shelf = this.el.querySelector('*[shelf]')
+      this.canvas = this.el.querySelector('*[canvas-updater]')
+      this.onLayerChanged()
+    })
+  },
+  onLayerChanged() {
+    console.log("Layer changed")
+    let layer = Compositor.component.activeLayer;
+    let layers = Compositor.component.layers;
+    Util.whenLoaded(this.shelf, () => {
+      this.shelf.setAttribute('shelf', 'name', `Layer ${layers.indexOf(layer) + 1} / ${layers.length} ${layer.mode === 'source-over' ? "" : `(${layer.mode})`}`)
+    })
+    Util.whenLoaded(this.canvas, () => {
+      this.canvas.setAttribute('material', 'src', Compositor.component.activeLayer.canvas)
+    })
+  },
+  prevLayer() { Compositor.component.prevLayer() },
+  nextLayer() { Compositor.component.nextLayer() },
+  newLayer() { Compositor.component.addLayer() },
+  deleteLayer() {Compositor.component.deleteLayer(Compositor.component.activeLayer)},
+  expandLayers() {
+    this.el.sceneEl.querySelector('#layer-shelves-loader').setAttribute('deferred-load', 'loaded', true)
+    this.el.remove()
+  }
+})

@@ -1,0 +1,8 @@
+a-entity shelf="frame: true; name: Layer Control; pinnable: false" bypass-hidden-updates="" scale="0.3 0.3 0.3" lock-axes="z: 0" lock-up=""
+  a-entity icon-row="mergeButtons: true" position="-1.5 1.2 0"
+    a-entity icon-button="#asset-arrow-left" tooltip="Previous Layer" click-action="prevLayer"
+    a-entity click-action="newLayer" icon-button="#asset-plus-box-outline" tooltip="New Layer"
+    a-entity.clickable click-action="delete" icon-button="#asset-delete" tooltip="Delete Layer"
+    a-entity icon-button="#asset-newspaper-variant-outline" tooltip="All Layers" click-action="expandLayers"
+    a-entity icon-button="#asset-arrow-right" tooltip="Next Layer" click-action="nextLayer"
+  a-entity propogate-grab="" material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"

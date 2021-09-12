@@ -73,7 +73,11 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
 
             /a-entity drip-tool="" position="-0.8 -0.45 -0.1"
       a-entity#right-shelf position="2 1.6 -1" rotation="0 -90 0"
-        a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
+        a-entity#layer-shelves-loader deferred-load=""
+          script type="text/html"
+            a-entity lock-axes="z: 0" lock-up="" layer-shelves="compositor: #canvas-view" bypass-hidden-updates="" position="1.188771763219063 -0.6821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
+        a-entity.grab-root compact-layer-shelf="" position="1.288771763219063 -0.5821459187065125 1.5012870774930682" rotation="0 49.88727290536059 0" scale="0.2179235609234782 0.2179235609234782 0.2179235609234782"
+
         a-entity position="1 -2.5 0.3" scale="0.3 0.3 0.3"
           == partial('./partials/node-control-panel.html.slm')
       a-entity position="0.03 1.0545312767040833 0.121"

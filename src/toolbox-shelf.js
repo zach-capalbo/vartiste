@@ -362,3 +362,12 @@ AFRAME.registerComponent('toolbox-shelf', {
     this.el.sceneEl.systems['settings-system'].download("data:application/x-binary;base64," + btoa(obj), {extension: 'obj', suffix:''})
   }
 })
+
+AFRAME.registerComponent('toolbox-click-action', {
+  schema: {default: ""},
+  events: {
+    click: function(e) {
+      this.el.sceneEl.querySelector('a-entity[toolbox-shelf]').components['toolbox-shelf'][this.data + "Action"]()
+    }
+  }
+})
