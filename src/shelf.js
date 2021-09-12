@@ -112,6 +112,12 @@ AFRAME.registerComponent('shelf', {
           })
         })
       }
+      else if ((!oldData || this.data.name !== oldData.name) && this.data.frame)
+      {
+        Util.whenLoaded(this.container.querySelector('.bg'), () => {
+          this.el.setAttribute('frame', 'name', Util.translate(this.data.name))
+        })
+      }
 
       if (this.data.popup && this.data.frame)
       {

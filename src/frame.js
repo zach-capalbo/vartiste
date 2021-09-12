@@ -162,8 +162,16 @@ AFRAME.registerComponent("frame", {
     else
     {
       let geometry = (this.data.geometryTarget || this.el).getAttribute('geometry')
-      width = geometry.width
-      height = geometry.height
+      if (geometry)
+      {
+        width = geometry.width
+        height = geometry.height
+      }
+      else
+      {
+        width = 1
+        height = 1
+      }
     }
     this.width = width;
     this.height = height;
