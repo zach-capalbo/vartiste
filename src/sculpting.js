@@ -321,6 +321,14 @@ AFRAME.registerComponent('vertex-handle', {
       this.mesh.geometry.attributes.position.needsUpdate = true
       this.mesh.geometry.computeVertexNormals()
       this.mesh.geometry.computeFaceNormals()
+      let normalOffset = this.mesh.geometry.attributes.normalOffset
+      if (normalOffset)
+      {
+        for (let i = 0; i < normalOffset.array.length; ++i)
+        {
+          this.mesh.geometry.attributes.normal.array[i] += normalOffset.array[i]
+        }
+      }
       this.mesh.geometry.attributes.normal.needsUpdate = true
     }
     else if (this.data.attribute === 'uv')
@@ -345,6 +353,7 @@ AFRAME.registerComponent('vertex-handles', {
   schema: {
     cloneGeometry: {default: false},
     mergeVertices: {default: true},
+    offsetNormal: {default: true},
     throttle: {default: 500},
     attribute: {default: 'position'},
     drawLines: {default: false},
@@ -383,6 +392,21 @@ AFRAME.registerComponent('vertex-handles', {
       p2 = new THREE.Vector3;
       p1 = new THREE.Vector3;
       mesh.parent.getWorldScale(scale);
+
+      if (this.data.offsetNormal)
+      {
+        mesh.geometry.setAttribute('normalOffset', mesh.geometry.attributes.normal.clone())
+
+        mesh.geometry.computeVertexNormals()
+        mesh.geometry.computeFaceNormals()
+        let normalOffset = mesh.geometry.attributes.normalOffset
+        for (let i = 0; i < normalOffset.array.length; ++i)
+        {
+          let o = normalOffset.array[i]
+          normalOffset.array[i] = o - mesh.geometry.attributes.normal.array[i]
+          mesh.geometry.attributes.normal.array[i] = o
+        }
+      }
     }
     else if (this.data.attribute === 'uv')
     {

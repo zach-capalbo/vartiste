@@ -127,9 +127,56 @@ AFRAME.registerComponent('morph-lever', {
 Util.registerComponentSystem('morph-targets', {
   init() {
     this.originalPosition = {}
+    this.originalNormal = {}
   },
   newMorphTarget(name) {
     if (!name) name = "NEW";
+
+    let seenGeometries = {}
+    let p = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries))
+      {
+        let attribute = geometry.attributes.position.clone()
+        if (geometry.morphTargetsRelative)
+        {
+            attribute.array.fill(0)
+        }
+
+        attribute.needsUpdate = true
+
+        attribute.name = name
+
+        if (!geometry.morphAttributes) geometry.morphAttributes = {}
+        if (!geometry.morphAttributes['position']) geometry.morphAttributes['position'] = []
+        geometry.morphAttributes['position'].push(attribute)
+        seenGeometries[geometry.uuid] = geometry.morphAttributes['position'].length - 1
+      }
+
+      if (!mesh.morphTargetDictionary) mesh.morphTargetDictionary = {}
+      if (!mesh.morphTargetInfluences) mesh.morphTargetInfluences = []
+      mesh.morphTargetDictionary[name] = seenGeometries[geometry.uuid]
+      mesh.morphTargetInfluences[seenGeometries[geometry.uuid]] = 0
+    }
+
+    // Work around https://github.com/mrdoob/three.js/pull/20845
+    let clonedGeometries = {}
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries)) continue
+      if (!(geometry.uuid in clonedGeometries))
+      {
+        clonedGeometries[geometry.uuid] = geometry.clone()
+      }
+
+      mesh.geometry = clonedGeometries[geometry.uuid]
+    }
+
+    this.el.emit('morphtargetsupdated')
   },
   bakeMorphTarget() {
     let p = new THREE.Vector3()
@@ -140,33 +187,38 @@ Util.registerComponentSystem('morph-targets', {
     {
       if (!mesh.morphTargetInfluences) continue;
       if (seenGeometries.has(mesh.geometry)) continue
-      let attribute = mesh.geometry.attributes.position
-      let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
-
-      for (let morphIndex in mesh.morphTargetInfluences)
+      for (let attrName of ['position', 'normal'])
       {
-        let influence = mesh.morphTargetInfluences[morphIndex]
-        if (influence === 0.0) continue;
+        let attribute = mesh.geometry.attributes[attrName]
+        let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
 
-        let morphAttribute = mesh.geometry.morphAttributes['position'][morphIndex]
+        if (!mesh.geometry.morphAttributes[attrName]) continue;
 
-        for (let i = 0; i < attribute.count; ++i)
+        for (let morphIndex in mesh.morphTargetInfluences)
         {
-          p.fromBufferAttribute(attribute, i)
-          m.fromBufferAttribute(morphAttribute, i)
+          let influence = mesh.morphTargetInfluences[morphIndex]
+          if (influence === 0.0) continue;
 
-          if ( mesh.geometry.morphTargetsRelative ) {
-    				p.addScaledVector(m, influence);
-    			} else {
-            o.fromBufferAttribute(originalPositions, i)
-    				p.addScaledVector(m.sub(o), influence);
-    			}
-          attribute.setXYZ(i, p.x, p.y, p.z)
+          let morphAttribute = mesh.geometry.morphAttributes[attrName][morphIndex]
+
+          for (let i = 0; i < attribute.count; ++i)
+          {
+            p.fromBufferAttribute(attribute, i)
+            m.fromBufferAttribute(morphAttribute, i)
+
+            if ( mesh.geometry.morphTargetsRelative ) {
+      				p.addScaledVector(m, influence);
+      			} else {
+              o.fromBufferAttribute(originalPositions, i)
+      				p.addScaledVector(m.sub(o), influence);
+      			}
+            attribute.setXYZ(i, p.x, p.y, p.z)
+          }
+
+          mesh.morphTargetInfluences[morphIndex] = 0
         }
-
-        mesh.morphTargetInfluences[morphIndex] = 0
+        attribute.needsUpdate = true
       }
-      attribute.needsUpdate = true
       seenGeometries.add(mesh.geometry)
     }
   },
@@ -213,6 +265,21 @@ Util.registerComponentSystem('morph-targets', {
     for (let geometry of Compositor.nonCanvasGeometries)
     {
       this.originalPosition[geometry.id] = geometry.attributes.position.clone()
+      this.originalNormal[geometry.id] = geometry.attributes.normal.clone()
+
+      if (!geometry.morphAttributes.normal)
+      {
+        geometry.morphAttributes.normal = []
+        for (let i = 0; i < geometry.morphAttributes.position.length; ++i)
+        {
+          geometry.morphAttributes.normal[i] = geometry.attributes.normal.clone()
+          geometry.morphAttributes.normal[i].name = geometry.morphAttributes.position[i].name
+          if (geometry.morphTargetsRelative)
+          {
+            geometry.morphAttributes.normal[i].array.fill(0)
+          }
+        }
+      }
     }
 
     this.bakeMorphTarget()
@@ -229,43 +296,52 @@ Util.registerComponentSystem('morph-targets', {
     let o = new THREE.Vector3()
     for (let geometry of Compositor.nonCanvasGeometries)
     {
-      let original = this.originalPosition[geometry.id]
-      let position = geometry.attributes.position
-
-      if (!original) {
-        console.warn("No saved positions for", geometry)
-        continue
-      }
-
-      console.log("Geom", position, original)
-
-      if (geometry.morphTargetsRelative)
+      for (let attr of ['position', 'normal'])
       {
-        for (let i = 0; i < position.count; ++i)
-        {
-          o.fromBufferAttribute(original, i)
-          p.fromBufferAttribute(position, i)
-          p.sub(o)
-          position.setXYZ(i, p.x, p.y, p.z)
+        let original = this[attr === 'position' ? 'originalPosition' : 'originalNormal'][geometry.id]
+        let position = geometry.attributes[attr]
+
+        if (!original) {
+          console.warn(`No saved ${attr} for`, geometry)
+          continue
         }
-        position.needsUpdate = true
+
+        console.log("Finished Editing", attr, position, original)
+
+        if (geometry.morphTargetsRelative)
+        {
+          for (let i = 0; i < position.count; ++i)
+          {
+            o.fromBufferAttribute(original, i)
+            p.fromBufferAttribute(position, i)
+            p.sub(o)
+            position.setXYZ(i, p.x, p.y, p.z)
+          }
+          position.needsUpdate = true
+        }
+
+        position.name = name
+
+        for (let i = 0; geometry.morphAttributes[attr] && i < geometry.morphAttributes[attr].length; ++i)
+        {
+          if (geometry.morphAttributes[attr][i].name !== this.editing) continue;
+
+          geometry.morphAttributes[attr][i] = position
+        }
+        geometry.attributes[attr] = original
       }
-
-      position.name = name
-
-      for (let i = 0; i < geometry.morphAttributes.position.length; ++i)
-      {
-        if (geometry.morphAttributes.position[i].name !== this.editing) continue;
-
-        geometry.morphAttributes.position[i] = position
-      }
-      geometry.attributes.position = original
     }
+    this.el.emit('morphtargetsupdated')
   }
 })
 
 AFRAME.registerComponent('morph-target-shelf', {
   init() {
+    this.populate = this.populate.bind(this)
+    this.el.sceneEl.addEventListener('morphtargetsupdated', this.populate)
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('morphtargetsupdated', this.populate)
   },
   events: {
     hubsaudioset: function (e) {
