@@ -5,6 +5,7 @@ AFRAME.registerComponent('morph-lever', {
     name: {type: 'string'},
     value: {default: 0.0},
     hubsAudio: {default: false},
+    editing: {default: false},
   },
   events: {
     anglechanged: function (e) {
@@ -64,6 +65,21 @@ AFRAME.registerComponent('morph-lever', {
         property: 'hubsAudio'
       })
     })
+
+    let editingButton = document.createElement('a-entity')
+    this.el.append(editingButton)
+    editingButton.setAttribute('icon-button', '#asset-lead-pencil')
+    editingButton.setAttribute('position', '-0.45 -0.75 0')
+    editingButton.setAttribute('scale', '0.5 0.5 0.5')
+    editingButton.setAttribute('tooltip', 'Edit')
+    editingButton.setAttribute('tooltip-style', 'scale: 0.5 0.5 0.5')
+    Util.whenLoaded(editingButton, () => {
+      editingButton.setAttribute('toggle-button', {
+        target: this.el,
+        component: 'morph-lever',
+        property: 'editing'
+      })
+    })
   },
   update(oldData) {
     if (this.data.hubsAudio)
@@ -95,6 +111,155 @@ AFRAME.registerComponent('morph-lever', {
           delete mesh.userData.gltfExtensions.MOZ_hubs_components['morph-audio-feedback'];
         }
       }
+    }
+
+    if (this.data.editing && !oldData.editing)
+    {
+      this.el.sceneEl.systems['morph-targets'].startEditing(this.data.name)
+    }
+    else if (!this.data.editing && oldData.editing)
+    {
+      this.el.sceneEl.systems['morph-targets'].finishEditing()
+    }
+  }
+})
+
+Util.registerComponentSystem('morph-targets', {
+  init() {
+    this.originalPosition = {}
+  },
+  newMorphTarget(name) {
+    if (!name) name = "NEW";
+  },
+  bakeMorphTarget() {
+    let p = new THREE.Vector3()
+    let m = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    let seenGeometries = new Set()
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      if (!mesh.morphTargetInfluences) continue;
+      if (seenGeometries.has(mesh.geometry)) continue
+      let attribute = mesh.geometry.attributes.position
+      let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
+
+      for (let morphIndex in mesh.morphTargetInfluences)
+      {
+        let influence = mesh.morphTargetInfluences[morphIndex]
+        if (influence === 0.0) continue;
+
+        let morphAttribute = mesh.geometry.morphAttributes['position'][morphIndex]
+
+        for (let i = 0; i < attribute.count; ++i)
+        {
+          p.fromBufferAttribute(attribute, i)
+          m.fromBufferAttribute(morphAttribute, i)
+
+          if ( mesh.geometry.morphTargetsRelative ) {
+    				p.addScaledVector(m, influence);
+    			} else {
+            o.fromBufferAttribute(originalPositions, i)
+    				p.addScaledVector(m.sub(o), influence);
+    			}
+          attribute.setXYZ(i, p.x, p.y, p.z)
+        }
+
+        mesh.morphTargetInfluences[morphIndex] = 0
+      }
+      attribute.needsUpdate = true
+      seenGeometries.add(mesh.geometry)
+    }
+  },
+  newTarget(geometry, name) {
+
+    if (!geometry.morphAttributes) {
+      geometry.morphAttributes = {}
+    }
+
+    if (!geometry.morphAttributes.position)
+    {
+      geometry.morphAttributes.position = []
+    }
+
+    let newBuffer = geometry.attributes.position.clone()
+    newBuffer.name = name
+
+    if (geometry.morphTargetsRelative)
+    {
+      newBuffer.array.fill(0)
+    }
+
+    geometry.morphAttributes.position.push(newBuffer)
+  },
+  startEditing(name)
+  {
+    if (this.editing && this.editing !== name)
+    {
+      this.finishEditing();
+    }
+
+    for (let mesh of Compositor.meshes) {
+      if (mesh.morphTargetInfluences)
+      {
+        for (let i = 0; i < mesh.morphTargetInfluences.length; ++i)
+        {
+          mesh.morphTargetInfluences[i] = 0
+        }
+
+        mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]] = 1
+      }
+    }
+
+    for (let geometry of Compositor.nonCanvasGeometries)
+    {
+      this.originalPosition[geometry.id] = geometry.attributes.position.clone()
+    }
+
+    this.bakeMorphTarget()
+    this.editing = name
+
+    this.el.sceneEl.setAttribute('vertex-editing', {editMeshVertices: true})
+  },
+  finishEditing()
+  {
+    if (!this.editing) return;
+    this.el.sceneEl.setAttribute('vertex-editing', {editMeshVertices: false})
+
+    let p = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    for (let geometry of Compositor.nonCanvasGeometries)
+    {
+      let original = this.originalPosition[geometry.id]
+      let position = geometry.attributes.position
+
+      if (!original) {
+        console.warn("No saved positions for", geometry)
+        continue
+      }
+
+      console.log("Geom", position, original)
+
+      if (geometry.morphTargetsRelative)
+      {
+        for (let i = 0; i < position.count; ++i)
+        {
+          o.fromBufferAttribute(original, i)
+          p.fromBufferAttribute(position, i)
+          p.sub(o)
+          position.setXYZ(i, p.x, p.y, p.z)
+        }
+        position.needsUpdate = true
+      }
+
+      position.name = name
+
+      for (let i = 0; i < geometry.morphAttributes.position.length; ++i)
+      {
+        if (geometry.morphAttributes.position[i].name !== this.editing) continue;
+
+        geometry.morphAttributes.position[i] = position
+      }
+      geometry.attributes.position = original
     }
   }
 })
