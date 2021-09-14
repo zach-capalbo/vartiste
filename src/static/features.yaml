@@ -39,8 +39,26 @@ sections:
           - url: https://twitter.com/zach_geek/status/1413654702257025026
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature you may not know about. VARTISTE has a node based compositing mode, allowing you to create all sorts of powerful real-time effects! <a href="https://t.co/mXxGiATIPl">pic.twitter.com/mXxGiATIPl</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1413654702257025026?ref_src=twsrc%5Etfw">July 10, 2021</a></blockquote>
+      - name: Live Bumps
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1436757223385014276
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> experimental feature: Live bump-normal conversion while drawing. It&#39;s not perfect, but I think it&#39;s the best way so far to get brush stroke texture into the normal map in VARTISTE. <a href="https://t.co/Bjf8uEIzj8">pic.twitter.com/Bjf8uEIzj8</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1436757223385014276?ref_src=twsrc%5Etfw">September 11, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1437133536952258565
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a very amateur still-life painting demo of the feature. <a href="https://t.co/H5GLR6TCU6">pic.twitter.com/H5GLR6TCU6</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1437133536952258565?ref_src=twsrc%5Etfw">September 12, 2021</a></blockquote>
+      - name: Color Selector
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1436469767918006272
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">This is really nice! I&#39;ve replaced the color picker in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> with OKHSL and it feels a lot nicer picking colors now! <a href="https://t.co/lK2cLsNhZ4">https://t.co/lK2cLsNhZ4</a> <a href="https://t.co/O6UZi8IY9N">pic.twitter.com/O6UZi8IY9N</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1436469767918006272?ref_src=twsrc%5Etfw">September 10, 2021</a></blockquote>
   - name: General Art
     features:
+      - name: Fancy Frame
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1435549676535754754
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Drag and drop this into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>, and you&#39;ll have a fancy starting point for your paintings! <a href="https://t.co/96scudPYST">https://t.co/96scudPYST</a> <a href="https://t.co/1rQ7fRe4Dg">pic.twitter.com/1rQ7fRe4Dg</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1435549676535754754?ref_src=twsrc%5Etfw">September 8, 2021</a></blockquote>
       - name: Popup Book
         tweets:
           - url: https://twitter.com/zach_geek/status/1383483845584904198
@@ -151,6 +169,16 @@ sections:
           - url: https://twitter.com/zach_geek/status/1414361865556213760
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, controller settings now have their own dedicated shelf, and you can use levers to set motion smoothing on each controller exactly to your liking. Also, a brush size indicator and lever, in case you can&#39;t or don&#39;t want to use the joystick. <a href="https://t.co/BSICvlN8lS">pic.twitter.com/BSICvlN8lS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414361865556213760?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
+      - name: Import / Export
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1437121338645307392
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Some <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> UI Cleanup:<br>- Compact layer display by default<br>- Import / Export options consolidated<br>- Mesh tool categories labeled <a href="https://t.co/T1RDDj1YQT">pic.twitter.com/T1RDDj1YQT</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1437121338645307392?ref_src=twsrc%5Etfw">September 12, 2021</a></blockquote>
+      - name: Translation
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1436478687499669506
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, I&#39;ve switched the <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> UI to fully use <a href="https://twitter.com/hashtag/TroikaText?src=hash&amp;ref_src=twsrc%5Etfw">#TroikaText</a>, and finally be ready to support translations. <a href="https://t.co/RHpXdOvYLf">pic.twitter.com/RHpXdOvYLf</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1436478687499669506?ref_src=twsrc%5Etfw">September 10, 2021</a></blockquote>
   - name: Brushes
     features:
       - name: Cloud Brush Pack
@@ -474,6 +502,9 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another way to create 3D geometry in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>: Canvas cut-outs!<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRModelling?src=hash&amp;ref_src=twsrc%5Etfw">#VRModelling</a> <a href="https://t.co/x5s0NaXWRw">pic.twitter.com/x5s0NaXWRw</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1427440081447657475?ref_src=twsrc%5Etfw">August 17, 2021</a></blockquote>
       - name: Morph Targets
         tweets:
+          - url: https://twitter.com/zach_geek/status/1437902989654638593
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">You can now create and edit <a href="https://twitter.com/hashtag/MorphTargets?src=hash&amp;ref_src=twsrc%5Etfw">#MorphTargets</a> directly in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>!<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/3DModelling?src=hash&amp;ref_src=twsrc%5Etfw">#3DModelling</a> <a href="https://t.co/Fspu7vKgQA">pic.twitter.com/Fspu7vKgQA</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1437902989654638593?ref_src=twsrc%5Etfw">September 14, 2021</a></blockquote>
           - url: https://twitter.com/zach_geek/status/1335765647066882050
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> update today. Thanks to some inspiration from <a href="https://twitter.com/MattBCool?ref_src=twsrc%5Etfw">@MattBCool</a>, not only can you create morph targets, but you can now select a morph target as a Hubs Avatar audio feedback target, export as GLB, and bring it straight into <a href="https://twitter.com/MozillaHubs?ref_src=twsrc%5Etfw">@MozillaHubs</a>!<a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/0vnrQ5iHtz">pic.twitter.com/0vnrQ5iHtz</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1335765647066882050?ref_src=twsrc%5Etfw">December 7, 2020</a></blockquote>
