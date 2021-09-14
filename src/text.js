@@ -22,7 +22,7 @@ AFRAME.registerComponent('text', {
       }
     }
 
-    troikaData.value = troikaData.value.toString()
+    troikaData.value = `${troikaData.value}`
 
     let fontWidthFactor = 1.6;
 

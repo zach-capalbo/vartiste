@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import shortid from 'shortid'
 
 AFRAME.registerComponent('morph-lever', {
   schema: {
@@ -16,6 +17,10 @@ AFRAME.registerComponent('morph-lever', {
         }
       }
     },
+    popupshown: function(e) {
+      e.preventDefault()
+      e.stopPropagation()
+    },
     click: function(e) {
       this.el.querySelector('*[lever]').components['lever'].setValue(0)
       for (let mesh of Compositor.meshes) {
@@ -28,10 +33,15 @@ AFRAME.registerComponent('morph-lever', {
   },
   init() {
     let label = document.createElement('a-entity')
+    let labelContainer = document.createElement('a-entity')
+    this.el.append(labelContainer)
+    labelContainer.append(label)
     this.label = label
-    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 0.8`)
-    label.setAttribute('position', '0 0.2 0')
-    this.el.append(label)
+    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 2; xOffset: 1.25; yOffset: 0.4`)
+    label.setAttribute('position', '-0.65 0.2 0')
+    label.setAttribute('scale', '0.5 0.5 1')
+    label.setAttribute('edit-field', {type: 'string', component: "morph-lever", property: "name", target: this.el, tooltip: 'Rename'})
+    // label.setAttribute('edit-field', 'target', this.el)
 
     let lever = document.createElement('a-entity')
     this.el.append(lever)
@@ -121,6 +131,28 @@ AFRAME.registerComponent('morph-lever', {
     {
       this.el.sceneEl.systems['morph-targets'].finishEditing()
     }
+
+    if (this.data.name && this.data.name !== oldData.name && oldData.name)
+    {
+      let oldName = oldData.name
+      let name = this.data.name
+      for (let mesh of Compositor.nonCanvasMeshes)
+      {
+        if (!(oldName in mesh.morphTargetDictionary)){
+          console.warn(`Can't find ${oldName} to rename in`, mesh)
+          continue
+        }
+        let idx = mesh.morphTargetDictionary[oldName]
+
+        mesh.morphTargetDictionary[name] = idx
+        for (let attr of Object.values(mesh.geometry.morphAttributes))
+        {
+          attr[idx].name = name
+        }
+
+        delete mesh.morphTargetDictionary[oldName]
+      }
+    }
   }
 })
 
@@ -130,7 +162,7 @@ Util.registerComponentSystem('morph-targets', {
     this.originalNormal = {}
   },
   newMorphTarget(name) {
-    if (!name) name = "NEW";
+    if (!name) name = shortid.generate();
 
     let seenGeometries = {}
     let p = new THREE.Vector3()
@@ -353,6 +385,7 @@ AFRAME.registerComponent('morph-target-shelf', {
       })
     },
     popupshown: function (e) {
+      console.log("Shown popup", e)
       Compositor.material.morphTargets = true
       Compositor.material.needsUpdate = true
       this.populate()
@@ -376,7 +409,7 @@ AFRAME.registerComponent('morph-target-shelf', {
       console.log("Adding mesh to morph targets", mesh.name)
       if (!mesh.morphTargetDictionary) continue;
 
-      for (let name in mesh.morphTargetDictionary)
+      for (let [name, idx] of Object.entries(mesh.morphTargetDictionary).sort(a => a[1]))
       {
         if (name in existingTargetValues)
         {
