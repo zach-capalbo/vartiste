@@ -409,7 +409,7 @@ AFRAME.registerComponent('morph-target-shelf', {
       console.log("Adding mesh to morph targets", mesh.name)
       if (!mesh.morphTargetDictionary) continue;
 
-      for (let [name, idx] of Object.entries(mesh.morphTargetDictionary).sort(a => a[1]))
+      for (let [name, idx] of Object.entries(mesh.morphTargetDictionary).sort((a,b) => a[1] - b[1]))
       {
         if (name in existingTargetValues)
         {
