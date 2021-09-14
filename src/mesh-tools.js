@@ -309,45 +309,6 @@ Util.registerComponentSystem('mesh-tools', {
     el.setObject3D('mesh', newObject)
     console.log("Setting new object", newObject)
   },
-  bakeMorphTarget() {
-    let p = new THREE.Vector3()
-    let m = new THREE.Vector3()
-    let o = new THREE.Vector3()
-    let seenGeometries = new Set()
-    for (let mesh of Compositor.nonCanvasMeshes)
-    {
-      if (!mesh.morphTargetInfluences) continue;
-      if (seenGeometries.has(mesh.geometry)) continue
-      let attribute = mesh.geometry.attributes.position
-      let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
-
-      for (let morphIndex in mesh.morphTargetInfluences)
-      {
-        let influence = mesh.morphTargetInfluences[morphIndex]
-        if (influence === 0.0) continue;
-
-        let morphAttribute = mesh.geometry.morphAttributes['position'][morphIndex]
-
-        for (let i = 0; i < attribute.count; ++i)
-        {
-          p.fromBufferAttribute(attribute, i)
-          m.fromBufferAttribute(morphAttribute, i)
-
-          if ( mesh.geometry.morphTargetsRelative ) {
-    				p.addScaledVector(m, influence);
-    			} else {
-            o.fromBufferAttribute(originalPositions, i)
-    				p.addScaledVector(m.sub(o), influence);
-    			}
-          attribute.setXYZ(i, p.x, p.y, p.z)
-        }
-
-        mesh.morphTargetInfluences[morphIndex] = 0
-      }
-      attribute.needsUpdate = true
-      seenGeometries.add(mesh.geometry)
-    }
-  },
   actualScale() {
     Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix.identity(), Compositor.meshRoot.el.object3D)
     let p = new THREE.Vector3

@@ -1,4 +1,7 @@
-a-entity shelf="name: Morph Targets; closeable: true" morph-target-shelf="" _six-dof-tool="reparentOnActivate: true; summonable: false"
-  a-entity position="0 1 0" icon-button="#asset-lead-pencil" toggle-button="target: a-scene; component: optimize-mesh-raycast; property: ignoreMorphTargets" tooltip="Faster drawing on morphed mesh (less accurate)"
-  a-entity position="0 1 0" icon-button="#asset-oven" system-click-action="system:mesh-tools; action: bakeMorphTarget" tooltip="Bake Morph To Geometry"
+a-entity shelf="name: Morph Targets; closeable: true; height: 4" morph-target-shelf="" _six-dof-tool="reparentOnActivate: true; summonable: false"
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity icon-button="#asset-lead-pencil" toggle-button="target: a-scene; component: optimize-mesh-raycast; property: ignoreMorphTargets" tooltip="Faster drawing on morphed mesh (less accurate)"
+      a-entity icon-button="#asset-oven" system-click-action="system:morph-targets; action: bakeMorphTarget" tooltip="Bake Morph To Geometry"
+      a-entity icon-button="#asset-plus-box-outline" system-click-action="system: morph-targets; action: newMorphTarget" tooltip="New Morph Target"
   a-entity.morph-levers

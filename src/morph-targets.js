@@ -1,19 +1,30 @@
 import {Util} from './util.js'
+import shortid from 'shortid'
 
 AFRAME.registerComponent('morph-lever', {
   schema: {
     name: {type: 'string'},
     value: {default: 0.0},
     hubsAudio: {default: false},
+    editing: {default: false},
   },
   events: {
     anglechanged: function (e) {
+      console.log("Angle", this.data.name)
       for (let mesh of Compositor.meshes) {
         if (mesh.morphTargetDictionary && (this.data.name in mesh.morphTargetDictionary))
         {
           mesh.morphTargetInfluences[mesh.morphTargetDictionary[this.data.name]] = e.detail.value
         }
       }
+    },
+    popupshown: function(e) {
+      e.preventDefault()
+      e.stopPropagation()
+    },
+    popuphidden: function(e) {
+      e.preventDefault()
+      e.stopPropagation()
     },
     click: function(e) {
       this.el.querySelector('*[lever]').components['lever'].setValue(0)
@@ -23,14 +34,42 @@ AFRAME.registerComponent('morph-lever', {
           mesh.morphTargetInfluences[mesh.morphTargetDictionary[this.data.name]] = 0
         }
       }
+    },
+    editfinished: function(e) {
+      let oldName = this.data.name
+      let name = e.detail.value
+      console.log("Renaming morph target", oldName, name)
+      for (let mesh of Compositor.nonCanvasMeshes)
+      {
+        if (!(oldName in mesh.morphTargetDictionary)){
+          console.warn(`Can't find ${oldName} to rename in`, mesh)
+          continue
+        }
+        let idx = mesh.morphTargetDictionary[oldName]
+
+        mesh.morphTargetDictionary[name] = idx
+        for (let attr of Object.values(mesh.geometry.morphAttributes))
+        {
+          attr[idx].name = name
+        }
+
+        delete mesh.morphTargetDictionary[oldName]
+      }
+      this.data.name = name
+      this.el.sceneEl.emit('morphtargetsupdated')
     }
   },
   init() {
     let label = document.createElement('a-entity')
+    let labelContainer = document.createElement('a-entity')
+    this.el.append(labelContainer)
+    labelContainer.append(label)
     this.label = label
-    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 0.8`)
-    label.setAttribute('position', '0 0.2 0')
-    this.el.append(label)
+    label.setAttribute('text', `value: ${this.data.name}; align: center; anchor: center; wrapCount: 15; width: 2; xOffset: 1.25; yOffset: 0.4`)
+    label.setAttribute('position', '-0.65 0.2 0')
+    label.setAttribute('scale', '0.5 0.5 1')
+    label.setAttribute('edit-field', {type: 'string'})//, component: "morph-lever", property: "name", target: this.el, tooltip: 'Rename'})
+    // label.setAttribute('edit-field', 'target', this.el)
 
     let lever = document.createElement('a-entity')
     this.el.append(lever)
@@ -62,6 +101,21 @@ AFRAME.registerComponent('morph-lever', {
         target: this.el,
         component: 'morph-lever',
         property: 'hubsAudio'
+      })
+    })
+
+    let editingButton = document.createElement('a-entity')
+    this.el.append(editingButton)
+    editingButton.setAttribute('icon-button', '#asset-lead-pencil')
+    editingButton.setAttribute('position', '-0.45 -0.75 0')
+    editingButton.setAttribute('scale', '0.5 0.5 0.5')
+    editingButton.setAttribute('tooltip', 'Edit')
+    editingButton.setAttribute('tooltip-style', 'scale: 0.5 0.5 0.5')
+    Util.whenLoaded(editingButton, () => {
+      editingButton.setAttribute('toggle-button', {
+        target: this.el,
+        component: 'morph-lever',
+        property: 'editing'
       })
     })
   },
@@ -96,11 +150,241 @@ AFRAME.registerComponent('morph-lever', {
         }
       }
     }
+
+    if (this.data.editing && !oldData.editing)
+    {
+      this.el.sceneEl.systems['morph-targets'].startEditing(this.data.name)
+    }
+    else if (!this.data.editing && oldData.editing)
+    {
+      this.el.sceneEl.systems['morph-targets'].finishEditing()
+    }
+  }
+})
+
+Util.registerComponentSystem('morph-targets', {
+  init() {
+    this.originalPosition = {}
+    this.originalNormal = {}
+  },
+  newMorphTarget(name) {
+    if (!name) name = shortid.generate();
+
+    let seenGeometries = {}
+    let p = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries))
+      {
+        let attribute = geometry.attributes.position.clone()
+        if (geometry.morphTargetsRelative)
+        {
+            attribute.array.fill(0)
+        }
+
+        attribute.needsUpdate = true
+
+        attribute.name = name
+
+        if (!geometry.morphAttributes) geometry.morphAttributes = {}
+        if (!geometry.morphAttributes['position']) geometry.morphAttributes['position'] = []
+        geometry.morphAttributes['position'].push(attribute)
+        seenGeometries[geometry.uuid] = geometry.morphAttributes['position'].length - 1
+      }
+
+      if (!mesh.morphTargetDictionary) mesh.morphTargetDictionary = {}
+      if (!mesh.morphTargetInfluences) mesh.morphTargetInfluences = []
+      mesh.morphTargetDictionary[name] = seenGeometries[geometry.uuid]
+      mesh.morphTargetInfluences[seenGeometries[geometry.uuid]] = 0
+    }
+
+    // Work around https://github.com/mrdoob/three.js/pull/20845
+    let clonedGeometries = {}
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      let geometry = mesh.geometry
+      if (!(geometry.uuid in seenGeometries)) continue
+      if (!(geometry.uuid in clonedGeometries))
+      {
+        clonedGeometries[geometry.uuid] = geometry.clone()
+      }
+
+      mesh.geometry = clonedGeometries[geometry.uuid]
+    }
+
+    this.el.emit('morphtargetsupdated')
+  },
+  bakeMorphTarget() {
+    let p = new THREE.Vector3()
+    let m = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    let seenGeometries = new Set()
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      if (!mesh.morphTargetInfluences) continue;
+      if (seenGeometries.has(mesh.geometry)) continue
+      for (let attrName of ['position', 'normal'])
+      {
+        let attribute = mesh.geometry.attributes[attrName]
+        let originalPositions = mesh.geometry.morphTargetsRelative ? null : attribute.clone()
+
+        if (!mesh.geometry.morphAttributes[attrName]) continue;
+
+        for (let morphIndex in mesh.morphTargetInfluences)
+        {
+          let influence = mesh.morphTargetInfluences[morphIndex]
+          if (influence === 0.0) continue;
+
+          let morphAttribute = mesh.geometry.morphAttributes[attrName][morphIndex]
+
+          if (!morphAttribute) {
+            console.warn("No morph attribute", attrName, mesh.geometry)
+            continue;
+          }
+
+          for (let i = 0; i < attribute.count; ++i)
+          {
+            p.fromBufferAttribute(attribute, i)
+            m.fromBufferAttribute(morphAttribute, i)
+
+            if ( mesh.geometry.morphTargetsRelative ) {
+      				p.addScaledVector(m, influence);
+      			} else {
+              o.fromBufferAttribute(originalPositions, i)
+      				p.addScaledVector(m.sub(o), influence);
+      			}
+            attribute.setXYZ(i, p.x, p.y, p.z)
+          }
+
+          mesh.morphTargetInfluences[morphIndex] = 0
+        }
+        attribute.needsUpdate = true
+      }
+      seenGeometries.add(mesh.geometry)
+    }
+  },
+  newTarget(geometry, name) {
+
+    if (!geometry.morphAttributes) {
+      geometry.morphAttributes = {}
+    }
+
+    if (!geometry.morphAttributes.position)
+    {
+      geometry.morphAttributes.position = []
+    }
+
+    let newBuffer = geometry.attributes.position.clone()
+    newBuffer.name = name
+
+    if (geometry.morphTargetsRelative)
+    {
+      newBuffer.array.fill(0)
+    }
+
+    geometry.morphAttributes.position.push(newBuffer)
+  },
+  startEditing(name)
+  {
+    if (this.editing && this.editing !== name)
+    {
+      this.finishEditing();
+    }
+
+    for (let mesh of Compositor.meshes) {
+      if (mesh.morphTargetInfluences)
+      {
+        for (let i = 0; i < mesh.morphTargetInfluences.length; ++i)
+        {
+          mesh.morphTargetInfluences[i] = 0
+        }
+
+        mesh.morphTargetInfluences[mesh.morphTargetDictionary[name]] = 1
+      }
+    }
+
+    for (let geometry of Compositor.nonCanvasGeometries)
+    {
+      this.originalPosition[geometry.id] = geometry.attributes.position.clone()
+      this.originalNormal[geometry.id] = geometry.attributes.normal.clone()
+
+      if (!geometry.morphAttributes.normal)
+      {
+        geometry.morphAttributes.normal = []
+        for (let i = 0; i < geometry.morphAttributes.position.length; ++i)
+        {
+          geometry.morphAttributes.normal[i] = geometry.attributes.normal.clone()
+          geometry.morphAttributes.normal[i].name = geometry.morphAttributes.position[i].name
+          if (geometry.morphTargetsRelative)
+          {
+            geometry.morphAttributes.normal[i].array.fill(0)
+          }
+        }
+      }
+    }
+
+    this.bakeMorphTarget()
+    this.editing = name
+
+    this.el.sceneEl.setAttribute('vertex-editing', {editMeshVertices: true})
+  },
+  finishEditing()
+  {
+    if (!this.editing) return;
+    this.el.sceneEl.setAttribute('vertex-editing', {editMeshVertices: false})
+
+    let p = new THREE.Vector3()
+    let o = new THREE.Vector3()
+    for (let geometry of Compositor.nonCanvasGeometries)
+    {
+      for (let attr of ['position', 'normal'])
+      {
+        let original = this[attr === 'position' ? 'originalPosition' : 'originalNormal'][geometry.id]
+        let position = geometry.attributes[attr]
+
+        if (!original) {
+          console.warn(`No saved ${attr} for`, geometry)
+          continue
+        }
+
+        console.log("Finished Editing", attr, position, original)
+
+        if (geometry.morphTargetsRelative)
+        {
+          for (let i = 0; i < position.count; ++i)
+          {
+            o.fromBufferAttribute(original, i)
+            p.fromBufferAttribute(position, i)
+            p.sub(o)
+            position.setXYZ(i, p.x, p.y, p.z)
+          }
+          position.needsUpdate = true
+        }
+
+        position.name = name
+
+        for (let i = 0; geometry.morphAttributes[attr] && i < geometry.morphAttributes[attr].length; ++i)
+        {
+          if (geometry.morphAttributes[attr][i].name !== this.editing) continue;
+
+          geometry.morphAttributes[attr][i] = position
+        }
+        geometry.attributes[attr] = original
+      }
+    }
+    this.el.emit('morphtargetsupdated')
   }
 })
 
 AFRAME.registerComponent('morph-target-shelf', {
   init() {
+    this.populate = this.populate.bind(this)
+    this.el.sceneEl.addEventListener('morphtargetsupdated', this.populate)
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('morphtargetsupdated', this.populate)
   },
   events: {
     hubsaudioset: function (e) {
@@ -112,12 +396,15 @@ AFRAME.registerComponent('morph-target-shelf', {
       })
     },
     popupshown: function (e) {
+      console.log("Shown popup", e)
       Compositor.material.morphTargets = true
+      Compositor.material.morphNormals = true
       Compositor.material.needsUpdate = true
       this.populate()
     },
     popuphidden: function (e) {
       Compositor.material.morphTargets = false
+      Compositor.material.morphNormal = false
       Compositor.material.needsUpdate = true
     },
   },
@@ -135,7 +422,7 @@ AFRAME.registerComponent('morph-target-shelf', {
       console.log("Adding mesh to morph targets", mesh.name)
       if (!mesh.morphTargetDictionary) continue;
 
-      for (let name in mesh.morphTargetDictionary)
+      for (let [name, idx] of Object.entries(mesh.morphTargetDictionary).sort((a,b) => a[1] - b[1]))
       {
         if (name in existingTargetValues)
         {

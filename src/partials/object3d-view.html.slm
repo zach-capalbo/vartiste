@@ -1,0 +1,6 @@
+a-entity.grab-root shelf=""
+  a-entity shelf-content=""
+    a-entity icon-row="mergeButtons: true"
+      a-entity icon-button="#asset-plus-box-multiple" tooltip="Load Children"
+
+  a-entity node-output="" position="2.1 1.2 0.01" scale="1 1 0.3"
