@@ -3,5 +3,5 @@ a-entity shelf="name: Morph Targets; closeable: true; height: 4" morph-target-sh
     a-entity icon-row=""
       a-entity icon-button="#asset-lead-pencil" toggle-button="target: a-scene; component: optimize-mesh-raycast; property: ignoreMorphTargets" tooltip="Faster drawing on morphed mesh (less accurate)"
       a-entity icon-button="#asset-oven" system-click-action="system:morph-targets; action: bakeMorphTarget" tooltip="Bake Morph To Geometry"
-      a-entity icon-button="#asset-plus-box-outline" system-click-action="system: morph-targets; action: newMorphTarget"
+      a-entity icon-button="#asset-plus-box-outline" system-click-action="system: morph-targets; action: newMorphTarget" tooltip="New Morph Target"
   a-entity.morph-levers
