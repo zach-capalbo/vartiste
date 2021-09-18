@@ -54,7 +54,7 @@ AFRAME.registerSystem('pencil-tool', {
       }
     })
   },
-  createHandle({radius, height, parentEl}) {
+  createHandle({radius, height, parentEl, segments = 10}) {
     let cylinder = document.createElement('a-cylinder')
 
     if (parentEl)
@@ -68,7 +68,7 @@ AFRAME.registerSystem('pencil-tool', {
 
     cylinder.setAttribute('radius', radius)
     cylinder.setAttribute('height', height)
-    cylinder.setAttribute('segments-radial', 10)
+    cylinder.setAttribute('segments-radial', segments)
     cylinder.setAttribute('segments-height', 1)
     cylinder.setAttribute('material', 'side: double; src: #asset-shelf; metalness: 0.4; roughness: 0.7')
     cylinder.setAttribute('position', `0 ${-height / 2} 0`)
@@ -759,7 +759,7 @@ AFRAME.registerComponent('six-dof-tool', {
     lockedComponent: {type: 'string'},
     lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
-    summonable: {default: true},
+    summonable: {default: false},
   },
   events: {
     activate: function() {
