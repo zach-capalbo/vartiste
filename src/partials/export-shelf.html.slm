@@ -7,7 +7,7 @@ a-entity.grab-root shelf="name: Export; closeable: true; height: 4" scale="0.05 
     a-entity icon-row=""
       a-entity icon-row-text="2D Export Actions:"
     a-entity icon-row=""
-      a-entity system-click-action="system: settings-system; action: export" icon-button="#asset-camera" tooltip="Export as PNG/JPEG"
+      a-entity system-click-action="system: settings-system; action: exportAction" icon-button="#asset-camera" tooltip="Export as PNG/JPEG"
       a-entity icon-button="#asset-brightness-4" toolbox-click-action="captureRender" tooltip="Capture Rendered PNG"
       a-entity icon-button="#asset-palette-swatch-outline" toolbox-click-action="downloadAllLayers" tooltip="Download each layer individually"
     a-entity icon-row=""
