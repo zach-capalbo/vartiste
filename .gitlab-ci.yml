@@ -18,7 +18,7 @@ build:
     paths:
       - dist
 
-launcher:
+.launcher_base: &launcher_base
   stage: build
   image: golang:1.16
   variables:
@@ -34,6 +34,20 @@ launcher:
       expire_in: 1 day
       paths:
         - chromium/launcher/*.exe
+
+launcher:
+  <<: *launcher_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/launcher/*.exe
+
+launcher_dev:
+  <<: *launcher_base
+  except:
+    - release
+  when: manual
 
 test:
   stage: test
@@ -65,13 +79,13 @@ test:
     paths:
       - chromium/*.zip
 
-# chromium:
-#   <<: *chromium_base
-#   only:
-#     - release
-#   artifacts:
-#     paths:
-#       - chromium/*.zip
+chromium:
+  <<: *chromium_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/*.zip
 
 chromium_dev:
   <<: *chromium_base
