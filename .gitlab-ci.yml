@@ -137,7 +137,7 @@ toolkit:
 itch:
   stage: deploy
   only:
-    - release
+    - itch
   script:
     - rm dist/gallery/*.vartiste
     - rm -r dist/stats

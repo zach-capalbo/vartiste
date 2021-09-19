@@ -273,7 +273,7 @@ always be up-to-date.
 
 <a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
 
-To run, extract the zip file to a folder, and then use the shortcuts for SteamVR.
+To run, extract the zip file to a folder, and then run `vartiste-launcher.exe`
 
 **Linux COMING SOON**. But for now, you can install chromium version 86.0.4231.0
 
