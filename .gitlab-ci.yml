@@ -21,6 +21,9 @@ build:
 launcher:
   stage: build
   image: golang:1.16
+  variables:
+    GOOS: windows
+    GOARCH: amd64
   script:
     - pushd chromium/launcher
     - go get github.com/tc-hib/go-winres@latest
