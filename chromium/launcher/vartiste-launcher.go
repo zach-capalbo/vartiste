@@ -29,27 +29,5 @@ var Configs = []Config {
 
 
 func main() {
-  items := []string{}
-  for _, c := range Configs {
-    items = append(items, c.name)
-  }
-  item, _, err := dlgs.List("List", "Select item from list:", items)
-  if err != nil {
-      panic(err)
-  }
 
-  for _, c := range Configs {
-    if c.name == item {
-      fmt.Println(c.cmd)
-    }
-  }
-  // a := app.New()
-  // win := a.NewWindow("Launch VARTISTE")
-  // win.SetContent(widget.NewVBox(
-  //     widget.NewLabel("Hello World!"),
-  //     widget.NewButton("Quit", func() {
-  //         a.Quit()
-  //     }),
-  // ))
-  // win.ShowAndRun()
 }
