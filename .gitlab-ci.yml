@@ -145,5 +145,5 @@ itch:
     - unzip butler.zip
     - chmod +x butler
     - ./butler -V
-    # - ./butler push chromium/chrom*.zip zach-geek/vartiste:win32
+    - ./butler push chromium/chrom*.zip zach-geek/vartiste:win32
     - ./butler push dist zach-geek/vartiste:html5
