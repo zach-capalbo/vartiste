@@ -37,8 +37,15 @@ test:
   stage: test
   script:
     - apt-get update
+    - apt-get install -y go
+    - pushd chromium/launcher
+    - go get
+    - go-winres make
+    - go build -ldflags "-H windowsgui"
+    - mv vartiste-launcher.exe ../contents
+    - popd
     - apt-get install -y zip
-    - mv dist chromium/contents/chromium-vartiste
+    - mv dist chromium/contents/vartiste-dist
     - pushd chromium/contents
     - zip -ur ../chromium-vartiste.zip *
     - popd

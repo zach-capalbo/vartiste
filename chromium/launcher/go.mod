@@ -1,4 +1,4 @@
-module vartiste.xyz/m
+module vartiste.xyz/vartiste-launcher
 
 go 1.15
 
