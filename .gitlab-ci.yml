@@ -23,7 +23,7 @@ launcher:
   image: golang:1.16
   script:
     - pushd chromium/launcher
-    - go get
+    - go get github.com/tc-hib/go-winres@latest
     - go-winres make
     - go build -ldflags "-H windowsgui"
     - popd
