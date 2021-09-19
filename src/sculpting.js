@@ -755,3 +755,120 @@ Util.registerComponentSystem('vertex-editing', {
     };
   }
 })
+
+AFRAME.registerComponent('threed-line-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
+    let tipHeight = 0.3
+    let tip = this.tip = document.createElement('a-cone')
+    this.el.append(tip)
+    tip.setAttribute('radius-top', 0)
+    tip.setAttribute('radius-bottom',  0.05)
+    tip.setAttribute('segments-height', 2)
+    tip.setAttribute('segments-radial', 8)
+    tip.setAttribute('height', tipHeight)
+    tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+    tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+  },
+  createMesh(points, {maxDistance = 0.3} = {}) {
+    let {point1, point2, point3, direction, direction2} = this
+    this.vertexPositions.length = 0
+    this.uvs.length = 0
+    this.opacities.length = 0
+    let distance = 0
+    let segDistance = 0
+    let accumDistance = 0
+    let discontinuity = false
+    for (let i = 0; i < points.length - 1; ++i)
+    {
+      point1.set(points[i].x, points[i].y, points[i].z)
+      point2.set(points[i + 1].x, points[i + 1].y, points[i + 1].z)
+      point2.sub(point1)
+      distance += point2.length()
+    }
+
+    for (let i = 0; i < points.length - 1; ++i)
+    {
+      point1.set(points[i].x, points[i].y, points[i].z)
+      point2.set(points[i + 1].x, points[i + 1].y, points[i + 1].z)
+
+      direction.subVectors(point2, point1)
+      segDistance = direction.length()
+
+      const directionScalar = 0.03
+
+      if (segDistance > maxDistance)
+      {
+        discontinuity = true;
+        continue
+      }
+
+      if (i === 0 || discontinuity)
+      {
+        direction.normalize()
+        direction.cross(FORWARD)
+        direction.multiplyScalar(points[i].scale * directionScalar)
+      }
+      else
+      {
+        direction.copy(direction2)
+      }
+
+      if (i < points.length - 2)
+      {
+        point3.set(points[i + 2].x, points[i + 2].y, points[i + 2].z)
+        direction2.subVectors(point3, point2)
+        direction2.normalize()
+        direction2.cross(FORWARD)
+        direction2.multiplyScalar(points[i+1].scale * directionScalar)
+        direction2.lerp(direction, 0.5)
+      }
+      else
+      {
+        direction2.copy(direction)
+      }
+
+      discontinuity = false
+
+      let uvStart = accumDistance
+      accumDistance += segDistance / distance
+      let uvEnd = accumDistance
+
+      // Tri 1
+      this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y, point1.z + direction.z)
+      this.vertexPositions.push(point2.x - direction2.x, point2.y - direction2.y, point2.z - direction2.z)
+      this.vertexPositions.push(point1.x - direction.x, point1.y - direction.y, point1.z - direction.z)
+
+      this.uvs.push(uvStart, 0,
+                    uvEnd, 1,
+                    uvStart, 1)
+
+      this.opacities.push(
+        points[i].opacity,
+        points[i+1].opacity,
+        points[i].opacity,
+      )
+
+
+      // Tri 2
+      this.vertexPositions.push(point2.x - direction2.x, point2.y - direction2.y, point2.z - direction2.z)
+      this.vertexPositions.push(point1.x + direction.x, point1.y + direction.y, point1.z + direction.z)
+      this.vertexPositions.push(point2.x + direction2.x, point2.y + direction2.y, point2.z + direction2.z)
+
+      this.uvs.push(uvEnd, 1,
+                    uvStart, 0,
+                    uvEnd, 0)
+
+      this.opacities.push(
+        points[i + 1].opacity,
+        points[i].opacity,
+        points[i + 1].opacity,)
+    }
+
+    this.startPoint = null
+    this.endPoint = null
+    this.hasDoneInitialUpdate = false
+  }
+})

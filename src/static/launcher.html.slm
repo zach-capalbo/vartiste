@@ -1,0 +1,17 @@
+doctype html
+html
+  head
+    title VARTISTE
+  body.launch-page
+    header#need-help-notification.hidden-in-vr
+      h2 VARTISTE - WebXR Drawing, Texturing, and more!
+    #launcher
+      .launch-box
+        a.launch-button href="/index.html"
+          | Launch VARTISTE from PC
+          br
+          span#saved-version
+        a.launch-button href="https://vartiste.xyz"
+         | Launch VARTISTE Online
+         br
+         | (Always Up-To-Date)

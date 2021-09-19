@@ -2,54 +2,53 @@
 package main
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
-	// "os/exec"
+	"os/exec"
 	// "io/ioutil"
 	// "path/filepath"
+	// "fmt"
+	"log"
+	"net/http"
+	// "net"
 
 	// "github.com/magefile/mage/mg" // mg contains helpful utility functions, like Deps
 	// "github.com/magefile/mage/sh"
 
-  "github.com/gen2brain/dlgs"
+  // "github.com/gen2brain/dlgs"
   // "fyne.io/fyne/app"
   // "fyne.io/fyne/widget"
 )
 
-type Config struct {
-	name string
-	cmd string
-}
-
-
-var Configs = []Config {
-	Config{"Oculus (Latest VARTISTE)", fmt.Sprintf("--disable-features=XRSandbox --enable-features=oculus --force-webxr-runtime=oculus --autoplay-policy=no-user-gesture-required --user-data-dir=%s\\vartiste --app=https://vartiste.xyz", os.Getenv("APPDATA"))},
-	Config{"SteamVR", fmt.Sprintf("--disable-features=XRSandbox --enable-features=OpenVR --force-webxr-runtime=OpenVR --autoplay-policy=no-user-gesture-required --user-data-dir=%s\\vartiste --app=https://vartiste.xyz", os.Getenv("APPDATA"))},
-}
-
+// func findPort()(string) {
+// 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+//
+// 	l, err := net.ListenTCP("tcp", addr)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer l.Close()
+// 	return fmt.Sprintf("%d", l.Addr().(*net.TCPAddr).Port)
+// }
 
 func main() {
-  items := []string{}
-  for _, c := range Configs {
-    items = append(items, c.name)
-  }
-  item, _, err := dlgs.List("List", "Select item from list:", items)
-  if err != nil {
-      panic(err)
-  }
+		http.Handle("/", http.FileServer(http.Dir("./vartiste-dist")))
 
-  for _, c := range Configs {
-    if c.name == item {
-      fmt.Println(c.cmd)
-    }
-  }
-  // a := app.New()
-  // win := a.NewWindow("Launch VARTISTE")
-  // win.SetContent(widget.NewVBox(
-  //     widget.NewLabel("Hello World!"),
-  //     widget.NewButton("Quit", func() {
-  //         a.Quit()
-  //     }),
-  // ))
-  // win.ShowAndRun()
+		// The problem with findPort is that anything saved to the browser is lost
+		// on reload, since it's a different origin then
+		port := "7806" //findPort()
+
+		go func() {
+    	log.Fatal(http.ListenAndServe("127.0.0.1:" + port, nil))
+		}()
+
+		log.Printf("Serving port: %s", port)
+
+		cmd := exec.Command("./chromium-vartiste/chrome", "--app=http://localhost:" + port + "/launcher.html", "--user-data-dir=" + os.Getenv("APPDATA")  + "\\vartiste", "--disable-features=XRSandbox", "--force-webxr-runtime=OpenXR", "--autoplay-policy=no-user-gesture-required")
+
+		err := cmd.Run()
+		log.Printf("Command finished with error: %v", err)
 }

@@ -18,6 +18,37 @@ build:
     paths:
       - dist
 
+.launcher_base: &launcher_base
+  stage: build
+  image: golang:1.16
+  variables:
+  script:
+    - go get github.com/tc-hib/go-winres@latest
+    - pushd chromium/launcher
+    - export GOOS=windows
+    - export GOARCH=amd64
+    - go-winres make
+    - go build -ldflags "-H windowsgui"
+    - popd
+  artifacts:
+      expire_in: 1 day
+      paths:
+        - chromium/launcher/*.exe
+
+launcher:
+  <<: *launcher_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/launcher/*.exe
+
+launcher_dev:
+  <<: *launcher_base
+  except:
+    - release
+  when: manual
+
 test:
   stage: test
   image: alekzonder/puppeteer
@@ -38,7 +69,8 @@ test:
   script:
     - apt-get update
     - apt-get install -y zip
-    - mv dist chromium/contents/chromium-vartiste
+    - mv chromium/launcher/vartiste-launcher.exe chromium/contents
+    - mv dist chromium/contents/vartiste-dist
     - pushd chromium/contents
     - zip -ur ../chromium-vartiste.zip *
     - popd
@@ -47,13 +79,13 @@ test:
     paths:
       - chromium/*.zip
 
-# chromium:
-#   <<: *chromium_base
-#   only:
-#     - release
-#   artifacts:
-#     paths:
-#       - chromium/*.zip
+chromium:
+  <<: *chromium_base
+  only:
+    - release
+  artifacts:
+    paths:
+      - chromium/*.zip
 
 chromium_dev:
   <<: *chromium_base
@@ -113,5 +145,5 @@ itch:
     - unzip butler.zip
     - chmod +x butler
     - ./butler -V
-    # - ./butler push chromium/chrom*.zip zach-geek/vartiste:win32
+    - ./butler push chromium/chrom*.zip zach-geek/vartiste:win32
     - ./butler push dist zach-geek/vartiste:html5

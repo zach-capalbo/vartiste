@@ -196,3 +196,47 @@ header
     img
       position: static
       display: block
+
+
+
+#launcher
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: 99
+  margin: 0
+  padding: 0
+  background-color: #cccccc
+  background-image: url("./static/images/loading.webp")
+  background-position: center /* Center the image */
+  background-repeat: no-repeat /* Do not repeat the image */
+  background-size: cover
+  color: white
+  .launch-box
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+  .launch-button
+    font-family 'Open Sans', sans-serif
+    display: block
+    width: max-content
+    margin: auto
+    padding: 10px
+    border-radius: 5px
+    padding: 0.5em
+    font-size: 200%
+    margin-top: 10%
+    background: linear-gradient(#fcf7ff 0%, #fcf7ff 90%, #e1c7f2 95%, #3b3666 100%)
+    box-shadow: 0 0 5px 5px #3b3666
+    color: black
+    border: none
+    text-align: center
+    text-decoration: none
+    &:hover
+      box-shadow: 0 0 5px 5px #ffffff
+
+.launch-page #got-it
+  display: none
