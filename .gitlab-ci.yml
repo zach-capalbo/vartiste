@@ -25,8 +25,8 @@ launcher:
     GOOS: windows
     GOARCH: amd64
   script:
-    - pushd chromium/launcher
     - go get github.com/tc-hib/go-winres@latest
+    - pushd chromium/launcher
     - go-winres make
     - go build -ldflags "-H windowsgui"
     - popd
