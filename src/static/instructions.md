@@ -264,12 +264,12 @@ applied to different frames, giving a kind of animated brush effect.
 <a name="download"></a>
 ## Download
 
-You can download VARISTE as well. WebXR is currently evolving really quickly,
-and sometimes things break, or change, or become really cumbersome. To make it a
-little easier, I've packaged a version of Chromium that I've tested with
-VARTISTE, along with a shortcut to start in SteamVR mode. No more confusing
-command line switches. Plus it will stay separate from your main browser, to
-keep your browsing safe from crashes and experimental features.
+You can download VARISTE as well. The download contains a build of Chromium
+which has been rebranded with a VARTISTE icon. It also contains the current
+version of the VARTISTE application, along with a little launcher which will
+launch the bundled Chromium with flags for OpenXR. You can then choose to launch
+the exact version that you downloaded, or launch the web version, which will
+always be up-to-date.
 
 <a class="launch-button" href="https://gitlab.com/zach-geek/vartiste/-/jobs/artifacts/release/file/chromium/chromium-vartiste.zip?job=chromium">Download VARTISTE for Windows</a>
 
