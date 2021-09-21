@@ -759,6 +759,9 @@ Util.registerComponentSystem('vertex-editing', {
 const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    meshContainer: {type: 'selector', default: '#world-root'}
+  },
   events: {
     activate: function(e) {
       Util.callLater(() => {
@@ -774,6 +777,9 @@ AFRAME.registerComponent('threed-line-tool', {
         x: tipWorld.x,
         y: tipWorld.y,
         z: tipWorld.z,
+        fx: 0,
+        fy: 0,
+        fz: 1,
         scale: 1
       })
       this.createMesh(this.points)
@@ -788,17 +794,24 @@ AFRAME.registerComponent('threed-line-tool', {
 
       let tipWorld = this.pool('tipWorld', THREE.Vector3)
       let worldScale = this.pool('worldScale', THREE.Vector3)
+      this.tipPoint.getWorldDirection(this.worldForward)
       this.tipPoint.getWorldPosition(tipWorld)
       this.points.push({
         x: tipWorld.x,
         y: tipWorld.y,
         z: tipWorld.z,
+        fx: this.worldForward.x,
+        fy: this.worldForward.y,
+        fz: this.worldForward.z,
         scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
       })
       this.createMesh(this.points)
     },
     stateremoved: function(e) {
-      if (e.detail === 'grabbed') this.makeReference()
+      if (e.detail === 'grabbed') {
+        this.makePrimitives()
+        // this.makeReference()
+      }
     }
   },
   init() {
@@ -819,6 +832,7 @@ AFRAME.registerComponent('threed-line-tool', {
     let tipPoint = this.tipPoint = new THREE.Object3D();
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, tipHeight / 2.0, 0);
+    tipPoint.rotation.set(- Math.PI / 2, 0, 0);
 
     this.points = []
     this.meshes = []
@@ -826,22 +840,28 @@ AFRAME.registerComponent('threed-line-tool', {
     this.vertexPositions = []
     this.uvs = []
     this.opacities = []
+    this.normals = []
 
     this.point1 = new THREE.Vector3
     this.point2 = new THREE.Vector3
     this.point3 = new THREE.Vector3
     this.direction = new THREE.Vector3
     this.direction2 = new THREE.Vector3
+    this.startPoint = new THREE.Vector3
+
+    this.worldForward = new THREE.Vector3
 
     Util.whenLoaded(this.el, () => {
       this.initialScale = this.el.object3D.scale.x
     })
   },
   createMesh(points, {maxDistance = 100} = {}) {
+    if (points.length < 2) return;
     let {point1, point2, point3, direction, direction2} = this
     this.vertexPositions.length = 0
     this.uvs.length = 0
     this.opacities.length = 0
+    this.normals.length = 0
     let distance = 0
     let segDistance = 0
     let accumDistance = 0
@@ -854,10 +874,27 @@ AFRAME.registerComponent('threed-line-tool', {
       distance += point2.length()
     }
 
+    let forward = this.worldForward;
+
+    this.startPoint.set(0, 0, 0)
+    for (let i = 0; i < points.length; ++i)
+    {
+      this.startPoint.x += points[i].x
+      this.startPoint.y += points[i].y
+      this.startPoint.z += points[i].z
+    }
+
+    this.startPoint.multiplyScalar(1.0 / points.length)
+
     for (let i = 0; i < points.length - 1; ++i)
     {
+      forward.set(points[i].fx, points[i].fy, points[i].fz)
+      forward.multiplyScalar(-1)
       point1.set(points[i].x, points[i].y, points[i].z)
       point2.set(points[i + 1].x, points[i + 1].y, points[i + 1].z)
+
+      point1.sub(this.startPoint)
+      point2.sub(this.startPoint)
 
       direction.subVectors(point2, point1)
       segDistance = direction.length()
@@ -873,7 +910,7 @@ AFRAME.registerComponent('threed-line-tool', {
       if (i === 0 || discontinuity)
       {
         direction.normalize()
-        direction.cross(FORWARD)
+        direction.cross(forward)
         direction.multiplyScalar(points[i].scale * directionScalar)
       }
       else
@@ -884,9 +921,10 @@ AFRAME.registerComponent('threed-line-tool', {
       if (i < points.length - 2)
       {
         point3.set(points[i + 2].x, points[i + 2].y, points[i + 2].z)
+        point3.sub(this.startPoint)
         direction2.subVectors(point3, point2)
         direction2.normalize()
-        direction2.cross(FORWARD)
+        direction2.cross(forward)
         direction2.multiplyScalar(points[i+1].scale * directionScalar)
         direction2.lerp(direction, 0.5)
       }
@@ -910,11 +948,17 @@ AFRAME.registerComponent('threed-line-tool', {
                     uvEnd, 1,
                     uvStart, 1)
 
-      this.opacities.push(
-        points[i].opacity,
-        points[i+1].opacity,
-        points[i].opacity,
-      )
+      // this.opacities.push(
+      //   points[i].opacity,
+      //   points[i+1].opacity,
+      //   points[i].opacity,
+      // )
+
+      // forward.multiplyScalar(-1)
+
+      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward.x, forward.y, forward.z)
 
 
       // Tri 2
@@ -926,19 +970,20 @@ AFRAME.registerComponent('threed-line-tool', {
                     uvStart, 0,
                     uvEnd, 0)
 
-      this.opacities.push(
-        points[i + 1].opacity,
-        points[i].opacity,
-        points[i + 1].opacity,)
-    }
+      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward.x, forward.y, forward.z)
 
-    this.startPoint = null
-    this.endPoint = null
-    this.hasDoneInitialUpdate = false
+      // this.opacities.push(
+      //   points[i + 1].opacity,
+      //   points[i].opacity,
+      //   points[i + 1].opacity,)
+    }
 
     this.geometry = new THREE.BufferGeometry()
     this.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.vertexPositions), 3, false))
     this.geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(this.uvs), 2, true))
+    this.geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.normals), 3, false))
 
     let material = this.getMaterial(distance)
 
@@ -948,7 +993,8 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     this.mesh = new THREE.Mesh(this.geometry, material)
-    this.el.sceneEl.object3D.add(this.mesh)
+    this.data.meshContainer.object3D.add(this.mesh)
+    this.mesh.position.copy(this.startPoint)
   },
   doneDrawing() {
     if (this.endDrawingEl)
@@ -964,6 +1010,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.vertexPositions = []
     this.uvs = []
     this.opacities = []
+    this.normals = []
     this.material = null
   },
   getMaterial(distance) {
@@ -991,9 +1038,10 @@ AFRAME.registerComponent('threed-line-tool', {
         brush.startDrawing(ctx, 0, 0.5 * canvas.height)
       }
 
-      for (let i = 1; i < 10; ++i)
+      let pointCount = 40
+      for (let i = 1; i < pointCount; ++i)
       {
-        brush.drawTo(ctx, i / 10.0 * canvas.width, 0.5 * canvas.height)
+        brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
       }
 
       if (brush.endDrawing)
@@ -1007,8 +1055,39 @@ AFRAME.registerComponent('threed-line-tool', {
     let map = new THREE.Texture;
     map.image = canvas
     map.needsUpdate = true
-    this.material = new THREE.MeshBasicMaterial({map, transparent: true, color, opacity, side: THREE.DoubleSide})
+    let materialType = THREE.MeshBasicMaterial;
+
+    switch (Compositor.el.getAttribute('material').shader)
+    {
+      case 'standard': materialType = THREE.MeshStandardMaterial; break;
+      case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+    }
+
+    // materialType = THREE.MeshNormalMaterial;
+
+    this.material = new materialType({map, transparent: true, color, opacity, side: THREE.DoubleSide})
     return this.material;
+  },
+  makePrimitives() {
+    if (!this.meshes.length) return;
+    let placeholder = new THREE.Object3D
+    this.el.sceneEl.object3D.add(placeholder)
+
+    for (let mesh of this.meshes) {
+      let el = document.createElement('a-entity')
+      this.el.sceneEl.append(el)
+      el.classList.add('clickable')
+      mesh.el = el
+      Util.positionObject3DAtTarget(placeholder, mesh)
+      el.object3D.add(mesh)
+      el.setObject3D('mesh', mesh)
+      Util.positionObject3DAtTarget(mesh, placeholder)
+      el.object3D.position.copy(mesh.position)
+      mesh.position.set(0, 0, 0)
+      el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+    }
+
+    this.meshes = []
   },
   makeReference() {
     if (!this.meshes.length) return;

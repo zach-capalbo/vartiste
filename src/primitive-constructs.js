@@ -87,10 +87,13 @@ Util.registerComponentSystem('primitive-constructs', {
         targetObj.add(mesh)
       })
 
+      console.log("Adding", mesh.material)
+
       if (mesh.material.map && mesh.material.map.image)
       {
+        console.log("Drawing mesh image")
         layerCtx.drawImage(mesh.material.map.image,
-                           0, 0, mesh.material.map.image.width, mesh.material.map.height,
+                           0, 0, mesh.material.map.image.width, mesh.material.map.image.height,
                            Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
                            Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
                            Math.ceil(currentBox.max.x * width) + 1,
