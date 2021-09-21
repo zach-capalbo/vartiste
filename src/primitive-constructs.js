@@ -96,8 +96,23 @@ Util.registerComponentSystem('primitive-constructs', {
                            0, 0, mesh.material.map.image.width, mesh.material.map.image.height,
                            Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
                            Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
-                           Math.ceil(currentBox.max.x * width) + 1,
-                           Math.ceil(currentBox.max.y * height) + 1)
+                           Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
+                           Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+
+        if (mesh.material.color.r < 1.0 && mesh.material.color.g < 1.0 && mesh.material.color.b < 1.0)
+        {
+          let drawMode = layerCtx.globalCompositeOperation;
+          layerCtx.globalCompositeOperation = 'source-atop'
+          layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
+          layerCtx.fillRect(
+            Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
+            Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
+            Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
+            Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+
+          layerCtx.globalCompositeOperation = drawMode
+        }
+
       }
       else
       {
