@@ -779,10 +779,11 @@ AFRAME.registerComponent('threed-line-tool', {
       this.createMesh(this.points)
     },
     draw: function(e) {
-      if (!this.endDrawing)
+      if (!this.endDrawingEl)
       {
-        this.endDrawing = this.doneDrawing.bind(this)
-        e.detail.sourceEl.addEventListener('enddrawing', this.endDrawing)
+        this.endDrawingEl = e.detail.sourceEl;
+
+        this.endDrawingEl.addEventListener('enddrawing', this.doneDrawing)
       }
 
       let tipWorld = this.pool('tipWorld', THREE.Vector3)
@@ -795,10 +796,14 @@ AFRAME.registerComponent('threed-line-tool', {
         scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
       })
       this.createMesh(this.points)
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed') this.makeReference()
     }
   },
   init() {
     Pool.init(this)
+    this.doneDrawing = this.doneDrawing.bind(this)
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
@@ -816,6 +821,7 @@ AFRAME.registerComponent('threed-line-tool', {
     tipPoint.position.set(0, tipHeight / 2.0, 0);
 
     this.points = []
+    this.meshes = []
 
     this.vertexPositions = []
     this.uvs = []
@@ -945,6 +951,14 @@ AFRAME.registerComponent('threed-line-tool', {
     this.el.sceneEl.object3D.add(this.mesh)
   },
   doneDrawing() {
+    if (this.endDrawingEl)
+    {
+      this.endDrawingEl.removeEventListener('enddrawing', this.doneDrawing)
+      this.endDrawingEl = null
+    }
+    if (this.mesh) {
+      this.meshes.push(this.mesh)
+    }
     this.mesh = null
     this.points.length = 0
     this.vertexPositions = []
@@ -986,6 +1000,8 @@ AFRAME.registerComponent('threed-line-tool', {
       {
         brush.endDrawing(ctx)
       }
+
+      canvas = Util.autoCropCanvas(canvas)
     }
 
     let map = new THREE.Texture;
@@ -993,5 +1009,34 @@ AFRAME.registerComponent('threed-line-tool', {
     map.needsUpdate = true
     this.material = new THREE.MeshBasicMaterial({map, transparent: true, color, opacity, side: THREE.DoubleSide})
     return this.material;
+  },
+  makeReference() {
+    if (!this.meshes.length) return;
+
+    let el = document.createElement('a-entity')
+    document.querySelector('#reference-spawn').append(el)
+    el.classList.add('clickable')
+    let targetObj = new THREE.Object3D;
+    el.setObject3D('mesh', targetObj);
+
+    let placeholder = new THREE.Object3D
+    this.el.sceneEl.object3D.add(placeholder)
+
+    let meshes = this.meshes
+    this.meshes = []
+
+    Util.whenLoaded(el, () => {
+      el.object3D.updateMatrixWorld()
+      for (let mesh of meshes)
+      {
+        Util.positionObject3DAtTarget(placeholder, mesh)
+        mesh.el = el
+        targetObj.add(mesh)
+        Util.positionObject3DAtTarget(mesh, placeholder)
+      }
+      el.setAttribute('reference-glb', '')
+      // el.setAttribute('primitive-construct-placeholder', 'detached: true; manualMesh: true')
+
+    })
   }
 })
