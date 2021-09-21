@@ -1,6 +1,6 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
-import {VectorBrush} from './brush.js'
+import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
@@ -756,9 +756,49 @@ Util.registerComponentSystem('vertex-editing', {
   }
 })
 
+const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
+  events: {
+    activate: function(e) {
+      Util.callLater(() => {
+        this.initialScale = this.el.object3D.scale.x
+      })
+    },
+    click: function(e) {
+      return;
+
+      let tipWorld = this.pool('tipWorld', THREE.Vector3)
+      this.tipPoint.getWorldPosition(tipWorld)
+      this.points.push({
+        x: tipWorld.x,
+        y: tipWorld.y,
+        z: tipWorld.z,
+        scale: 1
+      })
+      this.createMesh(this.points)
+    },
+    draw: function(e) {
+      if (!this.endDrawing)
+      {
+        this.endDrawing = this.doneDrawing.bind(this)
+        e.detail.sourceEl.addEventListener('enddrawing', this.endDrawing)
+      }
+
+      let tipWorld = this.pool('tipWorld', THREE.Vector3)
+      let worldScale = this.pool('worldScale', THREE.Vector3)
+      this.tipPoint.getWorldPosition(tipWorld)
+      this.points.push({
+        x: tipWorld.x,
+        y: tipWorld.y,
+        z: tipWorld.z,
+        scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+      })
+      this.createMesh(this.points)
+    }
+  },
   init() {
+    Pool.init(this)
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
@@ -771,8 +811,27 @@ AFRAME.registerComponent('threed-line-tool', {
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
     tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+    let tipPoint = this.tipPoint = new THREE.Object3D();
+    tip.object3D.add(tipPoint);
+    tipPoint.position.set(0, tipHeight / 2.0, 0);
+
+    this.points = []
+
+    this.vertexPositions = []
+    this.uvs = []
+    this.opacities = []
+
+    this.point1 = new THREE.Vector3
+    this.point2 = new THREE.Vector3
+    this.point3 = new THREE.Vector3
+    this.direction = new THREE.Vector3
+    this.direction2 = new THREE.Vector3
+
+    Util.whenLoaded(this.el, () => {
+      this.initialScale = this.el.object3D.scale.x
+    })
   },
-  createMesh(points, {maxDistance = 0.3} = {}) {
+  createMesh(points, {maxDistance = 100} = {}) {
     let {point1, point2, point3, direction, direction2} = this
     this.vertexPositions.length = 0
     this.uvs.length = 0
@@ -870,5 +929,69 @@ AFRAME.registerComponent('threed-line-tool', {
     this.startPoint = null
     this.endPoint = null
     this.hasDoneInitialUpdate = false
+
+    this.geometry = new THREE.BufferGeometry()
+    this.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.vertexPositions), 3, false))
+    this.geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(this.uvs), 2, true))
+
+    let material = this.getMaterial(distance)
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+    }
+
+    this.mesh = new THREE.Mesh(this.geometry, material)
+    this.el.sceneEl.object3D.add(this.mesh)
+  },
+  doneDrawing() {
+    this.mesh = null
+    this.points.length = 0
+    this.vertexPositions = []
+    this.uvs = []
+    this.opacities = []
+    this.material = null
+  },
+  getMaterial(distance) {
+    if (this.material) return this.material
+    let brush = this.el.sceneEl.systems['paint-system'].brush;
+
+    let canvas, color, opacity;
+
+    if (brush instanceof StretchBrush)
+    {
+      canvas = brush.image
+      color = brush.color3
+      opacity = brush.opacity
+    }
+    else
+    {
+      canvas = document.createElement('canvas')
+      canvas.width = 256
+      canvas.height = 64
+
+      let ctx = canvas.getContext('2d')
+
+      if (brush.startDrawing)
+      {
+        brush.startDrawing(ctx, 0, 0.5 * canvas.height)
+      }
+
+      for (let i = 1; i < 10; ++i)
+      {
+        brush.drawTo(ctx, i / 10.0 * canvas.width, 0.5 * canvas.height)
+      }
+
+      if (brush.endDrawing)
+      {
+        brush.endDrawing(ctx)
+      }
+    }
+
+    let map = new THREE.Texture;
+    map.image = canvas
+    map.needsUpdate = true
+    this.material = new THREE.MeshBasicMaterial({map, transparent: true, color, opacity, side: THREE.DoubleSide})
+    return this.material;
   }
 })
