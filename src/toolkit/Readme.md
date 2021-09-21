@@ -27,7 +27,7 @@ is not recommended as it may cause unexpected changes.
 ## New Project vs. Existing Project
 
 When creating a new project, I recommend pulling the entirety of
-aframe-vartiste-toolkit. The toolkit contains a wide variety of features and 
+aframe-vartiste-toolkit. The toolkit contains a wide variety of features; 
 some components and systems rely on others for full functionality. Including
 the entire toolkit allows components and systems to work together to their
 full extent.
@@ -35,16 +35,16 @@ full extent.
 If you're bringing aframe-vartiste-toolkit into an existing project, you can
 either [bring in specific pieces of the toolkit](#customization), or you can
 bring in the whole thing. If possible, I recommend pulling in the whole toolkit,
-since components may depend on other components or systems. If there's concern
+since components may depend on other components or systems. If there's a concern
 for naming or functionality conflicts, most components can also operate on their
 own.
 
 # Toolkit Overview
 
 The *aframe-vartiste-toolkit* contains a wide variety of elements. It's built by
-exporting every little bit and piece of the [VARTISTE](https://vartiste.xyz) app,
-so [VARTISTE](https://vartiste.xyz) and the [VARTISTE source
-code](https://gitlab.com/zach-geek/vartiste) are ultimately the best places to
+exporting every little bit and piece of the [VARTISTE](https://vartiste.xyz) app.
+Exploring [VARTISTE](https://vartiste.xyz) and the [VARTISTE source
+code](https://gitlab.com/zach-geek/vartiste) is ultimately the best way to
 see what's available and how it works. Nonetheless, I've written some
 documentation as a best-spare-time-effort. Here are some of the essentials to get
 you started.
@@ -60,17 +60,17 @@ There are a few notable exceptions in the form of utility classes, such as
 [`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes
 can be used when creating components or anywhere you'd like in your Javascript code.
 They are exposed under the VARTISTE object, which is created as a property in the 
-global `window`, so you can access them from anywhere. For instance, to access the
+global `window`. For instance, to access the
 `whenLoaded` method of [`Util`](#util.js), you can call
 `VARTISTE.Util.whenLoaded(...)` anywhere in your code.
 
 Most components (but not all) respond correctly to updates via
-`setAttribute()`; fewer things respond entirely correctly to `remove()` so if you
-run into issues, double check the docs here or the source.
+`setAttribute()`; fewer things respond correctly to `remove()` so if you
+run into issues, double check the docs here or the source code.
 
-One extension to the ECS framework in VARTISTE is "component systems", created
+One extension to the ECS framework in VARTISTE are "component systems", created
 via [`VARTISTE.Util.registerComponentSystem`](#util.js). These are basically
-components for the `a-scene` which get automatically attached (like systems do).
+components for `a-scene` which get automatically attached (like systems do).
 They have the full schema and update abilities of components, with the
 auto-attach convenience of systems. These are registered as both systems _and_ 
 components and can be accessed either by the scene `components` object 
@@ -82,16 +82,16 @@ components and can be accessed either by the scene `components` object
 VARTISTE has a quick-and-dirty user interface, focused around the 
 [`icon-button`](#icon-button). These are usually collected into an
 [`icon-row`](#icon-row), where they're automatically laid out 
-horizontally. Most clickable elements have a [`tooltip`](#tooltip), which also has 
-the advantage of being able to be read by the built-in [text-to-speech](#speech.js) 
+horizontally. Most clickable elements have a [`tooltip`](#tooltip), 
+which are readable by the built-in [text-to-speech](#speech.js) 
 system.
 
 In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field)
 for text input and [`lever`s](#lever) for adjusting values.
 
 All of these components are arranged on a [`shelf`](#shelf) which provides a
-background and frame. Shelves can also be closed or pinned to the a controller to
-easily manage the workspace.
+background and frame. Shelves can also be closed or pinned to a controller for
+easy workspace management.
 
 ## User Rig
 
@@ -114,9 +114,9 @@ Note this user rig uses the
 [`webxr-laser`](#webxr-laser) components rather than the a-frame built-in
 `laser-controls`. I found the [webxr-input-profiles
 motion-controllers](https://github.com/immersive-web/webxr-input-profiles) to be
-more consistent and up-to-date than the components built into a-frame, so I
-built the [`webxr-input-profiles`](#webxr-input-profiles) system to use that
-instead.
+more consistent and up-to-date than the built-in a-frame components, so I
+built the [`webxr-input-profiles`](#webxr-input-profiles) system to take advantage
+of that.
 
 ## Interaction Components
 
@@ -127,7 +127,7 @@ raycasters. `click` events are emitted when these elements are clicked.
 Every `clickable` entity, by default, can also be grabbed and moved. Grabbing
 and moving is handled via the [`manipulator`](#manipulator) component, which 
 is installed on the user motion controllers or mouse controls. More info can 
-be found in the documentation for [`manipulator`](#manipulator)
+be found in the documentation for [`manipulator`](#manipulator).
 
 There are also a bunch of built-in constraints, which can be set on entities to
 restrict how they move when grabbed. For instance
@@ -145,7 +145,7 @@ The easiest way to add drawing to your app is to add the
 and the [`hand-draw-tool`](#hand-draw-tool) component to whichever raycasters
 you want to be able to draw. These are already set up if you use the
 [`vartiste-user-root`](#vartiste-user-root) component. Additionally, you can
-create [`pencil-tool`](#pencil-tool) components to create grab-bable pencils that
+create [`pencil-tool`](#pencil-tool) components to create grabbable pencils that
 can be easier to use in VR.
 
 You can create your own brushes with the [`set-brush`](#set-brush) component.
@@ -372,10 +372,10 @@ and contributions, both code-wise and documentation-wise are welcome.
 
 ## Physics playground
 
-The [aframe-vartiste-toolkit physics playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html%3A1%3A0) is a good example of using the toolkit for things other than painting and drawing, and the best example of the [physics](#physics.js) components so far.
+The [aframe-vartiste-toolkit physics playground](https://glitch.com/edit/#!/fascinated-hip-period?path=index.html%3A1%3A0) is a good example of using the toolkit for projects other than painting or drawing. It's also the best example of the [physics](#physics.js) components so far.
 
 # Source Code
 
-For information, you can also read through the source code:
+For more information, and to better understand VARTISTE, you can also read through the source code:
 
 [https://gitlab.com/zach-geek/vartiste/-/blob/release/src/vartiste-toolkit.js](https://gitlab.com/zach-geek/vartiste/-/blob/release/src/vartiste-toolkit.js)
