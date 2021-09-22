@@ -64,7 +64,7 @@ sections:
           - url: https://twitter.com/zach_geek/status/1383483845584904198
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Experimenting with process for creating a stop-motion popup-book using <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. (Thanks to <a href="https://twitter.com/VRArtLive?ref_src=twsrc%5Etfw">@VRArtLive</a> <a href="https://twitter.com/hashtag/YearOfVRArt?src=hash&amp;ref_src=twsrc%5Etfw">#YearOfVRArt</a> &quot;books/memories&quot; prompt for reminding me of the idea!)<br>(video alt: VR creation of popup book showing person reading and a green cartoon bug) <a href="https://t.co/fzCSEJAduT">pic.twitter.com/fzCSEJAduT</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1383483845584904198?ref_src=twsrc%5Etfw">April 17, 2021</a></blockquote>
-      - name: WrinkleBug Demo
+        - name: WrinkleBug Demo
         tweets:
           - url: https://twitter.com/zach_geek/status/1365764030804201475
             html: |
@@ -262,6 +262,9 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">The material pack drawing works with most drawing tools, including cameras, spray paints, and volumetrics. I&#39;ve got plenty more ideas, but I think this is pretty useful already. <a href="https://t.co/T806Rz79pB">pic.twitter.com/T806Rz79pB</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1341094738632564736?ref_src=twsrc%5Etfw">December 21, 2020</a></blockquote>
   - name: Tools
     features:
+      - name: 3D Drawing
+        -tweets:
+          - url: https://twitter.com/zach_geek/status/1440482188676374536
       - name: Autorotate spray cans
         tweets:
           - url: https://twitter.com/zach_geek/status/1408593735332642821
@@ -495,7 +498,7 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a cool new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature for headsets with front-facing webcams (like <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a>): Stereoscopic passthrough portal. Kind of like <a href="https://twitter.com/hashtag/AR?src=hash&amp;ref_src=twsrc%5Etfw">#AR</a>-light. Feels like watching a 3D movie at the theater, but weirder.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/ARinVR?src=hash&amp;ref_src=twsrc%5Etfw">#ARinVR</a> <a href="https://t.co/2TnNpL5b6H">pic.twitter.com/2TnNpL5b6H</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1408593735332642821?ref_src=twsrc%5Etfw">June 26, 2021</a></blockquote>
   - name: Mesh Tools
     features:
-      - name: Cavnas Cutouts
+      - name: Canvas Cutouts
         tweets:
           - url: https://twitter.com/zach_geek/status/1427440081447657475
             html: |
