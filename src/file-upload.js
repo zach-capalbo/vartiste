@@ -244,17 +244,10 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
-  let compositor = Compositor.component
-  let {combineMaterials, importMaterial, replaceMesh} = compositor.el.sceneEl.components['file-upload'].data
-
   if (document.querySelector('a-scene').systems['settings-system'].projectName === 'vartiste-project')
   {
     document.querySelector('a-scene').systems['settings-system'].setProjectName((sceneName || file.name).replace(HANDLED_MODEL_FORMAT_REGEX, ""))
   }
-
-  let startingLayerLength = compositor.layers.length
-
-  let startingLayer = compositor.activeLayer
 
   let format = 'glb'
 
@@ -299,6 +292,21 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
   }
 
   console.log("loaded", model)
+
+  await importModelToMesh(model, {postProcessMesh, sceneName, format})
+}
+
+export async function importModelToMesh(model, {postProcessMesh = true, sceneName = undefined, format, combineMaterials, importMaterial, replaceMesh} = {})
+{
+  let compositor = Compositor.component
+
+  let startingLayerLength = compositor.layers.length
+
+  let startingLayer = compositor.activeLayer
+
+  if (typeof combineMaterials === 'undefined') combineMaterials = compositor.el.sceneEl.components['file-upload'].data.combineMaterials
+  if (typeof importMaterial === 'undefined') importMaterial = compositor.el.sceneEl.components['file-upload'].data.importMaterial
+  if (typeof replaceMesh === 'undefined') importMaterial = compositor.el.sceneEl.components['file-upload'].data.replaceMesh
 
   let materials = {}
 

@@ -608,7 +608,7 @@ AFRAME.registerComponent('camera-tool', {
       o.layers.enable(CAMERA_LAYERS.RIGHT_EYE)
     })
 
-    if ((this.el.getAttribute('action-tooltips').trigger || "Summon ").startsWith("Summon"))
+    if (((this.el.hasAttribute('action-tooltips') && this.el.getAttribute('action-tooltips').trigger) || "Summon ").startsWith("Summon"))
     {
       this.el.setAttribute('action-tooltips', 'trigger: Take Picture')
     }

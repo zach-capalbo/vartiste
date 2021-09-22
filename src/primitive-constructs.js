@@ -87,11 +87,41 @@ Util.registerComponentSystem('primitive-constructs', {
         targetObj.add(mesh)
       })
 
-      layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
-      layerCtx.fillRect(Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
-                        Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
-                        Math.ceil(currentBox.max.x * width) + 1,
-                        Math.ceil(currentBox.max.y * height) + 1)
+      console.log("Adding", mesh.material)
+
+      if (mesh.material.map && mesh.material.map.image)
+      {
+        console.log("Drawing mesh image")
+        layerCtx.drawImage(mesh.material.map.image,
+                           0, 0, mesh.material.map.image.width, mesh.material.map.image.height,
+                           Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
+                           Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
+                           Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
+                           Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+
+        if (mesh.material.color.r < 1.0 && mesh.material.color.g < 1.0 && mesh.material.color.b < 1.0)
+        {
+          let drawMode = layerCtx.globalCompositeOperation;
+          layerCtx.globalCompositeOperation = 'source-atop'
+          layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
+          layerCtx.fillRect(
+            Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
+            Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
+            Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
+            Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+
+          layerCtx.globalCompositeOperation = drawMode
+        }
+
+      }
+      else
+      {
+        layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
+        layerCtx.fillRect(Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
+                          Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
+                          Math.ceil(currentBox.max.x * width) + 1,
+                          Math.ceil(currentBox.max.y * height) + 1)
+      }
     }
 
     if (preserveExistingMesh)
@@ -125,6 +155,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   schema: {
     primitive: {default: ""},
     gltfModel: {default: ""},
+    manualMesh: {default: false},
     detached: {default: false},
   },
   events: {
@@ -162,8 +193,15 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     {
       this.el.setAttribute('geometry', `primitive: ${this.data.primitive};`)
     }
-    this.el.setAttribute('show-current-color', '')
-    this.el.setAttribute('material', `shader: standard`)
+    else if (this.data.manualMesh)
+    {
+    }
+
+    if (!this.data.detached)
+    {
+      this.el.setAttribute('show-current-color', '')
+      this.el.setAttribute('material', `shader: standard`)
+    }
     this.el.classList.add('clickable')
   },
   update(oldData) {},
