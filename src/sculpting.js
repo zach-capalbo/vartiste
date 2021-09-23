@@ -836,6 +836,11 @@ AFRAME.registerComponent('threed-line-tool', {
       })
       this.createMesh(this.points)
     },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+      }
+    },
     stateremoved: function(e) {
       if (e.detail === 'grabbed') {
         this.makePrimitives()
@@ -862,6 +867,8 @@ AFRAME.registerComponent('threed-line-tool', {
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, tipHeight / 2.0, 0);
     tipPoint.rotation.set(- Math.PI / 2, 0, 0);
+
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
 
     this.points = []
     this.meshes = []

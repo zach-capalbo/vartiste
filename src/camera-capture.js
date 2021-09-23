@@ -344,6 +344,8 @@ AFRAME.registerComponent('camera-tool', {
       width = width * scale.x
       height = height * scale.y
 
+      this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 0, 1))
+
       let camera;
       if (this.data.orthographic)
       {
@@ -804,6 +806,7 @@ AFRAME.registerComponent('spray-can-tool', {
     this.takePicture = this.takePicture.bind(this.el.components['camera-tool'])
     this.el.components['camera-tool'].takePicture = this.takePicture;
     this.el.setAttribute('action-tooltips', 'trigger: Spray Paint');
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 0, 1))
 
     ;(function(self) {
       this.cameraCanvas = document.createElement('canvas')
