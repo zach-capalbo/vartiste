@@ -100,7 +100,8 @@ AFRAME.registerComponent('pencil-tool', {
     lockable: {default: true},
     brush: {default: undefined, type: 'string', parse: o => o},
     paintSystemData: {default: undefined, type: 'string', parse: o => o},
-    lockedColor: {type: 'color'}
+    lockedColor: {type: 'color'},
+
   },
   events: {
     'bbuttonup': function(e) {
@@ -760,6 +761,7 @@ AFRAME.registerComponent('six-dof-tool', {
     lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
     summonable: {default: false},
+    orientation: {default: {x: 0, y: -1, z: 0}, type: 'vec3'},
   },
   events: {
     activate: function() {
@@ -1282,6 +1284,7 @@ AFRAME.registerComponent('desk-registration-tool', {
   }
 })
 
+const FORWARD = new THREE.Vector3(0, 0, 1);
 AFRAME.registerComponent('straight-edge-tool', {
   dependencies: ['grab-activate', 'six-dof-tool'],
   schema: {
@@ -1381,7 +1384,7 @@ AFRAME.registerComponent('straight-edge-tool', {
     Util.positionObject3DAtTarget(this.obj, this.data.object.object3D)
     this.startingPosition.copy(this.obj.position)
     this.plane.projectPoint(this.startingPosition, this.obj.position)
-    this.obj.rotation.set(Math.PI / 2, 0, 0)
+    this.obj.quaternion.setFromUnitVectors(FORWARD, this.data.object.components['six-dof-tool'].data.orientation)
     Util.positionObject3DAtTarget(this.data.object.object3D, this.obj)
     // this.data.object.object3D.quaternion.copy(this.startingQuaternion)
   },

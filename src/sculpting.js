@@ -760,7 +760,8 @@ const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    meshContainer: {type: 'selector', default: '#world-root'}
+    meshContainer: {type: 'selector', default: '#world-root'},
+    switchbackAngle: {default: 80.0},
   },
   events: {
     activate: function(e) {
@@ -796,6 +797,34 @@ AFRAME.registerComponent('threed-line-tool', {
       let worldScale = this.pool('worldScale', THREE.Vector3)
       this.tipPoint.getWorldDirection(this.worldForward)
       this.tipPoint.getWorldPosition(tipWorld)
+
+      let oldVec = this.pool('oldVec', THREE.Vector3)
+      let newVec = this.pool('newVec', THREE.Vector3)
+
+      if (this.points.length > 3)
+      {
+        oldVec.set(this.points[this.points.length - 1].x - this.points[this.points.length - 2].x,
+                   this.points[this.points.length - 1].y - this.points[this.points.length - 2].y,
+                   this.points[this.points.length - 1].z - this.points[this.points.length - 2].z)
+
+        newVec.set(tipWorld.x - this.points[this.points.length - 1].x,
+                   tipWorld.y - this.points[this.points.length - 1].y,
+                   tipWorld.z - this.points[this.points.length - 1].z)
+
+        let angle = oldVec.angleTo(newVec) * 180 / Math.PI;
+        if (angle > this.data.switchbackAngle || angle < - this.data.switchbackAngle)
+        {
+          console.log("Switchback", angle, oldVec, newVec)
+          this.doneDrawing()
+          return;
+        }
+        else if (oldVec.distanceTo(newVec) < 0.1)
+        {
+          // return;
+          // console.log("NoSwitchback", angle, oldVec, newVec)
+        }
+      }
+
       this.points.push({
         x: tipWorld.x,
         y: tipWorld.y,
@@ -806,6 +835,11 @@ AFRAME.registerComponent('threed-line-tool', {
         scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
       })
       this.createMesh(this.points)
+    },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+      }
     },
     stateremoved: function(e) {
       if (e.detail === 'grabbed') {
@@ -833,6 +867,8 @@ AFRAME.registerComponent('threed-line-tool', {
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, tipHeight / 2.0, 0);
     tipPoint.rotation.set(- Math.PI / 2, 0, 0);
+
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
 
     this.points = []
     this.meshes = []

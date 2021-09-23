@@ -108,6 +108,7 @@ AFRAME.registerComponent("frame", {
 
     this.buttonRow = document.createElement('a-entity')
     this.el.append(this.buttonRow)
+    this.buttonRow.object3D.userData.vartisteUI = true
 
     this.objects = []
 
@@ -218,6 +219,7 @@ AFRAME.registerComponent("frame", {
       title.setAttribute('troika-text', 'outlineOpacity', 2)
       title.setAttribute('class', 'raycast-invisible')
       this.el.append(title)
+      title.object3D.userData.vartisteUI = true
       // title.addEventListener('textfontset', () => title.setAttribute('geometry', 'primitive: plane; height: auto; width: auto'))
       // Util.whenLoaded([this.el, title], () => title.setAttribute('geometry', 'primitive: plane; height: auto; width: 1'))
       this.objects.push(title.object3D)
@@ -239,6 +241,7 @@ AFRAME.registerComponent("frame", {
       new THREE.Vector3(-width / 2, height / 2, zOffset)]);
 
       let lineObject = new THREE.Line(outline, new THREE.LineBasicMaterial( { color: this.data.outlineColor, linewidth: 5 } ))
+      lineObject.userData.vartisteUI = true
       this.el.object3D.add(lineObject)
       this.lineObject = lineObject
       this.objects.push(lineObject)

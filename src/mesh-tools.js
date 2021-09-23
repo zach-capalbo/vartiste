@@ -309,6 +309,9 @@ Util.registerComponentSystem('mesh-tools', {
     el.setObject3D('mesh', newObject)
     console.log("Setting new object", newObject)
   },
+  makeReferencesDrawable() {
+    this.el.sceneEl.systems['file-upload'].importModelToMesh({scene: document.querySelector('#reference-spawn').object3D})
+  },
   actualScale() {
     Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix.identity(), Compositor.meshRoot.el.object3D)
     let p = new THREE.Vector3

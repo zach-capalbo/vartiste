@@ -312,7 +312,14 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
 
   let materialId = (material) => material.map ? material.map.uuid : material.uuid;
 
+  let uiElementsToRemove = []
+
   model.scene.traverse(o => {
+    if (o.userData.vartisteUI)
+    {
+      uiElementsToRemove.push(o)
+      return;
+    }
     if (o.geometry) {
       Util.deinterleaveAttributes(o.geometry)
 
@@ -327,6 +334,11 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
       }
     }
   })
+
+  for (let o of uiElementsToRemove)
+  {
+    o.parent.remove(o)
+  }
 
   let transparentCollisions = {opaqueMeshes: [], transparentMeshes: []}
   model.scene.traverse(o => {
@@ -524,6 +536,8 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
     }
   }
 
+  console.log("Materials imported")
+
   AFRAME.utils.extendDeep(model.scene.userData, model.userData)
 
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
@@ -577,7 +591,7 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
     }
 
     Compositor.meshRoot.traverse(o => {
-      if (o.geometry) {
+      if (o.geometry && o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count > 6) {
         o.geometry.computeBoundsTree();
       }
     })
@@ -653,6 +667,7 @@ Util.registerComponentSystem('file-upload', {
     replaceMesh: {default: true},
   },
   init() {
+    this.importModelToMesh = importModelToMesh;
     this.fileInterceptors = []
     this.dragIndicator = document.querySelector('#drag-and-drop')
     this.dragSet = new Set()

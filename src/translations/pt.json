@@ -18,7 +18,9 @@
   "Quick Start Painting Template": "Modelo de pintura",
 
 
+  "Settings Shelf": "Configuração",
   "Load": "Carregar",
+  "Export": "Exportar",
   "Download project": "Salvar em arquivo",
   "Save Project to Browser": "Salvar em navegador",
   "Export as PNG": "Exportar para PNG",
@@ -67,9 +69,15 @@
   "Stamp layer downward": "Combinar com a de baixo",
 
   "Import as Reference Photos":"Importar para referência",
+  "You can also load a file by drag and dropping it here.": "Arrastar e soltar para carregar arquivo.",
 
   "Tool Categories:": "Tipos de ferramenta:",
   "Tool Options / Actions:": "Configuração / Ações:",
+
+  "Help Shelf": "Painel de Ajuda",
+  "Instructions (new window)": "Manual do usuário (nova janela)",
+  "Show window or tab in VR\\n(Great for watching tutorials!)": "Exibir aba do Navegador em VR",
+
 
   "":""
 }
