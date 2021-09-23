@@ -77,5 +77,7 @@ Util.registerComponentSystem('ui-translation', {
 AFRAME.registerComponent('translate-text', {
   init() {
     this.originalText = this.el.getAttribute('text').value
+    let system = this.el.sceneEl.systems['ui-translation']
+    Util.whenLoaded(this.el, () => this.el.setAttribute('text', 'value', system.translate(this.originalText, this.el)))
   }
 })

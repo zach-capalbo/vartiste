@@ -653,6 +653,7 @@ Util.registerComponentSystem('file-upload', {
     replaceMesh: {default: true},
   },
   init() {
+    this.importModelToMesh = importModelToMesh;
     this.fileInterceptors = []
     this.dragIndicator = document.querySelector('#drag-and-drop')
     this.dragSet = new Set()

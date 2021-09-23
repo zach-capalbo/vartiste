@@ -1,6 +1,6 @@
 a-entity shelf="width: 4.5; height: 7; closeable: true" scale="0.04 0.04 0.04" load-shelf=""
   a-entity position="0 3.2 0"
-    a-entity text="width: 3; wrapCount: 24; value: You can also load a file by drag and dropping it here."
+    a-entity text="width: 3; wrapCount: 24; value: You can also load a file by drag and dropping it here." translate-text=""
     a-image src="#asset-drag-and-drop" scale="0.5 0.5 1" position="1.8 0 0"
   a-entity click-action="browse" icon-button="#asset-folder-open-outline" tooltip="Browse for file" position="-2.0 3.2 0"
   a-entity position="-0.8 2.7 0"
