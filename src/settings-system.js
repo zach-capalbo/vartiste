@@ -359,7 +359,7 @@ Util.registerComponentSystem('settings-system', {
     Compositor.el.setAttribute('compositor', {wrapTexture: true})
 
     rootObj.traverse(o => {
-      if (o.geometry) {
+      if (o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count > 6) {
         o.geometry.computeBoundsTree();
       }
     })
