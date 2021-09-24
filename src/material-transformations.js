@@ -126,6 +126,11 @@ class MaterialTransformations {
 
   // Checks if a material's diffuse map has any transparent pixels
   static checkTransparency(material) {
+    if (!material.map || !material.map.image)
+    {
+      return
+    }
+
     let canvas = material.map.image
     let ctx = canvas.getContext('2d')
     let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)

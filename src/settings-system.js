@@ -241,11 +241,16 @@ Util.registerComponentSystem('settings-system', {
     await db.projects.delete(projectName)
   },
   async getExportableGLB(exportMesh) {
-    let mesh = exportMesh || Compositor.meshRoot
-    let material = document.getElementById('canvas-view').getObject3D('mesh').material
-    let originalImage = material.map.image
-    material.map.image = Compositor.component.preOverlayCanvas
-    material.map.needsUpdate = true
+    let mesh = exportMesh;
+    let material = mesh.material || Compositor.material
+    let originalImage
+    if (!mesh) {
+      mesh = Compositor.meshRoot
+      material = Compositor.material
+      originalImage = material.map.image
+      material.map.image = Compositor.component.preOverlayCanvas
+      material.map.needsUpdate = true
+    }
     mesh.traverseVisible(m => { if (m.geometry) Util.deinterleaveAttributes(m.geometry) })
     prepareModelForExport(mesh, material)
 
@@ -260,8 +265,11 @@ Util.registerComponentSystem('settings-system', {
       exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), imageQuality: this.compressionQuality(), postProcessJSON})
     })
 
-    material.map.image = originalImage
-    material.map.needsUpdate = true
+    if (material.map && originalImage)
+    {
+      material.map.image = originalImage
+      material.map.needsUpdate = true
+    }
 
     return glb
   },

@@ -26,6 +26,7 @@ class ProjectFile {
     if (!('tools' in obj)) obj.tools = []
     if (!('exportJPEG' in obj)) obj.exportJPEG = false
     if (!('userBrushes' in obj)) obj.userBrushes = []
+    if (!('primitiveConstructs' in obj)) obj.primitiveConstructs = []
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -181,6 +182,34 @@ class ProjectFile {
       }
     }
 
+    let glbLoader = new THREE.GLTFLoader()
+    let positioner = new THREE.Object3D
+    compositor.el.sceneEl.object3D.add(positioner)
+    for (let construct of obj.primitiveConstructs)
+    {
+      let buffer = await base64ToBufferAsync(construct.glb)
+      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+      let root = (model.scene || model.scenes[0])
+      let mesh = root.getObjectByProperty('type', 'Mesh')
+
+      console.log("Mat", construct.matrix)
+      positioner.matrix.fromArray(construct.matrix)
+      Util.applyMatrix(positioner.matrix, positioner)
+
+      let el = document.createElement('a-entity')
+      // compositor.el.sceneEl.append(el)
+      document.querySelector('#world-root').append(el)
+      el.classList.add('clickable')
+      mesh.el = el
+      el.object3D.add(mesh)
+      el.setObject3D('mesh', mesh)
+      await Util.whenLoaded(el)
+      Util.positionObject3DAtTarget(el.object3D, positioner)
+      el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+
+      console.log("Loading construct", mesh)
+    }
+
     if ('skeletonator' in obj)
     {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
@@ -280,6 +309,24 @@ class ProjectFile {
         console.warn("Error exporting", el, "as GLB. Saving as JSON")
         obj.referenceModels.push(el.object3D.toJSON())
       }
+    }
+
+    obj.primitiveConstructs = []
+
+    let constructs = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
+
+    for (let el of constructs)
+    {
+      let mesh = el.getObject3D('mesh')
+      mesh.updateMatrixWorld()
+      console.log("Exporting construct", mesh)
+      let glb = await settings.getExportableGLB(mesh)
+      // let exporter = new THREE.GLTFExporter()
+      // let glb = await new Promise((r, e) => {
+      //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
+      // })
+      let buffer = base64ArrayBuffer(glb)
+      obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
     }
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')
