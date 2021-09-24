@@ -1101,7 +1101,7 @@ AFRAME.registerComponent('threed-line-tool', {
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map, transparent: true, depthWrite: true, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map, transparent: true, depthWrite: false, color, opacity, side: THREE.DoubleSide})
     return this.material;
   },
   makePrimitives() {
