@@ -80,9 +80,15 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
       a-entity threed-line-tool="" position="-0.35 0.1 0" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool" action-tooltips="trigger: Hold to draw"
       a-entity threed-line-tool="pointToPoint: true" position="-0.27 0.1 -0.1" scale="0.7 0.7 0.7" preactivate-tooltip="3D Straight Line Tool" action-tooltips="trigger: Hold to draw"
       a-entity scale="0.3 0.3 0.3"
-        a-entity primitive-construct-placeholder="" geometry="primitive: unwrapped-box"
-        a-entity position="1.25 0 0" primitive-construct-placeholder="" geometry="primitive: sphere; radius: 0.5; segmentsWidth: 10; segmentsHeight: 12"
-        a-entity position="2.5 0 0" primitive-construct-placeholder="" geometry="primitive: cylinder; radius: 0.5; segmentsHeight: 1; segmentsRadial: 10"
-        a-entity position="0 -1.25 0" primitive-construct-placeholder="" geometry="primitive: unwrapped-dodecahedron; radius: 0.5"
-        a-entity position="1.5 -1.25 0" primitive-construct-placeholder="" geometry="primitive: head-base"
-        a-entity position="3 -1.25 0" primitive-construct-placeholder="" geometry="primitive: plane; width: 1; height: 1"
+        - let i = 0
+        - let primPos = () => `${(i % 3) * 1.25 + 0} ${Math.floor(i / 3) * -1.25} ${i++ * 0}`
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: unwrapped-box"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: sphere; radius: 0.5; segmentsWidth: 10; segmentsHeight: 12"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: cylinder; radius: 0.5; segmentsHeight: 4; segmentsRadial: 10"
+
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: unwrapped-dodecahedron; radius: 0.5"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: head-base"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: plane; width: 1; height: 1"
+
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: cone; radiusBottom: 0.5; radiusTop: 0; segmentsHeight: 5; segmentsRadial: 10"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: triangle; width: 1; height: 1"

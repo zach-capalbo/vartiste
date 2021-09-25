@@ -1,6 +1,7 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
+import {HANDLED_MAPS} from './material-packs.js'
 import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
@@ -73,6 +74,28 @@ Util.registerComponentSystem('primitive-constructs', {
     let {width, height} = Compositor.component
     let layer = new Layer(width, height)
     let layerCtx = layer.canvas.getContext('2d')
+    let mapLayers = {}
+
+    for (let map of HANDLED_MAPS) {
+      let use = false
+      for (let el of shapes)
+      {
+        let material = el.getObject3D('mesh').material
+        if (material[map]
+            && material[map].image)
+        {
+          if (material[map].image.id && material[map].image.id.startsWith("default-"))
+          {
+            continue;
+          }
+
+          use = true
+        }
+      }
+      if (!use) continue;
+
+      mapLayers[map] = Compositor.component.layerforMap(map)
+    }
 
     for (let i = 0; i < shapes.length; i++)
     {
@@ -90,26 +113,24 @@ Util.registerComponentSystem('primitive-constructs', {
 
       console.log("Adding", mesh.material)
 
+      let dx = Math.max(Math.floor(currentBox.min.x * width) - 1, 0);
+      let dy = Math.max(Math.floor(currentBox.min.y * height) - 1, 0);
+      let dw = Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1
+      let dh = Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1
+
       if (mesh.material.map && mesh.material.map.image)
       {
         console.log("Drawing mesh image")
         layerCtx.drawImage(mesh.material.map.image,
                            0, 0, mesh.material.map.image.width, mesh.material.map.image.height,
-                           Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
-                           Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
-                           Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
-                           Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+                           dx, dy, dw, dh)
 
         if (mesh.material.color.r < 1.0 && mesh.material.color.g < 1.0 && mesh.material.color.b < 1.0)
         {
           let drawMode = layerCtx.globalCompositeOperation;
           layerCtx.globalCompositeOperation = 'source-atop'
           layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
-          layerCtx.fillRect(
-            Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
-            Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
-            Math.ceil((currentBox.max.x - currentBox.min.x) * width) + 1,
-            Math.ceil((currentBox.max.y - currentBox.min.y) * height) + 1)
+          layerCtx.fillRect(dx, dy, dw, dh)
 
           layerCtx.globalCompositeOperation = drawMode
         }
@@ -118,10 +139,16 @@ Util.registerComponentSystem('primitive-constructs', {
       else
       {
         layerCtx.fillStyle = mesh.material.color.convertLinearToSRGB().getStyle()
-        layerCtx.fillRect(Math.max(Math.floor(currentBox.min.x * width) - 1, 0),
-                          Math.max(Math.floor(currentBox.min.y * height) - 1, 0),
-                          Math.ceil(currentBox.max.x * width) + 1,
-                          Math.ceil(currentBox.max.y * height) + 1)
+        layerCtx.fillRect(dx, dy, dw, dh)
+      }
+
+      for (let map in mapLayers)
+      {
+        if (!mesh.material[map] || !mesh.material[map].image) continue;
+        mapLayers[map].canvas.getContext('2d').drawImage(
+          mesh.material[map].image,
+          0, 0, mesh.material[map].image.width, mesh.material[map].image.height,
+          dx, dy, dw, dh)
       }
     }
 
@@ -149,6 +176,42 @@ Util.registerComponentSystem('primitive-constructs', {
     {
       shape.parentEl.removeChild(shape)
     }
+  }
+})
+
+AFRAME.registerComponent("show-current-color-or-material", {
+  init() {
+    this.system = this.el.sceneEl.systems['paint-system']
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      this.applyMaps(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps)
+    }
+    else
+    {
+      this.el.setAttribute('material', {shader: 'flat', color: this.system.data.color})
+    }
+    this.onColorChanged = (e) => {
+      if (!this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+      {
+        this.applyMaps({metalnessMap: null, metalness: null, roughnessMap: null, ambientOcclusionMap: null, normalMap: null})
+        this.el.setAttribute('material', {color: e.detail.color})
+      }
+    }
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
+
+    this.onMaterialMaskChanged = (e) => {
+      console.log("mask",e.detail.mask)
+      let maps = e.detail.mask.maps
+      this.applyMaps(maps)
+    }
+    this.el.sceneEl.addEventListener('materialmaskactivated', this.onMaterialMaskChanged)
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('colorchanged', this.onColorChanged)
+    this.el.sceneEl.removeEventListener('materialmaskactivated', this.onMaterialMaskChanged)
+  },
+  applyMaps(maps) {
+    this.el.setAttribute('material', {color: '#FFFFFF', src: maps.src, shader: 'standard', metalnessMap: maps.metalnessMap, metalness: maps.metalness, roughnessMap: maps.roughnessMap, ambientOcclusionMap: maps.aoMap, normalMap: maps.normalMap})
   }
 })
 
@@ -211,7 +274,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
     if (!this.data.detached)
     {
-      this.el.setAttribute('show-current-color', '')
+      this.el.setAttribute('show-current-color-or-material', '')
       this.el.setAttribute('material', `shader: standard`)
     }
     this.el.classList.add('clickable')
@@ -221,7 +284,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   detachCopy() {
     console.log("Detaching copy", this.el)
 
-    this.el.removeAttribute('show-current-color')
+    this.el.removeAttribute('show-current-color-or-material')
 
     let newPlaceHolder = document.createElement('a-entity')
     this.el.parentEl.append(newPlaceHolder)
