@@ -798,7 +798,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: 1
+        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
       })
 
       this.points.push({
@@ -808,26 +808,24 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: 1
+        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
       })
 
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
         this.tipPoint.getWorldPosition(tipWorld)
+        this.tipPoint.getWorldDirection(this.worldForward)
 
         this.points[1].x = tipWorld.x
         this.points[1].y = tipWorld.y
         this.points[1].z = tipWorld.z
-
-        let worldScale = this.pool('worldScale', THREE.Vector3)
-        this.tipPoint.getWorldDirection(this.worldForward)
-        this.tipPoint.getWorldPosition(tipWorld)
+        this.points[1].scale = Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
 
         for (let i = 0; i <= 1; ++i)
         {
           this.points[i].fx = this.worldForward.x
           this.points[i].fy = this.worldForward.y
           this.points[i].fz = this.worldForward.z
-          scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+
         }
 
         this.createMesh(this.points)
