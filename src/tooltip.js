@@ -48,6 +48,10 @@ AFRAME.registerComponent('tooltip', {
     tooltip.setAttribute('class', 'raycast-invisible')
     tooltip.setAttribute('visible', false)
     this.el.append(tooltip)
+    // Util.whenLoaded(tooltip, () => {
+    //   tooltip.components.material.material.depthFunc = THREE.AlwaysDepth
+    //   tooltip.components.material.material.depthWrite = false
+    // })
   },
   update(oldData) {
     if (!this.el.hasLoaded) return

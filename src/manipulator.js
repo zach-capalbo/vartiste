@@ -22,9 +22,12 @@ AFRAME.registerSystem('manipulator', {
   // Installs a constraint for the manipulating the given entity.  Multiple
   // constraints may be installed, however you should only install each
   // constraint once per entity.
+  //
+  // Returns the constraintFn, to make it easier to use with anonymous functions.
   installConstraint(el, constraintFn) {
     if (!el.manipulatorConstraints) el.manipulatorConstraints = []
     el.manipulatorConstraints.push(constraintFn)
+    return constraintFn
   },
   // Removes the constraint for manipulating the given entity
   removeConstraint(el, constraintFn) {
@@ -200,6 +203,7 @@ AFRAME.registerComponent('manipulator', {
       return
     }
 
+    this.target.grabbingManipulator = this
     this.target.addState("grabbed")
 
     this.el.components['raycaster'].pause()
@@ -221,8 +225,6 @@ AFRAME.registerComponent('manipulator', {
     this.el.addState('grabbing')
 
     let settings = this.el.sceneEl.systems['settings-system']
-
-    this.target.grabbingManipulator = this
 
     let targetQuart = this.pool("targetQuart", THREE.Quaternion)
     this.rightHand.object3D.getWorldQuaternion(targetQuart)

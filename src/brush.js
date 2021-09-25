@@ -906,7 +906,7 @@ export class StretchBrush extends LineBrush {
     if (image)
     {
     }
-    else if (name instanceof Image)
+    else if (name instanceof Image || name instanceof HTMLCanvasElement)
     {
       image = name
       name = options.name
@@ -925,7 +925,7 @@ export class StretchBrush extends LineBrush {
 
     image.decoding = 'sync'
     image.loading = 'eager'
-    if (!image.src) image.src = require(`./brushes/${name}.png`)
+    if (!image.src && !image.getCont) image.src = require(`./brushes/${name}.png`)
 
     this.image = image
     this.previewSrc = image

@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -217,7 +218,7 @@ AFRAME.registerComponent('vertex-handle', {
   },
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
-    this.el.setAttribute('grab-options', 'showHand: false')
+    this.el.setAttribute('grab-options', 'showHand: false; undoable: true')
     this.el.setAttribute('material', 'color: #e58be5; shader: matcap')
     this.el.classList.add('clickable')
 
@@ -762,6 +763,7 @@ AFRAME.registerComponent('threed-line-tool', {
   schema: {
     meshContainer: {type: 'selector', default: '#world-root'},
     switchbackAngle: {default: 80.0},
+    pointToPoint: {default: false},
   },
   events: {
     activate: function(e) {
@@ -785,7 +787,58 @@ AFRAME.registerComponent('threed-line-tool', {
       })
       this.createMesh(this.points)
     },
+    triggerdown: function(e) {
+      if (!this.data.pointToPoint) return;
+      let tipWorld = this.pool('tipWorld', THREE.Vector3)
+      this.tipPoint.getWorldPosition(tipWorld)
+      this.points.push({
+        x: tipWorld.x,
+        y: tipWorld.y,
+        z: tipWorld.z,
+        fx: 0,
+        fy: 0,
+        fz: 1,
+        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+      })
+
+      this.points.push({
+        x: tipWorld.x,
+        y: tipWorld.y,
+        z: tipWorld.z,
+        fx: 0,
+        fy: 0,
+        fz: 1,
+        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+      })
+
+      this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
+        this.tipPoint.getWorldPosition(tipWorld)
+        this.tipPoint.getWorldDirection(this.worldForward)
+
+        this.points[1].x = tipWorld.x
+        this.points[1].y = tipWorld.y
+        this.points[1].z = tipWorld.z
+        this.points[1].scale = Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+
+        for (let i = 0; i <= 1; ++i)
+        {
+          this.points[i].fx = this.worldForward.x
+          this.points[i].fy = this.worldForward.y
+          this.points[i].fz = this.worldForward.z
+
+        }
+
+        this.createMesh(this.points)
+      })
+    },
+    triggerup: function(e) {
+      console.log("Trigger up")
+      if (!this.data.pointToPoint) return;
+      this.doneDrawing()
+      this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
+    },
     draw: function(e) {
+      if (this.data.pointToPoint) return;
       if (!this.endDrawingEl)
       {
         this.endDrawingEl = e.detail.sourceEl;
@@ -839,10 +892,34 @@ AFRAME.registerComponent('threed-line-tool', {
     stateadded: function(e) {
       if (e.detail === 'grabbed') {
         this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+
+        if (this.el.grabbingManipulator.el.id === 'mouse')
+        {
+          this.mouseConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
+            let tipWorld = this.pool('tipWorld', THREE.Vector3)
+            this.tipPoint.getWorldPosition(tipWorld)
+            this.points.push({
+              x: tipWorld.x,
+              y: tipWorld.y,
+              z: tipWorld.z,
+              fx: 0,
+              fy: 0,
+              fz: 1,
+              scale: 1
+            })
+            this.createMesh(this.points)
+          })
+        }
       }
     },
     stateremoved: function(e) {
       if (e.detail === 'grabbed') {
+        if (this.mouseConstraint)
+        {
+          this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.mouseConstraint)
+          this.doneDrawing()
+        }
+
         this.makePrimitives()
         // this.makeReference()
       }
@@ -854,19 +931,21 @@ AFRAME.registerComponent('threed-line-tool', {
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
-    let tip = this.tip = document.createElement('a-cone')
+    let tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
     this.el.append(tip)
     tip.setAttribute('radius-top', 0)
     tip.setAttribute('radius-bottom',  0.05)
-    tip.setAttribute('segments-height', 2)
+    tip.setAttribute('radius',  0.05)
+    tip.setAttribute('segments-height', this.data.pointToPoint ? 6 : 2)
     tip.setAttribute('segments-radial', 8)
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
     tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
     let tipPoint = this.tipPoint = new THREE.Object3D();
     tip.object3D.add(tipPoint);
-    tipPoint.position.set(0, tipHeight / 2.0, 0);
+    tipPoint.position.set(0, this.data.pointToPoint ? 0 : tipHeight / 2.0, 0);
     tipPoint.rotation.set(- Math.PI / 2, 0, 0);
+    this.el.sceneEl.systems['button-caster'].install(['trigger'])
 
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
 
@@ -1041,6 +1120,18 @@ AFRAME.registerComponent('threed-line-tool', {
     if (this.mesh) {
       this.meshes.push(this.mesh)
     }
+    let mesh = this.mesh
+    Undo.push(() => {
+      if (mesh.el)
+      {
+        mesh.el.remove()
+      }
+      else
+      {
+        mesh.parent.remove(mesh)
+      }
+      this.meshes.splice(this.meshes.indexOf(mesh), 1)
+    })
     this.mesh = null
     this.points.length = 0
     this.vertexPositions = []
@@ -1055,11 +1146,20 @@ AFRAME.registerComponent('threed-line-tool', {
 
     let canvas, color, opacity;
 
+    let transparent = true;
+
     if (brush instanceof StretchBrush)
     {
       canvas = brush.image
-      color = brush.color3
+      color = new THREE.Color(brush.color3)
+      color.convertSRGBToLinear()
       opacity = brush.opacity
+
+      if (!Util.isLowPower())
+      {
+        canvas = Util.cloneCanvas(canvas)
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
     }
     else
     {
@@ -1086,22 +1186,30 @@ AFRAME.registerComponent('threed-line-tool', {
       }
 
       canvas = Util.autoCropCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
     }
+
+    if (opacity < 1.0) transparent = true;
 
     let map = new THREE.Texture;
     map.image = canvas
     map.needsUpdate = true
+    map.encoding = THREE.sRGBEncoding
     let materialType = THREE.MeshBasicMaterial;
 
     switch (Compositor.el.getAttribute('material').shader)
     {
       case 'standard': materialType = THREE.MeshStandardMaterial; break;
-      case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map, transparent: true, depthWrite: false, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
     return this.material;
   },
   makePrimitives() {
