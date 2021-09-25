@@ -1055,11 +1055,19 @@ AFRAME.registerComponent('threed-line-tool', {
 
     let canvas, color, opacity;
 
+    let transparent = true;
+
     if (brush instanceof StretchBrush)
     {
       canvas = brush.image
       color = brush.color3
       opacity = brush.opacity
+
+      if (!Util.isLowPower())
+      {
+        canvas = Util.cloneCanvas(canvas)
+        transparent = !Util.isCanvasFullyOpaque(canvas, 230)
+      }
     }
     else
     {
@@ -1086,6 +1094,11 @@ AFRAME.registerComponent('threed-line-tool', {
       }
 
       canvas = Util.autoCropCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
     }
 
     let map = new THREE.Texture;
@@ -1096,12 +1109,12 @@ AFRAME.registerComponent('threed-line-tool', {
     switch (Compositor.el.getAttribute('material').shader)
     {
       case 'standard': materialType = THREE.MeshStandardMaterial; break;
-      case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map, transparent: true, depthWrite: false, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
     return this.material;
   },
   makePrimitives() {
