@@ -1253,21 +1253,9 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   makePrimitives() {
     if (!this.meshes.length) return;
-    let placeholder = new THREE.Object3D
-    this.el.sceneEl.object3D.add(placeholder)
 
     for (let mesh of this.meshes) {
-      let el = document.createElement('a-entity')
-      this.el.sceneEl.append(el)
-      el.classList.add('clickable')
-      mesh.el = el
-      Util.positionObject3DAtTarget(placeholder, mesh)
-      el.object3D.add(mesh)
-      el.setObject3D('mesh', mesh)
-      Util.positionObject3DAtTarget(mesh, placeholder)
-      el.object3D.position.copy(mesh.position)
-      mesh.position.set(0, 0, 0)
-      el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+      this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
     }
 
     this.meshes = []

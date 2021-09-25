@@ -5,6 +5,10 @@ import {HANDLED_MAPS} from './material-packs.js'
 import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
+  init() {
+    this.placeholder = new THREE.Object3D
+    this.el.sceneEl.object3D.add(this.placeholder)
+  },
   grabConstruct(el) {
     if (el === this.lastGrabbed) return;
 
@@ -31,32 +35,43 @@ Util.registerComponentSystem('primitive-constructs', {
       this.el.sceneEl.emit('refreshobjects')
     })
   },
-  decomposeReferences() {
-    let placeholder = new THREE.Object3D
-    this.el.sceneEl.object3D.add(placeholder)
+  decompose(mesh) {
+    let placeholder = this.placeholder
+    let el = document.createElement('a-entity')
+    this.el.sceneEl.append(el)
+    el.classList.add('clickable')
+    mesh.el = el
+    Util.positionObject3DAtTarget(placeholder, mesh)
+    el.object3D.add(mesh)
+    el.setObject3D('mesh', mesh)
+    Util.positionObject3DAtTarget(mesh, placeholder)
+    el.object3D.position.copy(mesh.position)
+    mesh.position.set(0, 0, 0)
+    el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+    return el
+  },
+  decomposeReferences(els) {
     let meshes = []
 
-    document.querySelectorAll('.reference-glb').forEach(refEl => {
+    if (!els) els = document.querySelectorAll('.reference-glb');
+
+    els.forEach(refEl => {
       meshes.length = 0
       Util.traverseFindAll(refEl.getObject3D('mesh'), (m) => m.type === 'Mesh', {outputArray: meshes})
 
       for (let mesh of meshes)
       {
-        let el = document.createElement('a-entity')
-        this.el.sceneEl.append(el)
-        el.classList.add('clickable')
-        mesh.el = el
-        Util.positionObject3DAtTarget(placeholder, mesh)
-        el.object3D.add(mesh)
-        el.setObject3D('mesh', mesh)
-        Util.positionObject3DAtTarget(mesh, placeholder)
-        el.object3D.position.copy(mesh.position)
-        mesh.position.set(0, 0, 0)
-        el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+        this.decompose(mesh)
       }
 
       refEl.remove()
     })
+  },
+  decomposeCompositor() {
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      this.decompose(mesh)
+    }
   },
   makeReference() {
     this.grabConstruct(null);
