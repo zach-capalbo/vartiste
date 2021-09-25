@@ -187,10 +187,23 @@ class ProjectFile {
     compositor.el.sceneEl.object3D.add(positioner)
     for (let construct of obj.primitiveConstructs)
     {
-      let buffer = await base64ToBufferAsync(construct.glb)
-      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
-      let root = (model.scene || model.scenes[0])
-      let mesh = root.getObjectByProperty('type', 'Mesh')
+      let mesh;
+
+      if (construct.glb)
+      {
+        let buffer = await base64ToBufferAsync(construct.glb)
+        let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+        let root = (model.scene || model.scenes[0])
+        mesh = root.getObjectByProperty('type', 'Mesh')
+      }
+      else if (construct.json)
+      {
+        mesh = await new Promise((r, e) => objectLoader.parse(construct.json, r))
+      }
+      else {
+        console.warn("No mesh for", construct)
+        continue
+      }
 
       console.log("Mat", construct.matrix)
       positioner.matrix.fromArray(construct.matrix)
@@ -320,13 +333,26 @@ class ProjectFile {
       let mesh = el.getObject3D('mesh')
       mesh.updateMatrixWorld()
       console.log("Exporting construct", mesh)
-      let glb = await settings.getExportableGLB(mesh)
-      // let exporter = new THREE.GLTFExporter()
-      // let glb = await new Promise((r, e) => {
-      //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
-      // })
-      let buffer = base64ArrayBuffer(glb)
-      obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
+
+      const useGLB = false
+      if (useGLB)
+      {
+        let glb = await settings.getExportableGLB(mesh)
+        // let exporter = new THREE.GLTFExporter()
+        // let glb = await new Promise((r, e) => {
+        //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
+        // })
+        let buffer = base64ArrayBuffer(glb)
+        obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
+      }
+      else
+      {
+        if (!mesh.material.normalScale.toArray)
+        {
+          mesh.material.normalScale = new THREE.Vector2(1, 1);
+        }
+        obj.primitiveConstructs.push({json: mesh.toJSON(), matrix: mesh.matrixWorld.elements})
+      }
     }
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')
@@ -346,18 +372,26 @@ class ProjectFile {
     }
     else if (environmentManager.state == 'STATE_HDRI')
     {
-      obj.environment = {
-        state: 'STATE_HDRI',
-        image: {
-          format: environmentManager.hdriTexture.format,
-          type: environmentManager.hdriTexture.type,
-          mapping: environmentManager.hdriTexture.mapping,
-          encoding: environmentManager.hdriTexture.encoding,
-          flipY: environmentManager.hdriTexture.flipY,
-          data: base64ArrayBuffer(environmentManager.hdriTexture.image.data.buffer),
-          width: environmentManager.hdriTexture.image.width,
-          height: environmentManager.hdriTexture.image.height
+      const saveHDRIToProject = false
+      if (saveHDRIToProject)
+      {
+        obj.environment = {
+          state: 'STATE_HDRI',
+          image: {
+            format: environmentManager.hdriTexture.format,
+            type: environmentManager.hdriTexture.type,
+            mapping: environmentManager.hdriTexture.mapping,
+            encoding: environmentManager.hdriTexture.encoding,
+            flipY: environmentManager.hdriTexture.flipY,
+            data: base64ArrayBuffer(environmentManager.hdriTexture.image.data.buffer),
+            width: environmentManager.hdriTexture.image.width,
+            height: environmentManager.hdriTexture.image.height
+          }
         }
+      }
+      else
+      {
+        obj.environment = {state: 'preset-hdri'}
       }
     }
     else if (environmentManager.state == 'STATE_ENVIROPACK')
