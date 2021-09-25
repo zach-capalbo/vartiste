@@ -78,6 +78,7 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
   a-entity#primitive-shapes.grab-root position="4 0 0" bypass-hidden-updates="" visible="false" deferred-load="onVisible: true"
     script#primitive-construct-template type='text/slm'
       a-entity threed-line-tool="" position="-0.35 0.1 0" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
+      a-entity threed-line-tool="pointToPoint: true" position="-0.27 0.1 -0.1" scale="0.7 0.7 0.7" preactivate-tooltip="3D Straight Line Tool"
       a-entity scale="0.3 0.3 0.3"
         a-entity primitive-construct-placeholder="" geometry="primitive: unwrapped-box"
         a-entity position="1.25 0 0" primitive-construct-placeholder="" geometry="primitive: sphere; radius: 0.5; segmentsWidth: 10; segmentsHeight: 12"
