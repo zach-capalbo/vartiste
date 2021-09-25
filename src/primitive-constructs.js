@@ -31,6 +31,33 @@ Util.registerComponentSystem('primitive-constructs', {
       this.el.sceneEl.emit('refreshobjects')
     })
   },
+  decomposeReferences() {
+    let placeholder = new THREE.Object3D
+    this.el.sceneEl.object3D.add(placeholder)
+    let meshes = []
+
+    document.querySelectorAll('.reference-glb').forEach(refEl => {
+      meshes.length = 0
+      Util.traverseFindAll(refEl.getObject3D('mesh'), (m) => m.type === 'Mesh', {outputArray: meshes})
+
+      for (let mesh of meshes)
+      {
+        let el = document.createElement('a-entity')
+        this.el.sceneEl.append(el)
+        el.classList.add('clickable')
+        mesh.el = el
+        Util.positionObject3DAtTarget(placeholder, mesh)
+        el.object3D.add(mesh)
+        el.setObject3D('mesh', mesh)
+        Util.positionObject3DAtTarget(mesh, placeholder)
+        el.object3D.position.copy(mesh.position)
+        mesh.position.set(0, 0, 0)
+        el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+      }
+
+      refEl.remove()
+    })
+  },
   makeReference() {
     this.grabConstruct(null);
     let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)

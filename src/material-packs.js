@@ -288,7 +288,7 @@ Util.registerComponentSystem('material-pack-system', {
 })
 
 // Avoid garbage
-const ENABLED_MAP = {'src': 'srcEnabled'}
+export const ENABLED_MAP = {'src': 'srcEnabled'}
 for (let m of HANDLED_MAPS)
 {
   ENABLED_MAP[m] = m + "Enabled"

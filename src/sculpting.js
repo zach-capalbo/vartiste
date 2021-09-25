@@ -3,6 +3,7 @@ import {Pool} from './pool.js'
 import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
+import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -1154,10 +1155,10 @@ AFRAME.registerComponent('threed-line-tool', {
       color = new THREE.Color(brush.color3)
       color.convertSRGBToLinear()
       opacity = brush.opacity
+      canvas = Util.cloneCanvas(canvas)
 
       if (!Util.isLowPower())
       {
-        canvas = Util.cloneCanvas(canvas)
         transparent = !Util.isCanvasFullyOpaque(canvas)
       }
     }
@@ -1195,10 +1196,12 @@ AFRAME.registerComponent('threed-line-tool', {
 
     if (opacity < 1.0) transparent = true;
 
-    let map = new THREE.Texture;
-    map.image = canvas
-    map.needsUpdate = true
-    map.encoding = THREE.sRGBEncoding
+    let texture = new THREE.Texture;
+    texture.image = canvas
+    texture.needsUpdate = true
+    texture.encoding = THREE.sRGBEncoding
+    texture.generateMipmaps = false
+    texture.minFilter = THREE.LinearFilter
     let materialType = THREE.MeshBasicMaterial;
 
     switch (Compositor.el.getAttribute('material').shader)
@@ -1207,9 +1210,45 @@ AFRAME.registerComponent('threed-line-tool', {
       // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      materialType = THREE.MeshStandardMaterial
+    }
+
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
+      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
+      for (let map in maps)
+      {
+        if (!maskData[ENABLED_MAP[map]]) continue;
+        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
+        if (map === 'src') {
+          console.log("Painting over canvas")
+          let ctx = canvas.getContext('2d')
+          let globalCompositeOperation = ctx.globalCompositeOperation
+          ctx.globalCompositeOperation = 'source-in'
+          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
+                                   0, 0, canvas.width, canvas.height)
+          ctx.globalCompositeOperation = globalCompositeOperation
+          this.material.map.needsUpdate = true
+          continue;
+        }
+        texture = new THREE.Texture;
+        texture.image = maps[map]
+        texture.needsUpdate = true
+        texture.encoding = THREE.sRGBEncoding
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        this.material[map] = texture
+      }
+      this.material.needsUpdate = true
+    }
+
     return this.material;
   },
   makePrimitives() {
