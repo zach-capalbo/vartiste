@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -217,7 +218,7 @@ AFRAME.registerComponent('vertex-handle', {
   },
   init() {
     this.el.setAttribute('geometry', 'primitive: tetrahedron; radius: 0.04')
-    this.el.setAttribute('grab-options', 'showHand: false')
+    this.el.setAttribute('grab-options', 'showHand: false; undoable: true')
     this.el.setAttribute('material', 'color: #e58be5; shader: matcap')
     this.el.classList.add('clickable')
 
@@ -839,10 +840,34 @@ AFRAME.registerComponent('threed-line-tool', {
     stateadded: function(e) {
       if (e.detail === 'grabbed') {
         this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+
+        if (this.el.grabbingManipulator.el.id === 'mouse')
+        {
+          this.mouseConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
+            let tipWorld = this.pool('tipWorld', THREE.Vector3)
+            this.tipPoint.getWorldPosition(tipWorld)
+            this.points.push({
+              x: tipWorld.x,
+              y: tipWorld.y,
+              z: tipWorld.z,
+              fx: 0,
+              fy: 0,
+              fz: 1,
+              scale: 1
+            })
+            this.createMesh(this.points)
+          })
+        }
       }
     },
     stateremoved: function(e) {
       if (e.detail === 'grabbed') {
+        if (this.mouseConstraint)
+        {
+          this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.mouseConstraint)
+          this.doneDrawing()
+        }
+
         this.makePrimitives()
         // this.makeReference()
       }
@@ -1041,6 +1066,18 @@ AFRAME.registerComponent('threed-line-tool', {
     if (this.mesh) {
       this.meshes.push(this.mesh)
     }
+    let mesh = this.mesh
+    Undo.push(() => {
+      if (mesh.el)
+      {
+        mesh.el.remove()
+      }
+      else
+      {
+        mesh.parent.remove(mesh)
+      }
+      this.meshes.splice(this.meshes.indexOf(mesh), 1)
+    })
     this.mesh = null
     this.points.length = 0
     this.vertexPositions = []
@@ -1066,7 +1103,7 @@ AFRAME.registerComponent('threed-line-tool', {
       if (!Util.isLowPower())
       {
         canvas = Util.cloneCanvas(canvas)
-        transparent = !Util.isCanvasFullyOpaque(canvas, 230)
+        transparent = !Util.isCanvasFullyOpaque(canvas)
       }
     }
     else
@@ -1101,9 +1138,12 @@ AFRAME.registerComponent('threed-line-tool', {
       }
     }
 
+    if (opacity < 1.0) transparent = true;
+
     let map = new THREE.Texture;
     map.image = canvas
     map.needsUpdate = true
+    map.encoding = THREE.sRGBEncoding
     let materialType = THREE.MeshBasicMaterial;
 
     switch (Compositor.el.getAttribute('material').shader)

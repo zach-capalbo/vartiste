@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
+import {Undo} from './undo.js'
 import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
@@ -165,6 +166,17 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
         if (!this.data.detached)
         {
           this.detachCopy()
+          Undo.push(() => {
+            this.el.remove()
+          })
+        }
+        else
+        {
+          let startMatrix = new THREE.Matrix4
+          startMatrix.copy(this.el.object3D.matrix)
+          Undo.push(() => {
+            Util.applyMatrix(startMatrix, this.el.object3D)
+          })
         }
         this.system.grabConstruct(this.el)
       }
