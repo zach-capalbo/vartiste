@@ -1,6 +1,6 @@
 a-entity shelf="name: Language; closeable: true" scale="0.1 0.1 0.1"
   a-entity shelf-content=""
-    - for let [name, lang] of [["English", "en"], ["Português", "pt"]]
+    - for let [name, lang] of [["English", "en"], ["Português", "pt"], ["Español", "es"]]
       a-entity icon-row=""
         a-entity icon-button="#asset-translate" tooltip=name onclick="this.sceneEl.setAttribute('ui-translation', 'language: ${lang}')" popup-action="close"
         a-entity text="anchor: left; value: ${name}; width: 2.5; wrapCount: 20" position="0.45"
