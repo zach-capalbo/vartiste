@@ -966,6 +966,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.startPoint = new THREE.Vector3
 
     this.worldForward = new THREE.Vector3
+    this.forward2 = new THREE.Vector3
 
     this.materialNeedsUpdate = true
     this.markMaterial = this.markMaterial.bind(this)
@@ -1006,6 +1007,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     let forward = this.worldForward;
+    let forward2 = this.forward2;
 
     this.startPoint.set(0, 0, 0)
     for (let i = 0; i < points.length; ++i)
@@ -1021,6 +1023,8 @@ AFRAME.registerComponent('threed-line-tool', {
     {
       forward.set(points[i].fx, points[i].fy, points[i].fz)
       forward.multiplyScalar(-1)
+      forward2.set(points[i+1].fx, points[i+1].fy, points[i+1].fz)
+      forward2.multiplyScalar(-1)
       point1.set(points[i].x, points[i].y, points[i].z)
       point2.set(points[i + 1].x, points[i + 1].y, points[i + 1].z)
 
@@ -1088,7 +1092,7 @@ AFRAME.registerComponent('threed-line-tool', {
       // forward.multiplyScalar(-1)
 
       this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward2.x, forward2.y, forward2.z)
       this.normals.push(forward.x, forward.y, forward.z)
 
 
@@ -1101,9 +1105,9 @@ AFRAME.registerComponent('threed-line-tool', {
                     uvStart, 0,
                     uvEnd, 0)
 
+      this.normals.push(forward2.x, forward2.y, forward2.z)
       this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward2.x, forward2.y, forward2.z)
 
       // this.opacities.push(
       //   points[i + 1].opacity,
