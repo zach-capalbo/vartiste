@@ -3,6 +3,7 @@ import {Pool} from './pool.js'
 import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
+import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -965,10 +966,26 @@ AFRAME.registerComponent('threed-line-tool', {
     this.startPoint = new THREE.Vector3
 
     this.worldForward = new THREE.Vector3
+    this.forward2 = new THREE.Vector3
+
+    this.materialNeedsUpdate = true
+    this.markMaterial = this.markMaterial.bind(this)
+
+    this.el.sceneEl.addEventListener('colorchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('opacitychanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushscalechanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('materialmaskactivated', this.markMaterial)
 
     Util.whenLoaded(this.el, () => {
       this.initialScale = this.el.object3D.scale.x
     })
+
+    this.el.scene
+  },
+  markMaterial() {
+    this.materialNeedsUpdate = true
   },
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
@@ -990,6 +1007,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     let forward = this.worldForward;
+    let forward2 = this.forward2;
 
     this.startPoint.set(0, 0, 0)
     for (let i = 0; i < points.length; ++i)
@@ -1005,6 +1023,8 @@ AFRAME.registerComponent('threed-line-tool', {
     {
       forward.set(points[i].fx, points[i].fy, points[i].fz)
       forward.multiplyScalar(-1)
+      forward2.set(points[i+1].fx, points[i+1].fy, points[i+1].fz)
+      forward2.multiplyScalar(-1)
       point1.set(points[i].x, points[i].y, points[i].z)
       point2.set(points[i + 1].x, points[i + 1].y, points[i + 1].z)
 
@@ -1072,7 +1092,7 @@ AFRAME.registerComponent('threed-line-tool', {
       // forward.multiplyScalar(-1)
 
       this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward2.x, forward2.y, forward2.z)
       this.normals.push(forward.x, forward.y, forward.z)
 
 
@@ -1085,9 +1105,9 @@ AFRAME.registerComponent('threed-line-tool', {
                     uvStart, 0,
                     uvEnd, 0)
 
+      this.normals.push(forward2.x, forward2.y, forward2.z)
       this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
-      this.normals.push(forward.x, forward.y, forward.z)
+      this.normals.push(forward2.x, forward2.y, forward2.z)
 
       // this.opacities.push(
       //   points[i + 1].opacity,
@@ -1138,10 +1158,9 @@ AFRAME.registerComponent('threed-line-tool', {
     this.uvs = []
     this.opacities = []
     this.normals = []
-    this.material = null
   },
   getMaterial(distance) {
-    if (this.material) return this.material
+    if (this.material && !this.materialNeedsUpdate) return this.material;
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
     let canvas, color, opacity;
@@ -1154,10 +1173,10 @@ AFRAME.registerComponent('threed-line-tool', {
       color = new THREE.Color(brush.color3)
       color.convertSRGBToLinear()
       opacity = brush.opacity
+      canvas = Util.cloneCanvas(canvas)
 
       if (!Util.isLowPower())
       {
-        canvas = Util.cloneCanvas(canvas)
         transparent = !Util.isCanvasFullyOpaque(canvas)
       }
     }
@@ -1195,10 +1214,12 @@ AFRAME.registerComponent('threed-line-tool', {
 
     if (opacity < 1.0) transparent = true;
 
-    let map = new THREE.Texture;
-    map.image = canvas
-    map.needsUpdate = true
-    map.encoding = THREE.sRGBEncoding
+    let texture = new THREE.Texture;
+    texture.image = canvas
+    texture.needsUpdate = true
+    texture.encoding = THREE.sRGBEncoding
+    texture.generateMipmaps = false
+    texture.minFilter = THREE.LinearFilter
     let materialType = THREE.MeshBasicMaterial;
 
     switch (Compositor.el.getAttribute('material').shader)
@@ -1207,28 +1228,54 @@ AFRAME.registerComponent('threed-line-tool', {
       // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      materialType = THREE.MeshStandardMaterial
+    }
+
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
+      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
+      for (let map in maps)
+      {
+        if (!maskData[ENABLED_MAP[map]]) continue;
+        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
+        if (map === 'src') {
+          console.log("Painting over canvas")
+          let ctx = canvas.getContext('2d')
+          let globalCompositeOperation = ctx.globalCompositeOperation
+          ctx.globalCompositeOperation = 'source-in'
+          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
+                                   0, 0, canvas.width, canvas.height)
+          ctx.globalCompositeOperation = globalCompositeOperation
+          this.material.map.needsUpdate = true
+          continue;
+        }
+        texture = new THREE.Texture;
+        texture.image = maps[map]
+        texture.needsUpdate = true
+        texture.encoding = THREE.sRGBEncoding
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        this.material[map] = texture
+      }
+      this.material.needsUpdate = true
+    }
+
+    this.materialNeedsUpdate = false
+
     return this.material;
   },
   makePrimitives() {
     if (!this.meshes.length) return;
-    let placeholder = new THREE.Object3D
-    this.el.sceneEl.object3D.add(placeholder)
 
     for (let mesh of this.meshes) {
-      let el = document.createElement('a-entity')
-      this.el.sceneEl.append(el)
-      el.classList.add('clickable')
-      mesh.el = el
-      Util.positionObject3DAtTarget(placeholder, mesh)
-      el.object3D.add(mesh)
-      el.setObject3D('mesh', mesh)
-      Util.positionObject3DAtTarget(mesh, placeholder)
-      el.object3D.position.copy(mesh.position)
-      mesh.position.set(0, 0, 0)
-      el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+      this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
     }
 
     this.meshes = []

@@ -1001,5 +1001,13 @@ AFRAME.registerComponent('reference-glb', {
     Pool.init(this)
     this.el.classList.add('reference-glb')
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
+    Util.whenComponentInitialized(this.el, 'frame', () => {
+      let decomposeButton = this.el.components['frame'].addButton('#asset-close')
+      decomposeButton.setAttribute('tooltip', 'Decompose to primitive constructs')
+      decomposeButton.setAttribute('tooltip-style', this.el.components['frame'].data.tooltipStyle)
+      decomposeButton.addEventListener('click', () => {
+        this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])
+      })
+    })
   }
 })

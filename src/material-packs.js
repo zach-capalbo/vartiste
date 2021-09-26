@@ -3,7 +3,7 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 
-const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
+export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -260,6 +260,7 @@ Util.registerComponentSystem('material-pack-system', {
         })
       })
     }
+    this.el.emit('materialmaskactivated', {mask})
   },
   tmpCanvas() {
     if (!this._tmpCanvas)
@@ -287,7 +288,7 @@ Util.registerComponentSystem('material-pack-system', {
 })
 
 // Avoid garbage
-const ENABLED_MAP = {'src': 'srcEnabled'}
+export const ENABLED_MAP = {'src': 'srcEnabled'}
 for (let m of HANDLED_MAPS)
 {
   ENABLED_MAP[m] = m + "Enabled"

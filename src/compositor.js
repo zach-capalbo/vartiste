@@ -147,12 +147,12 @@ AFRAME.registerComponent('compositor', {
     }
   },
 
-  addLayer(position, {layer} = {}) {
+  addLayer(position, {layer, activate = true} = {}) {
     if (typeof(layer) === 'undefined') layer = new Layer(this.width, this.height)
     if (typeof(position) === 'undefined') position = this.layers.length - 1
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
-    this.activateLayer(layer)
+    if (activate) this.activateLayer(layer)
     Undo.push(e=> this.deleteLayer(layer))
     return layer;
   },
@@ -271,6 +271,23 @@ AFRAME.registerComponent('compositor', {
       layer.touch()
       this.el.emit('layerupdated', {layer})
     })
+  },
+  layerforMap(map) {
+    let layer = this.layers.find(l => l.mode === map)
+    if (layer) return layer
+
+    layer = new Layer(this.width, this.height)
+    if (map === 'src')
+    {
+      this.addLayer(undefined, {layer, activate: false})
+    }
+    else
+    {
+      Compositor.component.addLayer(0, {layer, activate: false})
+      Compositor.component.setLayerBlendMode(layer, map)
+    }
+
+    return layer;
   },
   grabLayer(layer) {
     if (this.grabbedLayer == layer)

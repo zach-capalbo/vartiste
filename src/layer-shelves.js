@@ -559,7 +559,7 @@ AFRAME.registerComponent('compact-layer-shelf', {
     })
   },
   onLayerChanged() {
-    console.log("Layer changed")
+    // console.log("Layer changed")
     let layer = Compositor.component.activeLayer;
     let layers = Compositor.component.layers;
     Util.whenLoaded(this.shelf, () => {

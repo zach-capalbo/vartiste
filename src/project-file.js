@@ -182,17 +182,36 @@ class ProjectFile {
       }
     }
 
+    console.log("Loading constructs")
+    let constructObjRoot = obj.constructObjRoot ? objectLoader.parse(obj.constructObjRoot) : null
     let glbLoader = new THREE.GLTFLoader()
     let positioner = new THREE.Object3D
     compositor.el.sceneEl.object3D.add(positioner)
     for (let construct of obj.primitiveConstructs)
     {
-      let buffer = await base64ToBufferAsync(construct.glb)
-      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
-      let root = (model.scene || model.scenes[0])
-      let mesh = root.getObjectByProperty('type', 'Mesh')
+      let mesh;
 
-      console.log("Mat", construct.matrix)
+      if (construct.glb)
+      {
+        let buffer = await base64ToBufferAsync(construct.glb)
+        let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+        let root = (model.scene || model.scenes[0])
+        mesh = root.getObjectByProperty('type', 'Mesh')
+      }
+      else if (construct.json)
+      {
+        mesh = await new Promise((r, e) => objectLoader.parse(construct.json, r))
+      }
+      else if (construct.uuid && constructObjRoot)
+      {
+        mesh = constructObjRoot.getObjectByProperty('uuid', construct.uuid)
+      }
+      else {
+        console.warn("No mesh for", construct)
+        continue
+      }
+
+      // console.log("Mat", construct.matrix)
       positioner.matrix.fromArray(construct.matrix)
       Util.applyMatrix(positioner.matrix, positioner)
 
@@ -207,9 +226,10 @@ class ProjectFile {
       Util.positionObject3DAtTarget(el.object3D, positioner)
       el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
 
-      console.log("Loading construct", mesh)
+      // console.log("Loaded construct")//, mesh)
     }
 
+    console.log("Loading skeletonator")
     if ('skeletonator' in obj)
     {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
@@ -315,19 +335,50 @@ class ProjectFile {
 
     let constructs = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
 
+    let constructObjRoot = new THREE.Object3D
+
     for (let el of constructs)
     {
       let mesh = el.getObject3D('mesh')
       mesh.updateMatrixWorld()
-      console.log("Exporting construct", mesh)
-      let glb = await settings.getExportableGLB(mesh)
-      // let exporter = new THREE.GLTFExporter()
-      // let glb = await new Promise((r, e) => {
-      //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
-      // })
-      let buffer = base64ArrayBuffer(glb)
-      obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
+      console.log("Exporting construct")//, mesh)
+
+      const useGLB = false
+      let blankMaterial = new THREE.MeshBasicMaterial()
+      if (useGLB)
+      {
+        let glb = await settings.getExportableGLB(mesh)
+        // let exporter = new THREE.GLTFExporter()
+        // let glb = await new Promise((r, e) => {
+        //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
+        // })
+        let buffer = base64ArrayBuffer(glb)
+        obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
+      }
+      else
+      {
+        if (!mesh.material.normalScale.toArray)
+        {
+          mesh.material.normalScale = new THREE.Vector2(1, 1);
+        }
+
+        let newMesh = new THREE.Mesh()
+        newMesh.copy(mesh)
+        constructObjRoot.add(newMesh)
+
+        obj.primitiveConstructs.push({uuid: newMesh.uuid, matrix: mesh.matrixWorld.elements})
+      }
     }
+
+    // constructObjRoot.traverse(o => {
+    //   if (o.material && o.material.envMap) {
+    //     o.material.envMap = null
+    //   }
+    // })
+
+    obj.constructObjRoot = constructObjRoot.toJSON()
+
+    // console.log("Saved JSON constructs", obj.constructObjRoot)
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')
     if (skeletonatorEl)
@@ -346,18 +397,26 @@ class ProjectFile {
     }
     else if (environmentManager.state == 'STATE_HDRI')
     {
-      obj.environment = {
-        state: 'STATE_HDRI',
-        image: {
-          format: environmentManager.hdriTexture.format,
-          type: environmentManager.hdriTexture.type,
-          mapping: environmentManager.hdriTexture.mapping,
-          encoding: environmentManager.hdriTexture.encoding,
-          flipY: environmentManager.hdriTexture.flipY,
-          data: base64ArrayBuffer(environmentManager.hdriTexture.image.data.buffer),
-          width: environmentManager.hdriTexture.image.width,
-          height: environmentManager.hdriTexture.image.height
+      const saveHDRIToProject = false
+      if (saveHDRIToProject)
+      {
+        obj.environment = {
+          state: 'STATE_HDRI',
+          image: {
+            format: environmentManager.hdriTexture.format,
+            type: environmentManager.hdriTexture.type,
+            mapping: environmentManager.hdriTexture.mapping,
+            encoding: environmentManager.hdriTexture.encoding,
+            flipY: environmentManager.hdriTexture.flipY,
+            data: base64ArrayBuffer(environmentManager.hdriTexture.image.data.buffer),
+            width: environmentManager.hdriTexture.image.width,
+            height: environmentManager.hdriTexture.image.height
+          }
         }
+      }
+      else
+      {
+        obj.environment = {state: 'preset-hdri'}
       }
     }
     else if (environmentManager.state == 'STATE_ENVIROPACK')
