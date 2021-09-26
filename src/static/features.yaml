@@ -378,6 +378,8 @@ sections:
       - name: 3D Material Packs
         tweets:
           - url: https://twitter.com/zach_geek/status/1442166260020572167
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> Update: You can use material packs on shape constructs and 3D line drawings! Here&#39;s an example creating a spooky-Halloween 3D PBR character model entirely in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> (with a final render in <a href="https://twitter.com/hashtag/Blender?src=hash&amp;ref_src=twsrc%5Etfw">#Blender</a> for good measure) <a href="https://t.co/aLj07YPQoT">pic.twitter.com/aLj07YPQoT</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1442166260020572167?ref_src=twsrc%5Etfw">September 26, 2021</a></blockquote>
   - name: Import / Export
     features:
       - name: GLB Export

@@ -291,6 +291,10 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       {
         this.makeClone()
       }
+      else
+      {
+        this.system.grabConstruct(null)
+      }
     },
   },
   init() {
