@@ -967,9 +967,24 @@ AFRAME.registerComponent('threed-line-tool', {
 
     this.worldForward = new THREE.Vector3
 
+    this.materialNeedsUpdate = true
+    this.markMaterial = this.markMaterial.bind(this)
+
+    this.el.sceneEl.addEventListener('colorchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('opacitychanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushscalechanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
+    this.el.sceneEl.addEventListener('materialmaskactivated', this.markMaterial)
+
     Util.whenLoaded(this.el, () => {
       this.initialScale = this.el.object3D.scale.x
     })
+
+    this.el.scene
+  },
+  markMaterial() {
+    this.materialNeedsUpdate = true
   },
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
@@ -1139,10 +1154,9 @@ AFRAME.registerComponent('threed-line-tool', {
     this.uvs = []
     this.opacities = []
     this.normals = []
-    this.material = null
   },
   getMaterial(distance) {
-    if (this.material) return this.material
+    if (this.material && !this.materialNeedsUpdate) return this.material;
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
     let canvas, color, opacity;
@@ -1248,6 +1262,8 @@ AFRAME.registerComponent('threed-line-tool', {
       }
       this.material.needsUpdate = true
     }
+
+    this.materialNeedsUpdate = false
 
     return this.material;
   },

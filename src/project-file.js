@@ -182,6 +182,8 @@ class ProjectFile {
       }
     }
 
+    console.log("Loading constructs")
+    let constructObjRoot = obj.constructObjRoot ? objectLoader.parse(obj.constructObjRoot) : null
     let glbLoader = new THREE.GLTFLoader()
     let positioner = new THREE.Object3D
     compositor.el.sceneEl.object3D.add(positioner)
@@ -200,12 +202,16 @@ class ProjectFile {
       {
         mesh = await new Promise((r, e) => objectLoader.parse(construct.json, r))
       }
+      else if (construct.uuid && constructObjRoot)
+      {
+        mesh = constructObjRoot.getObjectByProperty('uuid', construct.uuid)
+      }
       else {
         console.warn("No mesh for", construct)
         continue
       }
 
-      console.log("Mat", construct.matrix)
+      // console.log("Mat", construct.matrix)
       positioner.matrix.fromArray(construct.matrix)
       Util.applyMatrix(positioner.matrix, positioner)
 
@@ -220,9 +226,10 @@ class ProjectFile {
       Util.positionObject3DAtTarget(el.object3D, positioner)
       el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
 
-      console.log("Loading construct", mesh)
+      // console.log("Loaded construct")//, mesh)
     }
 
+    console.log("Loading skeletonator")
     if ('skeletonator' in obj)
     {
       compositor.el.skeletonatorSavedSettings = obj.skeletonator
@@ -328,13 +335,16 @@ class ProjectFile {
 
     let constructs = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
 
+    let constructObjRoot = new THREE.Object3D
+
     for (let el of constructs)
     {
       let mesh = el.getObject3D('mesh')
       mesh.updateMatrixWorld()
-      console.log("Exporting construct", mesh)
+      console.log("Exporting construct")//, mesh)
 
       const useGLB = false
+      let blankMaterial = new THREE.MeshBasicMaterial()
       if (useGLB)
       {
         let glb = await settings.getExportableGLB(mesh)
@@ -351,9 +361,24 @@ class ProjectFile {
         {
           mesh.material.normalScale = new THREE.Vector2(1, 1);
         }
-        obj.primitiveConstructs.push({json: mesh.toJSON(), matrix: mesh.matrixWorld.elements})
+
+        let newMesh = new THREE.Mesh()
+        newMesh.copy(mesh)
+        constructObjRoot.add(newMesh)
+
+        obj.primitiveConstructs.push({uuid: newMesh.uuid, matrix: mesh.matrixWorld.elements})
       }
     }
+
+    // constructObjRoot.traverse(o => {
+    //   if (o.material && o.material.envMap) {
+    //     o.material.envMap = null
+    //   }
+    // })
+
+    obj.constructObjRoot = constructObjRoot.toJSON()
+
+    // console.log("Saved JSON constructs", obj.constructObjRoot)
 
     let skeletonatorEl = document.querySelector('*[skeletonator]')
     if (skeletonatorEl)
