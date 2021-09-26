@@ -262,14 +262,6 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">The material pack drawing works with most drawing tools, including cameras, spray paints, and volumetrics. I&#39;ve got plenty more ideas, but I think this is pretty useful already. <a href="https://t.co/T806Rz79pB">pic.twitter.com/T806Rz79pB</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1341094738632564736?ref_src=twsrc%5Etfw">December 21, 2020</a></blockquote>
   - name: Tools
     features:
-      - name: 3D Drawing
-        tweets:
-          - url: https://twitter.com/zach_geek/status/1440482188676374536
-            html: |
-              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Big new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature: <a href="https://twitter.com/hashtag/TiltBrush?src=hash&amp;ref_src=twsrc%5Etfw">#TiltBrush</a>-style 3D drawing! Use <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> brushes, brush packs, &amp; brush editor. Convert to drawable meshes. Edit vertices directly. Export as GLB. Add materials. Morph targets. 3D+2D. There&#39;s a *lot* of potential here. <a href="https://t.co/mX419DEGJd">pic.twitter.com/mX419DEGJd</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1440482188676374536?ref_src=twsrc%5Etfw">September 22, 2021</a></blockquote>
-          - url: https://twitter.com/zach_geek/status/1440836324139749379
-            html: |
-              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">The <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> interface can be kind of clunky... but sometimes it lets you do cool things, like pushing your pencil really far away to draw on the sky.<br><br>(Use Up/Down on the joystick while grabbing something to push/pull it. Right/left to make it bigger/smaller) <a href="https://t.co/5slYDU57F0">pic.twitter.com/5slYDU57F0</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1440836324139749379?ref_src=twsrc%5Etfw">September 23, 2021</a></blockquote>
       - name: Autorotate spray cans
         tweets:
           - url: https://twitter.com/zach_geek/status/1408593735332642821
@@ -355,6 +347,26 @@ sections:
           - url: https://twitter.com/zach_geek/status/1225064949698965505
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Check out the new pencil tools in VARTISTE: <a href="https://t.co/8iG725ljfg">https://t.co/8iG725ljfg</a>  <a href="https://twitter.com/hashtag/VRArt?src=hash&amp;ref_src=twsrc%5Etfw">#VRArt</a> <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> (Made with <a href="https://twitter.com/aframevr?ref_src=twsrc%5Etfw">@aframevr</a>) <a href="https://t.co/Hn5BDvGbGa">pic.twitter.com/Hn5BDvGbGa</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1225064949698965505?ref_src=twsrc%5Etfw">February 5, 2020</a></blockquote>
+      - name: Straight Edge
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1434640755117674497
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Need help drawing a straight line or a right angle? The new straight edge tool in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> will help with that! <a href="https://t.co/IXTqYpCzCD">pic.twitter.com/IXTqYpCzCD</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1434640755117674497?ref_src=twsrc%5Etfw">September 5, 2021</a></blockquote>
+  - name: 3D Creation
+    features:
+      - name: 3D Drawing
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1440482188676374536
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Big new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature: <a href="https://twitter.com/hashtag/TiltBrush?src=hash&amp;ref_src=twsrc%5Etfw">#TiltBrush</a>-style 3D drawing! Use <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> brushes, brush packs, &amp; brush editor. Convert to drawable meshes. Edit vertices directly. Export as GLB. Add materials. Morph targets. 3D+2D. There&#39;s a *lot* of potential here. <a href="https://t.co/mX419DEGJd">pic.twitter.com/mX419DEGJd</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1440482188676374536?ref_src=twsrc%5Etfw">September 22, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1440836324139749379
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">The <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> interface can be kind of clunky... but sometimes it lets you do cool things, like pushing your pencil really far away to draw on the sky.<br><br>(Use Up/Down on the joystick while grabbing something to push/pull it. Right/left to make it bigger/smaller) <a href="https://t.co/5slYDU57F0">pic.twitter.com/5slYDU57F0</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1440836324139749379?ref_src=twsrc%5Etfw">September 23, 2021</a></blockquote>
+      - name: Canvas Cutouts
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1427440081447657475
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another way to create 3D geometry in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>: Canvas cut-outs!<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRModelling?src=hash&amp;ref_src=twsrc%5Etfw">#VRModelling</a> <a href="https://t.co/x5s0NaXWRw">pic.twitter.com/x5s0NaXWRw</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1427440081447657475?ref_src=twsrc%5Etfw">August 17, 2021</a></blockquote>
       - name: Primitive Constructs
         tweets:
           - url: https://twitter.com/zach_geek/status/1416486413189648384
@@ -363,11 +375,9 @@ sections:
           - url: https://twitter.com/zach_geek/status/1424060700641710080
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s another bit of <a href="https://twitter.com/hashtag/3DModelling?src=hash&amp;ref_src=twsrc%5Etfw">#3DModelling</a> features creeping into <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. You can now edit the vertices of the shape constructs before converting them into drawable or reference meshes <a href="https://t.co/kGvItMJRLi">pic.twitter.com/kGvItMJRLi</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1424060700641710080?ref_src=twsrc%5Etfw">August 7, 2021</a></blockquote>
-      - name: Straight Edge
+      - name: 3D Material Packs
         tweets:
-          - url: https://twitter.com/zach_geek/status/1434640755117674497
-            html: |
-              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Need help drawing a straight line or a right angle? The new straight edge tool in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> will help with that! <a href="https://t.co/IXTqYpCzCD">pic.twitter.com/IXTqYpCzCD</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1434640755117674497?ref_src=twsrc%5Etfw">September 5, 2021</a></blockquote>
+          - url: https://twitter.com/zach_geek/status/1442166260020572167
   - name: Import / Export
     features:
       - name: GLB Export
@@ -503,11 +513,6 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Here&#39;s a cool new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature for headsets with front-facing webcams (like <a href="https://twitter.com/hashtag/ValveIndex?src=hash&amp;ref_src=twsrc%5Etfw">#ValveIndex</a>): Stereoscopic passthrough portal. Kind of like <a href="https://twitter.com/hashtag/AR?src=hash&amp;ref_src=twsrc%5Etfw">#AR</a>-light. Feels like watching a 3D movie at the theater, but weirder.<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/ARinVR?src=hash&amp;ref_src=twsrc%5Etfw">#ARinVR</a> <a href="https://t.co/2TnNpL5b6H">pic.twitter.com/2TnNpL5b6H</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1408593735332642821?ref_src=twsrc%5Etfw">June 26, 2021</a></blockquote>
   - name: Mesh Tools
     features:
-      - name: Canvas Cutouts
-        tweets:
-          - url: https://twitter.com/zach_geek/status/1427440081447657475
-            html: |
-              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Another way to create 3D geometry in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>: Canvas cut-outs!<a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> <a href="https://twitter.com/hashtag/VRModelling?src=hash&amp;ref_src=twsrc%5Etfw">#VRModelling</a> <a href="https://t.co/x5s0NaXWRw">pic.twitter.com/x5s0NaXWRw</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1427440081447657475?ref_src=twsrc%5Etfw">August 17, 2021</a></blockquote>
       - name: Morph Targets
         tweets:
           - url: https://twitter.com/zach_geek/status/1437902989654638593
