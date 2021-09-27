@@ -4,6 +4,7 @@ import {VectorBrush, StretchBrush} from './brush.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
+import {ExtrudeGeometry} from './framework/ExtrudeGeometry.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -765,6 +766,7 @@ AFRAME.registerComponent('threed-line-tool', {
     meshContainer: {type: 'selector', default: '#world-root'},
     switchbackAngle: {default: 80.0},
     pointToPoint: {default: false},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star']},
   },
   events: {
     activate: function(e) {
@@ -932,16 +934,36 @@ AFRAME.registerComponent('threed-line-tool', {
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
-    let tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
-    this.el.append(tip)
-    tip.setAttribute('radius-top', 0)
-    tip.setAttribute('radius-bottom',  0.05)
-    tip.setAttribute('radius',  0.05)
-    tip.setAttribute('segments-height', this.data.pointToPoint ? 6 : 2)
-    tip.setAttribute('segments-radial', 8)
-    tip.setAttribute('height', tipHeight)
-    tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
-    tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+
+    this.el.setAttribute('action-tooltips', "trigger: Hold to draw")
+
+    let tip
+    if (this.data.shape === 'line')
+    {
+      tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
+      this.el.append(tip)
+      tip.setAttribute('radius-top', 0)
+      tip.setAttribute('radius-bottom',  0.05)
+      tip.setAttribute('radius',  0.05)
+      tip.setAttribute('segments-height', this.data.pointToPoint ? 6 : 2)
+      tip.setAttribute('segments-radial', 8)
+      tip.setAttribute('height', tipHeight)
+      tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+      tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+    }
+    else
+    {
+      tip = document.createElement('a-entity')
+      this.el.append(tip)
+      let shape = this.getExtrudeShape()
+      let shapeGeo = new THREE.BufferGeometry().setFromPoints(shape.getPoints());
+      let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
+      shapeLine.scale.set(10, 10, 10)
+      shapeLine.position.set(0, tipHeight / 2.0, 0)
+      tip.object3D.add(shapeLine)
+      console.log("shapeLine", shapeLine)
+    }
+
     let tipPoint = this.tipPoint = new THREE.Object3D();
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, this.data.pointToPoint ? 0 : tipHeight / 2.0, 0);
@@ -989,6 +1011,12 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
+
+    if (this.data.shape !== 'line')
+    {
+      return this.extrudeMesh(points);
+    }
+
     let {point1, point2, point3, direction, direction2} = this
     this.vertexPositions.length = 0
     this.uvs.length = 0
@@ -1131,6 +1159,95 @@ AFRAME.registerComponent('threed-line-tool', {
     this.data.meshContainer.object3D.add(this.mesh)
     this.mesh.position.copy(this.startPoint)
   },
+  getExtrudeShape() {
+    if (this.shape) return this.shape;
+
+    const sqLength = 0.005;
+
+    switch (this.data.shape)
+    {
+      case 'square':
+        this.shape = new THREE.Shape()
+          .moveTo( - sqLength, -sqLength )
+          .lineTo( -sqLength, sqLength )
+          .lineTo( sqLength, sqLength )
+          .lineTo( sqLength, - sqLength )
+          .lineTo( -sqLength, -sqLength );
+          break;
+      case 'oval':
+        this.shape = new THREE.Shape()
+          .moveTo( 0, 0 )
+          .ellipse(0, 0, sqLength, sqLength * 2, 0, 2 * Math.PI)
+          break;
+      case 'star': {
+        let ir = sqLength * 0.5;
+        let numPoints = 5;
+        this.shape = new THREE.Shape()
+        .moveTo(sqLength, 0);
+
+        for (let a = 0; a <= numPoints; ++a)
+        {
+          let angle = a * Math.PI * 2 / numPoints;
+          this.shape.lineTo(Math.cos(angle) * sqLength, Math.sin(angle) * sqLength)
+          angle = (a + 0.5) * Math.PI * 2 / numPoints;
+          this.shape.lineTo(Math.cos(angle) * ir, Math.sin(angle) * ir)
+        }
+
+        break;
+      }
+    }
+
+    return this.shape;
+  },
+  extrudeMesh(points, {maxDistance = 100} = {}) {
+    // let spline = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p.x, p.y, p.z)))
+    let spline = new THREE.CurvePath();
+    for (let p = 0; p < points.length - 1; ++p)
+    {
+      spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x, points[p].y, points[p].z), new THREE.Vector3(points[p+1].x, points[p+1].y, points[p+1].z)))
+    }
+
+    const shape = this.getExtrudeShape()
+
+    const extrudeSettings = {
+				steps: points.length,
+				bevelEnabled: false,
+				extrudePath: spline,
+        UVGenerator: {
+          generateTopUV: (g, v, a, b, c) => {
+            return [
+              new THREE.Vector2(0, 0),
+              new THREE.Vector2(0, 1),
+              new THREE.Vector2(1, 1)
+            ]
+          },
+          generateSideWallUV: (g, v, a, b, c, d, s, sl, ci, cl) => {
+            // console.log("s1, s2", s1, s2)
+            let mn = s / sl; //Math.min(a,b,c,d)/v.length
+            let mx = (s + 1) / sl; //Math.max(a,b,c,d)/v.length
+            let yn = ci / cl;
+            let yx = (ci + 1) / cl;
+            return [
+              new THREE.Vector2(mn, yx),
+              new THREE.Vector2(mn, yn),
+              new THREE.Vector2(mx, yn),
+              new THREE.Vector2(mx, yx),
+            ]
+          }
+        }
+			};
+
+    this.geometry = new ExtrudeGeometry( shape, extrudeSettings );
+    let material = this.getMaterial(1)
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+    }
+
+    this.mesh = new THREE.Mesh(this.geometry, material)
+    this.data.meshContainer.object3D.add(this.mesh)
+  },
   doneDrawing() {
     if (this.endDrawingEl)
     {
@@ -1235,7 +1352,7 @@ AFRAME.registerComponent('threed-line-tool', {
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent, color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
