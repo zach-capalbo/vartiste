@@ -955,10 +955,10 @@ AFRAME.registerComponent('threed-line-tool', {
     {
       tip = document.createElement('a-entity')
       this.el.append(tip)
-      let shape = this.getExtrudeShape()
+      let shape = this.getExtrudeShape(true)
       let shapeGeo = new THREE.BufferGeometry().setFromPoints(shape.getPoints());
       let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
-      shapeLine.scale.set(10, 10, 10)
+      shapeLine.scale.set(1 , 1, 1)
       shapeLine.position.set(0, tipHeight / 2.0, 0)
       tip.object3D.add(shapeLine)
       console.log("shapeLine", shapeLine)
@@ -1159,10 +1159,12 @@ AFRAME.registerComponent('threed-line-tool', {
     this.data.meshContainer.object3D.add(this.mesh)
     this.mesh.position.copy(this.startPoint)
   },
-  getExtrudeShape() {
-    if (this.shape) return this.shape;
+  getExtrudeShape(initial = false) {
+    if (this.shape && this.cachedScale === this.el.object3D.scale.x) return this.shape;
 
-    const sqLength = 0.005;
+    const sqLength = 0.05 * this.el.object3D.scale.x / 0.7;
+
+    this.cachedScale = this.el.object3D.scale.x;
 
     switch (this.data.shape)
     {
@@ -1201,10 +1203,22 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   extrudeMesh(points, {maxDistance = 100} = {}) {
     // let spline = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p.x, p.y, p.z)))
+
+    this.startPoint.set(0, 0, 0)
+    for (let i = 0; i < points.length; ++i)
+    {
+      this.startPoint.x += points[i].x
+      this.startPoint.y += points[i].y
+      this.startPoint.z += points[i].z
+    }
+
+    this.startPoint.multiplyScalar(1.0 / points.length)
+
     let spline = new THREE.CurvePath();
     for (let p = 0; p < points.length - 1; ++p)
     {
-      spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x, points[p].y, points[p].z), new THREE.Vector3(points[p+1].x, points[p+1].y, points[p+1].z)))
+      spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x - this.startPoint.x, points[p].y - this.startPoint.y, points[p].z - this.startPoint.z),
+                                      new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
     }
 
     const shape = this.getExtrudeShape()
@@ -1246,6 +1260,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     this.mesh = new THREE.Mesh(this.geometry, material)
+    this.mesh.position.copy(this.startPoint)
     this.data.meshContainer.object3D.add(this.mesh)
   },
   doneDrawing() {
