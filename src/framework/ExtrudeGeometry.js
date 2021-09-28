@@ -92,11 +92,18 @@ class ExtrudeGeometry extends BufferGeometry {
 			//
 
 			let extrudePts, extrudeByPath = false;
-			let splineTube, binormal, normal, position2;
+			let splineTube, binormal, normal, position2, tangent;
 
 			if ( extrudePath ) {
 
-				extrudePts = extrudePath.getSpacedPoints( steps );
+        if ( options.extrudePts ) {
+          extrudePts = options.extrudePts
+        }
+        else
+        {
+				      extrudePts = extrudePath.getSpacedPoints( steps );
+              splineTube = extrudePath.computeFrenetFrames( steps, false );
+        }
 
 				extrudeByPath = true;
 				bevelEnabled = false; // bevels not supported for path extrusion
@@ -105,13 +112,12 @@ class ExtrudeGeometry extends BufferGeometry {
 
 				// TODO1 - have a .isClosed in spline?
 
-				splineTube = extrudePath.computeFrenetFrames( steps, false );
-
 				// console.log(splineTube, 'splineTube', splineTube.normals.length, 'steps', steps, 'extrudePts', extrudePts.length);
 
 				binormal = new Vector3();
 				normal = new Vector3();
 				position2 = new Vector3();
+        tangent = new Vector3();
 
 			}
 
@@ -399,12 +405,22 @@ class ExtrudeGeometry extends BufferGeometry {
 
 					v( vert.x, vert.y, 0 );
 
+        } else if (splineTube) {
+          normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
+          binormal.copy( splineTube.binormals[ 0 ] ).multiplyScalar( vert.y )
+          position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
+
+          v( position2.x, position2.y, position2.z );
 				} else {
 
 					// v( vert.x, vert.y + extrudePts[ 0 ].y, extrudePts[ 0 ].x );
 
-					normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
-					binormal.copy( splineTube.binormals[ 0 ] ).multiplyScalar( vert.y );
+					normal.set( - extrudePts[0].fx, - extrudePts[0].fy, - extrudePts[0].fz)
+          tangent.subVectors(extrudePts[0], extrudePts[1]).normalize()
+					binormal.crossVectors(tangent, normal)
+
+          normal.multiplyScalar( vert.x ).multiplyScalar(0);
+          binormal.multiplyScalar( vert.y ).multiplyScalar(0);
 
 					position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
 
@@ -426,13 +442,25 @@ class ExtrudeGeometry extends BufferGeometry {
 					if ( ! extrudeByPath ) {
 
 						v( vert.x, vert.y, depth / steps * s );
+          } else if (splineTube) {
+            normal.copy( splineTube.normals[ s ] ).multiplyScalar( vert.x );
+            binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
+            position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
 
+            v( position2.x, position2.y, position2.z );
 					} else {
 
 						// v( vert.x, vert.y + extrudePts[ s - 1 ].y, extrudePts[ s - 1 ].x );
 
-						normal.copy( splineTube.normals[ s ] ).multiplyScalar( vert.x );
-						binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
+						// tangent.set( extrudePts[s].fx, extrudePts[s].fz, extrudePts[s].fy).multiplyScalar(-1)//
+						// binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
+            tangent.subVectors(extrudePts[s], extrudePts[s - 1]).normalize()
+            normal.set( extrudePts[s].fx,  extrudePts[s].fy, extrudePts[s].fz)//.multiplyScalar(-1)//.cross(tangent).multiplyScalar( vert.y );
+            binormal.crossVectors(tangent, normal)
+
+            binormal.multiplyScalar( vert.y * extrudePts[s].scale );
+            normal.multiplyScalar( vert.x * extrudePts[s].scale);
+
 
 						position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
 

@@ -900,14 +900,21 @@ AFRAME.registerComponent('threed-line-tool', {
         {
           this.mouseConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
             let tipWorld = this.pool('tipWorld', THREE.Vector3)
+            this.tipPoint.getWorldDirection(this.worldForward)
             this.tipPoint.getWorldPosition(tipWorld)
+            let oldPoint = this.pool('oldPoint', THREE.Vector3)
+            if (this.points.length > 0)
+            {
+              oldPoint.copy(this.points[this.points.length - 1])
+              if (oldPoint.distanceTo(tipWorld) < 0.001) return;
+            }
             this.points.push({
               x: tipWorld.x,
               y: tipWorld.y,
               z: tipWorld.z,
-              fx: 0,
-              fy: 0,
-              fz: 1,
+              fx: this.worldForward.x,
+              fy: this.worldForward.y,
+              fz: this.worldForward.z,
               scale: 1
             })
             this.createMesh(this.points)
@@ -1201,8 +1208,7 @@ AFRAME.registerComponent('threed-line-tool', {
 
     return this.shape;
   },
-  extrudeMesh(points, {maxDistance = 100} = {}) {
-    // let spline = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(p.x, p.y, p.z)))
+  extrudeMesh(points, {maxDistance = 100, useSplineTube = false} = {}) {
 
     this.startPoint.set(0, 0, 0)
     for (let i = 0; i < points.length; ++i)
@@ -1214,19 +1220,31 @@ AFRAME.registerComponent('threed-line-tool', {
 
     this.startPoint.multiplyScalar(1.0 / points.length)
 
-    let spline = new THREE.CurvePath();
-    for (let p = 0; p < points.length - 1; ++p)
+    let spline;
+
+    if (useSplineTube)
     {
-      spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x - this.startPoint.x, points[p].y - this.startPoint.y, points[p].z - this.startPoint.z),
-                                      new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
+      spline = new THREE.CurvePath();
+      for (let p = 0; p < points.length - 1; ++p)
+      {
+        spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x - this.startPoint.x, points[p].y - this.startPoint.y, points[p].z - this.startPoint.z),
+                                        new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
+      }
+    }
+    else
+    {
+      // TODO!!!
+      this.startPoint.set(0, 0, 0)
     }
 
     const shape = this.getExtrudeShape()
 
     const extrudeSettings = {
-				steps: points.length,
+				steps: points.length - 1,
 				bevelEnabled: false,
-				extrudePath: spline,
+				// extrudePath: spline,
+        extrudePath: useSplineTube ? spline : true,
+        extrudePts: useSplineTube ? undefined : points,
         UVGenerator: {
           generateTopUV: (g, v, a, b, c) => {
             return [
