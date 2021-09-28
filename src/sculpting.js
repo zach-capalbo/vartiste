@@ -1231,11 +1231,6 @@ AFRAME.registerComponent('threed-line-tool', {
                                         new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
       }
     }
-    else
-    {
-      // TODO!!!
-      this.startPoint.set(0, 0, 0)
-    }
 
     const shape = this.getExtrudeShape()
 
@@ -1245,6 +1240,7 @@ AFRAME.registerComponent('threed-line-tool', {
 				// extrudePath: spline,
         extrudePath: useSplineTube ? spline : true,
         extrudePts: useSplineTube ? undefined : points,
+        centerPoint: this.startPoint,
         UVGenerator: {
           generateTopUV: (g, v, a, b, c) => {
             return [

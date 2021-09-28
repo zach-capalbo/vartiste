@@ -20,6 +20,8 @@
  * }
  */
 
+// Heavily modified by Zach Capalbo for use in VARTISTE sculpting.js
+
  const { BufferGeometry, Float32BufferAttribute, Vector2, Vector3, ShapeUtils } = THREE;
 
 const Curves = THREE;
@@ -75,6 +77,7 @@ class ExtrudeGeometry extends BufferGeometry {
 			let bevelSize = options.bevelSize !== undefined ? options.bevelSize : bevelThickness - 2;
 			let bevelOffset = options.bevelOffset !== undefined ? options.bevelOffset : 0;
 			let bevelSegments = options.bevelSegments !== undefined ? options.bevelSegments : 3;
+      let centerPoint = options.centerPoint !== undefined ? options.centerPoint : new THREE.Vector3(0, 0, 0)
 
 			const extrudePath = options.extrudePath;
 
@@ -454,12 +457,18 @@ class ExtrudeGeometry extends BufferGeometry {
 
 						// tangent.set( extrudePts[s].fx, extrudePts[s].fz, extrudePts[s].fy).multiplyScalar(-1)//
 						// binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
-            tangent.subVectors(extrudePts[s], extrudePts[s - 1]).normalize()
+            tangent.subVectors(extrudePts[s - 1], extrudePts[s]).normalize()
             normal.set( extrudePts[s].fx,  extrudePts[s].fy, extrudePts[s].fz)//.multiplyScalar(-1)//.cross(tangent).multiplyScalar( vert.y );
             binormal.crossVectors(tangent, normal)
 
-            binormal.multiplyScalar( vert.y * extrudePts[s].scale );
-            normal.multiplyScalar( vert.x * extrudePts[s].scale);
+            binormal.multiplyScalar( vert.x * extrudePts[s].scale );
+            normal.multiplyScalar( vert.y * extrudePts[s].scale);
+
+            if (s === steps)
+            {
+              binormal.multiplyScalar(0)
+              normal.multiplyScalar(0)
+            }
 
 
 						position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
@@ -644,9 +653,9 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			function v( x, y, z ) {
 
-				placeholder.push( x );
-				placeholder.push( y );
-				placeholder.push( z );
+				placeholder.push( x - centerPoint.x);
+				placeholder.push( y - centerPoint.y);
+				placeholder.push( z - centerPoint.z);
 
 			}
 
