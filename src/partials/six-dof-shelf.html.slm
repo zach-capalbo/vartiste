@@ -87,6 +87,7 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
         a-entity threed-line-tool="shape: square" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
         a-entity threed-line-tool="shape: oval" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
         a-entity threed-line-tool="shape: star" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
+        a-entity threed-line-tool="shape: heart" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
       a-entity scale="0.3 0.3 0.3"
         - let i = 0
         - let primPos = () => `${(i % 3) * 1.25 + 0} ${Math.floor(i / 3) * -1.25} ${i++ * 0}`

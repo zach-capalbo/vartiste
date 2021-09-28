@@ -766,7 +766,7 @@ AFRAME.registerComponent('threed-line-tool', {
     meshContainer: {type: 'selector', default: '#world-root'},
     switchbackAngle: {default: 80.0},
     pointToPoint: {default: false},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart']},
   },
   events: {
     activate: function(e) {
@@ -1201,7 +1201,17 @@ AFRAME.registerComponent('threed-line-tool', {
           angle = (a + 0.5) * Math.PI * 2 / numPoints;
           this.shape.lineTo(Math.cos(angle) * ir, Math.sin(angle) * ir)
         }
+        break;
+      }
+      case 'heart': {
+        let h = 0.6;
+        this.shape = new THREE.Shape()
+          .moveTo(0, sqLength * h)
+					.bezierCurveTo( sqLength * 0.5, sqLength * 1.3, sqLength, sqLength, sqLength, sqLength * h )
+          .bezierCurveTo( sqLength, 0, sqLength * 0.1, -sqLength * 0.7, 0, -sqLength)
 
+          .bezierCurveTo( -sqLength * 0.1, -sqLength * 0.7, -sqLength, 0, - sqLength, sqLength * h)
+          .bezierCurveTo( -sqLength, sqLength, -sqLength * 0.5, sqLength * 1.3, 0, sqLength * h)
         break;
       }
     }
