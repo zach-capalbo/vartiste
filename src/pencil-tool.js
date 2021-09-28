@@ -985,6 +985,7 @@ AFRAME.registerComponent('selection-box-tool', {
     selectVertices: {default: false},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
+    weight: {default: 0.0},
   },
   events: {
     stateadded: function(e) {
@@ -1113,6 +1114,7 @@ AFRAME.registerComponent('selection-box-tool', {
           if (boundingBox.containsPoint(worldPos))
           {
             contained = true
+            localPos.copy(worldPos)
             break
           }
         }
@@ -1131,6 +1133,10 @@ AFRAME.registerComponent('selection-box-tool', {
 
       let obj = new THREE.Object3D
       this.el.object3D.add(obj)
+      if (this.data.weight > 0.0)
+      {
+        obj.distanceWeight = THREE.Math.clamp(Math.sqrt(this.data.weight * localPos.length() / this.box.getObject3D('mesh').geometry.boundingSphere.radius), 0.0, 1.0)
+      }
       Util.positionObject3DAtTarget(obj, target.object3D)
       this.grabbers[target.object3D.uuid] = obj
       this.grabbed[obj.uuid] = target
@@ -1189,6 +1195,8 @@ AFRAME.registerComponent('selection-box-tool', {
     if (!this.el.is('grabbed')) return
     if (!this.grabbing) return
 
+    let interpMat = this.pool('interpMat', THREE.Matrix4)
+
     for (let obj of Object.values(this.grabbers))
     {
       if (!this.grabbed[obj.uuid].object3D)
@@ -1196,7 +1204,20 @@ AFRAME.registerComponent('selection-box-tool', {
         console.warn("Grabbed object disappeared", obj)
         continue;
       }
-      Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
+
+      if (this.data.weight > 0.0)
+      {
+        // console.log(obj.distanceWeight)
+        interpMat.copy(this.grabbed[obj.uuid].object3D.matrix)
+        Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
+        Util.interpTransformMatrices(obj.distanceWeight, this.grabbed[obj.uuid].object3D.matrix, interpMat, {result: this.grabbed[obj.uuid].object3D.matrix})
+        Util.applyMatrix(this.grabbed[obj.uuid].object3D.matrix, this.grabbed[obj.uuid].object3D)
+        // Util.positionObject3DAtTarget(obj, this.grabbed[obj.uuid].object3D)
+      }
+      else
+      {
+        Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
+      }
 
       //?
       // if (this.grabbed[obj.uuid].manipulatorConstraint) this.grabbed[obj.uuid].manipulatorConstraint(t, dt)

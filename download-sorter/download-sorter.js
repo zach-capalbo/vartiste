@@ -4,6 +4,8 @@ const mkdirp = require('mkdirp').sync;
 const ls = require('ls');
 const mv = require('move-file').sync;
 
+async function delay(t) { return new Promise(r => setTimeout(r, t)); }
+
 class NameError extends Error { constructor(...args) { super(...args); } }
 
 class Project {
@@ -81,7 +83,11 @@ class DownloadSorter {
       }
     }
   }
-  sortSourceFiles() {
+  async waitFor(file) {
+    console.info("Taking", file.full)
+    await delay(1000)
+  }
+  async sortSourceFiles({wait = false} = {}) {
     let {destination, source} = this
 
     const CANDIDATE_FORMATS = [
@@ -90,7 +96,9 @@ class DownloadSorter {
       "png",
       "jpg",
       "webm",
-      "glb"
+      "glb",
+      "gif",
+      "mp4"
     ]
 
     let filesToCheck = ls(`${this.source}/*.{${CANDIDATE_FORMATS.join(",")}}`)
@@ -101,6 +109,9 @@ class DownloadSorter {
       {
         if (project.shouldOwn(file.full))
         {
+          if (wait) {
+            await this.waitFor(file)
+          }
           project.take(file.full)
           break;
         }
@@ -113,8 +124,19 @@ class DownloadSorter {
     this.createCandidateProjects()
     this.sortSourceFiles()
   }
+  async sortWait() {
+    this.setupDestination()
+    this.takeStock()
+    this.createCandidateProjects()
+    for (let project of this.projects)
+    {
+      console.log(`- ${project.name}: ${project.path}`)
+    }
+    await delay(5000)
+    this.sortSourceFiles({wait: true})
+  }
 }
 
 module.exports = {DownloadSorter, Project}
 
-new DownloadSorter().sort()
+new DownloadSorter().sortWait()
