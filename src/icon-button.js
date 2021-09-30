@@ -729,15 +729,19 @@ AFRAME.registerComponent('icon-row', {
   }
 })
 
-// A button which corresponds to one possible value of a target component
-// proerty. It is highlighted when the property is the value specified, and not
-// highlighted otherwise. When clicked, it sets the target property to the
-// specified value.
+// A button which displays a determined value of a target component property. 
+// You can click the button to set the target property to that value. 
+// The button is highlighted when the target property is at the set value, 
+// and will revert to default if the target property changes to a different value.
 AFRAME.registerComponent('radio-button', {
   schema: {
+    //The value the button will set the property to, and will be highlighted at
     value: {type: 'string'},
+    //The element containing the target component property
     target: {type: 'selector'},
+    //The component containing the target property
     component: {type: 'string'},
+    //The property the radio button displays/sets a value for
     property: {type: 'string'}
   },
   events: {
