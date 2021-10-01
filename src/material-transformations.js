@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {UndoStack} from './undo.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import './framework/GLTFExporter.js'
+import {CanvasShaderProcessor} from './canvas-shader-processor.js'
 
 // Contains utilities for transforming materials and textures. Singleton
 // accessible via VARTISTE.MaterialTransformations.
@@ -96,32 +97,36 @@ class MaterialTransformations {
     }
     else
     {
-      metalness = Util.cloneCanvas(metalness)
+      // metalness = Util.cloneCanvas(metalness)
     }
     if (metalness.width !== roughness.width || metalness.height !== roughness.height)
     {
       console.warn("Metalness and roughness are not same dimensions")
     }
 
-    let roughCtx = roughness.getContext('2d')
-    let metalCtx = metalness.getContext('2d')
+    let csp = new CanvasShaderProcessor({source: require('./shaders/combine-metal-roughness.glsl')})
+    csp.setInputCanvas(metalness)
+    csp.setCanvasAttribute('u_roughness', roughness)
+    csp.update()
+    // let roughCtx = roughness.getContext('2d')
+    // let metalCtx = metalness.getContext('2d')
+    //
+    // let roughData = roughCtx.getImageData(0,0, roughness.width, roughness.height)
+    // let metalData = metalCtx.getImageData(0,0, roughness.width, roughness.height)
+    //
+    // for (let j = 0; j < roughness.height; ++j)
+    // {
+    //   for (let i = 0; i < roughness.width; ++i)
+    //   {
+    //     metalData.data[4*(j * roughness.width + i) + 1] = roughData.data[4*(j * roughness.width + i) + 1]
+    //     // metalData.data[4*(j * roughness.width + i) + 2] = v.z * 255
+    //     metalData.data[4*(j * roughness.width + i) + 3]  = 255
+    //   }
+    // }
+    //
+    // metalCtx.putImageData(metalData, 0, 0)
 
-    let roughData = roughCtx.getImageData(0,0, roughness.width, roughness.height)
-    let metalData = metalCtx.getImageData(0,0, roughness.width, roughness.height)
-
-    for (let j = 0; j < roughness.height; ++j)
-    {
-      for (let i = 0; i < roughness.width; ++i)
-      {
-        metalData.data[4*(j * roughness.width + i) + 1] = roughData.data[4*(j * roughness.width + i) + 1]
-        // metalData.data[4*(j * roughness.width + i) + 2] = v.z * 255
-        metalData.data[4*(j * roughness.width + i) + 3]  = 255
-      }
-    }
-
-    metalCtx.putImageData(metalData, 0, 0)
-
-    return metalness
+    return csp.canvas//metalness
   }
 
   // Checks if a material's diffuse map has any transparent pixels
@@ -195,6 +200,8 @@ class MaterialTransformations {
       // MaterialTransformations.vec2toVec3Attribute(model)
     }
 
+    if (!material) return;
+
 
     if (material.bumpMap && material.bumpMap.image) {
       console.log("Bumping into normal")
@@ -215,23 +222,37 @@ class MaterialTransformations {
       material.normalMap.wrapT = material.bumpMap.wrapT
     }
 
-    if (material.roughnessMap && material.roughnessMap.image) {
+    if (material.roughnessMap && material.roughnessMap.image &&
+        material.metalnessMap && material.metalnessMap.image &&
+        material.metalnessMap === material.roughnessMap)
+    {
+      console.log("Not combining metallic roughness. Not needed")
+    }
+    else if (material.roughnessMap && material.roughnessMap.image) {
       console.log("Combining roughness into metalness")
+      if (undoStack) {
+        let originalRoughness = material.roughnessMap
+        let originalMetalness = material.metalnessMap
+        let originalMetalnessImage = originalMetalness ? originalMetalness.image : null
+        undoStack.push(() => {
+          material.roughnessMap = originalRoughness
+          material.metalnessMap = originalMetalness
+          if (originalMetalnessImage) material.metalnessMap.image = originalMetalnessImage
+          if (material.metalnessMap) material.metalnessMap.needsUpdate = true
+          material.needsUpdate = true
+          console.log("Restored original metall / roughness")
+          // material.roughnessMap.image = originalImage;
+        })
+      }
+
       if (!material.metalnessMap)
       {
         material.metalnessMap = new THREE.Texture()
         material.metalnessMap.wrapS = material.roughnessMap.wrapS
         material.metalnessMap.wrapT = material.roughnessMap.wrapT
       }
-      if (material.roughnessMap.image.nodeName !== "CANVAS")
-      {
-        if (undoStack) {
-          let originalImage = material.roughnessMap.image
-          undoStack.push(() => material.roughnessMap.image = originalImage)
-        }
-        material.roughnessMap.image = Util.cloneCanvas(material.roughnessMap.image)
-      } else if (undoStack) { undoStack.pushCanvas(material.roughnessMap.image)}
       material.metalnessMap.image = MaterialTransformations.putRoughnessInMetal(material.roughnessMap.image, material.metalnessMap.image)
+      // Util.debugCanvas(material.metalnessMap.image)
       material.metalnessMap.needsUpdate = true
       material.roughnessMap = material.metalnessMap
       material.needsUpdate = true
@@ -259,7 +280,7 @@ class MaterialTransformations {
 
     if (material.map && material.map.image)
     {
-      if (material.map.image.nodeName !== "CANVAS")
+      if (material.map.image.nodeName !== "CANVAS" && material.map.image.nodeName !== "IMG")
       {
         if (undoStack) {
           let originalImage = material.map.image
@@ -279,7 +300,10 @@ class MaterialTransformations {
           return
         }
       }
-      MaterialTransformations.checkTransparency(material)
+      if (material.map.image.nodeName !== "IMG")
+      {
+        MaterialTransformations.checkTransparency(material)
+      }
     }
   }
 }
