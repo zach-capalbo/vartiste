@@ -175,7 +175,7 @@ class MaterialTransformations {
   // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
   static prepareModelForExport(model, material, {undoStack} = {}) {
     if (!material) material = model.material
-    console.log("Preparing", model, material)
+    // console.log("Preparing", model, material)
 
     if (model.geometry && model.geometry.attributes)
     {
