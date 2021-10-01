@@ -734,7 +734,10 @@ AFRAME.registerComponent('camera-tool', {
 
     let newTarget = this.previewTarget
 
-    this.preview.components.material.material.map = null
+    if (this.preview.components.material && this.preview.components.material.material)
+    {
+      this.preview.components.material.material.map = null
+    }
 
     newTarget.texture.encoding = renderer.outputEncoding
     renderer.setRenderTarget(newTarget)

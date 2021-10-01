@@ -2,7 +2,7 @@ import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import {prepareModelForExport} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
-import {Undo} from './undo.js'
+import {Undo, UndoStack} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import Pako from 'pako'
@@ -240,7 +240,7 @@ Util.registerComponentSystem('settings-system', {
     let db = this.openProjectsDB()
     await db.projects.delete(projectName)
   },
-  async getExportableGLB(exportMesh) {
+  async getExportableGLB(exportMesh, {undoStack} = {}) {
     let mesh = exportMesh;
     let material = mesh.material || Compositor.material
     let originalImage
@@ -251,8 +251,15 @@ Util.registerComponentSystem('settings-system', {
       material.map.image = Compositor.component.preOverlayCanvas
       material.map.needsUpdate = true
     }
-    mesh.traverseVisible(m => { if (m.geometry) Util.deinterleaveAttributes(m.geometry) })
-    prepareModelForExport(mesh, material)
+
+    // Need to traverse to get all materials
+    mesh.traverseVisible(m => {
+      if (m.geometry || m.material)
+      {
+        prepareModelForExport(m, m.material, {undoStack})
+      }
+    })
+
 
     function postProcessJSON(outputJSON) {
       if (!outputJSON.extensions) outputJSON.extensions = {}
@@ -275,7 +282,8 @@ Util.registerComponentSystem('settings-system', {
   },
   async export3dAction(exportMesh) {
     if (!exportMesh) exportMesh = Compositor.meshRoot
-    let glb = await this.getExportableGLB(exportMesh)
+    let undoStack = new UndoStack({maxSize: -1})
+    let glb = await this.getExportableGLB(exportMesh, {undoStack})
     let extension = "glb"
 
     if (exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
@@ -284,6 +292,11 @@ Util.registerComponentSystem('settings-system', {
     }
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.${extension}`, "GLB File")
+
+    while (undoStack.stack.length)
+    {
+      undoStack.undo()
+    }
 
     document.getElementById('composition-view').emit('updatemesh')
   },
