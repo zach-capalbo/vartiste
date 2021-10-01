@@ -472,3 +472,93 @@ AFRAME.registerComponent('mesh-fill-tool', {
     }
   }
 })
+
+AFRAME.registerComponent('normal-meld-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    selector: {type: 'string', default: '.canvas, a-entity[primitive-construct-placeholder]'},
+    boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}},
+    throttle: {default: 100},
+  },
+  events: {
+    draw: function(e) {
+
+    }
+  },
+  init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
+    Pool.init(this)
+
+    let box = document.createElement('a-box')
+    this.box = box
+    box.classList.add('clickable')
+    box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
+    this.el.append(box)
+    this.pressure = 1.0
+  },
+  update(oldData) {
+    this.box.setAttribute('width', this.data.boxSize.x)
+    this.box.setAttribute('height', this.data.boxSize.y)
+    this.box.setAttribute('depth', this.data.boxSize.z)
+    this.box.setAttribute('position', {x: 0, y: this.data.boxSize.y / 2, z: 0})
+  },
+  doAverage() {
+    let els = Array.from(document.querySelectorAll(this.data.selector))
+
+    let container = this.box.getObject3D('mesh')
+
+    let avg = this.pool('avg', THREE.Vector3)
+    avg.set(0, 0, 0)
+    let vertexCount = 0;
+
+    for (let el of els)
+    {
+      if (!el.getObject3D('mesh')) continue;
+      el.getObject3D('mesh').traverse(o => {
+        if (!o.geometry) return;
+        if (!o.geometry.attributes.normal) return;
+
+        for (let i of Util.meshPointsInContainerMesh(o, container))
+        {
+          avg.x += o.geometry.attributes.normal.array[i]
+          avg.y += o.geometry.attributes.normal.array[i + 1]
+          avg.z += o.geometry.attributes.normal.array[i + 2]
+          vertexCount++
+        }
+      })
+    }
+
+    if (vertexCount === 0) return;
+
+    console.log("Contained vertices: ", vertexCount, avg)
+
+    avg.multiplyScalar(1.0 / vertexCount).normalize()
+
+    let v = this.pool('v', THREE.Vector3)
+
+    let alpha = 0.01
+
+    for (let el of els)
+    {
+      if (!el.getObject3D('mesh')) continue;
+      el.getObject3D('mesh').traverse(o => {
+        if (!o.geometry) return;
+        if (!o.geometry.attributes.normal) return;
+
+        for (let i of Util.meshPointsInContainerMesh(o, container))
+        {
+          v.fromBufferAttribute(o.geometry.attributes.normal, i)
+          v.lerp(avg, alpha)
+          o.geometry.attributes.normal.setXYZ(i, v.x, v.y, v.z)
+          o.geometry.attributes.normal.needsUpdate = true
+        }
+      })
+    }
+  },
+  tick(t, dt) {
+    if (!this.el.is('grabbed')) return;
+
+    this.doAverage()
+  }
+})

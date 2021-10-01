@@ -1006,8 +1006,7 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   init() {
     this.el.classList.add('grab-root')
-    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3})
-    this.el.append(this.handle)
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     Pool.init(this)
 
     let box = document.createElement('a-box')

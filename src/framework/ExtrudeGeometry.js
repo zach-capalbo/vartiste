@@ -720,13 +720,16 @@ class ExtrudeGeometry extends BufferGeometry {
 	}
 
 	toJSON() {
-
-		const data = super.toJSON();
+		const data = THREE.BufferGeometry.prototype.toJSON.call(this);
 
 		const shapes = this.parameters.shapes;
 		const options = this.parameters.options;
 
-		return toJSON( shapes, options, data );
+		let js = toJSON( shapes, options, data );
+
+    console.log("JSON", js)
+
+    return js;
 
 	}
 
@@ -744,7 +747,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 		const extrudePath = data.options.extrudePath;
 
-		if ( extrudePath !== undefined ) {
+		if ( extrudePath !== undefined && extrudePath !== true) {
 
 			data.options.extrudePath = new Curves[ extrudePath.type ]().fromJSON( extrudePath );
 
@@ -834,7 +837,13 @@ function toJSON( shapes, options, data ) {
 
 	}
 
-	if ( options.extrudePath !== undefined ) data.options.extrudePath = options.extrudePath.toJSON();
+  if (options.extrudePath === true) data.options.extrudePath = true
+	else if ( options.extrudePath !== undefined ) data.options.extrudePath = options.extrudePath.toJSON();
+
+  if (options.extrudePts)
+  {
+    data.extrudePts = options.extrudePts
+  }
 
 	return data;
 
