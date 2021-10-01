@@ -1275,7 +1275,8 @@ AFRAME.registerComponent('threed-line-tool', {
         }
 			};
 
-    this.geometry = new ExtrudeGeometry( shape, extrudeSettings );
+    this.geometry = new THREE.BufferGeometry().copy(new ExtrudeGeometry( shape, extrudeSettings ));
+
     let material = this.getMaterial(1)
 
     if (this.mesh)

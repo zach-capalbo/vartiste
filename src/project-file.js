@@ -182,8 +182,8 @@ class ProjectFile {
       }
     }
 
-    console.log("Loading constructs")
     let constructObjRoot = obj.constructObjRoot ? objectLoader.parse(obj.constructObjRoot) : null
+    console.log("Loading constructs", constructObjRoot, obj.primitiveConstructs)
     let glbLoader = new THREE.GLTFLoader()
     let positioner = new THREE.Object3D
     compositor.el.sceneEl.object3D.add(positioner)
@@ -357,7 +357,7 @@ class ProjectFile {
       }
       else
       {
-        if (!mesh.material.normalScale.toArray)
+        if (!mesh.material.normalScale || !mesh.material.normalScale.toArray)
         {
           mesh.material.normalScale = new THREE.Vector2(1, 1);
         }
