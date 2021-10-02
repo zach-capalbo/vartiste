@@ -735,7 +735,7 @@ AFRAME.registerComponent('icon-row', {
 // and will revert to default if the target property changes to a different value.
 AFRAME.registerComponent('radio-button', {
   schema: {
-    //The value the button will set the property to, and will be highlighted at
+    // The value the button will set the property to, and will be highlighted at
     value: {type: 'string'},
     //The element containing the target component property
     target: {type: 'selector'},
