@@ -167,7 +167,7 @@ const JoystickDirections = {
 //joystick is pressed left or right. Also known as snap turning.
 AFRAME.registerComponent('joystick-turn', {
   schema: {
-    //The degree of the turn expressed as a number, where 3.14 is one full turn 
+    // The angle of the turn expressed as a number in radians, where 3.14 is one full turn 
     // e.g. 3.14 / 4 for a quarter turn, 3.14 / 2 for a half turn
     amount: {type: 'number', default: 3.14 / 4},
     //The target element
