@@ -621,6 +621,9 @@ Util.registerComponentSystem('cutout-canvas', {
   },
   events: {
     shapecreated: function(e) {
+      if (!this.cutoutStarted) return;
+
+      this.cutoutStarted = false
       this.handleShape(e.detail)
     }
   },
@@ -681,6 +684,7 @@ Util.registerComponentSystem('cutout-canvas', {
     }
   },
   startCutout() {
+    this.cutoutStarted = true
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
   }
@@ -759,6 +763,43 @@ Util.registerComponentSystem('vertex-editing', {
   }
 })
 
+Util.registerComponentSystem('shape-creation', {
+  events: {
+    shapecreated: function(e) {
+      if (!this.shapeStarted) return;
+
+      this.shapeStarted = false
+      this.el.sceneEl.systems['paint-system'].selectBrush(this.oldBrush)
+      this.handleShape(e.detail)
+    }
+  },
+  init() {
+    this.cutBrush = new VectorBrush('vector')
+    this.wandShapes = new Map()
+  },
+  handleShape(shape)
+  {
+    console.log("Creating shape wand", shape)
+    let el = document.createElement('a-entity')
+    document.querySelector('#world-root').append(el)
+    el.setAttribute('scale', '0.7 0.7 0.7')
+
+    shape.autoClose = true
+
+    this.wandShapes.set(el, shape)
+    el.setAttribute('threed-line-tool', 'shape: custom')
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, Compositor.el.object3D, {transformOffset: {x: 0, y: 0, z: 0.3}})
+      el.object3D.scale.set(0.3, 0.3, 0.3)
+    })
+  },
+  startShape() {
+    this.shapeStarted = true
+    this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  }
+})
+
 const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -766,7 +807,7 @@ AFRAME.registerComponent('threed-line-tool', {
     meshContainer: {type: 'selector', default: '#world-root'},
     switchbackAngle: {default: 80.0},
     pointToPoint: {default: false},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart', 'custom']},
   },
   events: {
     activate: function(e) {
@@ -801,7 +842,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: this.calcScale()
       })
 
       this.points.push({
@@ -811,7 +852,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: this.calcScale()
       })
 
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
@@ -821,7 +862,7 @@ AFRAME.registerComponent('threed-line-tool', {
         this.points[1].x = tipWorld.x
         this.points[1].y = tipWorld.y
         this.points[1].z = tipWorld.z
-        this.points[1].scale = Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        this.points[1].scale = this.calcScale()
 
         for (let i = 0; i <= 1; ++i)
         {
@@ -888,7 +929,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: this.worldForward.x,
         fy: this.worldForward.y,
         fz: this.worldForward.z,
-        scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: e.detail.pressure * this.calcScale()
       })
       this.createMesh(this.points)
     },
@@ -1012,6 +1053,9 @@ AFRAME.registerComponent('threed-line-tool', {
     })
 
     this.el.scene
+  },
+  calcScale() {
+    return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
   },
   markMaterial() {
     this.materialNeedsUpdate = true
@@ -1212,6 +1256,41 @@ AFRAME.registerComponent('threed-line-tool', {
 
           .bezierCurveTo( -sqLength * 0.1, -sqLength * 0.7, -sqLength, 0, - sqLength, sqLength * h)
           .bezierCurveTo( -sqLength, sqLength, -sqLength * 0.5, sqLength * 1.3, 0, sqLength * h)
+        break;
+      }
+      case 'custom': {
+        let shape = this.shape = this.el.sceneEl.systems['shape-creation'].wandShapes.get(this.el)
+        let box = this.pool('box', THREE.Box2)
+        let center = this.pool('center', THREE.Vector2)
+
+        box.makeEmpty()
+        for (let curve of shape.curves)
+        {
+          box.expandByPoint(curve.v1)
+          box.expandByPoint(curve.v2)
+        }
+
+        if (initial) {
+          let size = this.pool('size', THREE.Vector2)
+          box.getSize(size)
+          this.aspectRatio = size.width / size.height
+        }
+
+        box.getCenter(center)
+
+        for (let curve of shape.curves)
+        {
+          box.getParameter(curve.v1, curve.v1)
+          curve.v1.x -= 0.5
+          curve.v1.y -= 0.5
+          curve.v1.multiplyScalar(sqLength * 4)
+          curve.v1.x *= this.aspectRatio
+          box.getParameter(curve.v2, curve.v2)
+          curve.v2.x -= 0.5
+          curve.v2.y -= 0.5
+          curve.v2.multiplyScalar(sqLength * 4)
+          curve.v2.x *= this.aspectRatio
+        }
         break;
       }
     }

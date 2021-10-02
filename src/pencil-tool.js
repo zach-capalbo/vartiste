@@ -1415,3 +1415,15 @@ AFRAME.registerComponent('straight-edge-tool', {
     }
   }
 })
+
+AFRAME.registerComponent('tool-weight-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    weight: {default: 0.9}
+  },
+  init() {
+    this.handle = document.createElement('a-entity')
+    this.el.append(this.handle)
+    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
+  }
+})
