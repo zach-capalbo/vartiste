@@ -842,7 +842,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: this.calcScale()
       })
 
       this.points.push({
@@ -852,7 +852,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: 0,
         fy: 0,
         fz: 1,
-        scale: Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: this.calcScale()
       })
 
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
@@ -862,7 +862,7 @@ AFRAME.registerComponent('threed-line-tool', {
         this.points[1].x = tipWorld.x
         this.points[1].y = tipWorld.y
         this.points[1].z = tipWorld.z
-        this.points[1].scale = Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        this.points[1].scale = this.calcScale()
 
         for (let i = 0; i <= 1; ++i)
         {
@@ -929,7 +929,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: this.worldForward.x,
         fy: this.worldForward.y,
         fz: this.worldForward.z,
-        scale: e.detail.pressure * Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 2)
+        scale: e.detail.pressure * this.calcScale()
       })
       this.createMesh(this.points)
     },
@@ -1053,6 +1053,9 @@ AFRAME.registerComponent('threed-line-tool', {
     })
 
     this.el.scene
+  },
+  calcScale() {
+    return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
   },
   markMaterial() {
     this.materialNeedsUpdate = true
