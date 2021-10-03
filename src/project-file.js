@@ -27,6 +27,7 @@ class ProjectFile {
     if (!('exportJPEG' in obj)) obj.exportJPEG = false
     if (!('userBrushes' in obj)) obj.userBrushes = []
     if (!('primitiveConstructs' in obj)) obj.primitiveConstructs = []
+    if (!('shapeWands' in obj)) obj.shapeWands = []
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -261,6 +262,16 @@ class ProjectFile {
       })
     }
 
+    let shapeMatrix = new THREE.Matrix4()
+    if (Compositor.el.sceneEl.systems['shape-creation'])
+    {
+      for (let shapeInfo of obj.shapeWands)
+      {
+        let shape = new THREE.Shape().fromJSON(shapeInfo.shape)
+        Compositor.el.sceneEl.systems['shape-creation'].handleShape(shape, {matrix: shapeMatrix.fromArray(shapeInfo.matrix)})
+      }
+    }
+
     if (obj.materialPack)
     {
       let buffer = await base64ToBufferAsync(obj.materialPack[0])
@@ -465,6 +476,15 @@ class ProjectFile {
         componentDependencies: dependencies,
       })
     })
+
+    obj.shapeWands = []
+    if (Compositor.el.sceneEl.systems['shape-creation'])
+    {
+      for (let [el, shape] of Compositor.el.sceneEl.systems['shape-creation'].wandShapes.entries())
+      {
+        obj.shapeWands.push({shape: shape.toJSON(), matrix: el.object3D.matrix.elements})
+      }
+    }
 
     let materialPackRoot = new THREE.Object3D
     document.querySelectorAll('.user[material-pack] .view').forEach(el => {
