@@ -837,7 +837,7 @@ AFRAME.registerComponent('threed-line-tool', {
       let tipWorld = this.pool('tipWorld', THREE.Vector3)
       this.tipPoint.getWorldPosition(tipWorld)
 
-      for (let i = 0; i < 5; ++i)
+      for (let i = 0; i < (this.data.shape === 'line' ? 2 : 5); ++i)
       {
         this.points.push({
           x: tipWorld.x,
@@ -861,20 +861,23 @@ AFRAME.registerComponent('threed-line-tool', {
         this.points[last].z = tipWorld.z
         this.points[last].scale = scale
 
-        this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
-        this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
-        this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.99)
-        this.points[1].scale = scale
+        if (this.data.shape !== 'line')
+        {
+          this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
+          this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
+          this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.99)
+          this.points[1].scale = scale
 
-        this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
-        this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
-        this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
-        this.points[2].scale = scale
+          this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
+          this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
+          this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
+          this.points[2].scale = scale
 
-        this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.01)
-        this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.01)
-        this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.01)
-        this.points[3].scale = scale
+          this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.01)
+          this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.01)
+          this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.01)
+          this.points[3].scale = scale
+        }
 
         for (let i = 0; i < this.points.length; ++i)
         {
