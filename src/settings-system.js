@@ -159,41 +159,46 @@ Util.registerComponentSystem('settings-system', {
   },
   async saveAction() {
     let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
-    let compositor = document.getElementById('canvas-view').components.compositor;
-    let saveObj = await ProjectFile.save({compositor})
-    let compositionView = document.getElementById('composition-view')
-    if (compositionView) {
-      compositionView.emit('updatemesh')
-    }
+    try {
+      let compositor = document.getElementById('canvas-view').components.compositor;
+      let saveObj = await ProjectFile.save({compositor})
+      let compositionView = document.getElementById('composition-view')
+      if (compositionView) {
+        compositionView.emit('updatemesh')
+      }
 
-    let json = JSON.stringify(saveObj)
-    if (this.data.compressProject)
-    {
-      console.time('compressProject')
-      let data
-      let worker = new CompressionWorker();
-      try {
-        data = await new Promise((r, e) => {
-          worker.onmessage = (message) => {
-            r(message.data)
-          }
-          worker.onerror = e;
-          worker.postMessage(json)
-        })
-      }
-      finally
+      let json = JSON.stringify(saveObj)
+      if (this.data.compressProject)
       {
-        worker.terminate();
+        console.time('compressProject')
+        let data
+        let worker = new CompressionWorker();
+        try {
+          data = await new Promise((r, e) => {
+            worker.onmessage = (message) => {
+              r(message.data)
+            }
+            worker.onerror = e;
+            worker.postMessage(json)
+          })
+        }
+        finally
+        {
+          worker.terminate();
+        }
+        console.timeEnd('compressProject')
+        this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
       }
-      console.timeEnd('compressProject')
-      this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
+      else
+      {
+        let encoded = encodeURIComponent(json)
+        this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
+      }
+      busy.done()
     }
-    else
-    {
-      let encoded = encodeURIComponent(json)
-      this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
+    catch (e) {
+      busy.error(e)
     }
-    busy.done()
   },
   getPreview({width=64, height=64} = {}) {
     let compositor = Compositor.component

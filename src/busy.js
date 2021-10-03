@@ -28,6 +28,8 @@ class Busy {
   }
   error(e) {
     this.done()
+    console.error(e)
+    this.system.displayError(`Error during ${this.title}:\n${e}`)
   }
   await() {
     if (!this.doneCallbacks) {
@@ -78,6 +80,11 @@ AFRAME.registerSystem('busy-indicator', {
   },
   unregister(c) {
     this.indicators.splice(this.indicators.indexOf(this))
+  },
+  displayError(e) {
+    for (let indicator of this.indicators) {
+      indicator.showError(e.toString())
+    }
   }
 })
 
@@ -88,5 +95,15 @@ AFRAME.registerComponent('busy-indicator', {
   },
   remove() {
     this.system.unregister(this)
+  },
+  showError(txt) {
+    let text = document.createElement('a-entity')
+    this.el.sceneEl.append(text)
+    text.setAttribute('text', `wrapCount: 20; color: red;`)
+    text.setAttribute('text', 'value', txt)
+    text.setAttribute('frame', 'closable: true')
+    VARTISTE.Util.whenLoaded(text, () => {
+      VARTISTE.Util.positionObject3DAtTarget(text.object3D, this.el.object3D)
+    })
   }
 })

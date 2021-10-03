@@ -83,9 +83,20 @@ class DownloadSorter {
       }
     }
   }
-  async waitFor(file) {
-    console.info("Taking", file.full)
+  async waitFor(msg) {
+    if (this.stdin)
+    {
+      return await this.waitKey(`${msg}`)
+    }
+    console.info(msg)
     await delay(1000)
+  }
+  waitKey(msg) {
+    console.info(msg + " (m)ove/(s)kip")
+    return new Promise((r, e) => {
+      this.resolve = r;
+      this.err = e;
+    })
   }
   async sortSourceFiles({wait = false} = {}) {
     let {destination, source} = this
@@ -103,17 +114,34 @@ class DownloadSorter {
 
     let filesToCheck = ls(`${this.source}/*.{${CANDIDATE_FORMATS.join(",")}}`)
 
-    for (let file of filesToCheck)
+    for (let project of this.projects)
     {
-      for (let project of this.projects)
+      let hasFile = false
+      console.info(`Project: ${project.name} (${project.path})`)
+      for (let file of filesToCheck)
       {
         if (project.shouldOwn(file.full))
         {
-          if (wait) {
-            await this.waitFor(file)
-          }
+          hasFile = true
+          console.info(` - ${file.full}`)
+        }
+      }
+
+      if (!hasFile) continue;
+
+      if (wait) {
+        try {
+          await this.waitFor(project.name)
+        } catch (e) {
+          continue
+        }
+      };
+      for (let file of filesToCheck)
+      {
+        if (project.shouldOwn(file.full))
+        {
+          console.log("Taking", file.full)
           project.take(file.full)
-          break;
         }
       }
     }
@@ -135,8 +163,61 @@ class DownloadSorter {
     await delay(5000)
     this.sortSourceFiles({wait: true})
   }
+  async sortInteractive() {
+    var stdin = process.stdin;
+
+    // without this, we would only get streams once enter is pressed
+    //stdin.setRawMode( true );
+
+    // resume stdin in the parent process (node app won't quit all by itself
+    // unless an error or process.exit() happens)
+    stdin.resume();
+    // i don't want binary, do you?
+    stdin.setEncoding( 'utf8' );
+
+    // on any data into stdin
+    stdin.on( 'data', ( key ) =>
+    {
+      // ctrl-c ( end of text )
+      if ( key === '\u0003' ) {
+        process.exit();
+      }
+
+      if (!this.resolve)
+      {
+        return
+      }
+
+      // without rawmode, it returns EOL with the string
+      if (key.indexOf('m')==0)
+      {
+        this.resolve()
+      }
+
+      if (key.indexOf('s')==0)
+      {
+        this.err()
+      }
+
+      // write the key to stdout all normal like
+      // process.stdout.write( key );
+    });
+
+    this.stdin = stdin
+
+    this.setupDestination()
+    this.takeStock()
+    this.createCandidateProjects()
+    // for (let project of this.projects)
+    // {
+    //   console.log(`- ${project.name}: ${project.path}`)
+    // }
+    // await delay(5000)
+    await this.sortSourceFiles({wait: true})
+    process.exit();
+  }
 }
 
 module.exports = {DownloadSorter, Project}
 
-new DownloadSorter().sortWait()
+new DownloadSorter().sortInteractive()

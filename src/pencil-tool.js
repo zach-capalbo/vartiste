@@ -1425,5 +1425,8 @@ AFRAME.registerComponent('tool-weight-tool', {
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
+
+    this.raycaster = document.createElement('a-entity')
+    
   }
 })
