@@ -833,38 +833,53 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     triggerdown: function(e) {
       if (!this.data.pointToPoint) return;
+      console.log("Trigger down")
       let tipWorld = this.pool('tipWorld', THREE.Vector3)
       this.tipPoint.getWorldPosition(tipWorld)
-      this.points.push({
-        x: tipWorld.x,
-        y: tipWorld.y,
-        z: tipWorld.z,
-        fx: 0,
-        fy: 0,
-        fz: 1,
-        scale: this.calcScale()
-      })
 
-      this.points.push({
-        x: tipWorld.x,
-        y: tipWorld.y,
-        z: tipWorld.z,
-        fx: 0,
-        fy: 0,
-        fz: 1,
-        scale: this.calcScale()
-      })
+      for (let i = 0; i < (this.data.shape === 'line' ? 2 : 5); ++i)
+      {
+        this.points.push({
+          x: tipWorld.x,
+          y: tipWorld.y,
+          z: tipWorld.z,
+          fx: 0,
+          fy: 0,
+          fz: 1,
+          scale: this.calcScale()
+        })
+      }
 
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
         this.tipPoint.getWorldPosition(tipWorld)
         this.tipPoint.getWorldDirection(this.worldForward)
 
-        this.points[1].x = tipWorld.x
-        this.points[1].y = tipWorld.y
-        this.points[1].z = tipWorld.z
-        this.points[1].scale = this.calcScale()
+        let scale = this.calcScale()
+        let last = this.points.length - 1
+        this.points[last].x = tipWorld.x
+        this.points[last].y = tipWorld.y
+        this.points[last].z = tipWorld.z
+        this.points[last].scale = scale
 
-        for (let i = 0; i <= 1; ++i)
+        if (this.data.shape !== 'line')
+        {
+          this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
+          this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
+          this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.99)
+          this.points[1].scale = scale
+
+          this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
+          this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
+          this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
+          this.points[2].scale = scale
+
+          this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.01)
+          this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.01)
+          this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.01)
+          this.points[3].scale = scale
+        }
+
+        for (let i = 0; i < this.points.length; ++i)
         {
           this.points[i].fx = this.worldForward.x
           this.points[i].fy = this.worldForward.y
@@ -876,17 +891,20 @@ AFRAME.registerComponent('threed-line-tool', {
       })
     },
     triggerup: function(e) {
-      console.log("Trigger up")
       if (!this.data.pointToPoint) return;
+      console.log("Trigger up")
       this.doneDrawing()
       this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
+    },
+    bbuttondown: function(e) {
+      this.el.setAttribute('threed-line-tool', 'pointToPoint', !this.data.pointToPoint)
+      console.log("Switching p2p mode", this.data.pointToPoint)
     },
     draw: function(e) {
       if (this.data.pointToPoint) return;
       if (!this.endDrawingEl)
       {
         this.endDrawingEl = e.detail.sourceEl;
-
         this.endDrawingEl.addEventListener('enddrawing', this.doneDrawing)
       }
 
@@ -983,7 +1001,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
 
-    this.el.setAttribute('action-tooltips', "trigger: Hold to draw")
+    this.el.setAttribute('action-tooltips', "trigger: Hold to draw; b: Toggle Point-to-point mode")
 
     let tip
     if (this.data.shape === 'line')
@@ -1016,7 +1034,7 @@ AFRAME.registerComponent('threed-line-tool', {
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, this.data.pointToPoint ? 0 : tipHeight / 2.0, 0);
     tipPoint.rotation.set(- Math.PI / 2, 0, 0);
-    this.el.sceneEl.systems['button-caster'].install(['trigger'])
+    this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
 
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
 
