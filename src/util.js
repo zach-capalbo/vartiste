@@ -619,6 +619,20 @@ class VARTISTEUtil {
     }
   }
 
+  busify(opts, fn, self) {
+    let scene = AFRAME.scenes[0]
+    return async function(...args) {
+      let busy = scene.systems['busy-indicator'].busy(opts)
+      try {
+        await fn.call(self, ...args)
+        busy.done()
+      } catch (e) {
+        busy.error(e)
+        throw e
+      }
+    }
+  }
+
   async delay(t) { return new Promise(r => setTimeout(r, t)); }
 
   isLowPower() {

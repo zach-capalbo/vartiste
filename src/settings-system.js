@@ -52,6 +52,12 @@ Util.registerComponentSystem('settings-system', {
 
     this.clipboardInput = document.createElement('input')
     document.body.append(this.clipboardInput)
+
+    this.saveAction = Util.busify({title: "Saving..."}, this.saveAction, this)
+    this.storeToBrowserAction = Util.busify({title: "Saving..."}, this.storeToBrowserAction, this)
+    this.loadFromBrowser = Util.busify({title: "Loading..."}, this.loadFromBrowser, this)
+    this.export3dAction = Util.busify({title: "Exporting..."}, this.export3dAction, this)
+    this.load = Util.busify({title: "Loading..."}, this.load, this)
   },
   popup(url, description) {
     this.el.emit('open-popup', `Attempted to open a poup for ${description}. You may need to take off your headset to view it. You may also need to disable your popup blocker.`)
@@ -158,46 +164,39 @@ Util.registerComponentSystem('settings-system', {
     }
   },
   async saveAction() {
-    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
-    try {
-      let compositor = document.getElementById('canvas-view').components.compositor;
-      let saveObj = await ProjectFile.save({compositor})
-      let compositionView = document.getElementById('composition-view')
-      if (compositionView) {
-        compositionView.emit('updatemesh')
-      }
-
-      let json = JSON.stringify(saveObj)
-      if (this.data.compressProject)
-      {
-        console.time('compressProject')
-        let data
-        let worker = new CompressionWorker();
-        try {
-          data = await new Promise((r, e) => {
-            worker.onmessage = (message) => {
-              r(message.data)
-            }
-            worker.onerror = e;
-            worker.postMessage(json)
-          })
-        }
-        finally
-        {
-          worker.terminate();
-        }
-        console.timeEnd('compressProject')
-        this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
-      }
-      else
-      {
-        let encoded = encodeURIComponent(json)
-        this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
-      }
-      busy.done()
+    let compositor = document.getElementById('canvas-view').components.compositor;
+    let saveObj = await ProjectFile.save({compositor})
+    let compositionView = document.getElementById('composition-view')
+    if (compositionView) {
+      compositionView.emit('updatemesh')
     }
-    catch (e) {
-      busy.error(e)
+
+    let json = JSON.stringify(saveObj)
+    if (this.data.compressProject)
+    {
+      console.time('compressProject')
+      let data
+      let worker = new CompressionWorker();
+      try {
+        data = await new Promise((r, e) => {
+          worker.onmessage = (message) => {
+            r(message.data)
+          }
+          worker.onerror = e;
+          worker.postMessage(json)
+        })
+      }
+      finally
+      {
+        worker.terminate();
+      }
+      console.timeEnd('compressProject')
+      this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
+    }
+    else
+    {
+      let encoded = encodeURIComponent(json)
+      this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
     }
   },
   getPreview({width=64, height=64} = {}) {
@@ -218,7 +217,6 @@ Util.registerComponentSystem('settings-system', {
     return db
   },
   async storeToBrowserAction() {
-    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Saving..."})
     let projectData = JSON.stringify(await ProjectFile.save({compositor: Compositor.component}))
     let db = this.openProjectsDB()
     await db.transaction("rw", db.projects, db.previews, async () => {
@@ -234,7 +232,6 @@ Util.registerComponentSystem('settings-system', {
     })
     this.el.emit('open-popup', `Saved at ${new Date()}`)
     document.getElementById('composition-view').emit('updatemesh')
-    busy.done()
   },
   async loadFromBrowser(projectName) {
     let db = this.openProjectsDB()
@@ -398,13 +395,11 @@ Util.registerComponentSystem('settings-system', {
     mainCanvas.setAttribute('scale', "0.002 0.002 0.002")
   },
   async load(text) {
-    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: "Loading..."})
     window.isLoadingProject = true
     let loadObj = JSON.parse(text)
     await ProjectFile.load(loadObj, {compositor: document.getElementById('canvas-view').components.compositor})
     window.isLoadingProject = false
     window.loadedSuccessfully = true
-    busy.done()
   },
   helpAction() {
     this.popup("landing.html", "Instructions")
