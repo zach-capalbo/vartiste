@@ -733,18 +733,18 @@ AFRAME.registerComponent('copy-manipulator-info-text', {
   }
 })
 
-// Constrains the objects movement when moved by the [manipulator](#manipulator) 
-//by locking the object’s point of origin within a sphere.
-//The object will bleed beyond the edges of the sphere, but will stop when its point of 
-//origin hits the inner or outer radius. innerRadius can be omitted to allow for full 
-//movement within outerRadius.
+// Constrains the objects movement when moved by the [manipulator](#manipulator)
+// by locking the object’s point of origin within a sphere.
+// The object bleeds beyond the edges of the sphere, but stops when its point of
+// origin reaches the inner or outer radius. innerRadius can be omitted to allow for full
+// movement within outerRadius.
 AFRAME.registerComponent('constrain-to-sphere', {
   schema: {
-    //The inner limit of movement, in world units
+    // The inner limit of movement, in world units
     innerRadius: {default: 0.0},
-    //The outer limit of movement, in world units
+    // The outer limit of movement, in world units
     outerRadius: {default: 1.0},
-    //Sets the constraint when the scene loads
+    // Sets the constraint when the scene loads
     constrainOnLoad: {default: true}
   },
   init() {
