@@ -41,32 +41,49 @@ updateMatcapMap = function (shader, data) {
   }
 };
 
-// Wraps a [THREE.MeshMatcapMaterial](https://threejs.org/docs/#api/en/materials/MeshMatcapMaterial)
+// A shader for object materials. Wraps a [THREE.MeshMatcapMaterial](https://threejs.org/docs/#api/en/materials/MeshMatcapMaterial).
 AFRAME.registerShader('matcap', {
   schema: {
+    // Material color, in hexidecimal. Set to white (0xffffff) by default.
     color: {type: 'color'},
-
+    // Affects the texture of the material by displacing the mesh’s vertices.
+    // Displaced vertices act as a part of the object, casting shadows, blocking
+    // other objects and interacting with the scene as the rest of the object does.
     displacementMap: {type: 'map'},
+    // Sets the degree to which displacementMap affects the vertices. 0 is no
+    // displacement, 1 is maximum displacement.
     displacementScale: {default: 1},
+    // Sets the zero point of the displacement map.
     displacementBias: {default: 0.5},
+    // How much the displacement texture is offset in the X and Y directions.
     displacementTextureOffset: {type: 'vec2'},
+    // How many times the texture repeats in the X and Y directions.
     displacementTextureRepeat: {type: 'vec2', default: {x: 1, y: 1}},
-
+    // Sets whether or not the material is affected by fog.
     fog: {default: true},
+    // Height of video, in pixels, if defining a video texture.
     height: {default: 256},
-
+    // Normal map. Used to add the illusion of complex detail.
     normalMap: {type: 'map'},
+    // Sets the scale of the normal map in the X and Y directions.
     normalScale: {type: 'vec2', default: {x: 1, y: 1}},
+    // How much the normal map is offset in the X and Y directions.
     normalTextureOffset: {type: 'vec2'},
+    // How many times the normal map repeats in the X and Y directions.
     normalTextureRepeat: {type: 'vec2', default: {x: 1, y: 1}},
-
+    // How much the texture map (defined by src) is offset in X and Y directions.
     offset: {type: 'vec2', default: {x: 0, y: 0}},
+    // How many times the texture map (defined by src) repeats in X and Y directions.
     repeat: {type: 'vec2', default: {x: 1, y: 1}},
-
+    // Image or video texture map.
     src: {type: 'map'},
+    // Matcap texture map.
     matcap: {type: 'map', default: '#asset-matcap'},
+    // Width, in pixels, if defining a video map.
     width: {default: 512},
+    // When set to true, only the geometry edges will render.
     wireframe: {default: false},
+    // Width, in pixels, of the rendered wireframe line.
     wireframeLinewidth: {default: 2}
   },
 

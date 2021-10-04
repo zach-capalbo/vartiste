@@ -15,6 +15,7 @@ const BRUSH_PACKS = {}
    BRUSH_PACKS[asset] = assetSrc
  }
 
+// The brush system is responsible for loading brushes
 AFRAME.registerSystem('brush-system', {
   schema: {
     autoLoadBrushes: {default: false},
