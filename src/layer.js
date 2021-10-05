@@ -33,6 +33,8 @@ export class Layer {
     this.canvas.touch = () => this.touch()
     this.canvas.getUpdateTime = () => this.updateTime
 
+    this.shapes = []
+
     this.clear()
   }
   touch() {

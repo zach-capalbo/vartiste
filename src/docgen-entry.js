@@ -65,6 +65,7 @@ async function addDocumentation(src)
   require('./kromophone')
   require('./pencil-tool')
   require('./brush-editor')
+  require('./text')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> {

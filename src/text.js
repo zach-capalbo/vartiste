@@ -1,7 +1,24 @@
 require('aframe-troika-text');
 
 const replaceText = (() => {
-  if (window.VARTISTE_TOOLKIT) return window.VARTISTE_TOOLKIT.replaceTextWithTroikaText;
+  if (window.VARTISTE_TOOLKIT) {
+    if (window.VARTISTE_TOOLKIT.replaceTextWithTroikaText === 'auto')
+    {
+      if (VARTISTE_TOOLKIT.includeFiles && VARTISTE_TOOLKIT.includeFiles.length)
+      {
+        return false
+      }
+
+      if (VARTISTE_TOOLKIT.includeComponents && VARTISTE_TOOLKIT.includeComponents.length)
+      {
+        return false
+      }
+
+      return true
+    }
+    return !!window.VARTISTE_TOOLKIT.replaceTextWithTroikaText;
+  }
+
   return true
 })();
 
@@ -15,6 +32,15 @@ if (window.VARTISTE_TOOLKIT) {
 const TEXT_SCHEMA = AFRAME.components['text'].schema
 delete AFRAME.components.text
 
+// This is the shim which replaces the built-in AFRAME `text` component with the
+// [`troika-text`](https://github.com/lojjic/aframe-troika-text/) component. It
+// accepts all of the properties of the [AFRAME `text` component](https://aframe.io/docs/1.2.0/components/text.html)
+// and automatically converts them to the relevant `troika-text` properties. You
+// _should_ be able to continue using `text` without having to change any code
+// but there may be small inconsistencies.
+//
+// In order to enable this, you may need to set [VARTISTE_TOOLKIT.replaceTextWithTroikaText](#customization)
+// to `true`
 AFRAME.registerComponent('text', {
   dependencies: ['troika-text'],
   schema: Object.assign({}, TEXT_SCHEMA,{
@@ -62,6 +88,9 @@ AFRAME.registerComponent('text', {
 
     this.el.setAttribute('troika-text', troikaData)
     this.updateLayout()
+  },
+  remove() {
+    this.el.removeAttribute('troika-text')
   },
   updateLayout () {
     var anchor;
@@ -127,7 +156,7 @@ AFRAME.registerComponent('text', {
 // AFRAME.components['text'] = AFRAME.components['vartiste-text']
 })(replaceText)
 
-
+// This shifts the geometry for non-troika text to match the text's baseline property
 AFRAME.registerComponent('text-geometry-shifter', {
   dependencies: ['text'],
   init() {

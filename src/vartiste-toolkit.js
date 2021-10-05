@@ -17,7 +17,7 @@ window.VARTISTE_TOOLKIT = Object.assign({
   includeComponents: undefined,
   excludeComponents: [],
   includeCompositor: false,
-  replaceTextWithTroikaText: true,
+  replaceTextWithTroikaText: 'auto',
   required_assets: [
     "./shelf.png",
     "./hand-right.png",

@@ -99,8 +99,10 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
 
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: unwrapped-dodecahedron; radius: 0.5"
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: head-base"
-        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: plane; width: 1; height: 1"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: character-base"
 
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: cone; radiusBottom: 0.5; radiusTop: 0; segmentsHeight: 5; segmentsRadial: 10"
+
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: plane; width: 1; height: 1"
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: triangle; width: 1; height: 1"
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: plane; width: 2; height: 1; segmentsWidth: 8; segmentsHeight: 4"
