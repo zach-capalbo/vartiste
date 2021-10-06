@@ -1147,4 +1147,12 @@ export class VectorBrush extends Brush {
   }
 }
 
+class FloodFillBrush {
+  drawTo(ctx, x, y, opts = {}) {
+    // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
+    let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+    let data = new Uint32Array(imageData.data.buffer)
+  }
+}
+
 const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};

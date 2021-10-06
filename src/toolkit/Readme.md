@@ -27,7 +27,7 @@ is not recommended as it may cause unexpected changes.
 ## New Project vs. Existing Project
 
 When creating a new project, I recommend pulling the entirety of
-aframe-vartiste-toolkit. The toolkit contains a wide variety of features; 
+aframe-vartiste-toolkit. The toolkit contains a wide variety of features;
 some components and systems rely on others for full functionality. Including
 the entire toolkit allows components and systems to work together to their
 full extent.
@@ -59,7 +59,7 @@ their own children entities.
 There are a few notable exceptions in the form of utility classes, such as
 [`VARTISTE.Util`](#util.js) and [`VARTISTE.Undo`](#undo.js). These utility classes
 can be used when creating components or anywhere you'd like in your Javascript code.
-They are exposed under the VARTISTE object, which is created as a property in the 
+They are exposed under the VARTISTE object, which is created as a property in the
 global `window`. For instance, to access the
 `whenLoaded` method of [`Util`](#util.js), you can call
 `VARTISTE.Util.whenLoaded(...)` anywhere in your code.
@@ -72,18 +72,18 @@ One extension to the ECS framework in VARTISTE are "component systems", created
 via [`VARTISTE.Util.registerComponentSystem`](#util.js). These are basically
 components for `a-scene` which get automatically attached (like systems do).
 They have the full schema and update abilities of components, with the
-auto-attach convenience of systems. These are registered as both systems _and_ 
-components and can be accessed either by the scene `components` object 
-(e.g., `sceneEl.components["COMPONENT NAME"]`) or the scene `systems` object 
+auto-attach convenience of systems. These are registered as both systems _and_
+components and can be accessed either by the scene `components` object
+(e.g., `sceneEl.components["COMPONENT NAME"]`) or the scene `systems` object
 (e.g., `sceneEl.systems["COMPONENT NAME"]`) within your code.
 
 ## UI Components
 
-VARTISTE has a quick-and-dirty user interface, focused around the 
+VARTISTE has a quick-and-dirty user interface, focused around the
 [`icon-button`](#icon-button). These are usually collected into an
-[`icon-row`](#icon-row), where they're automatically laid out 
-horizontally. Most clickable elements have a [`tooltip`](#tooltip), 
-which are readable by the built-in [text-to-speech](#speech.js) 
+[`icon-row`](#icon-row), where they're automatically laid out
+horizontally. Most clickable elements have a [`tooltip`](#tooltip),
+which are readable by the built-in [text-to-speech](#speech.js)
 system.
 
 In addition to [`icon-button`s](#icon-button), there are [`edit-field`s](#edit-field)
@@ -95,7 +95,7 @@ easy workspace management.
 
 ## User Rig
 
-I created VARTISTE's user rig layout based on a laser-pointer type interface. 
+I created VARTISTE's user rig layout based on a laser-pointer type interface.
 You can incorporate the entire rig with the [`vartiste-user-root`](#vartiste-user-root)
 component. It includes:
 
@@ -125,8 +125,8 @@ elements have the `clickable` HTML class set, which makes them visible to the
 raycasters. `click` events are emitted when these elements are clicked.
 
 Every `clickable` entity, by default, can also be grabbed and moved. Grabbing
-and moving is handled via the [`manipulator`](#manipulator) component, which 
-is installed on the user motion controllers or mouse controls. More info can 
+and moving is handled via the [`manipulator`](#manipulator) component, which
+is installed on the user motion controllers or mouse controls. More info can
 be found in the documentation for [`manipulator`](#manipulator).
 
 There are also a bunch of built-in constraints, which can be set on entities to
@@ -157,14 +157,14 @@ Scene-wide drawing parameters are managed by the
 There are lots of other nifty components and systems, for instance
 [`canvas-fx`](#canvas-fx), which lets you quickly apply special effects to a
 canvas, or [`glb-exporter`](#glb-exporter) which will let you download any
-arbitrary entity or `THREE.Object3D` as a glb file in a single function call. 
+arbitrary entity or `THREE.Object3D` as a glb file in a single function call.
 There's even a PhysX-based [physics system](#physics.js)!
 
 Ultimately, the best way to find out everything that's available is to read
 through these documents, play around with the examples and VARTISTE itself, and
 failing that, to read the source code.
 
-Also, VARTISTE uses a bunch of premade environments. These are packaged separately 
+Also, VARTISTE uses a bunch of premade environments. These are packaged separately
 in the [aframe-enviropacks](https://www.npmjs.com/package/aframe-enviropacks) package.
 
 ## Assets
@@ -188,8 +188,8 @@ If you want to include *all* VARTISTE assets in your project, you will need an
 ## Customization
 
 You can optionally customize which components and systems are registered by the
-aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the 
-vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefined` 
+aframe-vartiste-toolkit by setting the `VARTISTE_TOOLKIT` variable *before* the
+vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefined`
 (default) or be an object having any of the following properties:
 
 - `excludeComponents`: Array of strings specifying which components, systems, or
@@ -210,6 +210,15 @@ vartiste-toolkit.js file is loaded. `VARTISTE_TOOLKIT` should either be `undefin
 - `assetUrl`: VARTISTE Toolkit assets will be fetched from
   `assetUrl/assets/####.###`. Use this option if you want to use webpack and
   have a custom public-facing URL
+- `replaceTextWithTroikaText`: If set to `true`, it will completely replace the
+  built-in AFRAME `text` component with a shim that will convert all `text` to
+  `troika-text`. The shim will automatically convert all `text` properties to
+  equivalent `troika-text` properties, and handle updates and removal. No
+  changes to code using the `text` component should be necessary. If set to
+  `false` the `text` component will be left at the AFRAME default. If left at
+  the default value of `'auto'`, the toolkit will try to guess whether you want
+  the shim or not by looking at the `includeComponents` and `excludeComponents`
+  values.
 
 ## Component Reference
 

@@ -38,6 +38,7 @@ AFRAME.registerComponent('tooltip', {
     else
     {
       tooltip.setAttribute('text', `color: #000; width: 1; align: center; value: ${this.data}; wrapCount: 10; zOffset: ${0.005}; baseline: bottom`)
+      tooltip.setAttribute('text-geometry-shifter', '')
     }
 
     // tooltip.setAttribute('troika-text', 'outlineBlur', 0.01)

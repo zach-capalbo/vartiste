@@ -151,6 +151,14 @@ Util.registerComponentSystem('material-pack-system', {
 
     return false
   },
+  addCanvasMaterial() {
+    Compositor.component.data.drawOverlay = false
+    Compositor.component.quickDraw()
+
+    this.addPacksFromObjects(Compositor.el.getObject3D('mesh'))
+
+    Compositor.component.data.drawOverlay = true
+  },
   addMaterialPack(attr) {
     for (let map in this.defaultMap)
     {

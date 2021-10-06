@@ -777,7 +777,7 @@ Util.registerComponentSystem('shape-creation', {
     this.cutBrush = new VectorBrush('vector')
     this.wandShapes = new Map()
   },
-  handleShape(shape)
+  handleShape(shape, {matrix} = {})
   {
     console.log("Creating shape wand", shape)
     let el = document.createElement('a-entity')
@@ -789,8 +789,15 @@ Util.registerComponentSystem('shape-creation', {
     this.wandShapes.set(el, shape)
     el.setAttribute('threed-line-tool', 'shape: custom')
     Util.whenLoaded(el, () => {
-      Util.positionObject3DAtTarget(el.object3D, Compositor.el.object3D, {transformOffset: {x: 0, y: 0, z: 0.3}})
-      el.object3D.scale.set(0.3, 0.3, 0.3)
+      if (matrix)
+      {
+        Util.applyMatrix(matrix, el.object3D)
+      }
+      else
+      {
+        Util.positionObject3DAtTarget(el.object3D, Compositor.el.object3D, {transformOffset: {x: 0, y: 0, z: 0.3}})
+        el.object3D.scale.set(0.3, 0.3, 0.3)
+      }
     })
   },
   startShape() {

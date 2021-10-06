@@ -53,29 +53,33 @@ AFRAME.registerGeometry('unwrapped-dodecahedron', {
   }
 });
 
-(async () => {
-  window.Pako = await import('pako')
-})();
+const GLB_GEOMETRIES = [
+  "head-base",
+  "character-base",
+]
 
-var headGeo = null;
-var headMerged = false;
+let geoGeometry = {}
+let geoMerged = {}
 
-(function() {
-  new THREE.GLTFLoader().load(require('./assets/head-base.glb'), (model) => {
-    headGeo = model.scene.getObjectByProperty('type', 'Mesh').geometry;
+for (let geoName of GLB_GEOMETRIES) {
+
+  (function() {
+    new THREE.GLTFLoader().load(require(`./assets/${geoName}.glb`), (model) => {
+      geoGeometry[geoName] = (model.scene.getObjectByProperty('type', 'Mesh') || model.scene.getObjectByProperty('type', 'SkinnedMesh')).geometry;
+    })
+  })();
+
+  AFRAME.registerGeometry(geoName, {
+    init: function (data) {
+      if (!geoGeometry[geoName]) {
+        console.error(`Loading ${geoName} too soon!!`)
+      }
+      if (!geoMerged[geoName])
+      {
+        geoGeometry[geoName] = BufferGeometryUtils.mergeVertices(geoGeometry[geoName],  1.0e-2)
+        geoMerged[geoName] = true
+      }
+      this.geometry = geoGeometry[geoName];
+    }
   })
-})();
-
-AFRAME.registerGeometry('head-base', {
-  init: function (data) {
-    if (!headGeo) {
-      console.error("Loading head-base too soon!!")
-    }
-    if (!headMerged)
-    {
-      headGeo = BufferGeometryUtils.mergeVertices(headGeo,  1.0e-2)
-      headMerged = true
-    }
-    this.geometry = headGeo;
-  }
-})
+}
