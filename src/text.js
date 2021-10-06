@@ -89,9 +89,9 @@ AFRAME.registerComponent('text', {
     this.el.setAttribute('troika-text', troikaData)
     this.updateLayout()
   },
-  remove() {
-    this.el.removeAttribute('troika-text')
-  },
+  // remove() {
+  //   this.el.removeAttribute('troika-text')
+  // },
   updateLayout () {
     var anchor;
     var baseline;
