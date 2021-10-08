@@ -283,7 +283,14 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
             Util.applyMatrix(startMatrix, this.el.object3D)
           })
         }
-        this.system.grabConstruct(this.el)
+        if (this.el.grabbingManipulator.attrName === 'selection-box-tool')
+        {
+          this.system.grabConstruct(null)
+        }
+        else
+        {
+          this.system.grabConstruct(this.el)
+        }
       }
     },
     'bbuttonup': function(e) {

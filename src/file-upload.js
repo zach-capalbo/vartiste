@@ -999,13 +999,7 @@ AFRAME.registerComponent('reference-glb', {
     bbuttondown: function (e) {
       if (this.el.is('grabbed'))
       {
-        let el = document.createElement('a-entity')
-        this.el.parentEl.append(el)
-        Util.whenLoaded(el, () => {
-          el.setObject3D('mesh', this.el.getObject3D('mesh').clone())
-          el.setAttribute('reference-glb', this.data)
-          Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
-        })
+        this.makeClone()
       }
     },
   },
@@ -1021,6 +1015,15 @@ AFRAME.registerComponent('reference-glb', {
       decomposeButton.addEventListener('click', () => {
         this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])
       })
+    })
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    this.el.parentEl.append(el)
+    Util.whenLoaded(el, () => {
+      el.setObject3D('mesh', this.el.getObject3D('mesh').clone())
+      el.setAttribute('reference-glb', this.data)
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
     })
   }
 })

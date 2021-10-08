@@ -975,6 +975,17 @@ AFRAME.registerComponent('movement-tool', {
   },
 })
 
+function forwardable(evt) {
+  return function(e) {
+    if (!this.data.grabElements) return;
+
+    for (let target of Object.values(this.grabbed))
+    {
+      target.emit(evt, e.detail)
+    }
+  }
+}
+
 AFRAME.registerComponent('selection-box-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
@@ -1002,7 +1013,15 @@ AFRAME.registerComponent('selection-box-tool', {
     },
     click: function(e) {
       this.toggleGrabbing(!this.grabbing)
-    }
+    },
+    bbuttondown: forwardable('bbuttondown'),
+    bbuttonup: forwardable('bbuttonup'),
+    abuttondown: forwardable('abuttondown'),
+    abuttonup: forwardable('abuttonup'),
+    xbuttondown: forwardable('xbuttondown'),
+    xbuttonup: forwardable('xbuttonup'),
+    ybuttondown: forwardable('ybuttondown'),
+    ybuttonup: forwardable('ybuttonup'),
   },
   init() {
     this.el.classList.add('grab-root')
@@ -1082,6 +1101,7 @@ AFRAME.registerComponent('selection-box-tool', {
     this.grabbers = {}
     this.grabbed = {}
     this.grabberId = {}
+    this.grabChildren = {}
 
     this.box.getObject3D('mesh').geometry.computeBoundingBox()
     let boundingBox = this.box.getObject3D('mesh').geometry.boundingBox
@@ -1092,6 +1112,7 @@ AFRAME.registerComponent('selection-box-tool', {
       let target = this.data.grabElements ? Util.resolveGrabRedirection(el) : el
 
       if (target === this.el) continue
+      if (target === this.box) continue
       if (target.object3D.uuid in this.grabbers) continue
 
       if (this.data.grabElements)
@@ -1143,6 +1164,7 @@ AFRAME.registerComponent('selection-box-tool', {
 
       if (this.data.grabElements)
       {
+        target.grabbingManipulator = this
         target.addState('grabbed')
       }
 
@@ -1198,9 +1220,10 @@ AFRAME.registerComponent('selection-box-tool', {
 
     for (let obj of Object.values(this.grabbers))
     {
-      if (!this.grabbed[obj.uuid].object3D)
+      if (!this.grabbed[obj.uuid].object3D || !this.grabbed[obj.uuid].object3D.parent)
       {
         console.warn("Grabbed object disappeared", obj)
+        delete this.grabbed[obj.uuid]
         continue;
       }
 
@@ -1427,6 +1450,6 @@ AFRAME.registerComponent('tool-weight-tool', {
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
 
     this.raycaster = document.createElement('a-entity')
-    
+
   }
 })
