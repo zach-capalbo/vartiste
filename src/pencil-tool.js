@@ -994,6 +994,7 @@ AFRAME.registerComponent('selection-box-tool', {
     grabElements: {default: true},
     grabVertices: {default: false},
     selectVertices: {default: false},
+    selectElGeometry: {default: true},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
     weight: {default: 0.0},
@@ -1115,13 +1116,35 @@ AFRAME.registerComponent('selection-box-tool', {
       if (target === this.box) continue
       if (target.object3D.uuid in this.grabbers) continue
 
-      if (this.data.grabElements)
+      if (this.data.grabElements && this.data.selectElGeometry)
       {
+        let contained = false
+        if (!el.getObject3D('mesh')) continue;
+        Util.traverseFind(el.getObject3D('mesh'), (o) => {
+          if (!o.geometry) return;
+
+          for (let i = 0; i < o.geometry.attributes.position.count; ++i)
+          {
+            worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
+            o.localToWorld(worldPos)
+            this.box.getObject3D('mesh').worldToLocal(worldPos)
+            if (boundingBox.containsPoint(worldPos))
+            {
+              contained = true
+              localPos.copy(worldPos)
+              return true
+            }
+          }
+        })
+        if (!contained) continue
+      }
+      else if (this.data.grabElements)
+      {
+        if (!Util.visibleWithAncestors(target.object3D)) continue
         el.object3D.getWorldPosition(worldPos)
         localPos.copy(worldPos)
         this.box.getObject3D('mesh').worldToLocal(localPos)
         if (!boundingBox.containsPoint(localPos)) continue
-        if (!Util.visibleWithAncestors(target.object3D)) continue
       }
       else
       {
@@ -1203,6 +1226,7 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       for (let el of Object.values(this.grabbed))
       {
+        delete el.grabbingManipulator
         el.removeState('grabbed')
       }
     }
