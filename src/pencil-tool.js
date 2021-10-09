@@ -975,6 +975,17 @@ AFRAME.registerComponent('movement-tool', {
   },
 })
 
+function forwardable(evt) {
+  return function(e) {
+    if (!this.data.grabElements) return;
+
+    for (let target of Object.values(this.grabbed))
+    {
+      target.emit(evt, e.detail)
+    }
+  }
+}
+
 AFRAME.registerComponent('selection-box-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
@@ -983,6 +994,7 @@ AFRAME.registerComponent('selection-box-tool', {
     grabElements: {default: true},
     grabVertices: {default: false},
     selectVertices: {default: false},
+    selectElGeometry: {default: true},
     undoable: {default: false},
     duplicateOnGrab: {default: false},
     weight: {default: 0.0},
@@ -1002,7 +1014,15 @@ AFRAME.registerComponent('selection-box-tool', {
     },
     click: function(e) {
       this.toggleGrabbing(!this.grabbing)
-    }
+    },
+    bbuttondown: forwardable('bbuttondown'),
+    bbuttonup: forwardable('bbuttonup'),
+    abuttondown: forwardable('abuttondown'),
+    abuttonup: forwardable('abuttonup'),
+    xbuttondown: forwardable('xbuttondown'),
+    xbuttonup: forwardable('xbuttonup'),
+    ybuttondown: forwardable('ybuttondown'),
+    ybuttonup: forwardable('ybuttonup'),
   },
   init() {
     this.el.classList.add('grab-root')
@@ -1082,6 +1102,7 @@ AFRAME.registerComponent('selection-box-tool', {
     this.grabbers = {}
     this.grabbed = {}
     this.grabberId = {}
+    this.grabChildren = {}
 
     this.box.getObject3D('mesh').geometry.computeBoundingBox()
     let boundingBox = this.box.getObject3D('mesh').geometry.boundingBox
@@ -1092,15 +1113,38 @@ AFRAME.registerComponent('selection-box-tool', {
       let target = this.data.grabElements ? Util.resolveGrabRedirection(el) : el
 
       if (target === this.el) continue
+      if (target === this.box) continue
       if (target.object3D.uuid in this.grabbers) continue
 
-      if (this.data.grabElements)
+      if (this.data.grabElements && this.data.selectElGeometry)
       {
+        let contained = false
+        if (!el.getObject3D('mesh')) continue;
+        Util.traverseFind(el.getObject3D('mesh'), (o) => {
+          if (!o.geometry) return;
+
+          for (let i = 0; i < o.geometry.attributes.position.count; ++i)
+          {
+            worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
+            o.localToWorld(worldPos)
+            this.box.getObject3D('mesh').worldToLocal(worldPos)
+            if (boundingBox.containsPoint(worldPos))
+            {
+              contained = true
+              localPos.copy(worldPos)
+              return true
+            }
+          }
+        })
+        if (!contained) continue
+      }
+      else if (this.data.grabElements)
+      {
+        if (!Util.visibleWithAncestors(target.object3D)) continue
         el.object3D.getWorldPosition(worldPos)
         localPos.copy(worldPos)
         this.box.getObject3D('mesh').worldToLocal(localPos)
         if (!boundingBox.containsPoint(localPos)) continue
-        if (!Util.visibleWithAncestors(target.object3D)) continue
       }
       else
       {
@@ -1143,6 +1187,7 @@ AFRAME.registerComponent('selection-box-tool', {
 
       if (this.data.grabElements)
       {
+        target.grabbingManipulator = this
         target.addState('grabbed')
       }
 
@@ -1181,6 +1226,7 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       for (let el of Object.values(this.grabbed))
       {
+        delete el.grabbingManipulator
         el.removeState('grabbed')
       }
     }
@@ -1198,9 +1244,10 @@ AFRAME.registerComponent('selection-box-tool', {
 
     for (let obj of Object.values(this.grabbers))
     {
-      if (!this.grabbed[obj.uuid].object3D)
+      if (!this.grabbed[obj.uuid].object3D || !this.grabbed[obj.uuid].object3D.parent)
       {
         console.warn("Grabbed object disappeared", obj)
+        delete this.grabbed[obj.uuid]
         continue;
       }
 
@@ -1427,6 +1474,6 @@ AFRAME.registerComponent('tool-weight-tool', {
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
 
     this.raycaster = document.createElement('a-entity')
-    
+
   }
 })

@@ -2,7 +2,7 @@ import {Util} from './util.js'
 AFRAME.registerComponent('desktop-controls', {
   dependencies: ['wasd-controls', 'look-controls'],
   schema: {
-    velocity: {default: 0.001}
+    velocity: {default: 0.001},
   },
   init() {
     this.el.setAttribute('wasd-controls', 'wsInverted: false; fly: true; acceleration: 1')
@@ -131,5 +131,27 @@ AFRAME.registerSystem('desktop-controls', {
   },
   rotateRight() {
     this.el.sceneEl.systems['artist-root'].rotateRight()
+  }
+})
+
+AFRAME.registerComponent('desktop-button-caster', {
+  dependencies: ['button-caster'],
+  schema: {
+    castableButtons: {default: ['a','b', 'x', 'y']}
+  },
+  init() {
+    document.addEventListener('keydown', e => {
+      let key = e.key.toLowerCase()
+      if (this.data.castableButtons.includes(key)) {
+        this.el.emit(`${key}buttondown`, {})
+      }
+    })
+
+    document.addEventListener('keyup', e => {
+      let key = e.key.toLowerCase()
+      if (this.data.castableButtons.includes(key)) {
+        this.el.emit(`${key}buttonup`, {})
+      }
+    })
   }
 })

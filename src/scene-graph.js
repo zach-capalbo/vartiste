@@ -1,3 +1,0 @@
-AFRAME.registerComponentSystem('scene-graph', {
-
-})

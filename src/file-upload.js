@@ -996,11 +996,18 @@ AFRAME.registerComponent('reference-glb', {
     //   box.getCenter(this.el.getObject3D('mesh').position)
     //   this.el.getObject3D('mesh').position.multiplyScalar(-1)
     // }
+    bbuttondown: function (e) {
+      if (this.el.is('grabbed'))
+      {
+        this.makeClone()
+      }
+    },
   },
   init() {
     Pool.init(this)
     this.el.classList.add('reference-glb')
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
+    this.el.setAttribute('action-tooltips', 'b: Clone')
     Util.whenComponentInitialized(this.el, 'frame', () => {
       let decomposeButton = this.el.components['frame'].addButton('#asset-close')
       decomposeButton.setAttribute('tooltip', 'Decompose to primitive constructs')
@@ -1008,6 +1015,15 @@ AFRAME.registerComponent('reference-glb', {
       decomposeButton.addEventListener('click', () => {
         this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])
       })
+    })
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    this.el.parentEl.append(el)
+    Util.whenLoaded(el, () => {
+      el.setObject3D('mesh', this.el.getObject3D('mesh').clone())
+      el.setAttribute('reference-glb', this.data)
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
     })
   }
 })

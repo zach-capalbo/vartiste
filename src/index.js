@@ -94,6 +94,7 @@ require('./primitive-constructs.js')
 require('./sculpting.js')
 require('./translation.js')
 require('./text')
+require('./scene-organizer')
 
 require('./hubs-connector-shim.js')
 
