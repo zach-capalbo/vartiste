@@ -144,6 +144,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			let vertices = shapePoints.shape;
 			const holes = shapePoints.holes;
+      let curveNormals = [];
 
 			const reverse = ! ShapeUtils.isClockWise( vertices );
 
@@ -182,6 +183,14 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			}
 
+      binormal.set(0, 0, 1);
+      for ( let i = 0; i < vertices.length; ++i )
+      {
+        let ii = i === 0 ? vertices.length - 1 : i - 1;
+        let iii = i === vertices.length - 1 ? 0 : i + 1;
+        tangent.set(vertices[iii].x - vertices[ii].x, vertices[iii].y - vertices[ii].y, 0)
+        curveNormals[i] = new THREE.Vector3().crossVectors(tangent, binormal).normalize()
+      }
 
 			function scalePt2( pt, vec, size ) {
 
@@ -434,7 +443,7 @@ class ExtrudeGeometry extends BufferGeometry {
 					position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
 
 					v( position2.x, position2.y, position2.z );
-          n( -tangent.x, -tangent.y, -tangent.z );
+          n( tangent.x, tangent.y, tangent.z );
 
 				}
 
@@ -482,7 +491,20 @@ class ExtrudeGeometry extends BufferGeometry {
 						position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
 
 						v( position2.x, position2.y, position2.z );
+            // normal.add(binormal).normalize()
+
+            normal.set( extrudePts[s].fx,  extrudePts[s].fy, extrudePts[s].fz)
+            binormal.crossVectors(tangent, normal)
+            binormal.multiplyScalar( - curveNormals[i].x );
+            normal.multiplyScalar( - curveNormals[i].y );
             normal.add(binormal).normalize()
+
+            // normal.set( extrudePts[s].fx,  extrudePts[s].fy, extrudePts[s].fz)
+            // binormal.crossVectors(tangent, normal)
+            // binormal.multiplyScalar( curveNormals[i].y );
+            // normal.multiplyScalar( curveNormals[i].x );
+            // normal.add(binormal).normalize()
+
             if (s === steps) {
               normal.set( -tangent.x, -tangent.y, -tangent.z );
             }

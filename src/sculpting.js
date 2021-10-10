@@ -1389,15 +1389,15 @@ AFRAME.registerComponent('threed-line-tool', {
             let normal2 = new THREE.Vector3
             let normal3 = new THREE.Vector3
             let normal4 = new THREE.Vector3
-            // if (s === 1)
-            // {
-            //   normal1.set(n[0], n[1], n[2])
-            //   return [normal1, normal1, normal1, normal1]
-            // }
-            // else if (s === sl - 1) {
-            //   normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
-            //   return [normal1, normal1, normal1, normal1]
-            // }
+            if (s === 0)
+            {
+              normal1.set(n[0], n[1], n[2])
+              return [normal1, normal1, normal1, normal1]
+            }
+            else if (s === sl - 1) {
+              normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
+              return [normal1, normal1, normal1, normal1]
+            }
             // normal1.set( - extrudePts[s].fx + n[a * 3 + 0], - extrudePts[s].fy + n[a * 3 + 1], - extrudePts[s].fz + n[a * 3 + 2])
             // normal2.set( - extrudePts[s].fx + n[b * 3 + 0], - extrudePts[s].fy + n[b * 3 + 1], - extrudePts[s].fz + n[b * 3 + 2])
             // normal3.set( - extrudePts[s + 1].fx + n[c * 3 + 0], - extrudePts[s + 1].fy + n[c * 3 + 1], - extrudePts[s + 1].fz + n[c * 3 + 2])
