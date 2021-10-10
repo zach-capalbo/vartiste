@@ -1489,8 +1489,17 @@ AFRAME.registerComponent('threed-line-tool', {
     else
     {
       canvas = document.createElement('canvas')
-      canvas.width = 256
-      canvas.height = 64
+
+      if (Util.isLowPower())
+      {
+        canvas.width = 256
+        canvas.height = 64
+      }
+      else
+      {
+        canvas.width = 512
+        canvas.height = 128
+      }
 
       let ctx = canvas.getContext('2d')
 
@@ -1499,7 +1508,7 @@ AFRAME.registerComponent('threed-line-tool', {
         brush.startDrawing(ctx, 0, 0.5 * canvas.height)
       }
 
-      let pointCount = 40
+      let pointCount = brush.connected ? 40 : 10
       for (let i = 1; i < pointCount; ++i)
       {
         brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
