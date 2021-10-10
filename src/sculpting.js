@@ -777,6 +777,10 @@ Util.registerComponentSystem('shape-creation', {
     this.cutBrush = new VectorBrush('vector')
     this.wandShapes = new Map()
   },
+  setSolidDrawing() {
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.el.systems['brush-system'].brushList.findIndex(b => b.baseid === 'fill1'))
+    this.el.sceneEl.systems['paint-system'].selectOpacity(1.0)
+  },
   handleShape(shape, {matrix} = {})
   {
     console.log("Creating shape wand", shape)
