@@ -45,6 +45,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 		const verticesArray = [];
 		const uvArray = [];
+    const normalsArray = [];
 
 		for ( let i = 0, l = shapes.length; i < l; i ++ ) {
 
@@ -57,14 +58,16 @@ class ExtrudeGeometry extends BufferGeometry {
 
 		this.setAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
 		this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
+    this.setAttribute( 'normal', new Float32BufferAttribute( normalsArray, 3 ) );
 
-		this.computeVertexNormals();
+		// this.computeVertexNormals();
 
 		// functions
 
 		function addShape( shape ) {
 
 			const placeholder = [];
+      const normalHolder = [];
 
 			// options
 
@@ -407,6 +410,8 @@ class ExtrudeGeometry extends BufferGeometry {
 				if ( ! extrudeByPath ) {
 
 					v( vert.x, vert.y, 0 );
+          throw new Error("Need a normal");
+          // n( normal.x, normal.y, normal.z );
 
         } else if (splineTube) {
           normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
@@ -414,6 +419,7 @@ class ExtrudeGeometry extends BufferGeometry {
           position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
 
           v( position2.x, position2.y, position2.z );
+          n( normal.x, normal.y, normal.z );
 				} else {
 
 					// v( vert.x, vert.y + extrudePts[ 0 ].y, extrudePts[ 0 ].x );
@@ -428,6 +434,7 @@ class ExtrudeGeometry extends BufferGeometry {
 					position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
 
 					v( position2.x, position2.y, position2.z );
+          n( -tangent.x, -tangent.y, -tangent.z );
 
 				}
 
@@ -451,6 +458,7 @@ class ExtrudeGeometry extends BufferGeometry {
             position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
 
             v( position2.x, position2.y, position2.z );
+            n( normal.x, normal.y, normal.z );
 					} else {
 
 						// v( vert.x, vert.y + extrudePts[ s - 1 ].y, extrudePts[ s - 1 ].x );
@@ -474,6 +482,11 @@ class ExtrudeGeometry extends BufferGeometry {
 						position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
 
 						v( position2.x, position2.y, position2.z );
+            normal.add(binormal).normalize()
+            if (s === steps) {
+              normal.set( -tangent.x, -tangent.y, -tangent.z );
+            }
+            n( normal.x, normal.y, normal.z );
 
 					}
 
@@ -497,7 +510,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 					const vert = scalePt2( contour[ i ], contourMovements[ i ], bs );
 					v( vert.x, vert.y, depth + z );
-
+          throw new Error("Need normal");
 				}
 
 				// expand holes
@@ -659,6 +672,12 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			}
 
+      function n( x, y, z ) {
+        normalHolder.push( x );
+        normalHolder.push( y );
+        normalHolder.push( z );
+      }
+
 
 			function f3( a, b, c ) {
 
@@ -672,6 +691,12 @@ class ExtrudeGeometry extends BufferGeometry {
 				addUV( uvs[ 0 ] );
 				addUV( uvs[ 1 ] );
 				addUV( uvs[ 2 ] );
+
+        const normals = uvgen.generateTopNormals(scope, verticesArray, nextIndex - 3, nextIndex - 2, nextIndex - 1 );
+
+        addNormal( normals[ 0 ] );
+        addNormal( normals[ 1 ] );
+        addNormal( normals[ 2 ] );
 
 			}
 
@@ -697,6 +722,15 @@ class ExtrudeGeometry extends BufferGeometry {
 				addUV( uvs[ 2 ] );
 				addUV( uvs[ 3 ] );
 
+        const normals = uvgen.generateSideWallNormal(scope, normalHolder, a, b,c, d, vertices, extrudePts, s1, s2, c1, c2 );
+
+        addNormal( normals[ 0 ] );
+        addNormal( normals[ 1 ] );
+        addNormal( normals[ 3 ] );
+
+        addNormal( normals[ 1 ] );
+        addNormal( normals[ 2 ] );
+        addNormal( normals[ 3 ] );
 			}
 
 			function addVertex( index ) {
@@ -705,7 +739,18 @@ class ExtrudeGeometry extends BufferGeometry {
 				verticesArray.push( placeholder[ index * 3 + 1 ] );
 				verticesArray.push( placeholder[ index * 3 + 2 ] );
 
+        // normalsArray.push( normalHolder[ index * 3 + 0 ] );
+        // normalsArray.push( normalHolder[ index * 3 + 1 ] );
+        // normalsArray.push( normalHolder[ index * 3 + 2 ] );
+
 			}
+
+      function addNormal( vector3 ) {
+        normalsArray.push( vector3.x );
+        normalsArray.push( vector3.y );
+        normalsArray.push( vector3.z );
+      }
+
 
 
 			function addUV( vector2 ) {

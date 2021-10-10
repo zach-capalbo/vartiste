@@ -470,6 +470,30 @@ AFRAME.registerComponent('mesh-fill-tool', {
 
       m.geometry.attributes.position.needsUpdate = true
     }
+  },
+  // NYI
+  smoothNormals(meshes) {
+    if (!meshes) meshes = Compositor.nonCanvasMeshes
+
+    let avg = this.pool('avg', THREE.Vector3)
+    let pos = this.pool('pos', THREE.Vector3)
+    let other = this.pool('other', THREE.Vector3)
+    let box = this.pool('box', THREE.Box3)
+    let localVerts = new Set()
+    for (let mesh of meshes)
+    {
+      let boundsTree = mesh.geometry.boundsTree
+      for (let root in boundsTree._roots)
+      {
+        localVerts.clear()
+        boundsTree.traverse((d, leaf, v, idx, c) => {
+            if (!leaf) return;
+            box.setFromArray(v)
+            // console.log(idx, c, new THREE.Box3().setFromArray(v))
+            
+          }, root)
+      }
+    }
   }
 })
 

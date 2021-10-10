@@ -1248,8 +1248,12 @@ AFRAME.registerComponent('threed-line-tool', {
         this.shape = new THREE.Shape()
           .moveTo( - sqLength, -sqLength )
           .lineTo( -sqLength, sqLength )
+          .lineTo( -sqLength, sqLength )
+          .lineTo( sqLength, sqLength )
           .lineTo( sqLength, sqLength )
           .lineTo( sqLength, - sqLength )
+          .lineTo( sqLength, - sqLength )
+          .lineTo( -sqLength, -sqLength )
           .lineTo( -sqLength, -sqLength );
           break;
       case 'oval':
@@ -1263,7 +1267,7 @@ AFRAME.registerComponent('threed-line-tool', {
         this.shape = new THREE.Shape()
         .moveTo(sqLength, 0);
 
-        for (let a = 0; a <= numPoints; ++a)
+        for (let a = 0; a < numPoints; ++a)
         {
           let angle = a * Math.PI * 2 / numPoints;
           this.shape.lineTo(Math.cos(angle) * sqLength, Math.sin(angle) * sqLength)
@@ -1375,8 +1379,45 @@ AFRAME.registerComponent('threed-line-tool', {
               new THREE.Vector2(mx, yn),
               new THREE.Vector2(mx, yx),
             ]
+          },
+          generateTopNormals: () => {
+            return [new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0)]
+          },
+          generateSideWallNormal: (g, n, a, b, c, d, curve, extrudePts, s, sl, ci, cl) => {
+            let normal1 = new THREE.Vector3
+            let normal2 = new THREE.Vector3
+            let normal3 = new THREE.Vector3
+            let normal4 = new THREE.Vector3
+            // if (s === 1)
+            // {
+            //   normal1.set(n[0], n[1], n[2])
+            //   return [normal1, normal1, normal1, normal1]
+            // }
+            // else if (s === sl - 1) {
+            //   normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
+            //   return [normal1, normal1, normal1, normal1]
+            // }
+            // normal1.set( - extrudePts[s].fx + n[a * 3 + 0], - extrudePts[s].fy + n[a * 3 + 1], - extrudePts[s].fz + n[a * 3 + 2])
+            // normal2.set( - extrudePts[s].fx + n[b * 3 + 0], - extrudePts[s].fy + n[b * 3 + 1], - extrudePts[s].fz + n[b * 3 + 2])
+            // normal3.set( - extrudePts[s + 1].fx + n[c * 3 + 0], - extrudePts[s + 1].fy + n[c * 3 + 1], - extrudePts[s + 1].fz + n[c * 3 + 2])
+            // normal4.set( - extrudePts[s + 1].fx + n[d * 3 + 0], - extrudePts[s + 1].fy + n[d * 3 + 1], - extrudePts[s + 1].fz + n[d * 3 + 2])
+
+            normal1.set(n[a * 3 + 0], n[a * 3 + 1], n[a * 3 + 2])
+            normal2.set(n[b * 3 + 0], n[b * 3 + 1], n[b * 3 + 2])
+            normal3.set(n[c * 3 + 0], n[c * 3 + 1], n[c * 3 + 2])
+            normal4.set(n[d * 3 + 0], n[d * 3 + 1], n[d * 3 + 2])
+
+            if (normal1.angleTo(normal2) > 0.56)
+            {
+              normal1.lerp(normal2, 0.5)
+              normal2.copy(normal1)
+              normal3.lerp(normal4, 0.5)
+              normal4.copy(normal3)
+            }
+
+            return [normal1, normal2, normal3, normal4]
           }
-        }
+        },
 			};
 
     this.geometry = new THREE.BufferGeometry().copy(new ExtrudeGeometry( shape, extrudeSettings ));
@@ -1421,6 +1462,8 @@ AFRAME.registerComponent('threed-line-tool', {
     this.normals = []
   },
   getMaterial(distance) {
+    // return new THREE.MeshNormalMaterial()
+
     if (this.material && !this.materialNeedsUpdate) return this.material;
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
