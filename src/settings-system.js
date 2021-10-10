@@ -5,6 +5,7 @@ import {ProjectFile} from './project-file.js'
 import {Undo, UndoStack} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {Sfx} from './sfx.js'
 import Pako from 'pako'
 import CompressionWorker from './compression.worker.js'
 
@@ -82,6 +83,8 @@ Util.registerComponentSystem('settings-system', {
     // document.body.append(desktopLink)
 
     desktopLink.click()
+
+    Sfx.play('confirmation', this.el, {volume: 0.7})
   },
   async downloadCompressed(rawData, filename, description) {
     let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: description})
@@ -104,6 +107,8 @@ Util.registerComponentSystem('settings-system', {
 
     this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), filename, description)
     busy.done()
+
+    Sfx.play('confirmation', this.el, {volume: 0.7})
   },
   copyToClipboard(text, description) {
     this.clipboardInput.value = text

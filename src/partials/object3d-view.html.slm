@@ -1,5 +1,14 @@
 a-entity shelf-content=""
   a-entity icon-row="mergeButtons: true"
-    a-entity icon-button="#asset-plus-box-multiple" tooltip="Load Children"
+    a-entity.root-target icon-button="" tooltip="Local Position" radio-button="component: object3d-view; property: activeProperty; value: localPosition"
+    a-entity.root-target icon-button="" tooltip="Global Position" radio-button="component: object3d-view; property: activeProperty; value: globalPosition"
+
+    a-entity icon-button="" tooltip="Export"
+    /a-entity icon-button="#asset-plus-box-multiple" tooltip="Load Children"
+  - let editfieldtext="width: 3; anchor: right; align: right; xOffset: 1.5; wrapCount: 14"
+  a-entity icon-row=""
+    a-entity icon-row="":a-entity.position.x edit-field="" text=editfieldtext
+    a-entity icon-row="":a-entity.position.y edit-field="" text=editfieldtext
+    a-entity icon-row="":a-entity.position.z edit-field="" text=editfieldtext
 
 a-entity node-output="" position="2.1 1.2 0.01" scale="1 1 0.3"

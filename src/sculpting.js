@@ -1248,8 +1248,12 @@ AFRAME.registerComponent('threed-line-tool', {
         this.shape = new THREE.Shape()
           .moveTo( - sqLength, -sqLength )
           .lineTo( -sqLength, sqLength )
+          .lineTo( -sqLength, sqLength )
+          .lineTo( sqLength, sqLength )
           .lineTo( sqLength, sqLength )
           .lineTo( sqLength, - sqLength )
+          .lineTo( sqLength, - sqLength )
+          .lineTo( -sqLength, -sqLength )
           .lineTo( -sqLength, -sqLength );
           break;
       case 'oval':
@@ -1263,13 +1267,14 @@ AFRAME.registerComponent('threed-line-tool', {
         this.shape = new THREE.Shape()
         .moveTo(sqLength, 0);
 
-        for (let a = 0; a <= numPoints; ++a)
+        for (let a = 0; a < numPoints; ++a)
         {
           let angle = a * Math.PI * 2 / numPoints;
           this.shape.lineTo(Math.cos(angle) * sqLength, Math.sin(angle) * sqLength)
           angle = (a + 0.5) * Math.PI * 2 / numPoints;
           this.shape.lineTo(Math.cos(angle) * ir, Math.sin(angle) * ir)
         }
+        this.shape.lineTo(sqLength, 0);
         break;
       }
       case 'heart': {
@@ -1375,8 +1380,45 @@ AFRAME.registerComponent('threed-line-tool', {
               new THREE.Vector2(mx, yn),
               new THREE.Vector2(mx, yx),
             ]
+          },
+          generateTopNormals: () => {
+            return [new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 1, 0)]
+          },
+          generateSideWallNormal: (g, n, a, b, c, d, curve, extrudePts, s, sl, ci, cl) => {
+            let normal1 = new THREE.Vector3
+            let normal2 = new THREE.Vector3
+            let normal3 = new THREE.Vector3
+            let normal4 = new THREE.Vector3
+            if (s === 0)
+            {
+              normal1.set(n[0], n[1], n[2])
+              return [normal1, normal1, normal1, normal1]
+            }
+            else if (s === sl - 1) {
+              normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
+              return [normal1, normal1, normal1, normal1]
+            }
+            // normal1.set( - extrudePts[s].fx + n[a * 3 + 0], - extrudePts[s].fy + n[a * 3 + 1], - extrudePts[s].fz + n[a * 3 + 2])
+            // normal2.set( - extrudePts[s].fx + n[b * 3 + 0], - extrudePts[s].fy + n[b * 3 + 1], - extrudePts[s].fz + n[b * 3 + 2])
+            // normal3.set( - extrudePts[s + 1].fx + n[c * 3 + 0], - extrudePts[s + 1].fy + n[c * 3 + 1], - extrudePts[s + 1].fz + n[c * 3 + 2])
+            // normal4.set( - extrudePts[s + 1].fx + n[d * 3 + 0], - extrudePts[s + 1].fy + n[d * 3 + 1], - extrudePts[s + 1].fz + n[d * 3 + 2])
+
+            normal1.set(n[a * 3 + 0], n[a * 3 + 1], n[a * 3 + 2])
+            normal2.set(n[b * 3 + 0], n[b * 3 + 1], n[b * 3 + 2])
+            normal3.set(n[c * 3 + 0], n[c * 3 + 1], n[c * 3 + 2])
+            normal4.set(n[d * 3 + 0], n[d * 3 + 1], n[d * 3 + 2])
+
+            if (normal1.angleTo(normal2) > 0.56)
+            {
+              normal1.lerp(normal2, 0.5)
+              normal2.copy(normal1)
+              normal3.lerp(normal4, 0.5)
+              normal4.copy(normal3)
+            }
+
+            return [normal1, normal2, normal3, normal4]
           }
-        }
+        },
 			};
 
     this.geometry = new THREE.BufferGeometry().copy(new ExtrudeGeometry( shape, extrudeSettings ));
@@ -1386,6 +1428,7 @@ AFRAME.registerComponent('threed-line-tool', {
     if (this.mesh)
     {
       this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
     }
 
     this.mesh = new THREE.Mesh(this.geometry, material)
@@ -1421,6 +1464,8 @@ AFRAME.registerComponent('threed-line-tool', {
     this.normals = []
   },
   getMaterial(distance) {
+    // return new THREE.MeshNormalMaterial()
+
     if (this.material && !this.materialNeedsUpdate) return this.material;
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
@@ -1444,8 +1489,17 @@ AFRAME.registerComponent('threed-line-tool', {
     else
     {
       canvas = document.createElement('canvas')
-      canvas.width = 256
-      canvas.height = 64
+
+      if (Util.isLowPower())
+      {
+        canvas.width = 256
+        canvas.height = 64
+      }
+      else
+      {
+        canvas.width = 512
+        canvas.height = 128
+      }
 
       let ctx = canvas.getContext('2d')
 
@@ -1454,7 +1508,7 @@ AFRAME.registerComponent('threed-line-tool', {
         brush.startDrawing(ctx, 0, 0.5 * canvas.height)
       }
 
-      let pointCount = 40
+      let pointCount = brush.connected ? 40 : 10
       for (let i = 1; i < pointCount; ++i)
       {
         brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
@@ -1517,6 +1571,10 @@ AFRAME.registerComponent('threed-line-tool', {
           this.material.map.needsUpdate = true
           continue;
         }
+        if (map === 'metalnessMap')
+        {
+          this.material.metalness = 1
+        }
         texture = new THREE.Texture;
         texture.image = maps[map]
         texture.needsUpdate = true
@@ -1524,6 +1582,8 @@ AFRAME.registerComponent('threed-line-tool', {
         texture.generateMipmaps = false
         texture.minFilter = THREE.LinearFilter
         this.material[map] = texture
+
+        console.log("Set", map)
       }
       this.material.needsUpdate = true
     }

@@ -1,4 +1,4 @@
-a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3 0.3" visible="false" summoner-position="el: #six-dof-positioner; key: six-dof" bypass-hidden-updates=""
+a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3 0.3" visible="false" summoner-position="el: #six-dof-positioner; key: six-dof" bypass-hidden-updates=""
   a-entity#six-dof-positioner position="4 0 0" scale="4 4 4"
   a-entity position="-1.5 1.1 0" icon-row=""
     a-entity text="value: Tool Categories:; align: left; anchor: left; width: 3; height: 0.3; wrapCount: 25" translate-text=""
@@ -26,6 +26,7 @@ a-entity.grab-root shelf="name: 6DoF Tool Shelf; closeable: true" scale="0.3 0.3
       a-entity system-click-action="system: primitive-constructs; action: makeReference" icon-button="#asset-badge-account-horizontal-outline" tooltip="Save shapes as reference"
       /a-entity system-click-action="system: primitive-constructs; action: decomposeReferences" icon-button="#asset-close" tooltip="Decompose reference meshes into primitives"
       a-entity system-click-action="system: primitive-constructs; action: decomposeCompositor" icon-button="#asset-close" tooltip="Decompose drawable meshes into primitives"
+      a-entity icon-button="#asset-transition" tooltip="Trace Shape Wand Shape" system-click-action="system: shape-creation; action: startShape" onclick="window.setTimeout(() =>document.getElementById('six-dof-shelf').setAttribute('visible', 'false'), 200)"
     a-entity icon-row="autoPosition: false" v-bind="source: #material-packs; sourceComponent: visible; component: visible; setOnLoad: true"
       a-entity icon-row="" text="width: 3; value: Drag and drop images to create new material packs; anchor: left; wrapCount: 30"
       a-entity icon-row="mergeButtons: true"

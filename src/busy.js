@@ -1,3 +1,4 @@
+import {Sfx} from './sfx.js'
 const busyHtml = require('./partials/busy-indicator.html.slm')
 class Busy {
   constructor(system, opts) {
@@ -105,5 +106,6 @@ AFRAME.registerComponent('busy-indicator', {
     VARTISTE.Util.whenLoaded(text, () => {
       VARTISTE.Util.positionObject3DAtTarget(text.object3D, this.el.object3D)
     })
+    Sfx.play('error', this.el)
   }
 })
