@@ -1562,6 +1562,10 @@ AFRAME.registerComponent('threed-line-tool', {
           this.material.map.needsUpdate = true
           continue;
         }
+        if (map === 'metalnessMap')
+        {
+          this.material.metalness = 1
+        }
         texture = new THREE.Texture;
         texture.image = maps[map]
         texture.needsUpdate = true
@@ -1569,6 +1573,8 @@ AFRAME.registerComponent('threed-line-tool', {
         texture.generateMipmaps = false
         texture.minFilter = THREE.LinearFilter
         this.material[map] = texture
+
+        console.log("Set", map)
       }
       this.material.needsUpdate = true
     }
