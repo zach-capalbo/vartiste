@@ -97,6 +97,20 @@ chromium_dev:
     paths:
       - chromium/*.zip
 
+xrpackage:
+  variables:
+    PUPPETEER_SKIP_DOWNLOAD: '1'
+  script:
+    - npm i -g git://github.com/webaverse/xrpackage-cli
+    - cp xrpackage/manifest.json dist/manifest.json
+    - pushd dist
+    - xrpk build manifest.json vartiste.wbn
+    - popd
+  when: manual
+  artifacts:
+    expire_in: 5 days
+    paths:
+      - dist/*.wbn
 pages:
   stage: deploy
   script:
