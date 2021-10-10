@@ -1274,6 +1274,7 @@ AFRAME.registerComponent('threed-line-tool', {
           angle = (a + 0.5) * Math.PI * 2 / numPoints;
           this.shape.lineTo(Math.cos(angle) * ir, Math.sin(angle) * ir)
         }
+        this.shape.lineTo(sqLength, 0);
         break;
       }
       case 'heart': {
@@ -1427,6 +1428,7 @@ AFRAME.registerComponent('threed-line-tool', {
     if (this.mesh)
     {
       this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
     }
 
     this.mesh = new THREE.Mesh(this.geometry, material)
