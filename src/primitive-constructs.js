@@ -18,6 +18,10 @@ Util.registerComponentSystem('primitive-constructs', {
     if (this.lastGrabbed)
     {
       this.lastGrabbed.removeAttribute('axis-handles')
+      if (this.lastGrabbed.hasAttribute('vertex-handles'))
+      {
+        this.lastGrabbed.getObject3D('mesh').geometry.computeBoundsTree()
+      }
       this.lastGrabbed.removeAttribute('vertex-handles')
       this.lastGrabbed.removeAttribute('frame')
     }
@@ -25,7 +29,7 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (!el) return;
 
-    el.setAttribute('axis-handles', '')
+    el.setAttribute('axis-handles', 'apply: true')
     el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
     Util.whenComponentInitialized(el, 'frame', () => {
       let button = el.components.frame.addButton('#asset-cylinder')
@@ -286,7 +290,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
             Util.applyMatrix(startMatrix, this.el.object3D)
           })
         }
-        if (this.el.grabbingManipulator.attrName === 'selection-box-tool')
+        if (this.el.grabbingManipulator && this.el.grabbingManipulator.attrName === 'selection-box-tool')
         {
           this.system.grabConstruct(null)
         }

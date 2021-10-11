@@ -551,6 +551,8 @@ AFRAME.registerComponent('axis-handles', {
     x: {default: true},
     y: {default: true},
     z: {default: true},
+
+    apply: {default: false},
   },
   init() {
     this.handles = {}
@@ -581,12 +583,21 @@ AFRAME.registerComponent('axis-handles', {
         delete this.handles[axis]
       }
     }
+
+    if (this.data.apply !== oldData.apply)
+    {
+      for (let handle of Object.values(this.handles))
+      {
+        handle.setAttribute('axis-handle-control', 'apply', this.data.apply)
+      }
+    }
   }
 })
 
 AFRAME.registerComponent('axis-handle-control', {
   schema: {
-    axis: {type: 'string'}
+    axis: {type: 'string'},
+    apply: {default: false},
   },
   events: {
     stateadded: function (e) {
@@ -626,10 +637,28 @@ AFRAME.registerComponent('axis-handle-control', {
     // let newScale = box.max[axis] / (this.startPosition[axis] - this.offset) * (endPosition[axis] - this.offset)
     let newScale = (endPosition[axis] - this.offset) / box.max[axis]
 
-    this.target.scale[axis] = newScale
+    if (this.data.apply)
+    {
+      let m = new THREE.Matrix4()
+      let v = new THREE.Vector3()
+      v.set(1, 1, 1)
+      v[axis] = newScale
+      m.makeScale(v.x, v.y, v.z)
+      this.target.geometry.attributes.position.applyMatrix4(m)
+      this.target.geometry.attributes.position.needsUpdate = true
+      this.target.geometry.attributes.normal.transformDirection(m)
+      this.target.geometry.attributes.normal.needsUpdate = true
+      if (this.target.geometry.boundsTree) this.target.geometry.computeBoundsTree()
+    }
+    else
+    {
+      this.target.scale[axis] = newScale
+    }
+
     if (axis !== 'x') this.el.object3D.position.x = 0
     if (axis !== 'y') this.el.object3D.position.y = 0
     if (axis !== 'z') this.el.object3D.position.z = 0
+
   },
   resetPosition() {
     this.target = this.el.parentEl.getObject3D('mesh')
