@@ -1,6 +1,6 @@
 import {Util} from './util.js'
-import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
-
+import { fetchProfile, fetchProfileList, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
+window.fetchProfileList = fetchProfileList
 // Implements the [webxr-input-profiles
 // motion-controllers](https://github.com/immersive-web/webxr-input-profiles)
 // package. Use the [`webxr-motion-controller`](#webxr-motion-controller) as
@@ -14,6 +14,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
     // If true, it will attempt to disable the built-in A-Frame tracked control
     // systems
     disableTrackedControls: {default: true},
+
+    enableFallbackProfile: {default: true},
   },
   start() {
     this.start = function() {};
@@ -100,7 +102,7 @@ AFRAME.registerSystem('webxr-input-profiles', {
       {
         this.loadingControllers.add(input)
         try {
-          let prof = await fetchProfile(input, this.data.url)
+          let prof = await fetchProfile(input, this.data.url, "generic-trigger")
           let m = new MotionController(input, prof.profile, prof.assetPath)
 
           m.seen = true

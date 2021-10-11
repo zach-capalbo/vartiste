@@ -777,6 +777,10 @@ Util.registerComponentSystem('shape-creation', {
     this.cutBrush = new VectorBrush('vector')
     this.wandShapes = new Map()
   },
+  setSolidDrawing() {
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.el.systems['brush-system'].brushList.findIndex(b => b.baseid === 'fill1'))
+    this.el.sceneEl.systems['paint-system'].selectOpacity(1.0)
+  },
   handleShape(shape, {matrix} = {})
   {
     console.log("Creating shape wand", shape)
@@ -853,7 +857,8 @@ AFRAME.registerComponent('threed-line-tool', {
           fx: 0,
           fy: 0,
           fz: 1,
-          scale: this.calcScale()
+          scale: this.calcScale(),
+          l: 0,
         })
       }
 
@@ -873,17 +878,22 @@ AFRAME.registerComponent('threed-line-tool', {
           this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
           this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
           this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.99)
+          this.points[1].l = 0.1
           this.points[1].scale = scale
 
           this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
           this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
           this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
+          this.points[2].l = 0.5
           this.points[2].scale = scale
 
           this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.01)
           this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.01)
           this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.01)
+          this.points[3].l = 0.9
           this.points[3].scale = scale
+
+          this.points[4].l = 1.00
         }
 
         for (let i = 0; i < this.points.length; ++i)
@@ -923,15 +933,22 @@ AFRAME.registerComponent('threed-line-tool', {
       let oldVec = this.pool('oldVec', THREE.Vector3)
       let newVec = this.pool('newVec', THREE.Vector3)
 
+      let dist = this.shapeDist;
+
+      if (this.points.length > 0)
+      {
+        newVec.set(tipWorld.x - this.points[this.points.length - 1].x,
+                   tipWorld.y - this.points[this.points.length - 1].y,
+                   tipWorld.z - this.points[this.points.length - 1].z)
+
+        dist = this.points[this.points.length - 1].l + newVec.length()
+      }
+
       if (this.points.length > 3)
       {
         oldVec.set(this.points[this.points.length - 1].x - this.points[this.points.length - 2].x,
                    this.points[this.points.length - 1].y - this.points[this.points.length - 2].y,
                    this.points[this.points.length - 1].z - this.points[this.points.length - 2].z)
-
-        newVec.set(tipWorld.x - this.points[this.points.length - 1].x,
-                   tipWorld.y - this.points[this.points.length - 1].y,
-                   tipWorld.z - this.points[this.points.length - 1].z)
 
         let angle = oldVec.angleTo(newVec) * 180 / Math.PI;
         if (angle > this.data.switchbackAngle || angle < - this.data.switchbackAngle)
@@ -954,6 +971,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fx: this.worldForward.x,
         fy: this.worldForward.y,
         fz: this.worldForward.z,
+        l: dist,
         scale: e.detail.pressure * this.calcScale()
       })
       this.createMesh(this.points)
@@ -969,10 +987,13 @@ AFRAME.registerComponent('threed-line-tool', {
             this.tipPoint.getWorldDirection(this.worldForward)
             this.tipPoint.getWorldPosition(tipWorld)
             let oldPoint = this.pool('oldPoint', THREE.Vector3)
+            let dist = this.shapeDist
             if (this.points.length > 0)
             {
               oldPoint.copy(this.points[this.points.length - 1])
-              if (oldPoint.distanceTo(tipWorld) < 0.001) return;
+              dist = oldPoint.distanceTo(tipWorld)
+              if (dist < 0.001) return;
+              dist = this.points[this.points.length - 1].l + dist
             }
             this.points.push({
               x: tipWorld.x,
@@ -981,6 +1002,7 @@ AFRAME.registerComponent('threed-line-tool', {
               fx: this.worldForward.x,
               fy: this.worldForward.y,
               fz: this.worldForward.z,
+              l: dist,
               scale: 1
             })
             this.createMesh(this.points)
@@ -1242,6 +1264,8 @@ AFRAME.registerComponent('threed-line-tool', {
 
     this.cachedScale = this.el.object3D.scale.x;
 
+    this.shapeDist = sqLength * 2
+
     switch (this.data.shape)
     {
       case 'square':
@@ -1353,6 +1377,8 @@ AFRAME.registerComponent('threed-line-tool', {
 
     const shape = this.getExtrudeShape()
 
+    let lastLength = points[points.length - 1].l + this.shapeDist
+
     const extrudeSettings = {
 				steps: points.length - 1,
 				bevelEnabled: false,
@@ -1370,8 +1396,15 @@ AFRAME.registerComponent('threed-line-tool', {
           },
           generateSideWallUV: (g, v, a, b, c, d, s, sl, ci, cl) => {
             // console.log("s1, s2", s1, s2)
-            let mn = s / sl; //Math.min(a,b,c,d)/v.length
-            let mx = (s + 1) / sl; //Math.max(a,b,c,d)/v.length
+
+            // "Stretchable" uvs
+            // let mn = s / sl;
+            // let mx = (s + 1) / sl;
+
+            // UVs based on segment length
+            let mn = s === 0 ? 0.0 : points[s].l / lastLength
+            let mx = s === sl - 1 ? 1.0 : points[s + 1].l / lastLength
+
             let yn = ci / cl;
             let yx = (ci + 1) / cl;
             return [

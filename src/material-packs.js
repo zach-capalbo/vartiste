@@ -137,6 +137,11 @@ Util.registerComponentSystem('material-pack-system', {
       if (!map) {
         map = 'src'
       }
+      if (file.name.endsWith("_PREVIEW.jpg")) {
+        console.log("Skipping preview", file.name)
+        continue;
+      }
+
       if (map === 'displacementMap') {
         console.warn("Ignoring displacement map for the time being")
         continue;
