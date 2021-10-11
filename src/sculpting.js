@@ -1422,14 +1422,17 @@ AFRAME.registerComponent('threed-line-tool', {
             let normal2 = new THREE.Vector3
             let normal3 = new THREE.Vector3
             let normal4 = new THREE.Vector3
-            if (s === 0)
+            if (this.data.pointToPoint)
             {
-              normal1.set(n[0], n[1], n[2])
-              return [normal1, normal1, normal1, normal1]
-            }
-            else if (s === sl - 1) {
-              normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
-              return [normal1, normal1, normal1, normal1]
+              if (s === 0)
+              {
+                normal1.set(n[0], n[1], n[2])
+                return [normal1, normal1, normal1, normal1]
+              }
+              else if (s === sl - 1) {
+                normal1.set(n[n.length - 3], n[n.length - 2], n[n.length - 1])
+                return [normal1, normal1, normal1, normal1]
+              }
             }
             // normal1.set( - extrudePts[s].fx + n[a * 3 + 0], - extrudePts[s].fy + n[a * 3 + 1], - extrudePts[s].fz + n[a * 3 + 2])
             // normal2.set( - extrudePts[s].fx + n[b * 3 + 0], - extrudePts[s].fy + n[b * 3 + 1], - extrudePts[s].fz + n[b * 3 + 2])
@@ -1447,6 +1450,18 @@ AFRAME.registerComponent('threed-line-tool', {
               normal2.copy(normal1)
               normal3.lerp(normal4, 0.5)
               normal4.copy(normal3)
+            }
+
+            if (!this.data.pointToPoint)
+            {
+              if (s === 0 || s === sl - 1)
+              {
+                normal1.lerp(normal3, 0.5)
+                normal3.copy(normal1)
+
+                normal2.lerp(normal4, 0.5)
+                normal4.copy(normal2)
+              }
             }
 
             return [normal1, normal2, normal3, normal4]

@@ -37,6 +37,7 @@ async function addImageLayer(file, {setMapFromFilename = false} = {}) {
   let image = new Image()
   image.src = toSrcString(file)
   image.id = "img"
+  image.crossOrigin = 'anonymous'
 
   await new Promise((r,e) => image.onload = r)
   image.onload = undefined
