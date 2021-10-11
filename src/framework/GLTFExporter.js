@@ -76,6 +76,7 @@ THREE.GLTFExporter.prototype = {
 			binary: false,
 			trs: false,
 			onlyVisible: true,
+			bypassVARTISTEUi: true,
 			truncateDrawRange: true,
 			embedImages: true,
 			maxTextureSize: Infinity,
@@ -1860,6 +1861,7 @@ THREE.GLTFExporter.prototype = {
 					var child = object.children[ i ];
 
 					if ( child.visible || options.onlyVisible === false ) {
+						if (options.bypassVARTISTEUi && child.userData && child.userData.vartisteUI) continue;
 
 						var node = processNode( child );
 
@@ -1931,6 +1933,7 @@ THREE.GLTFExporter.prototype = {
 				var child = scene.children[ i ];
 
 				if ( child.visible || options.onlyVisible === false ) {
+					if (options.bypassVARTISTEUi && child.userData && child.userData.vartisteUI) continue;
 
 					var node = processNode( child );
 

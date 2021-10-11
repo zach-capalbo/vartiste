@@ -571,6 +571,7 @@ AFRAME.registerComponent('axis-handles', {
         console.log("Creating for axis", axis)
         let handle = document.createElement('a-entity')
         handle.setAttribute('axis-handle-control', `axis: ${axis}`)
+        Util.whenLoaded(handle, () => handle.object3D.userData.vartisteUI = true)
         this.el.append(handle)
         this.handles[axis] = handle
       }

@@ -223,6 +223,7 @@ AFRAME.registerComponent('vertex-handle', {
     this.el.setAttribute('grab-options', 'showHand: false; undoable: true')
     this.el.setAttribute('material', 'color: #e58be5; shader: matcap')
     this.el.classList.add('clickable')
+    this.el.object3D.userData.vartisteUI = true
 
     this.startPosition = new THREE.Vector3
   },
@@ -815,7 +816,7 @@ const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    meshContainer: {type: 'selector', default: '#world-root'},
+    meshContainer: {type: 'selector', default: '#canvas-root'},
     switchbackAngle: {default: 80.0},
     pointToPoint: {default: false},
     shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart', 'custom']},
