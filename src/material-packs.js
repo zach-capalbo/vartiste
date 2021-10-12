@@ -109,6 +109,7 @@ Util.registerComponentSystem('material-pack-system', {
         this.y++
       }
     }
+    this.hasLoadedPacks = true
   },
   interceptFile(items)
   {
@@ -257,8 +258,13 @@ Util.registerComponentSystem('material-pack-system', {
       }
     })
   },
+  previewMaterial(mask) {
+    if (mask in this.loadedPacks)
+    {
+      return this.loadedPacks[mask].components["material-pack"].view.components.material.material
+    }
+  },
   activateMaterialMask(mask) {
-
     this.activeMaterialMask = mask
     Compositor.el.setAttribute('material', 'shader', 'standard')
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
@@ -297,6 +303,28 @@ Util.registerComponentSystem('material-pack-system', {
     return this._tmpCtx
   },
   tick(t,dt) {
+    if (Compositor.component.loading) return;
+
+    for (let i = 0; i < Compositor.component.layers.length; ++i)
+    {
+      let layer = Compositor.component.layers[i]
+      if (!layer.materialPack) continue;
+      if (!layer.visible) continue;
+      let layerPack = this.loadedPacks[layer.materialPack];
+      if (!layerPack) {
+        if (!this.hasLoadedPacks)
+        {
+          console.log("Trying to load packs")
+          this.loadPacks()
+          return;
+        }
+
+        console.warn("Unknown materialpack", layer.materialPack);
+        continue
+      }
+      Undo.block(() => layerPack.components['material-pack'].applyMask({maskCanvas: layer.frame(Compositor.component.currentFrame), eraseMask: false}))
+    }
+
     if (this.activeMaterialMask)
     {
       Undo.block(this.activeMaterialMask.applyMask)
@@ -463,10 +491,10 @@ AFRAME.registerComponent('material-pack', {
     this.applyMask()
 
   },
-  applyMask() {
+  applyMask({maskCanvas = undefined, eraseMask = true} = {}) {
     this.isApplying = true
     let tmpCanvas = this.system.tmpCanvas()
-    let maskCanvas = Compositor.drawableCanvas
+    if (!maskCanvas) maskCanvas = Compositor.drawableCanvas
     let tmpCtx = this.system.tmpCtx()
 
     tmpCtx.globalCompositeOperation = 'copy'
@@ -476,6 +504,7 @@ AFRAME.registerComponent('material-pack', {
     tmpCtx.globalCompositeOperation = this.data.repeat === 1 ? 'source-in' : 'source-atop'
 
     let startingActiveLayer = Compositor.component.activeLayer
+    let activeLayerChanged = false
 
     for (let map in this.maps)
     {
@@ -500,11 +529,13 @@ AFRAME.registerComponent('material-pack', {
         {
           layer.id = 'material-pack'
           Compositor.component.addLayer(undefined, {layer})
+          activeLayerChanged = true
         }
         else
         {
           Compositor.component.addLayer(0, {layer})
           Compositor.component.setLayerBlendMode(layer, map)
+          activeLayerChanged = true
         }
       }
       canvas = layer.frame(Compositor.component.currentFrame)
@@ -562,9 +593,15 @@ AFRAME.registerComponent('material-pack', {
       layer.needsUpdate = true
     }
 
-    maskCanvas.getContext('2d').clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+    if (eraseMask)
+    {
+      maskCanvas.getContext('2d').clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+    }
 
-    Compositor.component.activateLayer(startingActiveLayer)
+    if (activeLayerChanged)
+    {
+      Compositor.component.activateLayer(startingActiveLayer)
+    }
     this.isApplying = false
 
     Undo.push(() => {
@@ -574,6 +611,27 @@ AFRAME.registerComponent('material-pack', {
   },
 })
 
-AFRAME.registerComponent('material-draw', {
-
+AFRAME.registerComponent('show-material-pack', {
+  schema: {
+    pack: {type: 'string'},
+  },
+  events: {
+    object3dset: function () { this.update() }
+  },
+  init() {},
+  update() {
+    let mesh = this.el.getObject3D('mesh')
+    if (!mesh) return
+    let material = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.data.pack)
+    if (!material) return console.warn("No such material", this.data.pack)
+    mesh.material = material
+  },
+  remove() {
+    if (this.el.hasAttribute('material'))
+    {
+      let mesh = this.el.getObject3D('mesh')
+      if (!mesh) return
+      mesh.material = this.el.components['material'].material
+    }
+  }
 })

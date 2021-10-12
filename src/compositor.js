@@ -888,6 +888,7 @@ AFRAME.registerComponent('compositor', {
   //   this.el.emit
   // },
   async load(obj) {
+    this.loading = true
     let delay = () => new Promise(r => setTimeout(r, 10))
 
     this.data.flipY = false
@@ -1007,6 +1008,7 @@ AFRAME.registerComponent('compositor', {
       this.el.emit('nodeadded', {node: this.materialNode})
     }
 
+    this.loading = false
     console.log("Fully loaded")
   },
   resize(newWidth, newHeight, {resample = false, resizeLayers = true, resizeGeometry = true} = {})
