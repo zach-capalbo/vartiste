@@ -398,6 +398,17 @@ AFRAME.registerComponent('material-pack', {
     }
     this.view.getObject3D('mesh').rotation.z = Math.PI / 2 * this.data.rotations
   },
+  setLayerMaterial() {
+    if (Compositor.component.activeLayer.materialPack === this.data.pack)
+    {
+      delete Compositor.component.activeLayer.materialPack
+    }
+    else
+    {
+      Compositor.component.activeLayer.materialPack = this.data.pack
+    }
+    Compositor.el.emit('layerupdated', {layer: Compositor.component.activeLayer})
+  },
   increaseRepeat() {
     this.data.repeat = THREE.Math.clamp(this.data.repeat + 1, 1, 50)
     this.updateRepeat()
