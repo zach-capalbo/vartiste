@@ -699,7 +699,7 @@ Util.registerComponentSystem('file-upload', {
       // console.log(e.target)
     }
 
-    document.body.ondrop = (e) => {
+    document.body.ondrop = async (e) => {
       console.log("Drop", e.detail)
       e.preventDefault()
       if (this.dragIndicator) {
@@ -716,7 +716,35 @@ Util.registerComponentSystem('file-upload', {
       if (items) {
         for (let item of items)
         {
-          if (item.kind !== 'file') continue
+          if (item.kind !== 'file') { console.warn("Not a file: ", item.kind, item); continue }
+
+          let handle = await item.getAsFileSystemHandle()
+          console.log("handle", handle)
+
+          if (handle.kind === 'directory')
+          {
+            let i = handle.values();
+            console.log(i)
+            let directoryItems = []
+            let entry
+            do
+            {
+              entry = await i.next()
+              if (!entry) break;
+              if (!entry.value) continue
+
+              let entryFile = await entry.value.getFile();
+              directoryItems.push({kind: 'file', getAsFile: () => entryFile})
+
+            } while (!entry.done)
+
+            for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+            {
+              if (this.fileInterceptors[i](directoryItems)) return;
+            }
+
+            continue
+          }
 
           let file = item.getAsFile()
 
