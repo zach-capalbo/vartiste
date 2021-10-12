@@ -141,6 +141,10 @@ Util.registerComponentSystem('material-pack-system', {
         console.log("Skipping preview", file.name)
         continue;
       }
+      if (file.name.endsWith('_Opacity.jpg')) {
+        console.log("Skipping opacity", file.name)
+        continue;
+      }
 
       if (map === 'displacementMap') {
         console.warn("Ignoring displacement map for the time being")
