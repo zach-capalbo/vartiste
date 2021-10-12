@@ -714,11 +714,16 @@ Util.registerComponentSystem('file-upload', {
       }
 
       if (items) {
+        let itemHandles = []
         for (let item of items)
+        {
+          itemHandles.push({kind: item.kind, type: item.type, handle: item.getAsFileSystemHandle()})
+        }
+        for (let item of itemHandles)
         {
           if (item.kind !== 'file') { console.warn("Not a file: ", item.kind, item); continue }
 
-          let handle = await item.getAsFileSystemHandle()
+          let handle = await item.handle
           console.log("handle", handle)
 
           if (handle.kind === 'directory')
@@ -738,15 +743,27 @@ Util.registerComponentSystem('file-upload', {
 
             } while (!entry.done)
 
+            let intercepted = false;
+
             for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
             {
-              if (this.fileInterceptors[i](directoryItems)) return;
+              if (this.fileInterceptors[i](directoryItems)) {
+                intercepted = true;
+                break;
+              }
+            }
+
+            if (intercepted) continue;
+            
+            for (let i of directoryItems)
+            {
+              this.handleFile(i.getAsFile())
             }
 
             continue
           }
 
-          let file = item.getAsFile()
+          let file = await handle.getFile()
 
           console.log("dropping", item.type, item.kind, file.name)
 
