@@ -356,6 +356,20 @@ AFRAME.registerComponent("layer-shelves", {
     layer.touch()
     Compositor.el.emit('layerupdated', {layer})
   },
+  materialPackLayer(layer) {
+    let activeMaterial = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask
+    if (!activeMaterial)
+    {
+      if (layer.materialPack)
+      {
+        delete layer.materialPack
+        Compositor.el.emit('layerupdated', {layer})
+      }
+      return;
+    }
+    layer.materialPack = activeMaterial.data.pack
+    Compositor.el.emit('layerupdated', {layer})
+  },
   newNode(node, e) {
     this.nextNodePosition = this.nextNodePosition || new THREE.Vector3()
     this.nextNodePosition.copy(this.shelves[node.id].getAttribute('position'))
@@ -506,6 +520,15 @@ AFRAME.registerComponent("layer-shelves", {
     this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].layer = layer
     this.shelves[layer.id].querySelector('*[opacity-picker]').components['opacity-picker'].adjustIndicator(layer.opacity)
     this.shelves[layer.id].querySelector('.invisible-indicator').setAttribute('visible', !layer.visible)
+
+    if (layer.materialPack)
+    {
+      this.shelves[layer.id].querySelector('.bg').setAttribute('show-material-pack', `pack: ${layer.materialPack}`)
+    }
+    else
+    {
+      this.shelves[layer.id].querySelector('.bg').removeAttribute('show-material-pack')
+    }
   },
   compositor_layersmoved(e) {
     console.log("Layers moved")

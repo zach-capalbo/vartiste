@@ -699,7 +699,7 @@ Util.registerComponentSystem('file-upload', {
       // console.log(e.target)
     }
 
-    document.body.ondrop = (e) => {
+    document.body.ondrop = async (e) => {
       console.log("Drop", e.detail)
       e.preventDefault()
       if (this.dragIndicator) {
@@ -714,11 +714,56 @@ Util.registerComponentSystem('file-upload', {
       }
 
       if (items) {
+        let itemHandles = []
         for (let item of items)
         {
-          if (item.kind !== 'file') continue
+          itemHandles.push({kind: item.kind, type: item.type, handle: item.getAsFileSystemHandle()})
+        }
+        for (let item of itemHandles)
+        {
+          if (item.kind !== 'file') { console.warn("Not a file: ", item.kind, item); continue }
 
-          let file = item.getAsFile()
+          let handle = await item.handle
+          console.log("handle", handle)
+
+          if (handle.kind === 'directory')
+          {
+            let i = handle.values();
+            console.log(i)
+            let directoryItems = []
+            let entry
+            do
+            {
+              entry = await i.next()
+              if (!entry) break;
+              if (!entry.value) continue
+
+              let entryFile = await entry.value.getFile();
+              directoryItems.push({kind: 'file', getAsFile: () => entryFile})
+
+            } while (!entry.done)
+
+            let intercepted = false;
+
+            for (let i = this.fileInterceptors.length - 1; i >= 0; i--)
+            {
+              if (this.fileInterceptors[i](directoryItems)) {
+                intercepted = true;
+                break;
+              }
+            }
+
+            if (intercepted) continue;
+            
+            for (let i of directoryItems)
+            {
+              this.handleFile(i.getAsFile())
+            }
+
+            continue
+          }
+
+          let file = await handle.getFile()
 
           console.log("dropping", item.type, item.kind, file.name)
 
