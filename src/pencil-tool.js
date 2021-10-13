@@ -1024,10 +1024,17 @@ AFRAME.registerComponent('selection-box-tool', {
     ybuttondown: forwardable('ybuttondown'),
     ybuttonup: forwardable('ybuttonup'),
   },
+  emits: {
+    grabstarted: {
+      grabbed: null
+    },
+    grabended: {},
+  },
   init() {
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     Pool.init(this)
+    Util.emitsEvents(this);
 
     let box = document.createElement('a-box')
     this.box = box
@@ -1216,6 +1223,12 @@ AFRAME.registerComponent('selection-box-tool', {
       })
     }
     this.tick = this._tick;
+
+    if (Object.keys(this.grabbed).length > 0)
+    {
+      this.emitDetails.grabstarted.grabbed = this.grabbed
+      this.el.emit('grabstarted', this.emitDetails.grabstarted)
+    }
   },
   stopGrab() {
     if (this.data.selectVertices) {
@@ -1234,6 +1247,7 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       this.toggleGrabbing(false)
     }
+    this.el.emit('grabended', this.emitDetails.grabended)
   },
   tick(t,dt) {},
   _tick(t, dt) {

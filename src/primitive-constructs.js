@@ -80,9 +80,9 @@ Util.registerComponentSystem('primitive-constructs', {
       this.decompose(mesh)
     }
   },
-  makeReference() {
+  makeReference(shapes = undefined) {
     this.grabConstruct(null);
-    let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
+    if (!shapes) shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
 
     let el = document.createElement('a-entity')
     document.querySelector('#reference-spawn').append(el)
@@ -375,5 +375,19 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     })
   },
   makeReal() {
+  },
+})
+
+AFRAME.registerComponent('grouping-tool', {
+  dependencies: ['selection-box-tool'],
+  events: {
+    grabstarted: function(e) {
+      console.log("Grabbed", e.detail.grabbed)
+      this.el.components['selection-box-tool'].stopGrab()
+      this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
+    }
+  },
+  init() {
+    this.el.setAttribute('selection-box-tool', 'selector', 'a-entity[primitive-construct-placeholder], .reference-glb')
   },
 })

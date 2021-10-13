@@ -648,6 +648,7 @@ AFRAME.registerComponent('axis-handle-control', {
       this.target.geometry.attributes.position.needsUpdate = true
       this.target.geometry.attributes.normal.transformDirection(m)
       this.target.geometry.attributes.normal.needsUpdate = true
+      this.target.geometry.computeBoundingSphere()
       if (this.target.geometry.boundsTree) this.target.geometry.computeBoundsTree()
     }
     else
