@@ -1127,23 +1127,26 @@ AFRAME.registerComponent('selection-box-tool', {
       {
         let contained = false
         if (!el.getObject3D('mesh')) continue;
-        Util.traverseFind(el.getObject3D('mesh'), (o) => {
-          if (!o.geometry) return;
+        if (!Util.visibleWithAncestors(el.object3D)) continue;
 
-          for (let i = 0; i < o.geometry.attributes.position.count; ++i)
-          {
-            worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
-            o.localToWorld(worldPos)
-            this.box.getObject3D('mesh').worldToLocal(worldPos)
-            if (boundingBox.containsPoint(worldPos))
-            {
-              contained = true
-              localPos.copy(worldPos)
-              return true
-            }
-          }
-        })
-        if (!contained) continue
+        if (!Util.objectsIntersect(el.getObject3D('mesh'), this.box.object3D)) continue
+        // Util.traverseFind(el.getObject3D('mesh'), (o) => {
+        //   if (!o.geometry) return;
+        //
+        //   for (let i = 0; i < o.geometry.attributes.position.count; ++i)
+        //   {
+        //     worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
+        //     o.localToWorld(worldPos)
+        //     this.box.getObject3D('mesh').worldToLocal(worldPos)
+        //     if (boundingBox.containsPoint(worldPos))
+        //     {
+        //       contained = true
+        //       localPos.copy(worldPos)
+        //       return true
+        //     }
+        //   }
+        // })
+        // if (!contained) continue
       }
       else if (this.data.grabElements)
       {
