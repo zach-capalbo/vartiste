@@ -1488,9 +1488,11 @@ AFRAME.registerComponent('tool-weight-tool', {
   init() {
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
-    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('rotation', '90 0 0')
 
-    this.raycaster = document.createElement('a-entity')
-
+    let raycaster = this.raycaster = document.createElement('a-entity')
+    this.el.append(raycaster)
+    raycaster.setAttribute('scalable-raycaster', 'showLine: true; objects: a-entity[six-dof-tool]')
   }
 })

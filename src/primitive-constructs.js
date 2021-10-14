@@ -383,7 +383,7 @@ AFRAME.registerComponent('grouping-tool', {
   events: {
     grabstarted: function(e) {
       console.log("Grabbed", e.detail.grabbed)
-      this.el.components['selection-box-tool'].stopGrab()
+      this.el.components['selection-box-tool'].toggleGrabbing(false)
       this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
     }
   },

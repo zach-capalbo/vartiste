@@ -753,7 +753,7 @@ class VARTISTEUtil {
     return indices;
   }
 
-  meshesIntersect(meshA, meshB)
+  meshesIntersect(meshA, meshB, includeContained = false)
   {
     let bvh;
 
@@ -771,10 +771,39 @@ class VARTISTEUtil {
     matrix.invert()
     matrix.multiply(meshB.matrixWorld)
 
-    return bvh.intersectsGeometry(meshA, meshB.geometry, matrix)
+    if (bvh.intersectsGeometry(meshA, meshB.geometry, matrix)) return true
+    if (!includeContained) return false
+
+    let tmpBox = this.pool('tmpBox', THREE.Box3)
+    tmpBox.copy(meshB.geometry.boundingBox)
+    tmpBox.applyMatrix4(matrix)
+
+    if (!tmpBox.intersectsBox(meshA.geometry.boundingBox)) return false
+
+    // TODO Check boundng box
+    let intersections = []
+    let raycaster = this.pool('raycaster', THREE.Raycaster);
+    raycaster.ray.direction.set(1, 0.1, 0);
+    let oldSided = meshA.material.side;
+    meshA.material.side = THREE.DoubleSide;
+    raycaster.ray.origin.fromBufferAttribute(meshB.geometry.attributes.position, 0)
+    meshB.localToWorld(raycaster.ray.origin)
+    raycaster.intersectObject(meshA, false, intersections)
+    meshA.material.side = oldSided
+    if (intersections.length % 2 == 1) return true
+    intersections.length = 0
+    oldSided = meshB.material.side;
+    meshB.material.side = THREE.DoubleSide;
+    raycaster.ray.origin.fromBufferAttribute(meshA.geometry.attributes.position, 0)
+    meshA.localToWorld(raycaster.ray.origin)
+    raycaster.intersectObject(meshB, false, intersections)
+    meshB.material.side = oldSided
+    if (intersections.length % 2 == 1) return true
+
+    return false
   }
 
-  objectsIntersect(objA, objB, {visibleOnly = true, intersectionInfo} = {})
+  objectsIntersect(objA, objB, {visibleOnly = true, intersectionInfo, includeContained = true} = {})
   {
     if (objA.object3D) objA = objA.object3D;
     if (objB.object3D) objB = objB.object3D;
@@ -791,7 +820,7 @@ class VARTISTEUtil {
         if (!oB.isMesh) return;
         if (visibleOnly && !oB.visible) return
         if (visibleOnly && oB.el && oB.el.className.includes("raycast-invisible")) return
-        if (this.meshesIntersect(oA, oB))
+        if (this.meshesIntersect(oA, oB, includeContained))
         {
           if (intersectionInfo)
           {
