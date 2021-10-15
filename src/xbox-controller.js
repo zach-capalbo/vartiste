@@ -16,7 +16,8 @@ const buttonNames = [
             'dpadUp',
             'dpadDown',
             'dpadLeft',
-            'dpadRight'
+            'dpadRight',
+            'unknown',
         ];
 
 AFRAME.registerComponent('xbox-controller', {
@@ -70,6 +71,7 @@ AFRAME.registerComponent('xbox-controller', {
     for (let i = 0; i < gamepads.length; ++i)
     {
       let gamepad = gamepads[i];
+      if (!gamepad) continue;
       if (/XInput STANDARD GAMEPAD/.test(gamepad.id))
       {
         if (this.data.index > 0 && gamepad.index !== this.data.index) continue;
