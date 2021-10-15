@@ -1024,10 +1024,17 @@ AFRAME.registerComponent('selection-box-tool', {
     ybuttondown: forwardable('ybuttondown'),
     ybuttonup: forwardable('ybuttonup'),
   },
+  emits: {
+    grabstarted: {
+      grabbed: null
+    },
+    grabended: {},
+  },
   init() {
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     Pool.init(this)
+    Util.emitsEvents(this);
 
     let box = document.createElement('a-box')
     this.box = box
@@ -1120,23 +1127,26 @@ AFRAME.registerComponent('selection-box-tool', {
       {
         let contained = false
         if (!el.getObject3D('mesh')) continue;
-        Util.traverseFind(el.getObject3D('mesh'), (o) => {
-          if (!o.geometry) return;
+        if (!Util.visibleWithAncestors(el.object3D)) continue;
 
-          for (let i = 0; i < o.geometry.attributes.position.count; ++i)
-          {
-            worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
-            o.localToWorld(worldPos)
-            this.box.getObject3D('mesh').worldToLocal(worldPos)
-            if (boundingBox.containsPoint(worldPos))
-            {
-              contained = true
-              localPos.copy(worldPos)
-              return true
-            }
-          }
-        })
-        if (!contained) continue
+        if (!Util.objectsIntersect(el.getObject3D('mesh'), this.box.object3D)) continue
+        // Util.traverseFind(el.getObject3D('mesh'), (o) => {
+        //   if (!o.geometry) return;
+        //
+        //   for (let i = 0; i < o.geometry.attributes.position.count; ++i)
+        //   {
+        //     worldPos.fromBufferAttribute(o.geometry.attributes.position, i)
+        //     o.localToWorld(worldPos)
+        //     this.box.getObject3D('mesh').worldToLocal(worldPos)
+        //     if (boundingBox.containsPoint(worldPos))
+        //     {
+        //       contained = true
+        //       localPos.copy(worldPos)
+        //       return true
+        //     }
+        //   }
+        // })
+        // if (!contained) continue
       }
       else if (this.data.grabElements)
       {
@@ -1216,6 +1226,12 @@ AFRAME.registerComponent('selection-box-tool', {
       })
     }
     this.tick = this._tick;
+
+    if (Object.keys(this.grabbed).length > 0)
+    {
+      this.emitDetails.grabstarted.grabbed = this.grabbed
+      this.el.emit('grabstarted', this.emitDetails.grabstarted)
+    }
   },
   stopGrab() {
     if (this.data.selectVertices) {
@@ -1234,6 +1250,7 @@ AFRAME.registerComponent('selection-box-tool', {
     {
       this.toggleGrabbing(false)
     }
+    this.el.emit('grabended', this.emitDetails.grabended)
   },
   tick(t,dt) {},
   _tick(t, dt) {
@@ -1471,9 +1488,11 @@ AFRAME.registerComponent('tool-weight-tool', {
   init() {
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
-    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.5; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('rotation', '90 0 0')
 
-    this.raycaster = document.createElement('a-entity')
-
+    let raycaster = this.raycaster = document.createElement('a-entity')
+    this.el.append(raycaster)
+    raycaster.setAttribute('scalable-raycaster', 'showLine: true; objects: a-entity[six-dof-tool]')
   }
 })

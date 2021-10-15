@@ -436,6 +436,12 @@ AFRAME.registerComponent('manipulator', {
     }
 
     if (this.target) {
+      if (!this.target.object3D.parent)
+      {
+        console.warn("Target parent disappeared!")
+        this.stopGrab()
+        return;
+      }
       if (Math.abs(this.zoomAmmount) > 0.08)
       {
         if (this.el.is("orbiting"))
