@@ -269,28 +269,7 @@ Util.registerComponentSystem('mesh-tools', {
     el.classList.add('clickable')
     document.querySelector('#reference-spawn').append(el)
 
-    let material = Compositor.material.clone()
-    // let material = new THREE.MeshMatcapMaterial()
-
-    for (let map of ['map'].concat(THREED_MODES))
-    {
-      if (map === 'envMap') continue
-      if (!Compositor.material[map] || !Compositor.material[map].image) continue;
-      console.log("Copying", map, Compositor.material[map])
-      try {
-        material[map] = Compositor.material[map].clone()
-        material[map].image = Util.cloneCanvas(Compositor.material[map].image)
-        material[map].needsUpdate = true
-      } catch (e) {
-        console.warn("Couldn't clone map", map, e)
-        material[map] = null
-        material.needsUpdate = true
-      }
-    }
-
-    // material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
-
-    material.needsUpdate = true
+    let material = Compositor.component.frozenMaterial()
 
     let newObject = Compositor.meshRoot.clone(true)
     newObject.traverse(o => {
@@ -490,7 +469,7 @@ AFRAME.registerComponent('mesh-fill-tool', {
             if (!leaf) return;
             box.setFromArray(v)
             // console.log(idx, c, new THREE.Box3().setFromArray(v))
-            
+
           }, root)
       }
     }

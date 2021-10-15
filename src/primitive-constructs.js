@@ -6,7 +6,8 @@ import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
   schema: {
-    container: {type: 'selector', default: '#canvas-root'}
+    container: {type: 'selector', default: '#canvas-root'},
+    shareMaterial: {default: false},
   },
   init() {
     this.placeholder = new THREE.Object3D
@@ -62,13 +63,17 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (!els) els = document.querySelectorAll('.reference-glb');
 
+    let frozenMaterial = Compositor.component.frozenMaterial()
+
     els.forEach(refEl => {
       meshes.length = 0
       Util.traverseFindAll(refEl.getObject3D('mesh'), (m) => m.type === 'Mesh', {outputArray: meshes})
 
       for (let mesh of meshes)
       {
+        mesh.material = frozenMaterial()
         this.decompose(mesh)
+        mesh.material = Compositor.material
       }
 
       refEl.remove()
@@ -265,6 +270,7 @@ AFRAME.registerComponent("show-current-color-or-material", {
 })
 
 AFRAME.registerComponent('primitive-construct-placeholder', {
+  // dependencies: ['raycast-bvh'],
   schema: {
     primitive: {default: ""},
     gltfModel: {default: ""},
@@ -361,7 +367,8 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
   },
   makeClone() {
-    console.log("Cloning", this.el)
+    let wasDetached = this.el.getAttribute('primitive-construct-placeholder').detached
+    console.log("Cloning", this.el, wasDetached)
     let newPlaceHolder = document.createElement('a-entity')
     this.el.parentEl.append(newPlaceHolder)
     newPlaceHolder.setAttribute('geometry', this.el.getAttribute('geometry'))
@@ -371,7 +378,15 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       this.system.data.container.object3D.add(newPlaceHolder.object3D)
       Util.positionObject3DAtTarget(newPlaceHolder.object3D, this.el.object3D)
       newPlaceHolder.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
-      newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.clone()
+
+      if (!wasDetached || !this.system.data.shareMaterial)
+      {
+        newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.clone()
+      }
+      else
+      {
+        newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material
+      }
     })
   },
   makeReal() {
