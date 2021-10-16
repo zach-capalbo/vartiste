@@ -3,7 +3,7 @@ var poolSize = 0
 class Pool {
   static init(where) {
     where._pool = {}
-    if (where.system)
+    if (false && where.system)
     {
       where.pool = function pool(name, type) {
           if (this.system._pool[name]) return this.system._pool[name]

@@ -120,12 +120,12 @@ class ExtrudeGeometry extends BufferGeometry {
 
 				// console.log(splineTube, 'splineTube', splineTube.normals.length, 'steps', steps, 'extrudePts', extrudePts.length);
 
-				binormal = new Vector3();
-				normal = new Vector3();
-				position2 = new Vector3();
-        tangent = new Vector3();
-
 			}
+
+      binormal = new Vector3();
+      normal = new Vector3();
+      position2 = new Vector3();
+      tangent = new Vector3();
 
 			// Safeguards if bevels are not enabled
 
@@ -419,8 +419,7 @@ class ExtrudeGeometry extends BufferGeometry {
 				if ( ! extrudeByPath ) {
 
 					v( vert.x, vert.y, 0 );
-          throw new Error("Need a normal");
-          // n( normal.x, normal.y, normal.z );
+          n( 0, 0, -1 );
 
         } else if (splineTube) {
           normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
