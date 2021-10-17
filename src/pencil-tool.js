@@ -1485,14 +1485,68 @@ AFRAME.registerComponent('tool-weight-tool', {
   schema: {
     weight: {default: 0.9}
   },
+  events: {
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed') {
+        this.attachToTool()
+      }
+    },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        this.detachTool()
+      }
+    }
+  },
   init() {
+    this.el.classList.add('grab-root')
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
+    this.handle.classList.add("clickable")
+    this.handle.setAttribute('propogate-grab','')
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('material', 'shader: matcap; src: #asset-shelf')
     this.handle.setAttribute('rotation', '90 0 0')
+    this.placeholder = new THREE.Object3D;
+  },
+  attachToTool() {
+    if (this.attachedTo) return;
 
-    let raycaster = this.raycaster = document.createElement('a-entity')
-    this.el.append(raycaster)
-    raycaster.setAttribute('scalable-raycaster', 'showLine: true; objects: a-entity[six-dof-tool]')
+    document.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
+      if (this.attachedTo) return;
+      if (el === this.el) return;
+      if (!Util.visibleWithAncestors(el.object3D)) return;
+      if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
+
+      console.log("Intersecting tool", el)
+      let placeholder = this.placeholder
+      el.object3D.add(placeholder)
+      Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+      el.object3D.add(this.el.object3D)
+      Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+      el.object3D.remove(placeholder)
+      this.originalWeight = el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null
+      el.setAttribute('manipulator-weight', 'weight: 0.9; type: slow')
+      this.attachedTo = el
+    })
+  },
+  detachTool() {
+    if (!this.attachedTo) return;
+
+    let placeholder = this.placeholder
+    this.el.sceneEl.object3D.add(placeholder)
+    Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+    ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
+    Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+
+    if (this.originalWeight)
+    {
+      this.attachedTo.setAttribute('manipulator-weight', this.originalWeight)
+    }
+    else
+    {
+      this.attachedTo.removeAttribute('manipulator-weight')
+    }
+
+    this.attachedTo = undefined
   }
 })
