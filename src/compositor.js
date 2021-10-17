@@ -377,6 +377,46 @@ AFRAME.registerComponent('compositor', {
       o.geometry.attributes.uv.needsUpdate = true
     }
   },
+  frozenMaterial() {
+    if (this.layers.some(l => l.updateTime >= this.frozenTime))
+    {
+      this._frozenMaterial = null;
+    }
+    if (this._frozenMaterial)
+    {
+      return this._frozenMaterial
+    }
+    let material = this.el.getObject3D('mesh').material.clone()
+    // let material = new THREE.MeshMatcapMaterial()
+
+    for (let map of ['map'].concat(THREED_MODES))
+    {
+      if (map === 'envMap') continue
+      if (!Compositor.material[map] || !Compositor.material[map].image) continue;
+      console.log("Copying", map, Compositor.material[map])
+      try {
+        material[map] = Compositor.material[map].clone()
+        if (map === 'map')
+        {
+          material[map].image = Util.cloneCanvas(this.preOverlayCanvas)
+        }
+        else
+        {
+          material[map].image = Util.cloneCanvas(Compositor.material[map].image)
+        }
+        material[map].needsUpdate = true
+      } catch (e) {
+        console.warn("Couldn't clone map", map, e)
+        material[map] = null
+        material.needsUpdate = true
+      }
+    }
+    // material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
+    material.needsUpdate = true;
+    this.frozenTime = this.el.sceneEl.time
+    this._frozenMaterial = material
+    return material
+  },
   drawOverlay(ctx) {
     if (!this.data.drawOverlay) return
     if (this.el.sceneEl.systems['low-power'].isLowPower() && this.uiRoot && this.uiRoot.getAttribute('visible')) return

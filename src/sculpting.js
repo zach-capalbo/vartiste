@@ -619,6 +619,7 @@ AFRAME.registerComponent('vertex-handles', {
 Util.registerComponentSystem('cutout-canvas', {
   schema: {
     extrude: {default: true},
+    toShape: {default: false},
   },
   events: {
     shapecreated: function(e) {
@@ -672,11 +673,27 @@ Util.registerComponentSystem('cutout-canvas', {
     )
     console.log("ScaleMatrix", scaleMatrix.elements)
     geometry.attributes.position.applyMatrix4(scaleMatrix)
+    geometry.center()
 
     let mesh = new THREE.Mesh(geometry, Compositor.material)
-    // mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
-    // mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
-    this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: true, undo: true})
+
+    if (this.data.toShape)
+    {
+      mesh.material = Compositor.component.frozenMaterial()
+      this.el.sceneEl.object3D.add(mesh)
+      Compositor.el.object3D.getWorldPosition(mesh.position)
+      mesh.geometry.computeBoundingSphere()
+      // mesh.position.x -= mesh.geometry.boundingSphere.radius
+      // mesh.position.y += mesh.geometry.boundingSphere.radius
+      this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+      // console.log("Adding", mesh)
+    }
+    else
+    {
+      // mesh.scale.x = Compositor.component.width / Compositor.el.getAttribute('geometry').width
+      // mesh.scale.y = Compositor.component.height / Compositor.el.getAttribute('geometry').height * Compositor.component.height / Compositor.component.width
+      this.el.sceneEl.systems['settings-system'].addModelView({scene: mesh}, {replace: true, undo: true})
+    }
 
     if (this.oldBrush)
     {
@@ -685,6 +702,13 @@ Util.registerComponentSystem('cutout-canvas', {
     }
   },
   startCutout() {
+    this.data.toShape = false
+    this.cutoutStarted = true
+    this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  },
+  startShapeCutout() {
+    this.data.toShape = true
     this.cutoutStarted = true
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
@@ -818,6 +842,7 @@ AFRAME.registerComponent('threed-line-tool', {
   schema: {
     meshContainer: {type: 'selector', default: '#canvas-root'},
     switchbackAngle: {default: 80.0},
+    moveThreshold: {default: 0.001},
     pointToPoint: {default: false},
     shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart', 'custom']},
   },
@@ -920,6 +945,10 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     draw: function(e) {
       if (this.data.pointToPoint) return;
+      if (!this.material || this.materialNeedsUpdate) {
+        this.getMaterial()
+        return;
+      }
       if (!this.endDrawingEl)
       {
         this.endDrawingEl = e.detail.sourceEl;
@@ -943,6 +972,8 @@ AFRAME.registerComponent('threed-line-tool', {
                    tipWorld.z - this.points[this.points.length - 1].z)
 
         dist = this.points[this.points.length - 1].l + newVec.length()
+
+        if (newVec.length < this.data.moveThreshold) return
       }
 
       if (this.points.length > 3)
@@ -993,7 +1024,7 @@ AFRAME.registerComponent('threed-line-tool', {
             {
               oldPoint.copy(this.points[this.points.length - 1])
               dist = oldPoint.distanceTo(tipWorld)
-              if (dist < 0.001) return;
+              if (dist < this.data.moveThreshold) return;
               dist = this.points[this.points.length - 1].l + dist
             }
             this.points.push({
@@ -1511,6 +1542,11 @@ AFRAME.registerComponent('threed-line-tool', {
     this.uvs = []
     this.opacities = []
     this.normals = []
+
+    if (!this.el.sceneEl.systems['primitive-constructs'].data.shareMaterial)
+    {
+      this.material = this.material.clone()
+    }
   },
   getMaterial(distance) {
     // return new THREE.MeshNormalMaterial()
