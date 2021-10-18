@@ -1484,7 +1484,7 @@ AFRAME.registerComponent('threed-line-tool', {
               normal4.copy(normal3)
             }
 
-            if (!this.data.pointToPoint)
+            if (false && !this.data.pointToPoint)
             {
               if (s === 0 || s === sl - 1)
               {

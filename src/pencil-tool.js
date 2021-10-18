@@ -1485,14 +1485,129 @@ AFRAME.registerComponent('tool-weight-tool', {
   schema: {
     weight: {default: 0.9}
   },
+  events: {
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed') {
+        this.attachToTool()
+      }
+    },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed') {
+        this.detachTool()
+      }
+    },
+    bbuttondown: function(e) {
+      if (this.el.is('grabbed'))
+      {
+        this.makeClone()
+      }
+    }
+  },
   init() {
+    this.el.classList.add('grab-root')
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
+    this.handle.classList.add("clickable")
+    this.handle.setAttribute('propogate-grab','')
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    this.handle.setAttribute('material', 'shader: matcap; src: #asset-shelf')
     this.handle.setAttribute('rotation', '90 0 0')
+    this.el.setAttribute('action-tooltips', "b: Clone")
+    this.placeholder = new THREE.Object3D;
+  },
+  attachToTool() {
+    if (this.attachedTo) return;
 
-    let raycaster = this.raycaster = document.createElement('a-entity')
-    this.el.append(raycaster)
-    raycaster.setAttribute('scalable-raycaster', 'showLine: true; objects: a-entity[six-dof-tool]')
+    document.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
+      if (this.attachedTo) return;
+      if (el === this.el) return;
+      if (!Util.visibleWithAncestors(el.object3D)) return;
+      if (el.hasAttribute('tool-weight-tool')) return;
+      if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
+
+      console.log("Intersecting tool", el)
+      let placeholder = this.placeholder
+      el.object3D.add(placeholder)
+      Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+      el.object3D.add(this.el.object3D)
+      Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+      el.object3D.remove(placeholder)
+
+      if (!el['tool-weight-tool-data'])
+      {
+        el['tool-weight-tool-data'] = {
+          originalWeight: el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null,
+          weightCount: 0,
+        }
+      }
+
+      el['tool-weight-tool-data'].weightCount++;
+
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
+      this.attachedTo = el
+    })
+  },
+  calcWeight(count) {
+    let c = 0
+    for (let i = 1; i <= count; i++)
+    {
+      c += 1 / Math.pow(2, i)
+    }
+    return c;
+  },
+  detachTool() {
+    if (!this.attachedTo) return;
+
+    let placeholder = this.placeholder
+    this.el.sceneEl.object3D.add(placeholder)
+    Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+    ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
+    Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+
+    let el = this.attachedTo;
+
+    el['tool-weight-tool-data'].weightCount--;
+
+    if (el['tool-weight-tool-data'].weightCount === 0)
+    {
+      if (el['tool-weight-tool-data'].originalWeight)
+      {
+        this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
+      }
+      else
+      {
+        this.attachedTo.removeAttribute('manipulator-weight')
+      }
+      delete el['tool-weight-tool-data'];
+    }
+    else
+    {
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
+    }
+
+    this.attachedTo = undefined
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    if (this.el.attachedTo)
+    {
+      this.el.parentEl.append(el)
+    }
+    else
+    {
+      this.el.sceneEl.append(el)
+    }
+    Util.whenLoaded(el, () => {
+      el.setAttribute('tool-weight-tool', this.el.getAttribute('tool-weight-tool'))
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+      Util.whenComponentInitialized(el, 'tool-weight-tool', () => {
+        Util.whenLoaded(el.components['tool-weight-tool'].handle, () => {
+          Util.callLater(() => {
+            console.log("tool weight initialized")
+            el.components['tool-weight-tool'].attachToTool()
+          })
+        })
+      })
+    })
   }
 })
