@@ -1480,6 +1480,8 @@ AFRAME.registerComponent('straight-edge-tool', {
   }
 })
 
+AFRAME.registerComponent('protractor-tool', {})
+
 AFRAME.registerComponent('tool-weight-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
