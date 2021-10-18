@@ -1512,6 +1512,7 @@ AFRAME.registerComponent('tool-weight-tool', {
     this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
     this.handle.setAttribute('material', 'shader: matcap; src: #asset-shelf')
     this.handle.setAttribute('rotation', '90 0 0')
+    this.el.setAttribute('action-tooltips', "b: Clone")
     this.placeholder = new THREE.Object3D;
   },
   attachToTool() {
