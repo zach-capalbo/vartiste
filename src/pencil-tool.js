@@ -1495,6 +1495,12 @@ AFRAME.registerComponent('tool-weight-tool', {
       if (e.detail === 'grabbed') {
         this.detachTool()
       }
+    },
+    bbuttondown: function(e) {
+      if (this.el.is('grabbed'))
+      {
+        this.makeClone()
+      }
     }
   },
   init() {
@@ -1515,6 +1521,7 @@ AFRAME.registerComponent('tool-weight-tool', {
       if (this.attachedTo) return;
       if (el === this.el) return;
       if (!Util.visibleWithAncestors(el.object3D)) return;
+      if (el.hasAttribute('tool-weight-tool')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
 
       console.log("Intersecting tool", el)
@@ -1524,10 +1531,28 @@ AFRAME.registerComponent('tool-weight-tool', {
       el.object3D.add(this.el.object3D)
       Util.positionObject3DAtTarget(this.el.object3D, placeholder)
       el.object3D.remove(placeholder)
-      this.originalWeight = el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null
-      el.setAttribute('manipulator-weight', 'weight: 0.9; type: slow')
+
+      if (!el['tool-weight-tool-data'])
+      {
+        el['tool-weight-tool-data'] = {
+          originalWeight: el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null,
+          weightCount: 0,
+        }
+      }
+
+      el['tool-weight-tool-data'].weightCount++;
+
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
       this.attachedTo = el
     })
+  },
+  calcWeight(count) {
+    let c = 0
+    for (let i = 1; i <= count; i++)
+    {
+      c += 1 / Math.pow(2, i)
+    }
+    return c;
   },
   detachTool() {
     if (!this.attachedTo) return;
@@ -1538,15 +1563,50 @@ AFRAME.registerComponent('tool-weight-tool', {
     ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
     Util.positionObject3DAtTarget(this.el.object3D, placeholder)
 
-    if (this.originalWeight)
+    let el = this.attachedTo;
+
+    el['tool-weight-tool-data'].weightCount--;
+
+    if (el['tool-weight-tool-data'].weightCount === 0)
     {
-      this.attachedTo.setAttribute('manipulator-weight', this.originalWeight)
+      if (el['tool-weight-tool-data'].originalWeight)
+      {
+        this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
+      }
+      else
+      {
+        this.attachedTo.removeAttribute('manipulator-weight')
+      }
+      delete el['tool-weight-tool-data'];
     }
     else
     {
-      this.attachedTo.removeAttribute('manipulator-weight')
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
     }
 
     this.attachedTo = undefined
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    if (this.el.attachedTo)
+    {
+      this.el.parentEl.append(el)
+    }
+    else
+    {
+      this.el.sceneEl.append(el)
+    }
+    Util.whenLoaded(el, () => {
+      el.setAttribute('tool-weight-tool', this.el.getAttribute('tool-weight-tool'))
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+      Util.whenComponentInitialized(el, 'tool-weight-tool', () => {
+        Util.whenLoaded(el.components['tool-weight-tool'].handle, () => {
+          Util.callLater(() => {
+            console.log("tool weight initialized")
+            el.components['tool-weight-tool'].attachToTool()
+          })
+        })
+      })
+    })
   }
 })
