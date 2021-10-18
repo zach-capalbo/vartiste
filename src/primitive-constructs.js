@@ -63,7 +63,6 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (!els) els = document.querySelectorAll('.reference-glb');
 
-    let frozenMaterial = Compositor.component.frozenMaterial()
 
     els.forEach(refEl => {
       meshes.length = 0
@@ -71,17 +70,17 @@ Util.registerComponentSystem('primitive-constructs', {
 
       for (let mesh of meshes)
       {
-        mesh.material = frozenMaterial()
         this.decompose(mesh)
-        mesh.material = Compositor.material
       }
 
       refEl.remove()
     })
   },
   decomposeCompositor() {
+    let frozenMaterial = Compositor.component.frozenMaterial()
     for (let mesh of Compositor.nonCanvasMeshes)
     {
+      mesh.material = frozenMaterial
       this.decompose(mesh)
     }
   },
