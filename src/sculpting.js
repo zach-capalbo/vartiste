@@ -996,6 +996,16 @@ AFRAME.registerComponent('threed-line-tool', {
         }
       }
 
+      let scale = e.detail.pressure * this.calcScale();
+
+      // TODO
+      if (this.el.hasAttribute('manipulator-weight')) {
+        let oldScale = this.points.length > 0 ? this.points[this.points.length - 1].scale : 0;
+        let {weight, type} = this.el.getAttribute('manipulator-weight')
+        if (type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * this.el.sceneEl.delta / 30, 0, 1)
+        scale = THREE.Math.lerp(scale, oldScale, weight);
+      }
+
       this.points.push({
         x: tipWorld.x,
         y: tipWorld.y,
@@ -1004,7 +1014,7 @@ AFRAME.registerComponent('threed-line-tool', {
         fy: this.worldForward.y,
         fz: this.worldForward.z,
         l: dist,
-        scale: e.detail.pressure * this.calcScale()
+        scale: scale,
       })
       this.createMesh(this.points)
     },
