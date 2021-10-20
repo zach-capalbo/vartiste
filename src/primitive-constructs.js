@@ -101,14 +101,17 @@ Util.registerComponentSystem('primitive-constructs', {
       {
         let mesh = shape.getObject3D('mesh').clone();
         mesh.el = el
+        mesh.traverse(o => o.el = el)
         targetObj.add(mesh)
         Util.positionObject3DAtTarget(mesh, shape.getObject3D('mesh'))
         shape.parentEl.removeChild(shape)
       }
 
       el.setAttribute('reference-glb', '')
+
       console.log("Made reference", el)
     })
+    this.el.sceneEl.emit('refreshobjects')
   },
   makeDrawable() {
     this.grabConstruct(null);
@@ -396,6 +399,8 @@ AFRAME.registerComponent('grouping-tool', {
   dependencies: ['selection-box-tool'],
   events: {
     grabstarted: function(e) {
+      if (!this.el.components['selection-box-tool'].grabbing) return;
+
       console.log("Grabbed", e.detail.grabbed)
       this.el.components['selection-box-tool'].toggleGrabbing(false)
       this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))

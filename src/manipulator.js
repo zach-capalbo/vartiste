@@ -392,6 +392,11 @@ AFRAME.registerComponent('manipulator', {
         console.log("GRABBING", targetEl, intersection)
       }
 
+      if (!targetEl.object3D.parent) {
+        console.warn("Object has no parent", targetEl);
+        return;
+      }
+
       this.target = targetEl
 
       for (let redirection = targetEl['redirect-grab']; redirection; redirection = this.target['redirect-grab'])
