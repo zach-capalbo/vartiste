@@ -501,21 +501,22 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
         let deleteLayers = []
         let ctx = saveLayer.canvas.getContext('2d')
 
-        switch (mode) {
-          case 'normalMap':
-            ctx.fillStyle = 'rgb(128, 128, 255)'
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-          break;
-          case 'bumpMap':
-          case 'metalnessMap':
-            ctx.fillStyle = 'rgb(0, 0, 0)'
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-          break;
-          case 'roughnessMap':
-            ctx.fillStyle = 'rgb(255, 255, 255)'
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-          break;
-        }
+        Util.fillDefaultCanvasForMap(ctx.canvas, mode, {replace: true});
+        // switch (mode) {
+        //   case 'normalMap':
+        //     ctx.fillStyle = 'rgb(128, 128, 255)'
+        //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        //   break;
+        //   case 'bumpMap':
+        //   case 'metalnessMap':
+        //     ctx.fillStyle = 'rgb(0, 0, 0)'
+        //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        //   break;
+        //   case 'roughnessMap':
+        //     ctx.fillStyle = 'rgb(255, 255, 255)'
+        //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        //   break;
+        // }
 
         for (let layer of compositor.layers)
         {
@@ -754,7 +755,7 @@ Util.registerComponentSystem('file-upload', {
             }
 
             if (intercepted) continue;
-            
+
             for (let i of directoryItems)
             {
               this.handleFile(i.getAsFile())

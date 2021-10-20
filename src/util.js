@@ -533,6 +533,13 @@ class VARTISTEUtil {
         ctx.fillStyle = 'rgb(255, 255, 255)'
         shouldFill = true;
         break;
+      case 'emissiveMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      default:
+        console.warn("Can't fill unknown map", map)
+        break;
       }
 
       if (shouldFill)
