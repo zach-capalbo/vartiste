@@ -1054,6 +1054,8 @@ AFRAME.registerComponent('manipulator-weight', {
   constrainObject(t, dt) {
     var weight = this.data.weight
     if (this.data.type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 30, 0, 1)
+    // weight = 1 - Math.exp( - weight * dt ) 
+
 
     this.el.object3D.position.lerp(this.lastPos, weight)
     this.el.object3D.quaternion.slerp(this.lastRot, weight)
