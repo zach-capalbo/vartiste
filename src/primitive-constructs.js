@@ -33,7 +33,7 @@ Util.registerComponentSystem('primitive-constructs', {
     el.setAttribute('axis-handles', 'apply: true')
     el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
     Util.whenComponentInitialized(el, 'frame', () => {
-      let button = el.components.frame.addButton('#asset-cylinder')
+      let button = el.components.frame.addButton('#asset-dots-square')
       button.setAttribute('tooltip', 'Edit Vertices')
       button.addEventListener('click', () => {
         el.setAttribute('vertex-handles', '')
