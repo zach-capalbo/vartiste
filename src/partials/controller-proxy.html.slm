@@ -1,0 +1,12 @@
+a-entity.grab-root shelf="name: Controller Proxy; width: 1.25; height: 2.25" six-dof-tool=""
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity icon-button="#asset-arrow-up-bold" proxy-button="trigger" scale="2 1 1" position="0.225 0 0"
+    a-entity icon-row=""
+      - for (let k of ['y', 'b'])
+        a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4" proxy-button="${k}"
+    a-entity icon-row=""
+      - for (let k of ['x', 'a'])
+        a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4" proxy-button="${k}"
+    a-entity icon-row=""
+      a-entity icon-button="#asset-hand-right" proxy-button="grip" scale="2 1 1" position="0.225 0 0"
