@@ -95,6 +95,7 @@ require('./sculpting.js')
 require('./translation.js')
 require('./text')
 require('./scene-organizer')
+require('./controller-proxy')
 
 require('./hubs-connector-shim.js')
 
