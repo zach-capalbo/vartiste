@@ -53,8 +53,12 @@ Util.registerComponentSystem('primitive-constructs', {
     el.object3D.add(mesh)
     el.setObject3D('mesh', mesh)
     Util.positionObject3DAtTarget(mesh, placeholder)
-    el.object3D.position.copy(mesh.position)
-    mesh.position.set(0, 0, 0)
+    // el.object3D.position.copy(mesh.position)
+    Util.applyMatrix(mesh.matrix, el.object3D)
+    Util.applyMatrix(mesh.matrix.identity(), mesh)
+
+    // mesh.position.set(0, 0, 0)
+
     el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
     return el
   },

@@ -722,6 +722,7 @@ AFRAME.registerComponent('camera-tool', {
   tick(t,dt) {
     if (!this.preview) return;
     if (!(this.el.is("grabbed") || this.el.is('cursor-hovered') || this.data.previewLive)) return;
+    if (!this.preview.components.material) return;
 
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
