@@ -15,8 +15,14 @@ AFRAME.registerComponent('object3d-view', {
         case this.localPosition.x:
         case this.localPosition.y:
         case this.localPosition.z:
-          this.data.target.object3D.position.set(parseFloat(this.localPosition.x.getAttribute('text').value),parseFloat(this.localPosition.y.getAttribute('text').value), parseFloat(this.localPosition.z.getAttribute('text').value))
+          this.object.position.set(parseFloat(this.localPosition.x.getAttribute('text').value),parseFloat(this.localPosition.y.getAttribute('text').value), parseFloat(this.localPosition.z.getAttribute('text').value))
           break
+      }
+    },
+    click: function(e) {
+      if (e.target.hasAttribute('object3d-view-action'))
+      {
+        this[e.target.getAttribute('object3d-view-action')]()
       }
     }
   },
@@ -24,7 +30,8 @@ AFRAME.registerComponent('object3d-view', {
     this.el.innerHTML += require('./partials/object3d-view.html.slm')
     this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3')
     this.el.classList.add('grab-root')
-    Util.whenLoaded(this.el, () => {
+    this.contents = this.el.querySelector('*[shelf-content]')
+    Util.whenLoaded([this.el, this.contents], () => {
       this.el.querySelectorAll('.root-target').forEach(el => {
         Util.whenLoaded(el, () => el.setAttribute('radio-button', 'target', this.el))
       })
@@ -36,10 +43,57 @@ AFRAME.registerComponent('object3d-view', {
     })
   },
   update(oldData) {
-    Util.whenLoaded([this.el, this.data.target], () => {
-      this.localPosition.x.setAttribute('text', 'value', this.data.target.object3D.position.x)
-      this.localPosition.y.setAttribute('text', 'value', this.data.target.object3D.position.y)
-      this.localPosition.z.setAttribute('text', 'value', this.data.target.object3D.position.z)
+    if (this.data.target.object3D)
+    {
+      this.targetEl = this.data.target
+      this.object = this.targetEl.object3D
+    }
+    else
+    {
+      if (this.data.target.el)
+      {
+        this.targetEl = this.data.target.el
+      }
+      else
+      {
+        this.targetEl = null
+      }
+      this.object = this.data.target
+    }
+
+    console.log("Updated target", this.targetEl, this.object)
+
+    Util.whenLoaded(this.targetEl ? [this.el, this.targetEl, this.contents] : [this.el, this.contents], () => {
+      this.setVectorEditors(this.localPosition, this.object.position)
     })
+  },
+  setVectorEditors(editors, vector) {
+    editors.x.setAttribute('text', 'value', vector.x.toFixed(3))
+    editors.y.setAttribute('text', 'value', vector.y.toFixed(3))
+    editors.z.setAttribute('text', 'value', vector.z.toFixed(3))
+  },
+  loadChildren() {
+    console.log('loading children', this.object.children)
+    const zOffset = -0.1
+    const scaleDown = 0.75
+    const heightOffset = 2.7
+    for (let i = 0; i < this.object.children.length; ++i)
+    {
+      let obj = this.object.children[i]
+      let view = document.createElement('a-entity')
+      this.el.append(view)
+      view.setAttribute('object3d-view', {target: obj})
+      view.setAttribute('position', `3.3 ${(i - this.object.children.length / 2) * heightOffset } ${(i - this.object.children.length / 2) * -0.1}`)
+      view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
+    }
+  }
+})
+
+AFRAME.registerComponent('grab-redirector', {
+  schema: {
+    target: {type: 'selector'},
+  },
+  init() {
+
   }
 })
