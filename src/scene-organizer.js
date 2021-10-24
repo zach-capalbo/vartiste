@@ -92,8 +92,34 @@ AFRAME.registerComponent('object3d-view', {
 AFRAME.registerComponent('grab-redirector', {
   schema: {
     target: {type: 'selector'},
+    handle: {default: true},
+    radius: {default: 0.3}
   },
   init() {
+    if (this.data.handle)
+    {
+      let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: this.data.radius, height: this.data.radius * 4, parentEl: this.el})
+      handle.setAttribute('position', `0 ${-this.data.radius * 3} 0`)
+      handle['redirect-grab'] = this.el
+    }
 
+    let globe = this.globe = document.createElement('a-entity')
+    this.el.append(globe)
+    globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
+    globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    globe.classList.add('clickable')
+  },
+  update(oldData) {
+    if (this.data.target !== oldData.target)
+    {
+      if (this.data.target.object3D)
+      {
+        this.globe['redirect-grab'] = this.data.target
+      }
+      else
+      {
+
+      }
+    }
   }
 })
