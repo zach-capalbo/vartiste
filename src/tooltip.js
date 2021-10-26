@@ -104,9 +104,13 @@ AFRAME.registerComponent('tooltip-style', {
   dependencies: ["tooltip"],
   multiple: true,
   schema: {
+    // Offsets tooltip in three dimensions using vec3.
     offset: {type: 'vec3', default: new THREE.Vector3(0, 0, 0)},
+    // Scales tooptip in three dimensions using vec3.
     scale: {type: 'vec3', default: new THREE.Vector3(1, 1, 1)},
+    // Rotates tooltip in three dimensions using vec3, in degrees.
     rotation: {type: 'vec3', default: new THREE.Vector3(0, 0, 0)},
+    // Number of characters before text wraps to next line.
     wrapCount: {default: 10}
   },
   update(oldData) {
