@@ -1,8 +1,14 @@
 import {Util} from './util.js'
+// Sets the speed of WASD movement in desktop mode.
 AFRAME.registerComponent('desktop-controls', {
   dependencies: ['wasd-controls', 'look-controls'],
   schema: {
+<<<<<<< HEAD
     velocity: {default: 0.001},
+=======
+    // Sets the distance moved for one keystroke, in world units.
+    velocity: {default: 0.001}
+>>>>>>> Updated description of desktop-controls and its property. Made some assumptions here, so please correct if incorrect (which is highly likely).
   },
   init() {
     this.el.setAttribute('wasd-controls', 'wsInverted: false; fly: true; acceleration: 1')
