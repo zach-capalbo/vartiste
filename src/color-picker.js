@@ -10,7 +10,10 @@ const INDICATOR_GEOMETRY = {"metadata":{"version":4.5,"type":"BufferGeometry","g
 AFRAME.registerComponent("color-picker", {
   dependencies: ['material', 'geometry'],
   schema: {
+    // Sets brightness of the color-wheel. Value is between 0 and 1,
+    // with zero being darkest and 1 being lightest.
     brightness: {type: 'float', default: 0.5},
+    // Selects between oklab and rgb colorspaces for color wheel.
     colorSpace: {default: 'oklab', oneOf: ['rgb', 'oklab']}
   },
   init() {
