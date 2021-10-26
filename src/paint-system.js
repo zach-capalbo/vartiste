@@ -3,14 +3,18 @@ import * as Brush from './brush.js'
 import shortid from 'shortid'
 import {Util} from './util.js'
 
-// Manages drawing options such as paint brush and color
+// Manages drawing options such as paint brush and color.
 AFRAME.registerSystem('paint-system', {
   schema: {
+    // The current drawing color, in hexadecimal or csv color name.
     color: {type: 'color', default: '#000'},
+    // The current drawing opacity, fully transparent at 0, and fully opaque at 1.
     opacity: {type: 'float', default: 0.7},
+    // Brush size, as an integer. There is no upper limit to size, and size increases exponentially.
     brushScale: {type: 'float', default: 1},
-    // Index into the brush list provided by `brush-list.js`
+    // Index into the brush list provided by `brush-list.js`.
     brushIndex: {type: 'int', default: 0},
+    // When true, allows the brush to rotate.
     rotateBrush: {type: 'bool', default: true},
     wrapX: {type: 'bool', default: false},
     wrapY: {type: 'bool', default: false},
