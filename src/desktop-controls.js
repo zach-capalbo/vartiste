@@ -1,7 +1,9 @@
 import {Util} from './util.js'
+// Sets the speed of WASD movement in desktop mode.
 AFRAME.registerComponent('desktop-controls', {
   dependencies: ['wasd-controls', 'look-controls'],
   schema: {
+    // Sets the distance moved for one keystroke, in world units.
     velocity: {default: 0.001}
   },
   init() {
