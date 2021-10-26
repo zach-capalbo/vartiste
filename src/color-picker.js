@@ -66,10 +66,11 @@ AFRAME.registerComponent("color-picker", {
   }
 })
 
-// Picks the brightness for a [`color-wheel`](#color-wheel)
+// Controls the brightness for a [`color-wheel`](#color-wheel)
 AFRAME.registerComponent("brightness-picker", {
-  // The element with a `color-wheel` component to set the brightness on
+  
   schema: {
+    // The element with a `color-wheel` component to set the brightness on
     target: {type: 'selector'}
   },
   init() {
