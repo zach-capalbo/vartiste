@@ -278,8 +278,12 @@ AFRAME.registerComponent("brush-scale-lever", {
 // Provides a preset-color picker for the [`paint-system`](#paint-system)
 AFRAME.registerComponent("palette", {
   schema: {
+    // List of colors that will be added as presets to the color-picker,
+    // in hexadecimal or csv color names.
     colors: {type: 'array'},
+    // The maximum number of preset colors allowed.
     maxCount: {default: 0},
+    // When true, duplicate colors will be allowed as presets.
     allowDuplicates: {default: true},
   },
   init() {
