@@ -99,7 +99,7 @@ AFRAME.registerComponent('tooltip', {
   }
 })
 
-// Allows you to change the style of the [`tooltip`](#tooltip) component somewhat
+// Allows manipulation of [`tooltip`](#tooltip) size, placement and style.
 AFRAME.registerComponent('tooltip-style', {
   dependencies: ["tooltip"],
   multiple: true,
