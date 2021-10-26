@@ -126,8 +126,12 @@ AFRAME.registerComponent('raycast-bvh', {
   tick(t, dt) {}
 })
 
+// Controls the global low power setting for devices with limited processing
+// power. By default, it will check the system in use and guess which setting
+// will be best.
 AFRAME.registerSystem('low-power', {
   schema: {
+    // Set the system under `a-scene` to allow user to force low power on or off.
     lowPower: {default: Util.isLowPower()}
   },
   init() {
@@ -138,10 +142,15 @@ AFRAME.registerSystem('low-power', {
   }
 })
 
+// Sets the desired property and value for a given component when the scene is
+// in low power mode.
 AFRAME.registerComponent('set-low-power', {
   multiple: true,
   schema: {
+    // The entity containing the desired component.
     target: {default: null},
+    // The component affected by low power mode, including the property changed
+    // and its desired low power mode value. Formatted as `component; property: value`.
     component: {type: 'string'},
   },
   updateSchema(newData) {
