@@ -1,6 +1,7 @@
 import {Util} from './util.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
+import {Pool} from './pool.js'
 import {HANDLED_MAPS} from './material-packs.js'
 import './extra-geometries.js'
 
@@ -10,6 +11,7 @@ Util.registerComponentSystem('primitive-constructs', {
     shareMaterial: {default: false},
   },
   init() {
+    Pool.init(this)
     this.placeholder = new THREE.Object3D
     this.el.sceneEl.object3D.add(this.placeholder)
   },
@@ -54,6 +56,10 @@ Util.registerComponentSystem('primitive-constructs', {
     el.setObject3D('mesh', mesh)
     Util.positionObject3DAtTarget(mesh, placeholder)
     // el.object3D.position.copy(mesh.position)
+    let invMat = this.pool('invMat', THREE.Matrix4)
+    invMat.copy(this.data.container.object3D.matrixWorld)
+    invMat.invert()
+    mesh.matrix.premultiply(invMat)
     Util.applyMatrix(mesh.matrix, el.object3D)
     Util.applyMatrix(mesh.matrix.identity(), mesh)
 
