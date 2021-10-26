@@ -55,10 +55,14 @@ AFRAME.registerComponent('fix-light-shadow', {
 
 
 // Fixes a performance regression raycasting against a skinned mesh without a
-// skinning material
+// skinning material.
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {
+    // When true, the raycaster will ignore the entity’s morph targets.
+    // Helps reduce needed processing power.
     ignoreMorphTargets: {default: true},
+    // When true, the raycaster will ignore the entity’s skinning.
+    // Helps reduce needed processing power.
     ignoreSkinning: {default: false},
   },
   init() {
