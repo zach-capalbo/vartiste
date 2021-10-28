@@ -93,7 +93,15 @@ AFRAME.registerComponent('grab-redirector', {
   schema: {
     target: {type: 'selector'},
     handle: {default: true},
-    radius: {default: 0.3}
+    radius: {default: 0.3},
+    resetOnClick: {default: false},
+  },
+  events: {
+    click: function(e) {
+      if (!this.data.resetOnClick) return;
+      if (e.detail.cursorEl && e.detail.cursorEl.id === 'mouse' && e.target === this.globe) return;
+      Util.applyMatrix(this.initialMatrix, this.object)
+    }
   },
   init() {
     if (this.data.handle)
@@ -108,6 +116,8 @@ AFRAME.registerComponent('grab-redirector', {
     globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
     globe.setAttribute('material', 'wireframe: true; shader: matcap')
     globe.classList.add('clickable')
+
+    this.initialMatrix = new THREE.Matrix4
   },
   update(oldData) {
     if (this.data.target !== oldData.target)
@@ -115,11 +125,13 @@ AFRAME.registerComponent('grab-redirector', {
       if (this.data.target.object3D)
       {
         this.globe['redirect-grab'] = this.data.target
+        this.object = this.data.target.object3D
       }
       else
       {
 
       }
+      this.initialMatrix.copy(this.object.matrix)
     }
   }
 })
