@@ -840,7 +840,7 @@ const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    meshContainer: {type: 'selector', default: '#canvas-root'},
+    meshContainer: {type: 'selector', default: '#world-root'},
     switchbackAngle: {default: 80.0},
     moveThreshold: {default: 0.001},
     pointToPoint: {default: false},

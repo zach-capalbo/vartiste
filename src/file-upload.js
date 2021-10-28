@@ -658,6 +658,20 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
 
 }
 
+async function addSVGShapes(file) {
+  let loader = new THREE.SVGLoader()
+  let buffer = await file.text()
+  console.log("Loading svg", file)
+  let shapes = loader.parse(buffer)
+  console.log("Shapes loaded", shapes)
+  for (let path of shapes.paths) {
+    for (let shape of path.toShapes())
+    {
+      Compositor.el.emit('shapecreated', shape)
+    }
+  }
+}
+
 
 Util.registerComponentSystem('file-upload', {
   schema: {
@@ -821,6 +835,12 @@ Util.registerComponentSystem('file-upload', {
       {
         addMovieLayer(file).then(() => busy.done())
       }
+      return;
+    }
+
+    if (/\.(svg)$/i.test(file.name))
+    {
+      addSVGShapes(file).then(() => busy.done())
       return;
     }
 
