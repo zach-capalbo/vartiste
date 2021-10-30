@@ -234,12 +234,14 @@ AFRAME.registerComponent('webxr-motion-controller', {
     }
 
     // Work around XR.js incomplete pose
-    if (this.controller[this.data.originSpace] && this.controller[this.data.originSpace]._pose)
+    if (this.controller[this.data.originSpace] && this.controller[this.data.originSpace]._pose && !this.controller[this.data.originSpace]._pose._realViewMatrix)
     {
-      if (!this.controller[this.data.originSpace]._pose._realViewMatrix) return;
+      pose = this.controller[this.data.originSpace]._pose
     }
-
-    pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
+    else
+    {
+      pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
+    }
 
     var object3D = this.el.object3D;
     if (!pose) { return; }
