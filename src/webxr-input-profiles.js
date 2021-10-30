@@ -236,7 +236,8 @@ AFRAME.registerComponent('webxr-motion-controller', {
     // Work around XR.js incomplete pose
     if (this.controller[this.data.originSpace] && this.controller[this.data.originSpace]._pose && !this.controller[this.data.originSpace]._pose._realViewMatrix)
     {
-      pose = this.controller[this.data.originSpace]._pose
+      pose = frame.getPose(this.controller.targetRaySpace, this.system.referenceSpace)
+      // console.log("XR.js pose workaround", pose)
     }
     else
     {
