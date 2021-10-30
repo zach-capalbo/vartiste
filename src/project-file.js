@@ -288,6 +288,14 @@ class ProjectFile {
     obj.exportJPEG = settings.data.exportJPEG
     Object.assign(obj, this.saveCompositor())
 
+    let canvasRoot = document.querySelector('#cavans-root')
+    let originalCanvasMatrix
+    if (canvasRoot)
+    {
+      originalCanvasMatrix = new THREE.Matrix4().copy(canvasRoot.matrix)
+      Util.applyMatrix(canvasRoot.matrix.identity(), canvasRoot)
+    }
+
     let compositionView = document.getElementById('composition-view')
     if (compositionView)
     {
@@ -496,6 +504,12 @@ class ProjectFile {
       settings.data.exportJPEG = true
       obj.materialPack = [await base64ArrayBuffer(await settings.getExportableGLB(materialPackRoot))]
       settings.data.exportJPEG = oldExportJPEG
+    }
+
+
+    if (canvasRoot)
+    {
+      Util.applyMatrix(originalCanvasMatrix, canvasRoot)
     }
 
     return obj

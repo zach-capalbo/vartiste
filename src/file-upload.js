@@ -1084,6 +1084,12 @@ AFRAME.registerComponent('reference-glb', {
       })
     })
   },
+  remove() {
+    this.el.getObject3D('mesh').traverse(o => {
+      if (o.material) o.material.dispose()
+      if (o.geometry) o.geometry.dispose()
+    })
+  },
   makeClone() {
     let el = document.createElement('a-entity')
     this.el.parentEl.append(el)
