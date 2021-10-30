@@ -51,6 +51,10 @@ AFRAME.registerSystem('webxr-input-profiles', {
     }
     var refspace = self.el.sceneEl.systems.webxr.sessionReferenceSpaceType;
     xrSession.requestReferenceSpace(refspace).then(function (referenceSpace) {
+      if (!referenceSpace)
+      {
+        console.warn("Empty reference space recieved!", xrSession)
+      }
       self.referenceSpace = referenceSpace;
     }).catch(function (err) {
       self.el.sceneEl.systems.webxr.warnIfFeatureNotRequested(
@@ -220,7 +224,22 @@ AFRAME.registerComponent('webxr-motion-controller', {
     if (!this.controller) return
     let frame = this.el.sceneEl.frame
     if (!frame) return;
-    let pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
+    let pose;
+
+    if (!this.system.referenceSpace)
+    {
+      console.warn("No reference space. Updating reference space")
+      this.system.updateReferenceSpace()
+      return;
+    }
+
+    try {
+     pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
+   } catch (e) {
+     console.error("Couldn't get pose", this.data.originSpace, this.system.referenceSpace)
+     console.error(e)
+     throw e;
+   }
 
     var object3D = this.el.object3D;
     if (!pose) { return; }
