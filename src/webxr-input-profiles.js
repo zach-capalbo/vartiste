@@ -233,13 +233,13 @@ AFRAME.registerComponent('webxr-motion-controller', {
       return;
     }
 
-    try {
-     pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
-   } catch (e) {
-     console.error("Couldn't get pose", this.data.originSpace, this.system.referenceSpace)
-     console.error(e)
-     throw e;
-   }
+    // Work around XR.js incomplete pose
+    if (this.controller[this.data.originSpace] && this.controller[this.data.originSpace]._pose)
+    {
+      if (!this.controller[this.data.originSpace]._pose._realViewMatrix) return;
+    }
+
+    pose = frame.getPose(this.controller[this.data.originSpace], this.system.referenceSpace)
 
     var object3D = this.el.object3D;
     if (!pose) { return; }
