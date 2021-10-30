@@ -48,7 +48,8 @@ AFRAME.registerComponent("frame", {
     // If true, there's a visible border around the entity
     outline: {default: true},
     outlineColor: {type: 'color', default: "#52402b"},
-    tooltipStyle: {type: 'string', default: "scale: 3 3 3; offset: 0 1.0 0"},
+    tooltipStyle: {type: 'string', default: "scale: 3 3 3; offset: 0 0.0 0"},
+    buttonScale: {default: 0.03},
 
     // If set, uses the selector element as the source of the geometry for the frame,
     // rather than the current element
@@ -89,6 +90,15 @@ AFRAME.registerComponent("frame", {
         this.startAutoHide()
       }
     },
+    componentchanged: function(e) {
+      if (e.detail.name === 'visible')
+      {
+        this.relayout()
+      }
+    },
+    popupshown: function(e) {
+      this.relayout();
+    }
   },
   init() {
     Pool.init(this)
@@ -284,11 +294,12 @@ AFRAME.registerComponent("frame", {
     let button = document.createElement('a-entity')
     button.setAttribute('icon-button', icon)
     button.setAttribute('button-style', 'buttonType: plane; color: #26211c')
-    button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
+    //button.setAttribute('position', `${width / 2 - 0.055 - this.buttonCount++ * 0.6} ${height / 2 + 0.055} 0`)
     button.setAttribute('scale', `0.3 0.3 0.3`)
     button.setAttribute('tooltip-style', this.data.tooltipStyle)
     this.buttonRow.append(button)
     this.objects.push(button)
+    this.relayout()
     return button
   },
   removeButton(icon) {
@@ -302,15 +313,40 @@ AFRAME.registerComponent("frame", {
     this.buttonRow.remove(button)
   },
   relayout() {
+    this.needsLayout = true;
+    Util.whenLoaded(this.el, () => { Util.callLater(() => this._relayout()) })
+  },
+  _relayout() {
+    if (!this.needsLayout) return;
     let i = 0;
     let {width, height} = this;
+    let worldScale = this.pool('worldScale', THREE.Vector3)
+    let parentScale = this.pool('parentScale', THREE.Vector3)
+    let defaultScale = this.data.buttonScale
+    // this.el.object3D.updateMatrixWorld()
+    this.el.object3D.getWorldScale(worldScale)
+    worldScale.x = defaultScale / worldScale.x
+    worldScale.y = defaultScale / worldScale.y
+    worldScale.z = defaultScale / worldScale.z
+    this.el.object3D.parent.getWorldScale(parentScale)
+
     for (let b of this.buttonRow.children)
     {
-      b.setAttribute('position', `${width / 2 - 0.055 - i++ * 0.6} ${height / 2 + 0.055} 0`)
+      if (b.hasAttribute('text'))
+      {
+        b.object3D.scale.z = 1
+        continue;
+      }
+      
+      b.object3D.position.set(width / 2 - 0.2 * worldScale.x - i * 0.55 / parentScale.x * worldScale.x, height / 2 + 0.2 * worldScale.y, 0)
+      b.setAttribute('scale', worldScale)
+      i++
     }
 
     if (this.lineObject) this.lineObject.position.copy(this.center)
     this.buttonRow.object3D.position.copy(this.center)
+
+    this.needsLayout = false
   },
   closeFrame() {
     if (this.data.closePopup)

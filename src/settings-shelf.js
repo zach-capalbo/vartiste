@@ -53,8 +53,10 @@ AFRAME.registerComponent('settings-shelf', {
     })
 
     Util.whenLoaded([this.el, Compositor.el], () => {
-      this.el.querySelector('.width').setAttribute('text', {value: Compositor.component.width})
-      this.el.querySelector('.height').setAttribute('text', {value: Compositor.component.height})
+      let w = this.el.querySelector('.width')
+      Util.whenLoaded(w, () => w.setAttribute('text', 'value', Compositor.component.width))
+      let h = this.el.querySelector('.height')
+      Util.whenLoaded(h, () => h.setAttribute('text', 'value', Compositor.component.height))
     })
 
     // if (!this.el.sceneEl.systems.sketchfab.loggedIn())
