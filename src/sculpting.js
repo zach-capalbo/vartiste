@@ -1560,8 +1560,9 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   getMaterial(distance) {
     // return new THREE.MeshNormalMaterial()
-
     if (this.material && !this.materialNeedsUpdate) return this.material;
+    console.log("Regenerating material")
+    if (this.material) this.material.dispose()
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
     let canvas, color, opacity;

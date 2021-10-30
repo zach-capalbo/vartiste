@@ -88,6 +88,15 @@ Util.registerComponentSystem('primitive-constructs', {
   },
   decomposeCompositor() {
     let frozenMaterial = Compositor.component.frozenMaterial()
+    if (Compositor.nonCanvasMeshes.length === 0)
+    {
+      let mesh = Compositor.mesh.clone()
+      mesh.material = frozenMaterial
+      this.data.container.object3D.add(mesh)
+      Util.positionObject3DAtTarget(mesh, Compositor.mesh)
+      this.decompose(mesh)
+      return;
+    }
     for (let mesh of Compositor.nonCanvasMeshes)
     {
       mesh.material = frozenMaterial
@@ -359,6 +368,12 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     this.el.setAttribute('action-tooltips', 'b: Clone shape')
   },
   update(oldData) {},
+  remove() {
+    this.el.getObject3D('mesh').traverse(o => {
+      if (o.material) o.material.dispose()
+      if (o.geometry) o.geometry.dispose()
+    })
+  },
   detachCopy() {
     console.log("Detaching copy", this.el)
 
