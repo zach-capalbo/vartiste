@@ -1,9 +1,10 @@
 a-entity shelf-content=""
   a-entity icon-row="mergeButtons: true"
-    a-entity.root-target icon-button="" tooltip="Local Position" radio-button="component: object3d-view; property: activeProperty; value: localPosition"
-    a-entity.root-target icon-button="" tooltip="Global Position" radio-button="component: object3d-view; property: activeProperty; value: globalPosition"
+    /a-entity.root-target icon-button="" tooltip="Local Position" radio-button="component: object3d-view; property: activeProperty; value: localPosition"
+    /a-entity.root-target icon-button="" tooltip="Global Position" radio-button="component: object3d-view; property: activeProperty; value: globalPosition"
+    a-entity icon-button="#asset-cube-send" tooltip="Export" object3d-view-action="export"
+    a-entity icon-button="#asset-delete" tooltip="Delete" object3d-view-action="trash"
 
-    a-entity icon-button="" tooltip="Export"
     a-entity icon-button="#asset-plus-box-multiple" tooltip="Load Children" object3d-view-action="loadChildren"
   - let editfieldtext="width: 3; anchor: right; align: right; xOffset: 1.5; wrapCount: 14"
   a-entity icon-row=""

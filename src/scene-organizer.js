@@ -11,6 +11,7 @@ AFRAME.registerComponent('object3d-view', {
   },
   events: {
     editfinished: function(e) {
+      e.stopPropagation()
       switch (e.target) {
         case this.localPosition.x:
         case this.localPosition.y:
@@ -20,6 +21,7 @@ AFRAME.registerComponent('object3d-view', {
       }
     },
     click: function(e) {
+      e.stopPropagation()
       if (e.target.hasAttribute('object3d-view-action'))
       {
         this[e.target.getAttribute('object3d-view-action')]()
@@ -28,9 +30,10 @@ AFRAME.registerComponent('object3d-view', {
   },
   init() {
     this.el.innerHTML += require('./partials/object3d-view.html.slm')
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
+    this.childViews = new Map;
     Util.whenLoaded([this.el, this.contents], () => {
       this.el.querySelectorAll('.root-target').forEach(el => {
         Util.whenLoaded(el, () => el.setAttribute('radio-button', 'target', this.el))
@@ -45,6 +48,7 @@ AFRAME.registerComponent('object3d-view', {
   update(oldData) {
     if (this.data.target.object3D)
     {
+      this.isEl = true
       this.targetEl = this.data.target
       this.object = this.targetEl.object3D
     }
@@ -53,10 +57,12 @@ AFRAME.registerComponent('object3d-view', {
       if (this.data.target.el)
       {
         this.targetEl = this.data.target.el
+        this.isEl = this.data.target === this.data.target.el.object3D
       }
       else
       {
         this.targetEl = null
+        this.isEl = false
       }
       this.object = this.data.target
     }
@@ -65,7 +71,17 @@ AFRAME.registerComponent('object3d-view', {
 
     Util.whenLoaded(this.targetEl ? [this.el, this.targetEl, this.contents] : [this.el, this.contents], () => {
       this.setVectorEditors(this.localPosition, this.object.position)
+      this.el.setAttribute('shelf', 'name', this.nameString())
     })
+  },
+  nameString() {
+    if (this.isEl)
+    {
+      if (this.targetEl.id) return "#" + this.targetEl.id
+      return this.targetEl.nodeName.toLowerCase()
+    }
+
+    return `${this.object.type} ${this.object.name || this.object.uuid}`
   },
   setVectorEditors(editors, vector) {
     editors.x.setAttribute('text', 'value', vector.x.toFixed(3))
@@ -80,12 +96,24 @@ AFRAME.registerComponent('object3d-view', {
     for (let i = 0; i < this.object.children.length; ++i)
     {
       let obj = this.object.children[i]
+      if (this.childViews.has(obj)) continue;
       let view = document.createElement('a-entity')
       this.el.append(view)
       view.setAttribute('object3d-view', {target: obj})
       view.setAttribute('position', `3.3 ${(i - this.object.children.length / 2) * heightOffset } ${(i - this.object.children.length / 2) * -0.1}`)
       view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
+      this.childViews.set(obj, view)
     }
+  },
+  export() {
+    this.el.sceneEl.systems['settings-system'].export3dAction(this.object)
+  },
+  trash() {
+    // if (this.isEl) this.targetEl.parentEl.remove(this.targetEl) // ?
+    
+    this.object.parent.remove(this.object)
+    Util.recursiveDispose(this.object)
+    this.el.parentEl.remove(this.el)
   }
 })
 

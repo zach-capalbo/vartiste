@@ -280,6 +280,14 @@ class VARTISTEUtil {
     return true
   }
 
+  recursiveDispose(obj)
+  {
+    obj.traverse(o => {
+      if (o.material) o.material.dispose()
+      if (o.geometry) o.geometry.dispose()
+    })
+  }
+
   // Uppercases the first letter of each word
   titleCase(str) {
     return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1))
