@@ -21,9 +21,17 @@ html
 
     meta http-equiv="origin-trial" content="Agh2MgKp6jR2UIo+xAmMML4rdhM/FUw3foB1wBJ9St2wP0pljnEDdgKy3B0tftW2RULk7WI9F730mtqvbDQJmwIAAABjeyJvcmlnaW4iOiJodHRwczovL3ZhcnRpc3RlLnh5ejo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"
 
+    - if false
+      script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'
+      javascript:
+        console.info("Polyfilling WebXR")
+        new WebXRPolyfill
+
     /script src="https://aframe.io/releases/1.2.0/aframe.js"
     script src="aframe.js"
     script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.9.0/aframe-enviropacks.js"
+
+
     /script src="https://mixedreality.mozilla.org/ammo.js/builds/ammo.wasm.js"
     /script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"
     /script src="https://cdn.jsdelivr.net/npm/webxr-layers-polyfill@1.0.2/build/webxr-layers-polyfill.min.js"

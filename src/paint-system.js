@@ -14,18 +14,25 @@ AFRAME.registerSystem('paint-system', {
     rotateBrush: {type: 'bool', default: true},
     wrapX: {type: 'bool', default: false},
     wrapY: {type: 'bool', default: false},
+
+    jitterColor: {default: false},
   },
 
   init() {
     this.linearBrushScale = 0
+    this.color3 = new THREE.Color
+    this.jitterColor = new THREE.Color
     this.brush = BrushList[this.data.brushIndex]
     this.brush.changeColor(this.data.color)
+
+    this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
   },
 
   // Sets the color of the current brush. Can be a hex string or a csv color name
   selectColor(color) {
     this.data.color = color
     this.brush.changeColor(color)
+    this.color3.set(color)
     this.el.emit('colorchanged', {color})
   },
 
@@ -77,6 +84,34 @@ AFRAME.registerSystem('paint-system', {
   setRotateBrush(shouldRotate) {
     this.data.rotateBrush = shouldRotate
     this.el.emit('rotatebrushchanged', shouldRotate)
+  },
+  applyJittter() {
+    if (this.brush.solo) return;
+
+    const jitterAmmount = 0.1
+
+    this.jitterColor.copy(this.color3)
+    this.jitterColor.r = THREE.Math.clamp(this.jitterColor.r + (Math.random() - 0.5) * jitterAmmount, 0, 1)
+    this.jitterColor.g += THREE.Math.clamp(this.jitterColor.g + (Math.random() - 0.5) * jitterAmmount, 0, 1)
+    this.jitterColor.b += THREE.Math.clamp(this.jitterColor.b + (Math.random() - 0.5) * jitterAmmount, 0, 1)
+    this.brush.changeColor(this.jitterColor.getStyle())
+  },
+  tick(t, dt) {
+    if (this.data.jitterColor)
+    {
+      this.applyJittter()
+    }
+  }
+})
+
+Util.registerComponentSystem('paint-system-settings', {
+  schema: AFRAME.systems['paint-system'].prototype.schema,
+  init() {},
+  update(oldData) {
+    for (let [key, value] of Object.entries(AFRAME.utils.diff(oldData, this.data)))
+    {
+      this.el.systems['paint-system'].data[key] = value;
+    }
   }
 })
 

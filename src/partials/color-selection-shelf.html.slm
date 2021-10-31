@@ -39,4 +39,6 @@ a-entity#advanced-color-picker shelf="height: 3.6" propogate-grab="" position="-
         a-entity.label text="width: 1; wrapCount: 8; anchor: left" position="-1.7 0 0"
         a-entity.value text="value: 360; width: 0.8; wrapCount: 4" edit-field="" position="0.8 0 0"
     a-entity icon-row=""
+      a-entity
+        a-entity icon-button="#asset-dice-2" tooltip="Jitter Color" toggle-button="target: a-scene; component: paint-system-settings; property: jitterColor" position="-1.5 0 0"
       a-entity text="width: 1; wrapCount: 8; value: #FFFFFF" edit-field="type: string; autoClear: true; tooltip: Enter CSS Value" color-entry-field=""

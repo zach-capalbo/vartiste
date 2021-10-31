@@ -179,6 +179,8 @@ export class ProceduralBrush extends Brush {
       this.unenumerable("hqBlender")
     }
 
+    this.color3 = new THREE.Color;
+
     this.unenumerable("color3")
     this.unenumerable("ccolor")
     this.unenumerable("brushdata")
@@ -198,7 +200,7 @@ export class ProceduralBrush extends Brush {
 
   changeColor(color) {
     this.color = color
-    this.color3 = new THREE.Color(this.color)
+    this.color3.set(this.color)
     this.ccolor = Color(color)
 
     this.updateBrush()
