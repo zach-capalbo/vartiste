@@ -3,6 +3,7 @@ a-entity shelf-content=""
     /a-entity.root-target icon-button="" tooltip="Local Position" radio-button="component: object3d-view; property: activeProperty; value: localPosition"
     /a-entity.root-target icon-button="" tooltip="Global Position" radio-button="component: object3d-view; property: activeProperty; value: globalPosition"
     a-entity icon-button="#asset-cube-send" tooltip="Export" object3d-view-action="export"
+    a-entity icon-button="#asset-eye-off" tooltip="Toggle Visibility" object3d-view-action="hide"
     a-entity icon-button="#asset-delete" tooltip="Delete" object3d-view-action="trash"
 
     a-entity icon-button="#asset-plus-box-multiple" tooltip="Load Children" object3d-view-action="loadChildren"
@@ -12,4 +13,5 @@ a-entity shelf-content=""
     a-entity icon-row="":a-entity.position.y edit-field="" text=editfieldtext
     a-entity icon-row="":a-entity.position.z edit-field="" text=editfieldtext
 
+a-entity node-input="compositionNode: false" position="-1.6 1.2 0.01" scale="1 1 0.3"
 a-entity node-output="" position="1.6 1.2 0.01" scale="1 1 0.3"

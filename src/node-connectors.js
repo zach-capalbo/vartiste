@@ -165,7 +165,8 @@ AFRAME.registerComponent('node-input', {
   schema: {
     label: {type: "string"},
     type: {type: "string"},
-    index: {default: 0}
+    index: {default: 0},
+    compositionNode: {default: true},
   },
   init() {
     Pool.init(this)
@@ -207,7 +208,7 @@ AFRAME.registerComponent('node-input', {
     }
   },
   tick() {
-    if (!Compositor.component.data.useNodes) return
+    if (this.data.compositionNode && !Compositor.component.data.useNodes) return
     if (this.snappedTo && !this.snappedGrabber.is("grabbed"))
     {
       let {grabLine} = this.snappedGrabber

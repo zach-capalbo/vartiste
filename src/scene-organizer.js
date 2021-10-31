@@ -8,6 +8,7 @@ AFRAME.registerComponent('object3d-view', {
   schema: {
     target: {type: 'selector'},
     activeProperty: {default: 'localPosition'},
+    parentView: {type: 'selector'},
   },
   events: {
     editfinished: function(e) {
@@ -26,6 +27,14 @@ AFRAME.registerComponent('object3d-view', {
       {
         this[e.target.getAttribute('object3d-view-action')]()
       }
+    },
+    snappedtoinput: function(e) {
+      e.stopPropagation()
+      if (!this.haveNodesBeenInitialized) return;
+      console.log("Reparenting", this.nameString())
+      let snappedto = e.detail.snapped.parentEl;
+
+      this.reparent(snappedto.components['object3d-view'].object)
     }
   },
   init() {
@@ -42,6 +51,21 @@ AFRAME.registerComponent('object3d-view', {
         x: this.el.querySelector('.position.x'),
         y: this.el.querySelector('.position.y'),
         z: this.el.querySelector('.position.z')
+      },
+      this.inputNode = this.el.querySelector('a-entity[node-input]')
+      this.outputNode = this.el.querySelector('a-entity[node-output]')
+
+      if (this.data.parentView)
+      {
+        Util.whenLoaded([this.el, this.inputNode, this.outputNode], () => {
+          let nodeOutput = this.data.parentView.components['object3d-view'].outputNode.components['node-output'];
+          nodeOutput.formConnectionTo(undefined, this.inputNode)
+          this.haveNodesBeenInitialized = true
+        })
+      }
+      else
+      {
+        this.inputNode.setAttribute('visible', false)
       }
     })
   },
@@ -99,7 +123,7 @@ AFRAME.registerComponent('object3d-view', {
       if (this.childViews.has(obj)) continue;
       let view = document.createElement('a-entity')
       this.el.append(view)
-      view.setAttribute('object3d-view', {target: obj})
+      view.setAttribute('object3d-view', {target: obj, parentView: this.el})
       view.setAttribute('position', `3.3 ${(i - this.object.children.length / 2) * heightOffset } ${(i - this.object.children.length / 2) * -0.1}`)
       view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
       this.childViews.set(obj, view)
@@ -110,10 +134,18 @@ AFRAME.registerComponent('object3d-view', {
   },
   trash() {
     // if (this.isEl) this.targetEl.parentEl.remove(this.targetEl) // ?
-    
+
     this.object.parent.remove(this.object)
     Util.recursiveDispose(this.object)
     this.el.parentEl.remove(this.el)
+  },
+  hide() {
+    this.object.visible = !this.object.visible
+  },
+  reparent(newParent) {
+    Util.keepingWorldPosition(this.object, () => {
+      this.object.parent = newParent
+    })
   }
 })
 
