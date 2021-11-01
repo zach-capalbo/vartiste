@@ -1,7 +1,9 @@
 import {Util} from './util.js'
 
 Util.registerComponentSystem('scene-organizer', {
-
+  init() {
+    this.childViews = new Map;
+  }
 })
 
 AFRAME.registerComponent('object3d-view', {
@@ -38,11 +40,11 @@ AFRAME.registerComponent('object3d-view', {
     }
   },
   init() {
+    this.system = this.el.sceneEl.systems['scene-organizer']
     this.el.innerHTML += require('./partials/object3d-view.html.slm')
     this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
-    this.childViews = new Map;
     Util.whenLoaded([this.el, this.contents], () => {
       this.el.querySelectorAll('.root-target').forEach(el => {
         Util.whenLoaded(el, () => el.setAttribute('radio-button', 'target', this.el))
@@ -67,6 +69,8 @@ AFRAME.registerComponent('object3d-view', {
       {
         this.inputNode.setAttribute('visible', false)
       }
+
+      this.el.querySelector('.grab-redirector').setAttribute('grab-redirector', {target: this.isEl ? this.targetEl : this.object, handle: false})
     })
   },
   update(oldData) {
@@ -102,7 +106,9 @@ AFRAME.registerComponent('object3d-view', {
     if (this.isEl)
     {
       if (this.targetEl.id) return "#" + this.targetEl.id
-      return this.targetEl.nodeName.toLowerCase()
+      if (this.targetEl.hasAttribute('primitive-construct-placeholder')) return "Shape Construct"
+      if (this.targetEl.hasAttribute('reference-glb')) return "Reference Object"
+      return `${this.targetEl.nodeName.toLowerCase()}[${Object.keys(this.targetEl.components).join(" ")}]`
     }
 
     return `${this.object.type} ${this.object.name || this.object.uuid}`
@@ -114,19 +120,22 @@ AFRAME.registerComponent('object3d-view', {
   },
   loadChildren() {
     console.log('loading children', this.object.children)
+    this.loadedChildren = true
     const zOffset = -0.1
     const scaleDown = 0.75
     const heightOffset = 2.7
     for (let i = 0; i < this.object.children.length; ++i)
     {
       let obj = this.object.children[i]
-      if (this.childViews.has(obj)) continue;
+      if (this.system.childViews.has(obj)) continue;
+      if (obj.userData.vartisteUI) continue;
+
       let view = document.createElement('a-entity')
       this.el.append(view)
       view.setAttribute('object3d-view', {target: obj, parentView: this.el})
       view.setAttribute('position', `3.3 ${(i - this.object.children.length / 2) * heightOffset } ${(i - this.object.children.length / 2) * -0.1}`)
       view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
-      this.childViews.set(obj, view)
+      this.system.childViews.set(obj, view)
     }
   },
   export() {
@@ -146,6 +155,26 @@ AFRAME.registerComponent('object3d-view', {
     Util.keepingWorldPosition(this.object, () => {
       this.object.parent = newParent
     })
+  },
+  onDeleted() {
+    this.el.remove()
+  },
+
+  tick(t, dt) {
+    if (this.isEl)
+    {
+      if (!this.targetEl.parentEl)
+      {
+        this.onDeleted()
+      }
+    }
+    else
+    {
+      if (!this.object.parent)
+      {
+        this.onDeleted()
+      }
+    }
   }
 })
 
@@ -189,7 +218,24 @@ AFRAME.registerComponent('grab-redirector', {
       }
       else
       {
-
+        this.object = this.data.target
+        if (!this.fakeTarget)
+        {
+          let fakeTarget = this.fakeTarget = document.createElement('a-entity')
+          this.el.sceneEl.append(fakeTarget)
+          this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
+            Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
+          })
+          Util.whenLoaded(fakeTarget, () => {
+            Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+          })
+          fakeTarget.addEventListener('stateadded', (e) => {
+            if (e.detail === 'grabbed') {
+              Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+            }
+          })
+        }
+        this.globe['redirect-grab'] = this.fakeTarget
       }
       this.initialMatrix.copy(this.object.matrix)
     }

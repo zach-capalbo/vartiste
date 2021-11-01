@@ -13,5 +13,6 @@ a-entity shelf-content=""
     a-entity icon-row="":a-entity.position.y edit-field="" text=editfieldtext
     a-entity icon-row="":a-entity.position.z edit-field="" text=editfieldtext
 
+a-entity.grab-redirector position="-1.2 -1.2 0"
 a-entity node-input="compositionNode: false" position="-1.6 1.2 0.01" scale="1 1 0.3"
 a-entity node-output="" position="1.6 1.2 0.01" scale="1 1 0.3"
