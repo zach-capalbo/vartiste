@@ -57,6 +57,7 @@ AFRAME.registerComponent('object3d-view', {
       this.inputNode = this.el.querySelector('a-entity[node-input]')
       this.outputNode = this.el.querySelector('a-entity[node-output]')
 
+
       if (this.data.parentView)
       {
         Util.whenLoaded([this.el, this.inputNode, this.outputNode], () => {
@@ -70,7 +71,8 @@ AFRAME.registerComponent('object3d-view', {
         this.inputNode.setAttribute('visible', false)
       }
 
-      this.el.querySelector('.grab-redirector').setAttribute('grab-redirector', {target: this.isEl ? this.targetEl : this.object, handle: false})
+      this.grabber = this.el.querySelector('.grab-redirector')
+      this.grabber.setAttribute('grab-redirector', {target: this.isEl ? this.targetEl : this.object, handle: false})
     })
   },
   update(oldData) {
@@ -98,7 +100,7 @@ AFRAME.registerComponent('object3d-view', {
     console.log("Updated target", this.targetEl, this.object)
 
     Util.whenLoaded(this.targetEl ? [this.el, this.targetEl, this.contents] : [this.el, this.contents], () => {
-      this.setVectorEditors(this.localPosition, this.object.position)
+      this.onMoved()
       this.el.setAttribute('shelf', 'name', this.nameString())
     })
   },
@@ -158,8 +160,12 @@ AFRAME.registerComponent('object3d-view', {
       this.object.parent = newParent
     })
   },
+
   onDeleted() {
     this.el.remove()
+  },
+  onMoved() {
+    this.setVectorEditors(this.localPosition, this.object.position)
   },
 
   tick(t, dt) {
@@ -168,6 +174,7 @@ AFRAME.registerComponent('object3d-view', {
       if (!this.targetEl.parentEl)
       {
         this.onDeleted()
+        return
       }
     }
     else
@@ -175,6 +182,20 @@ AFRAME.registerComponent('object3d-view', {
       if (!this.object.parent)
       {
         this.onDeleted()
+        return;
+      }
+    }
+
+    if (this.isEl) {
+      if (this.targetEl.is('grabbed'))
+      {
+        this.onMoved()
+      }
+    }
+    else {
+      if (this.grabber && this.grabber.components['grab-redirector'].fakeTarget && this.grabber.components['grab-redirector'].fakeTarget.is('grabbed'))
+      {
+        this.onMoved()
       }
     }
   }
