@@ -198,6 +198,9 @@ AFRAME.registerComponent('node-input', {
       this.el['redirect-grab'] = this.el.parentEl
     })
   },
+  remove() {
+    this.clearSnapped()
+  },
   clearSnapped() {
     if (this.snappedTo)
     {

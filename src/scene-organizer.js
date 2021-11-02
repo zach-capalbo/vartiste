@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 Util.registerComponentSystem('scene-organizer', {
   init() {
@@ -19,7 +20,7 @@ AFRAME.registerComponent('object3d-view', {
         case this.localPosition.x:
         case this.localPosition.y:
         case this.localPosition.z:
-          this.object.position.set(parseFloat(this.localPosition.x.getAttribute('text').value),parseFloat(this.localPosition.y.getAttribute('text').value), parseFloat(this.localPosition.z.getAttribute('text').value))
+          this.moveTarget(parseFloat(this.localPosition.x.getAttribute('text').value),parseFloat(this.localPosition.y.getAttribute('text').value), parseFloat(this.localPosition.z.getAttribute('text').value))
           break
       }
     },
@@ -40,6 +41,7 @@ AFRAME.registerComponent('object3d-view', {
     }
   },
   init() {
+    Pool.init(this)
     this.system = this.el.sceneEl.systems['scene-organizer']
     this.el.innerHTML += require('./partials/object3d-view.html.slm')
     this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false')
@@ -53,18 +55,19 @@ AFRAME.registerComponent('object3d-view', {
         x: this.el.querySelector('.position.x'),
         y: this.el.querySelector('.position.y'),
         z: this.el.querySelector('.position.z')
-      },
+      };
+      this.globalPosition = {
+        x: this.el.querySelector('.position.x'),
+        y: this.el.querySelector('.position.y'),
+        z: this.el.querySelector('.position.z')
+      };
       this.inputNode = this.el.querySelector('a-entity[node-input]')
       this.outputNode = this.el.querySelector('a-entity[node-output]')
 
 
       if (this.data.parentView)
       {
-        Util.whenLoaded([this.el, this.inputNode, this.outputNode], () => {
-          let nodeOutput = this.data.parentView.components['object3d-view'].outputNode.components['node-output'];
-          nodeOutput.formConnectionTo(undefined, this.inputNode)
-          this.haveNodesBeenInitialized = true
-        })
+        this.generateParentConnection()
       }
       else
       {
@@ -97,8 +100,6 @@ AFRAME.registerComponent('object3d-view', {
       this.object = this.data.target
     }
 
-    console.log("Updated target", this.targetEl, this.object)
-
     Util.whenLoaded(this.targetEl ? [this.el, this.targetEl, this.contents] : [this.el, this.contents], () => {
       this.onMoved()
       this.el.setAttribute('shelf', 'name', this.nameString())
@@ -121,19 +122,26 @@ AFRAME.registerComponent('object3d-view', {
     editors.z.setAttribute('text', 'value', vector.z.toFixed(3))
   },
   loadChildren() {
-    console.log('loading children')
+    console.log('loading children', this.object.children)
     this.loadedChildren = true
     const zOffset = -0.1
     const scaleDown = 0.75
     const heightOffset = 2.7
     let validChildren = this.object.children.filter(obj => {
-      if (this.system.childViews.has(obj)) return false;
       if (obj.userData.vartisteUI) return false;
       return true;
     })
     for (let i = 0; i < validChildren.length; ++i)
     {
       let obj = validChildren[i]
+      if (this.system.childViews.has(obj)) {
+        let view = this.system.childViews.get(obj)
+        view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
+        view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
+        this.connectNodeTo(view)
+        continue;
+      }
+
       let view = document.createElement('a-entity')
       this.el.append(view)
       view.setAttribute('object3d-view', {target: obj, parentView: this.el})
@@ -151,13 +159,37 @@ AFRAME.registerComponent('object3d-view', {
     this.object.parent.remove(this.object)
     Util.recursiveDispose(this.object)
     this.el.parentEl.remove(this.el)
+
+    if (!this.haveNodesBeenInitialized) return;
+    this.inputNode.components['node-input'].clearSnapped()
   },
   hide() {
     this.object.visible = !this.object.visible
   },
   reparent(newParent) {
+
+    // TODO: Need to reparent view el, too
+    // this.el.parentEl.remove(this.el)
+    this.system.childViews.get(newParent).object3D.add(this.el.object3D)
+
     Util.keepingWorldPosition(this.object, () => {
-      this.object.parent = newParent
+      newParent.add(this.object)
+    })
+  },
+  connectNodeTo(childView) {
+    if (childView.components['object3d-view'].data.parentView !== this.el)
+    {
+      childView.components['object3d-view'].data.parentView = this.el
+      childView.components['object3d-view'].generateParentConnection()
+    }
+  },
+  generateParentConnection() {
+    if (this.haveNodesBeenInitialized) return;
+
+    Util.whenLoaded([this.el, this.inputNode, this.outputNode], () => {
+      let nodeOutput = this.data.parentView.components['object3d-view'].outputNode.components['node-output'];
+      nodeOutput.formConnectionTo(undefined, this.inputNode)
+      this.haveNodesBeenInitialized = true
     })
   },
 
@@ -165,7 +197,42 @@ AFRAME.registerComponent('object3d-view', {
     this.el.remove()
   },
   onMoved() {
-    this.setVectorEditors(this.localPosition, this.object.position)
+    switch (this.data.activeProperty)
+    {
+      case 'localPosition':
+        this.setVectorEditors(this.localPosition, this.object.position)
+        break;
+      case 'globalPosition':
+        let worldPos = this.pool('worldPos', THREE.Vector3)
+        this.object.getWorldPosition(worldPos)
+        this.setVectorEditors(this.globalPosition, worldPos)
+        break;
+      case 'localScale':
+        this.setVectorEditors(this.localPosition, this.object.scale)
+      case 'localRotation':
+        let rot = this.pool('rot', THREE.Vector3)
+        rot.set(this.object.rotation.x * 180 / Math.PI, this.object.rotation.y * 180 / Math.PI, this.object.rotation.z * 180 / Math.PI)
+        this.setVectorEditors(this.localPosition, rot)
+      break;
+    }
+  },
+  moveTarget(x, y, z) {
+    switch (this.data.activeProperty)
+    {
+      case 'localPosition':
+        this.object.position.set(x,y,z)
+        break;
+      case 'globalPosition':
+        this.object.position.set(x,y,z)
+        this.object.parent.worldToLocal(this.object.position)
+        break;
+      case 'localScale':
+        this.object.scale.set(x,y,z)
+      case 'localRotation':
+        let rot = this.pool('rot', THREE.Vector3)
+        this.object.rotation.set(x * Math.PI / 180, y * Math.PI / 180, z * Math.PI / 180)
+      break;
+    }
   },
 
   tick(t, dt) {
@@ -216,6 +283,7 @@ AFRAME.registerComponent('grab-redirector', {
     }
   },
   init() {
+    Pool.init(this)
     if (this.data.handle)
     {
       let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: this.data.radius, height: this.data.radius * 4, parentEl: this.el})
