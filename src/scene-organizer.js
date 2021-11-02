@@ -119,21 +119,23 @@ AFRAME.registerComponent('object3d-view', {
     editors.z.setAttribute('text', 'value', vector.z.toFixed(3))
   },
   loadChildren() {
-    console.log('loading children', this.object.children)
+    console.log('loading children')
     this.loadedChildren = true
     const zOffset = -0.1
     const scaleDown = 0.75
     const heightOffset = 2.7
-    for (let i = 0; i < this.object.children.length; ++i)
+    let validChildren = this.object.children.filter(obj => {
+      if (this.system.childViews.has(obj)) return false;
+      if (obj.userData.vartisteUI) return false;
+      return true;
+    })
+    for (let i = 0; i < validChildren.length; ++i)
     {
-      let obj = this.object.children[i]
-      if (this.system.childViews.has(obj)) continue;
-      if (obj.userData.vartisteUI) continue;
-
+      let obj = validChildren[i]
       let view = document.createElement('a-entity')
       this.el.append(view)
       view.setAttribute('object3d-view', {target: obj, parentView: this.el})
-      view.setAttribute('position', `3.3 ${(i - this.object.children.length / 2) * heightOffset } ${(i - this.object.children.length / 2) * -0.1}`)
+      view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
       view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
       this.system.childViews.set(obj, view)
     }

@@ -21,7 +21,7 @@ AFRAME.registerComponent('edit-field', {
     tooltip: {type: 'string'},
 
     // What kind of keyboard to pop up. Either 'number', 'string', or 'dropdown'
-    type: {type: 'string', default: 'number'},
+    type: {type: 'string', default: 'number', oneOf: ['number', 'float', 'string', 'dropdown']},
 
     // [Optional] If set, will edit another elements component property
     target: {type: 'selector'},
@@ -70,17 +70,20 @@ AFRAME.registerComponent('edit-field', {
       numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
       numpad.setAttribute('visible', true)
       numpad.querySelector('*[shelf]').setAttribute('shelf', 'name', this.data.tooltip)
-      if (this.data.type === 'number' || this.data.autoClear)
+      if (this.data.type === 'number' || this.data.type === 'float' || this.data.autoClear)
       {
         this.setValue("", {update: false})
       }
     })
   },
   update(oldData) {
+    let popupType = 'numpad'
+    if (this.data.type === 'string') popupType = 'keyboard'
+    if (this.data.type === 'float') popupType = 'numpad-float'
     this.el.setAttribute('popup-button', {
       icon: "#asset-lead-pencil",
       tooltip: this.data.tooltip,
-      popup: (this.data.type === 'string' ? "keyboard" : "numpad")
+      popup: popupType
     })
 
     if (this.data.target !== oldData.target)

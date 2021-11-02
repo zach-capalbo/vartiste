@@ -1,0 +1,19 @@
+a-entity shelf="frame: false; width: 1.7; height: 3.4"
+  - let buttonText = (i) => `value: ${i}; color: #FFF; wrapCount: 3; align: center; width: 0.4`
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity.value text="width: 1.6; wrapCount: 8; value:1024; anchor: right; align: right; color: #FFF;" position="1.2 0 0"
+    - for let row of [[1,2,3],[4,5,6],[7,8,9]]
+      a-entity icon-row=""
+        -for let button of row
+          a-entity icon-button="" text=buttonText(button)
+
+    a-entity icon-row=""
+      a-entity icon-button="" text=buttonText("-")
+      a-entity icon-button="" text=buttonText("0")
+      a-entity icon-button="" text=buttonText(".")
+
+    a-entity icon-row=""
+      a-entity icon-button="#asset-backspace-outline" action="backspace"
+      a-entity icon-button="" text=buttonText("e")
+      a-entity icon-button="#asset-check-outline" action="ok"
