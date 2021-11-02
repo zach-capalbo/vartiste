@@ -62,6 +62,9 @@ AFRAME.registerComponent('quick-menu', {
     let compositor = Compositor.el
     compositor.setAttribute('compositor', {useNodes: !compositor.getAttribute('compositor').useNodes})
     document.querySelector('*[node-control-panel]').setAttribute('visible', true)
+    this.el.sceneEl.querySelector('#layer-shelves-loader').setAttribute('deferred-load', 'loaded', true)
+    let compactShelf = this.el.sceneEl.querySelector('a-entity[compact-layer-shelf]')
+    if (compactShelf) compactShelf.remove()
   },
   quickSave() {
     let settings = this.el.sceneEl.systems['settings-system']

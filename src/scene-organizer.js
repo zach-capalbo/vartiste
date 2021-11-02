@@ -4,6 +4,13 @@ import {Pool} from './pool.js'
 Util.registerComponentSystem('scene-organizer', {
   init() {
     this.childViews = new Map;
+  },
+  launchSceneNode() {
+    let el = document.createElement('a-entity')
+    this.el.querySelector('#world-root').append(el)
+    el.setAttribute('object3d-view', 'target: #canvas-root')
+    el.setAttribute('position', '0 1.1 0.2')
+    el.setAttribute('scale', '0.05 0.05 0.05')
   }
 })
 
@@ -163,6 +170,9 @@ AFRAME.registerComponent('object3d-view', {
 
     if (!this.haveNodesBeenInitialized) return;
     this.inputNode.components['node-input'].clearSnapped()
+  },
+  duplicate() {
+    this.object.parent.add(this.object.clone())
   },
   hide() {
     this.object.visible = !this.object.visible
