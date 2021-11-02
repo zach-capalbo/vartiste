@@ -28,4 +28,5 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
 
     a-entity icon-button="#asset-account-voice" popup-button="popup: kromophone-shelf;  deferred: true; scale: 0.15 0.15 0.15" tooltip="Kromophone color sonification"
     a-entity icon-button="#asset-rotate-orbit" tooltip="Start Phyics" system-click-action="system: physx; action: startPhysX"
+    a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Scene Inspector" system-click-action="system: scene-organizer; action: launchSceneNode"
   a-entity position="0 -1.4 0" text="value: *Experimental Tools*; width: 3; wrapCount: 40"

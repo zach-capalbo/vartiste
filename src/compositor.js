@@ -92,6 +92,7 @@ AFRAME.registerComponent('compositor', {
     this.activateLayer(this.activeLayer)
 
     this.redirector = document.createElement('a-entity')//this.el.querySelector('#move-layer-redirection')
+    Util.whenLoaded(this.redirector, () => this.redirector.object3D.userData.vartisteUI = true)
     this.el.append(this.redirector)
     this.redirector.setAttribute('geometry', this.el.getAttribute('geometry'))
     this.redirector.setAttribute('visible', false)

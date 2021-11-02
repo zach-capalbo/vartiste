@@ -15,13 +15,13 @@ AFRAME.registerSystem('edit-field', {
 // keyboard connected to the computer, or by speech recognition on supported
 // browsers.
 AFRAME.registerComponent('edit-field', {
-  dependencies: ["text", 'popup-button'],
+  dependencies: ["text", "popup-button"],
   schema: {
     // Tooltip to go on the edit button
     tooltip: {type: 'string'},
 
     // What kind of keyboard to pop up. Either 'number', 'string', or 'dropdown'
-    type: {type: 'string', default: 'number'},
+    type: {type: 'string', default: 'number', oneOf: ['number', 'float', 'string', 'dropdown']},
 
     // [Optional] If set, will edit another elements component property
     target: {type: 'selector'},
@@ -70,17 +70,21 @@ AFRAME.registerComponent('edit-field', {
       numpad.querySelector('.value').setAttribute('text', {value: this.el.getAttribute('text').value})
       numpad.setAttribute('visible', true)
       numpad.querySelector('*[shelf]').setAttribute('shelf', 'name', this.data.tooltip)
-      if (this.data.type === 'number' || this.data.autoClear)
+      if (this.data.type === 'number' || this.data.type === 'float' || this.data.autoClear)
       {
         this.setValue("", {update: false})
       }
     })
   },
   update(oldData) {
+    let popupType = 'numpad'
+    if (this.data.type === 'string') popupType = 'keyboard'
+    if (this.data.type === 'float') popupType = 'numpad-float'
     this.el.setAttribute('popup-button', {
       icon: "#asset-lead-pencil",
       tooltip: this.data.tooltip,
-      popup: (this.data.type === 'string' ? "keyboard" : "numpad")
+      popup: popupType,
+      deferred: true,
     })
 
     if (this.data.target !== oldData.target)
@@ -112,7 +116,8 @@ AFRAME.registerComponent('edit-field', {
 
   // Directly sets the value of the edit field to `value`
   setValue(value, {update=true} = {}) {
-    this.numpad.querySelector('.value').setAttribute('text', {value})
+    let numpad = this.numpad.querySelector('.value')
+    if (numpad) numpad.setAttribute('text', {value})
     this.el.setAttribute('text', {value})
     this.inputField.value = value
     if (update && this.data.target)
@@ -209,7 +214,7 @@ AFRAME.registerComponent('popup-button', {
     autoScale: {default: false},
 
     // If true, the popup entity will not be loaded until the button is clicked
-    deferred: {type: 'boolean', default: false}
+    deferred: {type: 'boolean', default: true}
   },
   init() {
     let editButton
@@ -267,6 +272,14 @@ AFRAME.registerComponent('popup-button', {
     {
       this.editButton.setAttribute('tooltip', this.data.tooltip)
     }
+    if (this.data.deferred && this.popupLoaded && this.data.popup !== oldData.popup)
+    {
+      this.popupLoaded = false
+      for (let c of this.popup.children) {
+        this.popup.remove(c)
+      }
+    }
+
     if (this.data.popup !== oldData.popup && !this.data.deferred)
     {
       console.debug("Resetting popup HTML", this.data.popup, oldData.popup)
@@ -327,15 +340,19 @@ AFRAME.registerComponent('popup-button', {
     }
 
     popup.setAttribute('visible', true)
-    this.el.sceneEl.emit('refreshobjects')
-    this.el.emit('popuplaunched')
     if (this.shelfPopup)
     {
-      Util.whenLoaded(this.shelfPopup, () => this.shelfPopup.emit('popupshown'))
+      Util.whenLoaded(this.shelfPopup, () => {
+        this.el.sceneEl.emit('refreshobjects')
+        this.el.emit('popuplaunched')
+        this.shelfPopup.emit('popupshown')
+      })
     }
     else
     {
+      this.el.sceneEl.emit('refreshobjects')
       popup.emit('popupshown')
+      this.el.emit('popuplaunched')
     }
   },
 
