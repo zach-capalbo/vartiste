@@ -13,9 +13,9 @@ a-entity shelf-content=""
     a-entity.root-target icon-button="#asset-resize" tooltip="Scale" radio-button="component: object3d-view; property: activeProperty; value: localScale"
     a-entity.root-target icon-button="#asset-rotate-orbit" tooltip="Rotation" radio-button="component: object3d-view; property: activeProperty; value: localRotation"
   a-entity icon-row=""
-    a-entity icon-row="":a-entity.position.x edit-field="type: float" text=editfieldtext
-    a-entity icon-row="":a-entity.position.y edit-field="type: float" text=editfieldtext
-    a-entity icon-row="":a-entity.position.z edit-field="type: float" text=editfieldtext
+    a-entity icon-row="":a-entity.position.x edit-field="type: float" text=editfieldtext prop-movement-lever=""
+    a-entity icon-row="":a-entity.position.y edit-field="type: float" text=editfieldtext prop-movement-lever=""
+    a-entity icon-row="":a-entity.position.z edit-field="type: float" text=editfieldtext prop-movement-lever=""
 
 a-entity.grab-redirector position="-1.2 -1.2 0"
 a-entity node-input="compositionNode: false" position="-1.6 1.2 0.01" scale="1 1 0.3"

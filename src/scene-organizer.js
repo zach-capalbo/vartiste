@@ -100,6 +100,8 @@ AFRAME.registerComponent('object3d-view', {
       this.object = this.data.target
     }
 
+    Util.whenLoaded(this.el.sceneEl, () => this.system.childViews.set(this.object, this.el))
+
     Util.whenLoaded(this.targetEl ? [this.el, this.targetEl, this.contents] : [this.el, this.contents], () => {
       this.onMoved()
       this.el.setAttribute('shelf', 'name', this.nameString())
@@ -147,7 +149,6 @@ AFRAME.registerComponent('object3d-view', {
       view.setAttribute('object3d-view', {target: obj, parentView: this.el})
       view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
       view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
-      this.system.childViews.set(obj, view)
     }
   },
   export() {
@@ -209,11 +210,12 @@ AFRAME.registerComponent('object3d-view', {
         break;
       case 'localScale':
         this.setVectorEditors(this.localPosition, this.object.scale)
+        break;
       case 'localRotation':
         let rot = this.pool('rot', THREE.Vector3)
         rot.set(this.object.rotation.x * 180 / Math.PI, this.object.rotation.y * 180 / Math.PI, this.object.rotation.z * 180 / Math.PI)
         this.setVectorEditors(this.localPosition, rot)
-      break;
+        break;
     }
   },
   moveTarget(x, y, z) {
@@ -329,6 +331,55 @@ AFRAME.registerComponent('grab-redirector', {
         this.globe['redirect-grab'] = this.fakeTarget
       }
       this.initialMatrix.copy(this.object.matrix)
+    }
+  }
+})
+
+AFRAME.registerComponent("prop-movement-lever", {
+  init() {
+    this.el.setAttribute('lever', 'valueRange: 1 -1; handleLength: 0.2')
+    this.tick = AFRAME.utils.throttleTick(this.tick, 30, this)
+    let el = this.el.parentEl
+    while (el)
+    {
+      if (el.hasAttribute('object3d-view'))
+      {
+        this.target = el;
+        break;
+      }
+      el = el.parentEl
+    }
+  },
+  tick(t,dt) {
+    if (!this.el.components['lever']) return
+    if (Math.abs(this.el.components['lever'].value) > 0)
+    {
+      if (!this.el.components['lever'].grip.is("grabbed")) {
+        this.el.components.lever.value = 0;
+        this.el.components.lever.setValue(0);
+        return;
+      }
+
+      let currentValue = parseFloat(this.el.getAttribute('text').value)
+      let increment = 0;
+
+      if (this.target.components['object3d-view'].data.activeProperty === 'localRotation')
+      {
+        increment = 5
+      }
+      else if (Math.abs(currentValue) < 1)
+      {
+        increment = Math.abs(currentValue) < 0.1 ? 0.01 : 0.1
+      }
+      else
+      {
+        increment = currentValue * 0.1
+      }
+
+      currentValue = increment * dt/100.0 * this.el.components.lever.value + currentValue
+
+      this.el.setAttribute('text', 'value', currentValue.toFixed(3))
+      this.el.emit('editfinished')
     }
   }
 })
