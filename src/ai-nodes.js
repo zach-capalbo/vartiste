@@ -1,10 +1,7 @@
 import {Node, CanvasNode} from './layer.js'
-const STYLE_MODEL_PATH = require('./ai-models/saved_model_style_js/model.json')
-const TRANSFORM_MODEL_PATH = require('./ai-models/saved_model_transformer_separable_js/model.json')
-const RENDER_MODEL_PATH = require('./ai-models/render/model.json')
-
-var requireAI = require.context('./ai-models', true, /./);
-requireAI.keys().forEach(requireAI);
+const STYLE_MODEL_PATH = '/ai-models/saved_model_style_js/model.json'
+const TRANSFORM_MODEL_PATH = '/ai-models/saved_model_transformer_separable_js/model.json'
+const RENDER_MODEL_PATH = '/ai-models/render/model.json'
 
 AFRAME.registerSystem('ai', {
   init() {
@@ -22,8 +19,8 @@ AFRAME.registerSystem('ai', {
     this.loadingModels = (async () => {
       console.log("initializing ai")
       let tf = await this.tf()
-      this.styleNet = await tf.loadGraphModel(STYLE_MODEL_PATH);
-      this.transformNet = await tf.loadGraphModel(TRANSFORM_MODEL_PATH)
+      this.styleNet = await tf.loadGraphModel(this.el.sceneEl.systems['vartiste-extras'].data.url + STYLE_MODEL_PATH);
+      this.transformNet = await tf.loadGraphModel(this.el.sceneEl.systems['vartiste-extras'].data.url + TRANSFORM_MODEL_PATH)
     })()
 
     return await this.loadingModels
@@ -35,7 +32,7 @@ AFRAME.registerSystem('ai', {
       console.log("Loading render model")
 
       let tf = await this.tf()
-      this.renderNet = await tf.loadGraphModel(RENDER_MODEL_PATH)
+      this.renderNet = await tf.loadGraphModel(this.el.sceneEl.systems['vartiste-extras'].data.url + RENDER_MODEL_PATH)
       this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[1].size = "-1"
       this.renderNet.artifacts.modelTopology.node[0].attr.shape.shape.dim[2].size = "-1"
       this.renderNet.executor.inputs[0].shape[1] = -1
