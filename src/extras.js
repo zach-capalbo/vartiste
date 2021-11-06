@@ -2,7 +2,11 @@ import {Util} from './util.js'
 
 Util.registerComponentSystem('vartiste-extras', {
   schema: {
-    url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'}
+    url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'},
+    cacheBusterDuration: {default: 1000 * 60},
+
+    // url: {default: 'http://localhost:8081/'},
+    // cacheBusterDuration: {default: 1},
   },
   init() {
   },
@@ -13,7 +17,7 @@ Util.registerComponentSystem('vartiste-extras', {
     }
   },
   async fetchIndex() {
-    let res = await fetch(this.data.url + "index.json");
+    let res = await fetch(this.data.url + "index.json" + "?v=" + Date.now());
     this.index = await res.json()
     this.el.emit('vartisteextras', this.index)
   },
@@ -52,11 +56,14 @@ AFRAME.registerComponent('vartiste-extras-popup', {
       button.setAttribute('icon-button', '#asset-folder-open-outline')
       button.setAttribute('data-vartiste-extra', item)
       button.setAttribute('tooltip', `Load ${name}`)
+      button.setAttribute('popup-action', 'close')
 
       let label = document.createElement('a-entity')
       row.append(label)
       label.setAttribute('text', `value: ${name}; anchor: left; width: 2.5; wrapCount: 20`)
       label.setAttribute('position', '0.4 0 0')
     }
+
+    this.populate = function() {};
   }
 })
