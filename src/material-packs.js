@@ -51,6 +51,7 @@ Util.registerComponentSystem('material-pack-system', {
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, Util.isLowPower() ? 300 : 50, this)
     this.downloadUserMaterials = Util.busify({title: 'Packing user materials...'}, this.downloadUserMaterials, this)
+    this.addPacksFromObjects = Util.busify({title: "Adding material packs..."}, this.addPacksFromObjects, this)
     let packRootEl = this.el.sceneEl.querySelector('#material-packs')
     this.loadPacks = this.loadPacks.bind(this)
     packRootEl.addEventListener('summoned', this.loadPacks)
@@ -192,8 +193,8 @@ Util.registerComponentSystem('material-pack-system', {
       this.y++;
     }
     promises.push(Util.whenLoaded(el))
-    Promise.all(promises).then(() => {
-      Util.whenLoaded(el, () => {
+    return Promise.all(promises).then(() => {
+      return Util.whenLoaded(el, () => {
         if (attr.emissiveMap)
         {
           attr.emissive = attr.emissiveMap
@@ -218,7 +219,7 @@ Util.registerComponentSystem('material-pack-system', {
       })
     })
   },
-  addPacksFromObjects(obj) {
+  async addPacksFromObjects(obj) {
     function fakeImgFromImageBitmap(img) {
       if (!('tagName' in img))
       {
@@ -229,35 +230,71 @@ Util.registerComponentSystem('material-pack-system', {
         img.id = ""
       ]
     }
-    let bitmapToImage = (bmp) => {
-      let canvas = this.tmpCanvas()
-      let ctx = this.tmpCtx()
+    this.packFromObjectCanvas = (this.packFromObjectCanvas || document.createElement('canvas'));
+
+    let bitmapToImage = async (bmp, flipY) => {
+      if (bmp.tagName === 'IMG') return bmp;
+      console.log("Converting", bmp)
+      let canvas = this.packFromObjectCanvas
+      if (canvas.width !== bmp.width || canvas.height !== bmp.height)
+      {
+        canvas.width = Math.min(bmp.width, 2048);
+        canvas.height = Math.min(bmp.height, 2048);
+      }
+      let ctx = canvas.getContext('2d')
+      ctx.save()
       ctx.globalCompositeOperation = 'source-over'
-      ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+      if (flipY)
+      {
+        ctx.scale(1, -1)
+        ctx.drawImage(bmp, 0, -canvas.height, canvas.width, canvas.height)
+      }
+      else
+      {
+        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height)
+      }
+      ctx.restore()
       let img = new Image();
-      img.src = canvas.toDataURL()
+      await new Promise((r, err) => {
+        try {
+          canvas.toBlob(blob => {
+            img.src = URL.createObjectURL(blob, 'image/webp')
+            r()
+          })
+        } catch (e) {
+          err(e)
+        }
+      })
+
       return img
     }
-    obj.traverse(o => {
-      if (!o.material || o.material.type === 'MeshBasicMaterial') return;
+    let objects = Util.traverseFindAll(obj, o => (o.material && o.material.type !== 'MeshBasicMaterial'));
+    let promises = []
+    for (let o of objects)
+    {
+      promises.push((async () => {
+        let hasAttr = false
+        let attr = {}
+        for (let m of HANDLED_MAPS)
+        {
+          if (!o.material[m] || !o.material[m].image) continue;
+          attr[m] = await bitmapToImage(o.material[m].image, true)
+          hasAttr = true
+        }
+        if (o.material.map && o.material.map.image) {
+          attr.src = await bitmapToImage(o.material.map.image, true)
+          hasAttr = true
+        }
+        if (hasAttr) {
+          console.log("Creating mateiral pack", attr)
+          this.addMaterialPack(attr)
+        }
+      })());
 
-      let hasAttr = false
-      let attr = {}
-      for (let m of HANDLED_MAPS)
-      {
-        if (!o.material[m] || !o.material[m].image) continue;
-        attr[m] = bitmapToImage(o.material[m].image)
-        hasAttr = true
-      }
-      if (o.material.map && o.material.map.image) {
-        attr.src = bitmapToImage(o.material.map.image)
-        hasAttr = true
-      }
-      if (hasAttr) {
-        console.log("Creating mateiral pack", attr)
-        this.addMaterialPack(attr)
-      }
-    })
+      // await Util.delay(1)
+    }
+
+    await Promise.all(promises)
   },
   async downloadUserMaterials() {
     let materialPackRoot = new THREE.Object3D

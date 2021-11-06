@@ -344,7 +344,7 @@ AFRAME.registerComponent('popup-button', {
     {
       Util.whenLoaded(this.shelfPopup, () => {
         this.el.sceneEl.emit('refreshobjects')
-        this.el.emit('popuplaunched')
+        this.el.emit('popuplaunched', popup)
         this.shelfPopup.emit('popupshown')
       })
     }

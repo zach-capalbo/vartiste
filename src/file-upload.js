@@ -871,6 +871,12 @@ Util.registerComponentSystem('file-upload', {
     {
       (async () => {
       let loader = new THREE.GLTFLoader(loadingManager)
+      loader.register((parser) => {
+        console.log("Switching texture loader", parser)
+        parser.textureLoader = new THREE.TextureLoader( loadingManager );
+        return {name: "NoBitmap"}
+      })
+
       let buffer = await file.arrayBuffer()
       let model
       try {
