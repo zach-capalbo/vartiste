@@ -1,9 +1,15 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import shortid from 'shortid'
 
 Util.registerComponentSystem('scene-organizer', {
   init() {
     this.childViews = new Map;
+    this.positioner = new THREE.Object3D
+    this.el.sceneEl.object3D.add(this.positioner)
+  },
+  viewFor(what) {
+    return this.childViews.get(what.object3D || what)
   },
   launchSceneNode() {
     let el = document.createElement('a-entity')
@@ -11,6 +17,23 @@ Util.registerComponentSystem('scene-organizer', {
     el.setAttribute('object3d-view', 'target: #canvas-root')
     el.setAttribute('position', '0 1.1 0.2')
     el.setAttribute('scale', '0.05 0.05 0.05')
+  },
+  inspect(what) {
+    let view = this.viewFor(what)
+
+    if (!view)
+    {
+      view = document.createElement('a-entity')
+      this.el.querySelector('#world-root').append(view)
+      view.setAttribute('object3d-view', {target: (what.object3D || what)})
+    }
+
+    Util.whenLoaded(view, () => {
+      this.positioner.rotation.set(0, 0, 0)
+      this.positioner.position.set(0, 1.1, 0.2)
+      this.positioner.scale.set(0.05, 0.05, 0.05)
+      Util.positionObject3DAtTarget(view.object3D, this.positioner)
+    })
   }
 })
 
@@ -50,14 +73,13 @@ AFRAME.registerComponent('object3d-view', {
   init() {
     Pool.init(this)
     this.system = this.el.sceneEl.systems['scene-organizer']
-    this.el.innerHTML += require('./partials/object3d-view.html.slm')
+    let rootId = "view-root-" + shortid.generate()
+    this.el.id = rootId
+    this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
     this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
-      this.el.querySelectorAll('.root-target').forEach(el => {
-        Util.whenLoaded(el, () => el.setAttribute('radio-button', 'target', this.el))
-      })
       this.localPosition = {
         x: this.el.querySelector('.position.x'),
         y: this.el.querySelector('.position.y'),
@@ -78,7 +100,7 @@ AFRAME.registerComponent('object3d-view', {
       }
       else
       {
-        this.inputNode.setAttribute('visible', false)
+        //this.inputNode.setAttribute('visible', false)
       }
 
       this.grabber = this.el.querySelector('.grab-redirector')
@@ -240,6 +262,7 @@ AFRAME.registerComponent('object3d-view', {
         break;
       case 'localScale':
         this.object.scale.set(x,y,z)
+        break;
       case 'localRotation':
         let rot = this.pool('rot', THREE.Vector3)
         this.object.rotation.set(x * Math.PI / 180, y * Math.PI / 180, z * Math.PI / 180)

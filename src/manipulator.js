@@ -596,6 +596,24 @@ AFRAME.registerComponent('mouse-manipulator', {
   },
 })
 
+AFRAME.registerComponent('grabbable', {
+  init() {
+    this.el.classList.add('clickable')
+  },
+  remove() {
+    this.el.classList.remove('clickable')
+  }
+})
+
+AFRAME.registerComponent('grab-root', {
+  init() {
+    this.el.classList.add('grab-root')
+  },
+  remove() {
+    this.el.classList.remove('grab-root')
+  }
+})
+
 // Redirects a grab from the [`manipulator`](#manipulator) to the closest
 // grabbable parent element.
 AFRAME.registerComponent('propogate-grab', {
@@ -1054,7 +1072,7 @@ AFRAME.registerComponent('manipulator-weight', {
   constrainObject(t, dt) {
     var weight = this.data.weight
     if (this.data.type === 'slow') weight = 1.0 - THREE.Math.clamp((1.0 - weight) * dt / 30, 0, 1)
-    // weight = 1 - Math.exp( - weight * dt ) 
+    // weight = 1 - Math.exp( - weight * dt )
 
 
     this.el.object3D.position.lerp(this.lastPos, weight)

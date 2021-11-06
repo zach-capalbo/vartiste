@@ -287,15 +287,18 @@ Util.registerComponentSystem('settings-system', {
 
     return glb
   },
-  async export3dAction(exportMesh) {
+  async export3dAction(exportMesh, {extension} = {}) {
     if (!exportMesh) exportMesh = Compositor.meshRoot
     let undoStack = new UndoStack({maxSize: -1})
     let glb = await this.getExportableGLB(exportMesh, {undoStack})
-    let extension = "glb"
 
-    if (exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
+    if (!extension && exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
     {
       extension = 'vrm'
+    }
+    else if (!extension)
+    {
+      extension = 'glb'
     }
 
     this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.${extension}`, "GLB File")

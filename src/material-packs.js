@@ -50,6 +50,7 @@ Util.registerComponentSystem('material-pack-system', {
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, Util.isLowPower() ? 300 : 50, this)
+    this.downloadUserMaterials = Util.busify({title: 'Packing user materials...'}, this.downloadUserMaterials, this)
     let packRootEl = this.el.sceneEl.querySelector('#material-packs')
     this.loadPacks = this.loadPacks.bind(this)
     packRootEl.addEventListener('summoned', this.loadPacks)
@@ -257,6 +258,24 @@ Util.registerComponentSystem('material-pack-system', {
         this.addMaterialPack(attr)
       }
     })
+  },
+  async downloadUserMaterials() {
+    let materialPackRoot = new THREE.Object3D
+    document.querySelectorAll('.user[material-pack] .view').forEach(el => {
+      materialPackRoot.add(el.getObject3D('mesh').clone())
+    })
+    let settings = this.el.sceneEl.systems['settings-system'];
+    if (materialPackRoot.children.length)
+    {
+      let oldExportJPEG = settings.data.exportJPEG
+      settings.data.exportJPEG = true
+      try {
+        await settings.export3dAction(materialPackRoot, {extension: 'materialpack'})
+      }
+      finally {
+        settings.data.exportJPEG = oldExportJPEG
+      }
+    }
   },
   previewMaterial(mask) {
     if (mask in this.loadedPacks)

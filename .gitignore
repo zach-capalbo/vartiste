@@ -112,3 +112,5 @@ temp/
 *.blend1
 
 src/built-info.js
+
+node_modules*/

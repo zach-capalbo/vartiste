@@ -218,7 +218,7 @@ class ProjectFile {
 
       let el = document.createElement('a-entity')
       // compositor.el.sceneEl.append(el)
-      document.querySelector('#canvas-root').append(el)
+      compositor.el.sceneEl.systems['primitive-constructs'].data.container.append(el)
       el.classList.add('clickable')
       mesh.el = el
       el.object3D.add(mesh)

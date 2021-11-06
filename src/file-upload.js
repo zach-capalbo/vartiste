@@ -1082,6 +1082,12 @@ AFRAME.registerComponent('reference-glb', {
       decomposeButton.addEventListener('click', () => {
         this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])
       })
+
+      let button = this.el.components.frame.addButton('#asset-newspaper-variant-outline')
+      button.setAttribute('tooltip', 'Scene Organizer')
+      button.addEventListener('click', () => {
+        this.el.sceneEl.systems['scene-organizer'].inspect(this.el)
+      })
     })
   },
   remove() {
