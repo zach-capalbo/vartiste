@@ -86,6 +86,15 @@ class MaterialTransformations {
   // Puts roughness texture canvas into metalness texture canvas
   static putRoughnessInMetal(roughness, metalness)
   {
+    if (metalness.id && metalness.id.startsWith("default-"))
+    {
+      metalness = undefined
+    }
+    if (roughness.id && roughness.id.startsWith("default-"))
+    {
+      roughness = undefined
+    }
+    
     if (!metalness)
     {
       metalness = document.createElement('canvas')
@@ -101,7 +110,7 @@ class MaterialTransformations {
     }
     if (metalness.width !== roughness.width || metalness.height !== roughness.height)
     {
-      console.warn("Metalness and roughness are not same dimensions")
+      console.warn("Metalness and roughness are not same dimensions", metalness, roughness)
     }
 
     let csp = new CanvasShaderProcessor({source: require('./shaders/combine-metal-roughness.glsl')})
@@ -126,7 +135,7 @@ class MaterialTransformations {
     //
     // metalCtx.putImageData(metalData, 0, 0)
 
-    return csp.canvas//metalness
+    return Util.cloneCanvas(csp.canvas)//metalness
   }
 
   // Checks if a material's diffuse map has any transparent pixels

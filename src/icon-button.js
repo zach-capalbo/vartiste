@@ -251,7 +251,7 @@ AFRAME.registerSystem('icon-button', {
 //
 // ![Two rows of buttons, all lined up nicely](./static/images/iconbuttonrow.png)
 AFRAME.registerComponent('icon-button', {
-  dependencies: ['button-style'],
+  dependencies: ['button-style', 'raycast-bvh'],
 
   // Should be a selector for an image asset, or a texture map (anything that
   // can go into a `material` `map` property should work)

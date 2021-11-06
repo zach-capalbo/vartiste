@@ -7,7 +7,7 @@ import './extra-geometries.js'
 
 Util.registerComponentSystem('primitive-constructs', {
   schema: {
-    container: {type: 'selector', default: '#canvas-root'},
+    container: {type: 'selector', default: '#shape-root'},
     shareMaterial: {default: false},
   },
   init() {
@@ -41,6 +41,12 @@ Util.registerComponentSystem('primitive-constructs', {
         el.setAttribute('vertex-handles', '')
         el.removeAttribute('axis-handles')
         el.removeAttribute('frame')
+      })
+
+      button = el.components.frame.addButton('#asset-newspaper-variant-outline')
+      button.setAttribute('tooltip', 'Scene Organizer')
+      button.addEventListener('click', () => {
+        this.el.sceneEl.systems['scene-organizer'].inspect(el)
       })
       this.el.sceneEl.emit('refreshobjects')
     })

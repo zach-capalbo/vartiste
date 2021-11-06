@@ -1,4 +1,4 @@
-a-entity.view.clickable.grab-root frame="closable: false; outline: false; pinnable: false" geometry="primitive: plane; width: 1.3; height: 1.3" material="shader: standard; side: double" six-dof-tool="summonable: false" grab-activate=""
+a-entity.view.clickable.grab-root frame="closable: true; closePopup: true; outline: false; pinnable: false" geometry="primitive: plane; width: 1.3; height: 1.3" material="shader: standard; side: double" six-dof-tool="summonable: false" grab-activate=""
   a-entity shelf="frame: false; width: 1.3; height: 0.295;" propogate-grab="" position="0 -0.80 0" expandable-shelf="extraHeight: 0.2"
     a-entity scale="0.45 0.45 0.45" position="-0.5 0 0"
       a-entity icon-row="mergeButtons: true"

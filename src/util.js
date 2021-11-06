@@ -1,6 +1,7 @@
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import {INTERSECTED, CONTAINED, NOT_INTERSECTED} from './framework/three-mesh-bvh.js'
+import {THREED_MODES} from './layer-modes.js'
 const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
@@ -282,8 +283,15 @@ class VARTISTEUtil {
 
   recursiveDispose(obj)
   {
+    if (obj.object3D) { obj = obj.object3D; }
     obj.traverse(o => {
-      if (o.material) o.material.dispose()
+      if (o.material) {
+        for (let mode of THREED_MODES)
+        {
+          if (o.material[mode] && o.material[mode].dispose) o.material[mode].dispose();
+        }
+        if (o.material.dispose) o.material.dispose()
+      }
       if (o.geometry) o.geometry.dispose()
     })
   }

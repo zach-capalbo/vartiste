@@ -871,6 +871,12 @@ Util.registerComponentSystem('file-upload', {
     {
       (async () => {
       let loader = new THREE.GLTFLoader(loadingManager)
+      loader.register((parser) => {
+        console.log("Switching texture loader", parser)
+        parser.textureLoader = new THREE.TextureLoader( loadingManager );
+        return {name: "NoBitmap"}
+      })
+
       let buffer = await file.arrayBuffer()
       let model
       try {
@@ -1081,6 +1087,12 @@ AFRAME.registerComponent('reference-glb', {
       decomposeButton.setAttribute('tooltip-style', this.el.components['frame'].data.tooltipStyle)
       decomposeButton.addEventListener('click', () => {
         this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])
+      })
+
+      let button = this.el.components.frame.addButton('#asset-newspaper-variant-outline')
+      button.setAttribute('tooltip', 'Scene Organizer')
+      button.addEventListener('click', () => {
+        this.el.sceneEl.systems['scene-organizer'].inspect(this.el)
       })
     })
   },
