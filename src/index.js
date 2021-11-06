@@ -97,6 +97,7 @@ require('./translation.js')
 require('./text')
 require('./scene-organizer')
 require('./controller-proxy')
+require('./extras')
 
 require('./hubs-connector-shim.js')
 

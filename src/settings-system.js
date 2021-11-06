@@ -129,6 +129,7 @@ Util.registerComponentSystem('settings-system', {
     return "image/png"
   },
   compressionQuality() {
+    if (this.compressionQualityOverride) return this.compressionQualityOverride;
     return this.data.exportJPEG ? 0.85 : undefined;
   },
   imageExtension() {

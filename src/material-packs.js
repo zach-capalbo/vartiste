@@ -267,9 +267,18 @@ Util.registerComponentSystem('material-pack-system', {
     let settings = this.el.sceneEl.systems['settings-system'];
     if (materialPackRoot.children.length)
     {
+      // materialPackRoot.traverse(mesh => {
+      //   if (!mesh.material) return;
+      //   if (!mesh.material.normalScale || !mesh.material.normalScale.toArray)
+      //   {
+      //     mesh.material.normalScale = new THREE.Vector2(1, 1);
+      //   }
+      // })
+      // await settings.downloadCompressed(JSON.stringify(materialPackRoot.toJSON()), {extension: 'materialpack'}, 'Material Pack')
       let oldExportJPEG = settings.data.exportJPEG
       settings.data.exportJPEG = true
       try {
+        settings.compressionQualityOverride = 0.85
         await settings.export3dAction(materialPackRoot, {extension: 'materialpack'})
       }
       finally {
@@ -380,6 +389,14 @@ AFRAME.registerComponent('material-pack', {
     },
     materialtextureloaded: function (e) {
       this.updateRepeat()
+    },
+    popupaction: function(e) {
+      e.stopPropagation()
+      if (e.detail === 'close')
+      {
+        this.remove()
+        this.el.parentEl.remove(this.el)
+      }
     }
   },
   init() {
@@ -396,6 +413,10 @@ AFRAME.registerComponent('material-pack', {
         el.setAttribute('toggle-button', {target: this.el, component: 'material-pack', property: ENABLED_MAP[el.getAttribute('map')]})
       })
     })
+  },
+  remove() {
+    console.log("Disposing material pack")
+    Util.callLater(() => Util.recursiveDispose(this.view))
   },
   update(oldData) {
     if (this.repeat !== oldData.repeat) {
