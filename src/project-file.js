@@ -275,7 +275,13 @@ class ProjectFile {
     if (obj.materialPack)
     {
       let buffer = await base64ToBufferAsync(obj.materialPack[0])
-      let model = await new Promise((r, e) => glbLoader.parse(buffer, "", r, e))
+      let loader = new THREE.GLTFLoader()
+      loader.register((parser) => {
+        console.log("Switching texture loader", parser)
+        parser.textureLoader = new THREE.TextureLoader();
+        return {name: "NoBitmap"}
+      })
+      let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
       settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
     }
   }
