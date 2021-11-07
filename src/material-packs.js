@@ -231,6 +231,7 @@ Util.registerComponentSystem('material-pack-system', {
         {
           // console.log("Special handling for emissive", attr, el.components['material-pack'])
           el.components['material-pack'].view.components.material.material.emissiveMap = new THREE.Texture(attr.emissive)
+          el.components['material-pack'].view.components.material.material.emissive.setRGB(1,1,1)
           attr.emissiveMap = attr.emissive
           delete attr.emissive
         }
@@ -465,6 +466,7 @@ AFRAME.registerComponent('material-pack', {
     normalMapEnabled: {default: true},
     metalnessMapEnabled: {default: true},
     roughnessMapEnabled: {default: true},
+    emissiveMapEnabled: {default: true},
     aoMapEnabled: {default: true},
   },
   events: {
