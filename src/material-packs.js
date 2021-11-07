@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
+import shortid from 'shortid'
 
 export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
 
@@ -124,6 +125,7 @@ Util.registerComponentSystem('material-pack-system', {
     let itemsToRemove = []
     let attr = {}
     let hasAttr = false
+    let name = shortid.generate()
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
@@ -139,6 +141,7 @@ Util.registerComponentSystem('material-pack-system', {
       let map = Util.mapFromFilename(file.name)
       if (!map) {
         map = 'src'
+        name = file.name.split(".", 1)[0]
       }
       if (file.name.endsWith("_PREVIEW.jpg")) {
         console.log("Skipping preview", file.name)
@@ -157,7 +160,7 @@ Util.registerComponentSystem('material-pack-system', {
       hasAttr = true
     }
     if (hasAttr) {
-      this.addMaterialPack(attr)
+      this.addMaterialPack(attr, name)
       return true
     }
 
@@ -171,12 +174,15 @@ Util.registerComponentSystem('material-pack-system', {
 
     Compositor.component.data.drawOverlay = true
   },
-  addMaterialPack(attr) {
+  addMaterialPack(attr, name) {
+    if (!name) name = shortid.generate();
+
     for (let map in this.defaultMap)
     {
       if (map in attr) continue;
       attr[map] = this.defaultMap[map]
     }
+
 
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
@@ -195,6 +201,8 @@ Util.registerComponentSystem('material-pack-system', {
     promises.push(Util.whenLoaded(el))
     return Promise.all(promises).then(() => {
       return Util.whenLoaded(el, () => {
+        this.loadedPacks[name] = el;
+        el.setAttribute('material-pack', 'pack', name)
         if (attr.emissiveMap)
         {
           attr.emissive = attr.emissiveMap
@@ -296,7 +304,7 @@ Util.registerComponentSystem('material-pack-system', {
         }
         if (hasAttr) {
           console.log("Creating mateiral pack", attr)
-          this.addMaterialPack(attr)
+          this.addMaterialPack(attr, o.material.name)
         }
       })());
 
@@ -308,7 +316,9 @@ Util.registerComponentSystem('material-pack-system', {
   async downloadUserMaterials() {
     let materialPackRoot = new THREE.Object3D
     document.querySelectorAll('.user[material-pack] .view').forEach(el => {
-      materialPackRoot.add(el.getObject3D('mesh').clone())
+      let o = el.getObject3D('mesh').clone()
+      o.material.name = el.parentEl.getAttribute('material-pack').pack
+      materialPackRoot.add(o)
     })
     let settings = this.el.sceneEl.systems['settings-system'];
     if (materialPackRoot.children.length)
@@ -486,6 +496,9 @@ AFRAME.registerComponent('material-pack', {
     if (this.repeat !== oldData.repeat) {
       this.updateRepeat()
     }
+    Util.whenLoaded(this.view, () => {
+      this.el.children[0].setAttribute('frame', 'name', this.data.pack)
+    })
   },
   updateRepeat() {
     if (!this.maps) return;
