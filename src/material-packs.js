@@ -625,6 +625,8 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', true)
   },
   deactivateMask() {
+    if (!this.el.querySelector('*[click-action="activateMask"]')) return;
+    
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)

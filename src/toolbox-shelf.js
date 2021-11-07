@@ -282,7 +282,8 @@ AFRAME.registerComponent('toolbox-shelf', {
     Compositor.el.addEventListener('layerupdated', onLayerChanged)
 
     this.onEndDrawing = () => {
-      let shouldInvert = this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
+      let shouldInvert = Compositor.component.data.flipNormal ? !this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled
+                                                              : this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
       let keepColor = this.el.querySelector('#color-normal-draw').getAttribute('toggle-button').toggled;
       Undo.stack.pop()
       Undo.pushCanvas(normalLayer.canvas)
