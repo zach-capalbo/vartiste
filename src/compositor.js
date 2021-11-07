@@ -846,7 +846,7 @@ AFRAME.registerComponent('compositor', {
             }
             break
           case "normalMap":
-            material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
+            material.normalScale = new THREE.Vector2(layer.opacity, -layer.opacity)
             break
           case "metalnessMap":
             material.metalness = layer.opacity
