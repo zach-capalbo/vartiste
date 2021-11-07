@@ -86,15 +86,15 @@ class MaterialTransformations {
   // Puts roughness texture canvas into metalness texture canvas
   static putRoughnessInMetal(roughness, metalness)
   {
-    if (metalness.id && metalness.id.startsWith("default-"))
+    if (metalness && metalness.id && metalness.id.startsWith("default-"))
     {
       metalness = undefined
     }
-    if (roughness.id && roughness.id.startsWith("default-"))
+    if (roughness && roughness.id && roughness.id.startsWith("default-"))
     {
       roughness = undefined
     }
-    
+
     if (!metalness)
     {
       metalness = document.createElement('canvas')

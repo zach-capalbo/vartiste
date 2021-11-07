@@ -270,6 +270,7 @@ Util.registerComponentSystem('material-pack-system', {
     }
     let objects = Util.traverseFindAll(obj, o => (o.material && o.material.type !== 'MeshBasicMaterial'));
     let promises = []
+    let c = new CanvasShaderProcessor({fx: 'flip-y'})
     for (let o of objects)
     {
       promises.push((async () => {
@@ -278,7 +279,15 @@ Util.registerComponentSystem('material-pack-system', {
         for (let m of HANDLED_MAPS)
         {
           if (!o.material[m] || !o.material[m].image) continue;
-          attr[m] = await bitmapToImage(o.material[m].image, true)
+          if (false && o.material[m].flipY) {
+            c.setInputCanvas(o.material[m].image)
+            c.update()
+            attr[m] = Util.cloneCanvas(c.canvas)
+          }
+          else
+          {
+            attr[m] = await bitmapToImage(o.material[m].image, true)
+          }
           hasAttr = true
         }
         if (o.material.map && o.material.map.image) {
@@ -304,13 +313,21 @@ Util.registerComponentSystem('material-pack-system', {
     let settings = this.el.sceneEl.systems['settings-system'];
     if (materialPackRoot.children.length)
     {
-      // materialPackRoot.traverse(mesh => {
+      materialPackRoot.traverse(mesh => {
+        if (mesh.material) {
+          for (let m of ["map"].concat(HANDLED_MAPS))
+          {
+            if (mesh.material[m]) {
+              mesh.material[m].flipY = false
+            }
+          }
+        }
       //   if (!mesh.material) return;
       //   if (!mesh.material.normalScale || !mesh.material.normalScale.toArray)
       //   {
       //     mesh.material.normalScale = new THREE.Vector2(1, 1);
       //   }
-      // })
+      })
       // await settings.downloadCompressed(JSON.stringify(materialPackRoot.toJSON()), {extension: 'materialpack'}, 'Material Pack')
       let oldExportJPEG = settings.data.exportJPEG
       settings.data.exportJPEG = true
@@ -322,6 +339,15 @@ Util.registerComponentSystem('material-pack-system', {
         settings.data.exportJPEG = oldExportJPEG
       }
     }
+  },
+  swizzleUserPacks() {
+    c = new CanvasShaderProcessor({fx: 'swizzle'})
+    document.querySelectorAll('.user[material-pack] .view').forEach(el => {
+        c.setInputCanvas(el.getObject3D('mesh').material.normalMap.image)
+        c.update()
+        el.getObject3D('mesh').material.normalMap.image = VARTISTE.Util.cloneCanvas(c.canvas)
+        el.getObject3D('mesh').material.normalMap.needsUpdate = true
+    })
   },
   previewMaterial(mask) {
     if (mask in this.loadedPacks)
@@ -432,7 +458,8 @@ AFRAME.registerComponent('material-pack', {
       if (e.detail === 'close')
       {
         this.remove()
-        this.el.parentEl.remove(this.el)
+        this.el.remove()
+        this.view.remove()
       }
     }
   },
@@ -472,6 +499,7 @@ AFRAME.registerComponent('material-pack', {
       material[map].wrapT = THREE.RepeatWrapping
       material[map].wrapS = THREE.RepeatWrapping
       material[map].needsUpdate = true
+      material[map].flipY = false
     }
     this.view.getObject3D('mesh').rotation.z = Math.PI / 2 * this.data.rotations
   },
