@@ -98,11 +98,21 @@ class MaterialTransformations {
     if (!metalness)
     {
       metalness = document.createElement('canvas')
-      metalness.width = roughness.width
-      metalness.height = roughness.height
+      metalness.width = roughness ? roughness.width : 24
+      metalness.height = roughness ? roughness.height : 24
       let metalCtx = metalness.getContext('2d')
-      metalCtx.fillStyle = "#000"
-      metalCtx.fillRect(0,0, metalness.width, metalness.height)
+
+      if (!roughness)
+      {
+        metalCtx.fillStyle = "#FFFF00"
+        metalCtx.fillRect(0,0, metalness.width, metalness.height)
+        return metalness;
+      }
+      else
+      {
+        metalCtx.fillStyle = "#000"
+        metalCtx.fillRect(0,0, metalness.width, metalness.height)
+      }
     }
     else
     {
