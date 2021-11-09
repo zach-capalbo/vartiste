@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
+import shortid from 'shortid'
 
 export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
 
@@ -124,6 +125,7 @@ Util.registerComponentSystem('material-pack-system', {
     let itemsToRemove = []
     let attr = {}
     let hasAttr = false
+    let name = shortid.generate()
     for (let i = 0; i < items.length; ++i)
     {
       let item = items[i];
@@ -139,6 +141,7 @@ Util.registerComponentSystem('material-pack-system', {
       let map = Util.mapFromFilename(file.name)
       if (!map) {
         map = 'src'
+        name = file.name.split(".", 1)[0]
       }
       if (file.name.endsWith("_PREVIEW.jpg")) {
         console.log("Skipping preview", file.name)
@@ -157,7 +160,7 @@ Util.registerComponentSystem('material-pack-system', {
       hasAttr = true
     }
     if (hasAttr) {
-      this.addMaterialPack(attr)
+      this.addMaterialPack(attr, name)
       return true
     }
 
@@ -171,12 +174,16 @@ Util.registerComponentSystem('material-pack-system', {
 
     Compositor.component.data.drawOverlay = true
   },
-  addMaterialPack(attr) {
+  addMaterialPack(attr, name, {flipY = false} = {}) {
+    if (!name) name = shortid.generate();
+    console.log("Adding material pack", name)
+
     for (let map in this.defaultMap)
     {
       if (map in attr) continue;
       attr[map] = this.defaultMap[map]
     }
+
 
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
@@ -184,7 +191,7 @@ Util.registerComponentSystem('material-pack-system', {
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)
     el.classList.add("user")
-    el.setAttribute('material-pack', '')
+    el.setAttribute('material-pack', `flipY: ${flipY}`)
     el.setAttribute('rotation', '-15 0 0')
     el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
     if (++this.x === this.colCount)
@@ -195,6 +202,8 @@ Util.registerComponentSystem('material-pack-system', {
     promises.push(Util.whenLoaded(el))
     return Promise.all(promises).then(() => {
       return Util.whenLoaded(el, () => {
+        this.loadedPacks[name] = el;
+        el.setAttribute('material-pack', 'pack', name)
         if (attr.emissiveMap)
         {
           attr.emissive = attr.emissiveMap
@@ -216,6 +225,16 @@ Util.registerComponentSystem('material-pack-system', {
           delete attr.ambientOcclusionMap
         }
         el.components['material-pack'].maps = attr
+
+        // A-Frame material doesn't handle emissive maps for some reason...
+        if (attr.emissive)
+        {
+          // console.log("Special handling for emissive", attr, el.components['material-pack'])
+          el.components['material-pack'].view.components.material.material.emissiveMap = new THREE.Texture(attr.emissive)
+          el.components['material-pack'].view.components.material.material.emissive.setRGB(1,1,1)
+          attr.emissiveMap = attr.emissive
+          delete attr.emissive
+        }
       })
     })
   },
@@ -258,7 +277,7 @@ Util.registerComponentSystem('material-pack-system', {
       await new Promise((r, err) => {
         try {
           canvas.toBlob(blob => {
-            img.src = URL.createObjectURL(blob, 'image/webp')
+            img.src = URL.createObjectURL(blob, 'image/jpeg')
             r()
           })
         } catch (e) {
@@ -270,7 +289,7 @@ Util.registerComponentSystem('material-pack-system', {
     }
     let objects = Util.traverseFindAll(obj, o => (o.material && o.material.type !== 'MeshBasicMaterial'));
     let promises = []
-    let c = new CanvasShaderProcessor({fx: 'flip-y'})
+    // let c = new CanvasShaderProcessor({fx: 'flip-y'})
     for (let o of objects)
     {
       promises.push((async () => {
@@ -280,9 +299,9 @@ Util.registerComponentSystem('material-pack-system', {
         {
           if (!o.material[m] || !o.material[m].image) continue;
           if (false && o.material[m].flipY) {
-            c.setInputCanvas(o.material[m].image)
-            c.update()
-            attr[m] = Util.cloneCanvas(c.canvas)
+            // c.setInputCanvas(o.material[m].image)
+            // c.update()
+            // attr[m] = Util.cloneCanvas(c.canvas)
           }
           else
           {
@@ -295,8 +314,7 @@ Util.registerComponentSystem('material-pack-system', {
           hasAttr = true
         }
         if (hasAttr) {
-          console.log("Creating mateiral pack", attr)
-          this.addMaterialPack(attr)
+          this.addMaterialPack(attr, o.material.name, {flipY: true})
         }
       })());
 
@@ -308,7 +326,9 @@ Util.registerComponentSystem('material-pack-system', {
   async downloadUserMaterials() {
     let materialPackRoot = new THREE.Object3D
     document.querySelectorAll('.user[material-pack] .view').forEach(el => {
-      materialPackRoot.add(el.getObject3D('mesh').clone())
+      let o = el.getObject3D('mesh').clone()
+      o.material.name = el.parentEl.getAttribute('material-pack').pack
+      materialPackRoot.add(o)
     })
     let settings = this.el.sceneEl.systems['settings-system'];
     if (materialPackRoot.children.length)
@@ -318,7 +338,7 @@ Util.registerComponentSystem('material-pack-system', {
           for (let m of ["map"].concat(HANDLED_MAPS))
           {
             if (mesh.material[m]) {
-              mesh.material[m].flipY = false
+              // mesh.material[m].flipY = false
             }
           }
         }
@@ -340,13 +360,16 @@ Util.registerComponentSystem('material-pack-system', {
       }
     }
   },
-  swizzleUserPacks() {
-    c = new CanvasShaderProcessor({fx: 'swizzle'})
+  flipUserPacks() {
+    c = new CanvasShaderProcessor({fx: 'flip-y'})
     document.querySelectorAll('.user[material-pack] .view').forEach(el => {
-        c.setInputCanvas(el.getObject3D('mesh').material.normalMap.image)
+        for (let m of ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap', 'map']) {
+        if (!el.getObject3D('mesh').material[m]) continue;
+        c.setInputCanvas(el.getObject3D('mesh').material[m].image)
         c.update()
-        el.getObject3D('mesh').material.normalMap.image = VARTISTE.Util.cloneCanvas(c.canvas)
-        el.getObject3D('mesh').material.normalMap.needsUpdate = true
+        el.getObject3D('mesh').material[m].image = VARTISTE.Util.cloneCanvas(c.canvas)
+        el.getObject3D('mesh').material[m].needsUpdate = true
+        }
     })
   },
   previewMaterial(mask) {
@@ -437,10 +460,13 @@ AFRAME.registerComponent('material-pack', {
     repeat: {default: 1},
     rotations: {default: 0},
 
+    flipY: {default: false},
+
     srcEnabled: {default: true},
     normalMapEnabled: {default: true},
     metalnessMapEnabled: {default: true},
     roughnessMapEnabled: {default: true},
+    emissiveMapEnabled: {default: true},
     aoMapEnabled: {default: true},
   },
   events: {
@@ -486,6 +512,9 @@ AFRAME.registerComponent('material-pack', {
     if (this.repeat !== oldData.repeat) {
       this.updateRepeat()
     }
+    Util.whenLoaded(this.view, () => {
+      this.el.children[0].setAttribute('frame', 'name', this.data.pack)
+    })
   },
   updateRepeat() {
     if (!this.maps) return;
@@ -499,9 +528,9 @@ AFRAME.registerComponent('material-pack', {
       material[map].wrapT = THREE.RepeatWrapping
       material[map].wrapS = THREE.RepeatWrapping
       material[map].needsUpdate = true
-      material[map].flipY = false
+      material[map].flipY = !this.data.flipY
     }
-    this.view.getObject3D('mesh').rotation.z = Math.PI / 2 * this.data.rotations
+    this.view.getObject3D('mesh').rotation.z = - Math.PI / 2 * this.data.rotations
   },
   setLayerMaterial() {
     if (Compositor.component.activeLayer.materialPack === this.data.pack)
@@ -596,6 +625,8 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', true)
   },
   deactivateMask() {
+    if (!this.el.querySelector('*[click-action="activateMask"]')) return;
+    
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
@@ -667,7 +698,7 @@ AFRAME.registerComponent('material-pack', {
           {
             tmpCtx.save()
             tmpCtx.translate(x * repeatXIncrement + repeatXIncrement / 2, y * repeatYIncrement + repeatYIncrement / 2)
-            tmpCtx.rotate(this.data.rotations * Math.PI / 2)
+            tmpCtx.rotate(this.data.rotations * - Math.PI / 2)
             if (this.data.rotations % 2 == 0)
             {
               tmpCtx.translate(-repeatXIncrement / 2, -repeatYIncrement / 2)
@@ -703,7 +734,16 @@ AFRAME.registerComponent('material-pack', {
         }
       }
       let ctx = canvas.getContext('2d')
-      ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
+      if (this.data.flipY)
+      {
+        ctx.scale(1, -1)
+        ctx.drawImage(tmpCanvas, 0, -canvas.height, canvas.width, canvas.height)
+        ctx.scale(1, -1)
+      }
+      else
+      {
+        ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
+      }
       layer.touch()
       if (canvas.touch) canvas.touch()
       layer.needsUpdate = true

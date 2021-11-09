@@ -33,6 +33,7 @@ AFRAME.registerComponent('compositor', {
     usePreOverlayCanvas: {default: true},
     useNodes: {default: false},
     flipY: {default: false},
+    flipNormal: {default: true},
     skipDrawing: {default: false},
     wrapTexture: {default: false},
     doubleSided: {default: false},
@@ -846,7 +847,7 @@ AFRAME.registerComponent('compositor', {
             }
             break
           case "normalMap":
-            material.normalScale = new THREE.Vector2(layer.opacity, layer.opacity)
+            material.normalScale = new THREE.Vector2(layer.opacity, this.data.flipNormal ? -layer.opacity : layer.opacity)
             break
           case "metalnessMap":
             material.metalness = layer.opacity
@@ -934,6 +935,7 @@ AFRAME.registerComponent('compositor', {
 
     this.data.flipY = false
     this.flipUVY()
+    this.data.flipNormal = obj.flipNormal
 
     for (let layer of this.layers.slice()) {
       console.log("Deleting", layer)

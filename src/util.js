@@ -6,9 +6,11 @@ const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
   'aoMap': [/AmbientOcclusion(Map)?/i, /(\b|_)AO(map)?(\b|_)/i],
-  'displacementMap': [/(\b|_)Disp(lacement)?(Map)?(\b|_)/i],
+  'displacementMap': [
+    /(\b|_)Height(\b|_)/i,
+    /(\b|_)Disp(lacement)?(Map)?(\b|_)/i, ],
   'normalMap': [/(\b|_)norm?(al)?(map)?(gl|dx)?(\b|_)/i],
-  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss)?(map)?(\b|_)/i],
+  'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss|ssion)?(map)?(\b|_)/i],
   'metalnessMap': [/(\b|_)metal(ness|l?ic)?(map)?(\b|_)/i],
   'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
   'matcap': [/(\b|_)matcap(\b|_)/i]

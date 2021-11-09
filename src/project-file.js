@@ -18,6 +18,7 @@ class ProjectFile {
     if (!('useNodes' in obj)) obj.useNodes = false
     if (!('allNodes' in obj)) obj.allNodes = []
     if (!('flipY' in obj)) obj.flipY = true
+    if (!('flipNormal' in obj)) obj.flipNormal = false
     if (!('referenceImages' in obj)) obj.referenceImages = []
     if (!('referenceModels' in obj)) obj.referenceModels = []
     if (!('referenceGLBs' in obj)) obj.referenceGLBs = []
@@ -543,6 +544,7 @@ class ProjectFile {
       shader: compositor.el.getAttribute('material').shader,
       frameRate: compositor.data.frameRate,
       flipY: compositor.data.flipY,
+      flipNormal: compositor.data.flipNormal,
       canvases: layers.map(l => l.frames.map(f => f.toDataURL(settings.imageURLType(f), settings.compressionQuality())))
     }
   }

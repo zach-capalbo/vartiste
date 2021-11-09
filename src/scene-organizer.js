@@ -76,7 +76,7 @@ AFRAME.registerComponent('object3d-view', {
     let rootId = "view-root-" + shortid.generate()
     this.el.id = rootId
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
@@ -155,6 +155,7 @@ AFRAME.registerComponent('object3d-view', {
   loadChildren() {
     console.log('loading children', this.object.children)
     this.loadedChildren = true
+    this.loadedChildrenLength = this.object.children.length
     const zOffset = -0.1
     const scaleDown = 0.75
     const heightOffset = 2.7
@@ -194,7 +195,31 @@ AFRAME.registerComponent('object3d-view', {
     this.inputNode.components['node-input'].clearSnapped()
   },
   duplicate() {
-    this.object.parent.add(this.object.clone())
+    if (this.isEl)
+    {
+      if (this.targetEl.hasAttribute('primitive-construct-placeholder'))
+      {
+        this.targetEl.components['primitive-construct-placeholder'].makeClone()
+      }
+      else if (this.targetEl.hasAttribute('reference-glb'))
+      {
+        this.targetEl.components['reference-glb'].makeClone()
+      }
+      else
+      {
+        console.warn("Don't know how to duplicate", this.targetEl)
+        let el = document.createElement('a-entity')
+        this.targetEl.parentEl.append(el)
+        for (let c of Object.keys(this.targetEl.components))
+        {
+          el.setAttribute(c, this.targetEl.getAttribute(c))
+        }
+      }
+    }
+    else
+    {
+      this.object.parent.add(this.object.clone())
+    }
   },
   hide() {
     this.object.visible = !this.object.visible
@@ -299,6 +324,11 @@ AFRAME.registerComponent('object3d-view', {
       {
         this.onMoved()
       }
+    }
+
+    if (this.loadedChildren && this.loadedChildrenLength !== this.object.children.length)
+    {
+      this.loadChildren()
     }
   }
 })
