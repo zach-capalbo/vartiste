@@ -131,7 +131,7 @@ AFRAME.registerComponent('raycast-bvh', {
 // will be best.
 AFRAME.registerSystem('low-power', {
   schema: {
-    // Set the system under `a-scene` to allow user to force low power on or off.
+    // Explicitly setting this property to `true` or `false` will force the scene into or out of low power mode.
     lowPower: {default: Util.isLowPower()}
   },
   init() {
