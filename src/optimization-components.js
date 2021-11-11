@@ -149,8 +149,7 @@ AFRAME.registerComponent('set-low-power', {
   schema: {
     // The entity containing the desired component.
     target: {default: null},
-    // The component affected by low power mode, including the property changed
-    // and its desired low power mode value. Formatted as `component; property: value`.
+    // The component affected by low power mode. When this is changed the `set-low-power-mode` schema will be updated to match the target component schema
     component: {type: 'string'},
   },
   updateSchema(newData) {
