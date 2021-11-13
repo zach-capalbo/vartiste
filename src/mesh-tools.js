@@ -565,3 +565,49 @@ AFRAME.registerComponent('normal-meld-tool', {
     this.doAverage()
   }
 })
+
+AFRAME.registerComponent('clip-plane-tool', {
+  dependencies: ['grab-root', 'grabbable'],
+  init() {
+    Pool.init(this)
+    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.04, height: 0.3, parentEl: this.el})
+
+    this.target = new THREE.Object3D
+    this.el.object3D.add(this.target)
+    this.target.position.y = 0.15
+
+    const sqLength = 0.04
+    let shape = new THREE.Shape()
+      .moveTo( - sqLength, -sqLength )
+      .lineTo( -sqLength, sqLength )
+      .lineTo( -sqLength, sqLength )
+      .lineTo( sqLength, sqLength )
+      .lineTo( sqLength, sqLength )
+      .lineTo( sqLength, - sqLength )
+      .lineTo( sqLength, - sqLength )
+      .lineTo( -sqLength, -sqLength )
+      .lineTo( -sqLength, -sqLength );
+    let shapeGeo = new THREE.BufferGeometry().setFromPoints(shape.getPoints());
+    let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
+    this.target.add(shapeLine)
+
+    this.plane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
+
+    // let planeHelper = new THREE.PlaneHelper(this.plane)
+    // this.el.sceneEl.object3D.add(planeHelper)
+
+    this.clippingPlanes = [this.plane]
+  },
+  setClippingPlane() {
+    this.el.sceneEl.renderer.localClippingEnabled = true;
+    Compositor.material.clippingPlanes = this.clippingPlanes
+  },
+  tick(t, dt) {
+    this.setClippingPlane()
+    let worldDir = this.pool('worldDir', THREE.Vector3)
+    let worldPos = this.pool('worldPos', THREE.Vector3)
+    this.target.getWorldPosition(worldPos)
+    this.target.getWorldDirection(worldDir)
+    this.plane.setFromNormalAndCoplanarPoint(worldDir, worldPos)
+  }
+})
