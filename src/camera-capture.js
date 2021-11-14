@@ -977,8 +977,10 @@ AFRAME.registerComponent('spray-can-tool', {
     if (!shaderMaterial)
     {
       this.shaderMaterial = new THREE.ShaderMaterial({
-        fragmentShader: require('./shaders/uv-index.glsl'),
-        vertexShader: require('./shaders/pass-through.vert')
+        fragmentShader: require('!raw-loader!!./shaders/uv-index.glsl').default,
+        vertexShader: require('./shaders/pass-through.vert'),
+        clipping: true,
+        clippingPlanes: this.el.sceneEl.systems['mesh-clipping'].clippingPlanes,
       })
       shaderMaterial = this.shaderMaterial
     }

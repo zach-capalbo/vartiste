@@ -582,6 +582,11 @@ Util.registerComponentSystem('mesh-clipping', {
     this.clippingPlanes.push(plane)
     this.setClippingPlane()
   },
+  unregisterPlane(plane) {
+    let idx = this.clippingPlanes.indexOf(plane)
+    if (idx < 0) return;
+    this.clippingPlanes.splice(idx, 1)
+  },
   registerClipEl(el) {
     this.clippedEls.add(el)
   },
@@ -618,9 +623,11 @@ AFRAME.registerComponent('clip-plane-tool', {
   dependencies: ['grab-root', 'grabbable', 'six-dof-tool','grab-activate'],
   schema: {
     throttle: {default: 20 },
+    active: {default: true},
   },
   events: {
     activate: function(e) { this.activate() },
+    click: function(e) { this.el.setAttribute('clip-plane-tool', 'active', !this.data.active)},
   },
   init() {
     this.system = this.el.sceneEl.systems['mesh-clipping']
@@ -647,12 +654,20 @@ AFRAME.registerComponent('clip-plane-tool', {
     let shapeGeo = new THREE.BufferGeometry().setFromPoints(shape.getPoints());
     let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
     this.target.add(shapeLine)
-
-
     // let planeHelper = new THREE.PlaneHelper(this.plane)
     // this.el.sceneEl.object3D.add(planeHelper)
-
-
+  },
+  update(oldData) {
+    if (this.data.active !== oldData.active) {
+      this.handle.setAttribute('material', 'color', this.data.active ? 'white' : '#333')
+      if (this.activated && this.data.active) {
+        this.system.registerPlane(this.plane)
+      }
+      else if (this.activated)
+      {
+        this.system.unregisterPlane(this.plane)
+      }
+    }
   },
   activate() {
     this.plane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
@@ -661,6 +676,7 @@ AFRAME.registerComponent('clip-plane-tool', {
   },
   tick(t,dt) {
     if (!this.activated) return
+    if (!this.data.active) return;
     let worldDir = this.pool('worldDir', THREE.Vector3)
     let worldPos = this.pool('worldPos', THREE.Vector3)
     this.target.getWorldPosition(worldPos)
