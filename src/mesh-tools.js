@@ -566,17 +566,74 @@ AFRAME.registerComponent('normal-meld-tool', {
   }
 })
 
-AFRAME.registerComponent('clip-plane-tool', {
-  dependencies: ['grab-root', 'grabbable'],
+Util.registerComponentSystem('mesh-clipping', {
+  schema: {
+    throttle: {default: 200},
+    forceDoubleSided: {default: true},
+  },
   init() {
     Pool.init(this)
-    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.04, height: 0.3, parentEl: this.el})
+    this.clippingPlanes = []
+    this.clippedEls = new Set()
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+  registerPlane(plane) {
+    if (this.clippingPlanes.indexOf(plane) >= 0) return
+    this.clippingPlanes.push(plane)
+    this.setClippingPlane()
+  },
+  registerClipEl(el) {
+    this.clippedEls.add(el)
+  },
+  setClippingPlane() {
+    if (this.clippingPlanes.length === 0) {
+      this.el.sceneEl.renderer.localClippingEnabled = false;
+      return;
+    }
+
+    this.el.sceneEl.renderer.localClippingEnabled = true;
+    Compositor.material.clippingPlanes = this.clippingPlanes
+  },
+  tick(t, dt) {
+    for (let el of this.clippedEls.values())
+    {
+      el.getObject3D('mesh').traverseVisible(o => {
+        if (o.material) {
+          o.material.clippingPlanes = this.clippingPlanes
+          o.material.side = THREE.DoubleSide
+        }
+      })
+    }
+  }
+})
+
+AFRAME.registerComponent('mesh-can-be-clipped', {
+  init() {
+    this.system = this.el.sceneEl.systems['mesh-clipping']
+    this.system.registerClipEl(this.el)
+  }
+})
+
+AFRAME.registerComponent('clip-plane-tool', {
+  dependencies: ['grab-root', 'grabbable', 'six-dof-tool','grab-activate'],
+  schema: {
+    throttle: {default: 20 },
+  },
+  events: {
+    activate: function(e) { this.activate() },
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['mesh-clipping']
+    Pool.init(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.08, height: 0.6, parentEl: this.el})
 
     this.target = new THREE.Object3D
     this.el.object3D.add(this.target)
-    this.target.position.y = 0.15
+    this.target.position.y = 0.3
+    this.target.rotation.y = Math.PI
 
-    const sqLength = 0.04
+    const sqLength = 0.2
     let shape = new THREE.Shape()
       .moveTo( - sqLength, -sqLength )
       .lineTo( -sqLength, sqLength )
@@ -591,19 +648,19 @@ AFRAME.registerComponent('clip-plane-tool', {
     let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
     this.target.add(shapeLine)
 
-    this.plane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
 
     // let planeHelper = new THREE.PlaneHelper(this.plane)
     // this.el.sceneEl.object3D.add(planeHelper)
 
-    this.clippingPlanes = [this.plane]
+
   },
-  setClippingPlane() {
-    this.el.sceneEl.renderer.localClippingEnabled = true;
-    Compositor.material.clippingPlanes = this.clippingPlanes
+  activate() {
+    this.plane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
+    this.system.registerPlane(this.plane)
+    this.activated = true
   },
-  tick(t, dt) {
-    this.setClippingPlane()
+  tick(t,dt) {
+    if (!this.activated) return
     let worldDir = this.pool('worldDir', THREE.Vector3)
     let worldPos = this.pool('worldPos', THREE.Vector3)
     this.target.getWorldPosition(worldPos)
