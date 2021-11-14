@@ -598,6 +598,10 @@ Util.registerComponentSystem('mesh-clipping', {
 
     this.el.sceneEl.renderer.localClippingEnabled = true;
     Compositor.material.clippingPlanes = this.clippingPlanes
+    if (this.data.forceDoubleSided)
+    {
+      Compositor.material.side = THREE.DoubleSide;
+    }
   },
   tick(t, dt) {
     for (let el of this.clippedEls.values())
@@ -605,7 +609,10 @@ Util.registerComponentSystem('mesh-clipping', {
       el.getObject3D('mesh').traverseVisible(o => {
         if (o.material) {
           o.material.clippingPlanes = this.clippingPlanes
-          o.material.side = THREE.DoubleSide
+          if (this.data.forceDoubleSided)
+          {
+            o.material.side = THREE.DoubleSide
+          }
         }
       })
     }
