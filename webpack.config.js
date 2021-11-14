@@ -52,7 +52,7 @@ let config = {
         use: { loader: "worker-loader" },
       },
       {
-        test: /\@ffmpeg.*\.wasm/,
+        test: /(\@ffmpeg|xatlas-web).*\.wasm/,
         type: 'javascript/auto',
         use: [{
           loader: 'file-loader',

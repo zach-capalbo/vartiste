@@ -88,6 +88,7 @@
     "three.cubemap-to-equirectangular": "^1.1.2",
     "tone": "^14.7.77",
     "val-loader": "^2.1.1",
-    "webxr-polyfill": "^2.0.3"
+    "webxr-polyfill": "^2.0.3",
+    "xatlas-web": "^0.1.0"
   }
 }

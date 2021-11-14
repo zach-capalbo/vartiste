@@ -1060,6 +1060,7 @@ Util.registerComponentSystem('file-upload', {
 })
 
 AFRAME.registerComponent('reference-glb', {
+  dependencies: ['mesh-can-be-clipped'],
   events: {
     // object3dset: function(e) {
     //   let m = this.pool('inv', THREE.Matrix4)

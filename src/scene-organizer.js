@@ -360,6 +360,10 @@ AFRAME.registerComponent('grab-redirector', {
     this.el.append(globe)
     globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
     globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    if (this.el.hasAttribute('globe-material'))
+    {
+      Util.whenLoaded(globe, () => globe.setAttribute('material', this.el.getAttribute('globe-material')))
+    }
     globe.classList.add('clickable')
 
     this.initialMatrix = new THREE.Matrix4

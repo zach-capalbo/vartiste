@@ -565,3 +565,129 @@ AFRAME.registerComponent('normal-meld-tool', {
     this.doAverage()
   }
 })
+
+Util.registerComponentSystem('mesh-clipping', {
+  schema: {
+    throttle: {default: 200},
+    forceDoubleSided: {default: true},
+  },
+  init() {
+    Pool.init(this)
+    this.clippingPlanes = []
+    this.clippedEls = new Set()
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+  },
+  registerPlane(plane) {
+    if (this.clippingPlanes.indexOf(plane) >= 0) return
+    this.clippingPlanes.push(plane)
+    this.setClippingPlane()
+  },
+  unregisterPlane(plane) {
+    let idx = this.clippingPlanes.indexOf(plane)
+    if (idx < 0) return;
+    this.clippingPlanes.splice(idx, 1)
+  },
+  registerClipEl(el) {
+    this.clippedEls.add(el)
+  },
+  setClippingPlane() {
+    if (this.clippingPlanes.length === 0) {
+      this.el.sceneEl.renderer.localClippingEnabled = false;
+      return;
+    }
+
+    this.el.sceneEl.renderer.localClippingEnabled = true;
+    Compositor.material.clippingPlanes = this.clippingPlanes
+    if (this.data.forceDoubleSided)
+    {
+      Compositor.material.side = THREE.DoubleSide;
+    }
+  },
+  tick(t, dt) {
+    for (let el of this.clippedEls.values())
+    {
+      el.getObject3D('mesh').traverseVisible(o => {
+        if (o.material) {
+          o.material.clippingPlanes = this.clippingPlanes
+          if (this.data.forceDoubleSided)
+          {
+            o.material.side = THREE.DoubleSide
+          }
+        }
+      })
+    }
+  }
+})
+
+AFRAME.registerComponent('mesh-can-be-clipped', {
+  init() {
+    this.system = this.el.sceneEl.systems['mesh-clipping']
+    this.system.registerClipEl(this.el)
+  }
+})
+
+AFRAME.registerComponent('clip-plane-tool', {
+  dependencies: ['grab-root', 'grabbable', 'six-dof-tool','grab-activate'],
+  schema: {
+    throttle: {default: 20 },
+    active: {default: true},
+  },
+  events: {
+    activate: function(e) { this.activate() },
+    click: function(e) { this.el.setAttribute('clip-plane-tool', 'active', !this.data.active)},
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['mesh-clipping']
+    Pool.init(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.08, height: 0.6, parentEl: this.el})
+
+    this.target = new THREE.Object3D
+    this.el.object3D.add(this.target)
+    this.target.position.y = 0.3
+    this.target.rotation.y = Math.PI
+
+    const sqLength = 0.2
+    let shape = new THREE.Shape()
+      .moveTo( - sqLength, -sqLength )
+      .lineTo( -sqLength, sqLength )
+      .lineTo( -sqLength, sqLength )
+      .lineTo( sqLength, sqLength )
+      .lineTo( sqLength, sqLength )
+      .lineTo( sqLength, - sqLength )
+      .lineTo( sqLength, - sqLength )
+      .lineTo( -sqLength, -sqLength )
+      .lineTo( -sqLength, -sqLength );
+    let shapeGeo = new THREE.BufferGeometry().setFromPoints(shape.getPoints());
+    let shapeLine = new THREE.Line(shapeGeo, new THREE.LineBasicMaterial({color: 'black'}))
+    this.target.add(shapeLine)
+    // let planeHelper = new THREE.PlaneHelper(this.plane)
+    // this.el.sceneEl.object3D.add(planeHelper)
+  },
+  update(oldData) {
+    if (this.data.active !== oldData.active) {
+      this.handle.setAttribute('material', 'color', this.data.active ? 'white' : '#333')
+      if (this.activated && this.data.active) {
+        this.system.registerPlane(this.plane)
+      }
+      else if (this.activated)
+      {
+        this.system.unregisterPlane(this.plane)
+      }
+    }
+  },
+  activate() {
+    this.plane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
+    this.system.registerPlane(this.plane)
+    this.activated = true
+  },
+  tick(t,dt) {
+    if (!this.activated) return
+    if (!this.data.active) return;
+    let worldDir = this.pool('worldDir', THREE.Vector3)
+    let worldPos = this.pool('worldPos', THREE.Vector3)
+    this.target.getWorldPosition(worldPos)
+    this.target.getWorldDirection(worldDir)
+    this.plane.setFromNormalAndCoplanarPoint(worldDir, worldPos)
+  }
+})

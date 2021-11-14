@@ -373,7 +373,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     this.el.classList.add('clickable')
     this.el.setAttribute('action-tooltips', 'b: Clone shape')
   },
-  update(oldData) {},
+  update(oldData) {
+    if (this.data.detached) {
+      this.el.setAttribute('mesh-can-be-clipped', '')
+    }
+  },
   remove() {
     this.el.getObject3D('mesh').traverse(o => {
       if (o.material) o.material.dispose()

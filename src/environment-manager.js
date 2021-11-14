@@ -450,3 +450,13 @@ AFRAME.registerComponent('tonemapping-tooltip', {
     this.el.setAttribute('tooltip__tonemapping', this.mappings.find(m => THREE[m] == e.detail))
   }
 })
+
+AFRAME.registerComponent('no-doublesided-shadows', {
+  tick(t,dt) {
+    this.el.getObject3D('mesh').traverseVisible(m => {
+      if (m.material && m.material.side === THREE.DoubleSide) {
+        m.material.shadowSide = THREE.FrontSide
+      }
+    })
+  }
+})

@@ -518,6 +518,7 @@ AFRAME.registerComponent('camera-tool', {
         side: m.side,
         transparent: m.transparent,
         opacity: m.opacity,
+        clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
       })
     }
 
@@ -555,6 +556,7 @@ AFRAME.registerComponent('camera-tool', {
             normalScale: m.normalScale,
             side: m.side,
             transparent: m.transparent,
+            clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
           })
         }
         else
@@ -565,7 +567,8 @@ AFRAME.registerComponent('camera-tool', {
             side: m.side,
             transparent: m.transparent,
             opacity: m.opacity,
-            visible: m.type === 'MeshStandardMaterial'
+            visible: m.type === 'MeshStandardMaterial',
+            clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
           })
         }
       }
@@ -977,11 +980,15 @@ AFRAME.registerComponent('spray-can-tool', {
     if (!shaderMaterial)
     {
       this.shaderMaterial = new THREE.ShaderMaterial({
-        fragmentShader: require('./shaders/uv-index.glsl'),
-        vertexShader: require('./shaders/pass-through.vert')
+        fragmentShader: require('!raw-loader!!./shaders/uv-index.glsl').default,
+        vertexShader: require('./shaders/pass-through.vert'),
+        clipping: true,
+        clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
       })
       shaderMaterial = this.shaderMaterial
     }
+
+    shaderMaterial.side = oldMaterial.side
 
     Compositor.meshRoot.traverse(o =>
       {

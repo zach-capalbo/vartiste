@@ -2,6 +2,10 @@ import {Pool} from './pool.js'
 import {Util} from './util.js'
 import {Undo} from './undo.js'
 
+import XAtlas from 'xatlas-web'
+window.xatlasWasm = import('xatlas-web/dist/xatlas-web.wasm')
+window.xatlas = XAtlas
+
 Util.registerComponentSystem('uv-unwrapper', {
   schema: {
     autoClear: {default: false},

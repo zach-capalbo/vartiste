@@ -143,9 +143,10 @@ AFRAME.registerComponent('compositor', {
     {
       this.materialNode.touch()
     }
-    if (this.data.doubleSided !== oldData.doubleSided)
+    if (this.data.doubleSided !== oldData.doubleSided || this.data.shader !== oldData.shader)
     {
       this.el.getObject3D('mesh').material.side = this.data.doubleSided ? THREE.DoubleSide : THREE.FrontSide
+      this.el.getObject3D('mesh').material.shadowSide = this.data.doubleSided ? THREE.FrontSide : null;
     }
   },
 
