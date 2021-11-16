@@ -290,6 +290,8 @@ AFRAME.registerComponent('compositor', {
       Compositor.component.setLayerBlendMode(layer, map)
     }
 
+    Compositor.el.emit('layerupdated', {layer: layer})
+
     return layer;
   },
   grabLayer(layer) {
