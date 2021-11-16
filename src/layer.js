@@ -40,14 +40,14 @@ export class Layer {
   touch() {
     this.updateTime = sceneEl.time
   }
-  draw(ctx, frame=0, {mode} = {}) {
+  draw(ctx, frame=0, {mode, canvas} = {}) {
     if (typeof mode === 'undefined') mode = this.mode
     ctx.save()
     ctx.globalCompositeOperation = mode
     ctx.globalAlpha = this.opacity
     let {translation, scale} = this.transform
     try {
-    let canvas = this.frame(frame)
+    if (!canvas) canvas = this.frame(frame);
     // ctx.drawImage(canvas, 0, 0, this.width, this.height,
     //   translation.x - this.width / 2 * scale.x + this.width / 2,
     //   translation.y- this.height / 2 * scale.y + this.height / 2,
