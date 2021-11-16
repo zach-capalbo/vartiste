@@ -250,21 +250,14 @@ AFRAME.registerComponent('toolbox-shelf', {
       return;
     }
 
-    let normalLayer = Compositor.component.layers.find(l => l.mode === 'normalMap');
+    let normalLayer = Compositor.component.layerforMap('normalMap');
     let originalLayer = Compositor.component.activeLayer;
 
     if (!this.normalProcessor)
     {
       this.normalProcessor = new CanvasShaderProcessor({source: require('./shaders/bump-to-normal-advanced.glsl')})
     }
-
-    if (!normalLayer)
-    {
-      normalLayer = Compositor.component.addLayer()
-      normalLayer.mode = 'normalMap'
-      Compositor.el.emit('layerupdated', {layer: normalLayer})
-    }
-
+    
     if (Compositor.el.getAttribute('material').shader === 'flat')
     {
       Compositor.el.setAttribute('material', 'shader', 'matcap')
@@ -294,9 +287,10 @@ AFRAME.registerComponent('toolbox-shelf', {
       this.normalProcessor.setUniform('u_bumpScale',  'uniform1f', Math.pow(activeLayer.opacity, 2.2))
       this.normalProcessor.setUniform('u_invert', 'uniform1i', shouldInvert)
       this.normalProcessor.setUniform('u_alphaOnly', 'uniform1i', (keepColor && !this.el.sceneEl.systems['paint-system'].brush.textured) ? 1 : 0)
+      this.normalProcessor.setCanvasAttribute('u_base', normalLayer.canvas)
       this.normalProcessor.update()
 
-      normalCtx.globalCompositeOperation = 'hard-light'
+      normalCtx.globalCompositeOperation = 'source-over'
       normalCtx.drawImage(this.normalProcessor.canvas, 0, 0)
       activeCtx.clearRect(0, 0, activeLayer.canvas.width, activeLayer.canvas.height)
       normalLayer.canvas.touch()
