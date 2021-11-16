@@ -54,8 +54,7 @@ AFRAME.registerComponent('fix-light-shadow', {
 })
 
 
-// Fixes a performance regression raycasting against a skinned mesh without a
-// skinning material.
+// Improves global raycasting performance but decreases raycaster accuracy on skinned or morphed meshes.
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {
     // When true, the raycaster will ignore the entity’s morph targets.

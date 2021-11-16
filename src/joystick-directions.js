@@ -222,6 +222,8 @@ AFRAME.registerComponent('action-tooltips', {
 })
 
 // Component attached to each hand that displays the [`action-tooltips`](#action-tooltips).
+//
+// _Note: Using the [`vartiste-user-root`](#vartiste-user-root) component automatically attaches these to controllers.
 AFRAME.registerComponent('hand-action-tooltip', {
   dependencies: ['raycaster', 'action-tooltips'],
   schema: {
