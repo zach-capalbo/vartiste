@@ -231,7 +231,21 @@ AFRAME.registerComponent('compositor', {
 
     ctx.translate(-ontoLayer.transform.translation.x, -ontoLayer.transform.translation.y)
 
-    fromLayer.draw(ctx, this.currentFrame)
+    if (fromLayer.mode === 'normalMap' && ontoLayer.mode === 'normalMap')
+    {
+      if (!this.normalProcessor)
+      {
+        this.normalProcessor = new CanvasShaderProcessor({source: require('./shaders/merge-normals.glsl')})
+      }
+      this.normalProcessor.setInputCanvas(fromLayer.frame(this.currentFrame))
+      this.normalProcessor.setCanvasAttribute('u_base', ontoLayer.frame(this.currentFrame))
+      this.normalProcessor.update()
+      fromLayer.draw(ctx, this.currentFrame, {mode: 'source-over', canvas: this.normalProcessor.canvas})
+    }
+    else
+    {
+      fromLayer.draw(ctx, this.currentFrame)
+    }
     ctx.restore()
     ontoLayer.touch()
   },
