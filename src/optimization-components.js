@@ -142,7 +142,7 @@ AFRAME.registerSystem('low-power', {
 })
 
 // Sets the desired property and value for a given component when the scene is
-// in low power mode. When you enter a component, the set-low-power schema
+// in low power mode. When you set the component property, the set-low-power schema
 // will update, allowing you to specify properties on the component in a
 // `property: value` format.
 //
