@@ -54,11 +54,14 @@ AFRAME.registerComponent('fix-light-shadow', {
 })
 
 
-// Fixes a performance regression raycasting against a skinned mesh without a
-// skinning material
+// Improves global raycasting performance but decreases raycaster accuracy on skinned or morphed meshes.
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {
+    // When true, the raycaster will ignore the entity’s morph targets.
+    // Helps reduce needed processing power.
     ignoreMorphTargets: {default: true},
+    // When true, the raycaster will ignore the entity’s skinning.
+    // Helps reduce needed processing power.
     ignoreSkinning: {default: false},
   },
   init() {
@@ -122,8 +125,12 @@ AFRAME.registerComponent('raycast-bvh', {
   tick(t, dt) {}
 })
 
+// Controls the global low power setting for devices with limited processing
+// power. By default, it will check the system in use and guess which setting
+// will be best.
 AFRAME.registerSystem('low-power', {
   schema: {
+    // Explicitly setting this property to `true` or `false` will force the scene into or out of low power mode.
     lowPower: {default: Util.isLowPower()}
   },
   init() {
@@ -134,10 +141,19 @@ AFRAME.registerSystem('low-power', {
   }
 })
 
+// Sets the desired property and value for a given component when the scene is
+// in low power mode. When you set the component property, the set-low-power schema
+// will update, allowing you to specify properties on the component in a
+// `property: value` format.
+//
+// Example:
+//```<a-cube material="color: blue; shader: standard" set-low-power="component: material; color: red"></a-cube>```
 AFRAME.registerComponent('set-low-power', {
   multiple: true,
   schema: {
+    // The entity containing the desired component.
     target: {default: null},
+    // The component affected by low power mode. When this is changed the `set-low-power-mode` schema will be updated to match the target component schema
     component: {type: 'string'},
   },
   updateSchema(newData) {

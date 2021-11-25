@@ -9,6 +9,9 @@ import shortid from 'shortid'
 AFRAME.registerComponent('hand-draw-tool', {
   dependencies: ['raycaster'],
   schema: {
+    // The time between updates to drawing actions, in milliseconds. Lower
+    // times offer more responsive drawing, but very low times may overload
+    // CPU and cause lag. Higher times may cause gaps in drawing.
     throttle: {type: 'int', default: 10}
   },
   init() {

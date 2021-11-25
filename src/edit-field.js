@@ -379,18 +379,26 @@ AFRAME.registerComponent('not-frustum-culled', {
 })
 
 // Quick and dirty one-way-bind. Updates to `source`'s `sourceComponent`
-// `sourceProperty` are propogated to `target`'s `component` `property`
+// `sourceProperty` are propogated to `target`'s `component` `property`.
 AFRAME.registerComponent('v-bind', {
   multiple: true,
   schema: {
+    // The entity containing the component property to be bound.
     target: {type: 'selector'},
+    // The component containing the property to be bound.
     component: {type: 'string'},
+    // The property to be bound.
     property: {type: 'string'},
 
+    // The entity containing the component property the target will bind to
     source: {type: 'selector'},
+    // The component containing the property the target will bind to
     sourceComponent: {type: 'string'},
+    // The property the target property will bind to
     sourceProperty: {type: 'string'},
 
+    // When set to true, the target property will be set to the same value 
+    // as the sourceProperty when it loads
     setOnLoad: {default: false},
   },
   init() {

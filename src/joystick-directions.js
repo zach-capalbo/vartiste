@@ -221,11 +221,15 @@ AFRAME.registerComponent('action-tooltips', {
   }
 })
 
-// Component attached to each hand which actually displays the [`action-tooltips`](#action-tooltips)
+// Component attached to each hand that displays the [`action-tooltips`](#action-tooltips).
+//
+// _Note: Using the [`vartiste-user-root`](#vartiste-user-root) component automatically attaches these to controllers.
 AFRAME.registerComponent('hand-action-tooltip', {
   dependencies: ['raycaster', 'action-tooltips'],
   schema: {
+    // The time between updates to tooltip text, in milliseconds.
     throttle: {default: 150},
+    // The displacement of the display component from the hand in three dimensions, as a vec3.
     position: {type: 'vec3', default: new THREE.Vector3(-0.006549004823841076, -0.11940164556557662, 0.10084264804121343)}
   },
   init() {
