@@ -17,29 +17,6 @@
   <!--Just include the toolkit js file-->
   <script src="/vartiste-toolkit.js"></script>
   <link rel="icon" href="/assets/favicon.png">
-  <script>
-  AFRAME.components['draw-canvas'].dependencies = ['draw-canvas-emitter']
-  AFRAME.registerComponent('draw-canvas-emitter', {
-    events: {
-      drawing: function(e) {
-        console.log("Drawing", e.detail)
-      }
-    },
-    init() {
-      VARTISTE.Util.whenComponentInitialized(this.el, 'draw-canvas', () => {
-        let drawCanvas = this.el.components['draw-canvas'];
-        let oldDraw = drawCanvas.drawUV
-        drawCanvas.drawUV = function(uv, opts) {
-          let {canvas} = opts;
-          if (canvas === null) canvas = this.data.canvas
-          let {x,y} = this.uvToPoint(uv, canvas)
-          this.el.emit('drawing', {x,y,uv})
-          oldDraw.call(this, uv, opts)
-        };
-      })
-    }
-  })
-  </script>
 </head>
 
 <body>
