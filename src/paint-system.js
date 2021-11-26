@@ -38,6 +38,7 @@ AFRAME.registerSystem('paint-system', {
     this.brush.changeColor(color)
     this.color3.set(color)
     this.el.emit('colorchanged', {color})
+    this.el.sceneEl.emit('updatemateriallighting', null)
   },
 
   // Sets the opacity for drawing

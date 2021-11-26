@@ -29,6 +29,8 @@ void main() {
   float height_pv = sampleBump(vec2(vUv.x, vUv.y + pixel.y));
   float height_mv = sampleBump(vec2(vUv.x, vUv.y - pixel.y));
 
+  float newAlpha = texture2D(u_input, vUv).a;
+
   float du = height_mu - height_pu;
   float dv = height_mv - height_pv;
 
@@ -38,6 +40,8 @@ void main() {
   vec = clamp(vec, vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0));
 
   vec.y = u_invert == 1 ? 1.0 - vec.y : vec.y;
+
+  vec3 baseVec = vec;
   /* vec.y = 1.0 - vec.y; */
 
   vec3 base = texture2D(u_base, vUv).xyz;
@@ -46,6 +50,9 @@ void main() {
   vec.x = clamp(vec.x + 0.5, 0.0, 1.0);
   vec.y = clamp(vec.y + 0.5, 0.0, 1.0);
   vec.z = max(vec.z, base.z);
+
+  // For flattening 
+  /* vec = mix(vec, baseVec, newAlpha); */
 
   gl_FragColor = vec4(vec, 1.0);
 }

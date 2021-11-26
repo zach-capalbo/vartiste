@@ -16,8 +16,6 @@ rm -r stats/
 
 rm -r assets/
 
-rm -r ai/
-
 rm *.vartiste-brushez
 
 npm set registry https://registry.npmjs.org

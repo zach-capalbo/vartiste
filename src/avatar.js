@@ -102,7 +102,7 @@ Util.registerComponentSystem('avatar', {
   },
   async setAvatarModel(model)
   {
-    this.scene = model.scene || model.scenes[0] || model
+    this.scene = model.scene || (model.scenes ? model.scenes[0] : null) || model
     this.animations = model.animations
     this.el.sceneEl.object3D.add(this.scene)
     this.scene.traverse(o => {
@@ -151,7 +151,14 @@ Util.registerComponentSystem('avatar', {
   },
   async startAudioMonitoring() {
     if (!Tone) {
-      Tone = await import('tone')
+      if (window.Tone)
+      {
+        Tone = window.Tone
+      }
+      else
+      {
+        Tone = await import('tone')
+      }
     }
 
     const meter = new Tone.Meter({normalRange: true});
@@ -378,6 +385,23 @@ AFRAME.registerComponent('remote-avatar', {
     {
       this._updatePose(this.poseData)
       this.poseData = null
+    }
+  }
+})
+
+AFRAME.registerComponent('spectator-avatar', {
+  events: {
+    'object3dset': function(e) {
+      this.setAvatar()
+    }
+  },
+  init() {
+    this.setAvatar()
+  },
+  setAvatar() {
+    if (this.el.getObject3D('mesh'))
+    {
+      this.el.sceneEl.systems.avatar.setAvatarModel(this.el.getObject3D('mesh'))
     }
   }
 })

@@ -9,6 +9,7 @@ Util.registerComponentSystem('primitive-constructs', {
   schema: {
     container: {type: 'selector', default: '#shape-root'},
     shareMaterial: {default: false},
+    allowFlat: {default: false},
   },
   init() {
     Pool.init(this)
@@ -275,7 +276,7 @@ AFRAME.registerComponent("show-current-color-or-material", {
       if (!this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
       {
         this.applyMaps({metalnessMap: null, metalness: null, roughnessMap: null, ambientOcclusionMap: null, normalMap: null})
-        this.el.setAttribute('material', {color: e.detail.color})
+        this.el.setAttribute('material', {color: e.detail.color, shader: this.el.sceneEl.systems['primitive-constructs'].data.allowFlat ? Compositor.el.getAttribute('material').shader : 'standard'})
       }
     }
     this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
@@ -292,8 +293,16 @@ AFRAME.registerComponent("show-current-color-or-material", {
     this.el.sceneEl.removeEventListener('materialmaskactivated', this.onMaterialMaskChanged)
   },
   applyMaps(maps) {
-    this.el.setAttribute('material', {color: '#FFFFFF', src: maps.src, shader: 'standard', metalnessMap: maps.metalnessMap, metalness: maps.metalness, roughnessMap: maps.roughnessMap, ambientOcclusionMap: maps.aoMap, normalMap: maps.normalMap})
-  }
+    if (maps && Object.values(maps).some(m => m))
+    {
+      this.el.setAttribute('material', {color: '#FFFFFF', src: maps.src, shader: 'standard', metalnessMap: maps.metalnessMap, metalness: maps.metalness, roughnessMap: maps.roughnessMap, ambientOcclusionMap: maps.aoMap, normalMap: maps.normalMap})
+    }
+    else if (this.el.getAttribute('material').src)
+    {
+      console.log("Removing material")
+      this.el.removeAttribute('material')
+    }
+  },
 })
 
 AFRAME.registerComponent('primitive-construct-placeholder', {
@@ -368,7 +377,14 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     if (!this.data.detached)
     {
       this.el.setAttribute('show-current-color-or-material', '')
-      this.el.setAttribute('material', `shader: standard`)
+      if (this.system.data.allowFlat)
+      {
+        this.el.setAttribute('material', `shader: ${Compositor.el.getAttribute('material').shader}`)
+      }
+      else
+      {
+        this.el.setAttribute('material', `shader: standard`)
+      }
     }
     this.el.classList.add('clickable')
     this.el.setAttribute('action-tooltips', 'b: Clone shape')

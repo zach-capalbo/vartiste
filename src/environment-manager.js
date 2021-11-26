@@ -42,6 +42,9 @@ Util.registerComponentSystem('environment-manager', {
       }
 
     },
+    updatemateriallighting: function(e) {
+      this.updateMaterials();
+    }
   },
   init() {
     this.state = STATE_COLOR
@@ -315,8 +318,7 @@ Util.registerComponentSystem('environment-manager', {
   toneMapping() {
     this.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
   },
-
-  tick(t,dt) {
+  updateMaterials() {
     if (this.state === STATE_HDRI)
     {
       for (let r of this.elementsToCheck)
@@ -331,6 +333,10 @@ Util.registerComponentSystem('environment-manager', {
         })
       }
     }
+  },
+
+  tick(t,dt) {
+    this.updateMaterials()
   }
 })
 
@@ -448,15 +454,5 @@ AFRAME.registerComponent('tonemapping-tooltip', {
   },
   setMapping(e) {
     this.el.setAttribute('tooltip__tonemapping', this.mappings.find(m => THREE[m] == e.detail))
-  }
-})
-
-AFRAME.registerComponent('no-doublesided-shadows', {
-  tick(t,dt) {
-    this.el.getObject3D('mesh').traverseVisible(m => {
-      if (m.material && m.material.side === THREE.DoubleSide) {
-        m.material.shadowSide = THREE.FrontSide
-      }
-    })
   }
 })

@@ -104,6 +104,8 @@ function parseToMarkdown(txt, {filename, sourceBaseURL})
 
       let schemaProps = schema.value.properties
 
+      if (!schemaProps) return;
+
       if (schemaProps.some(p => p.key.name === 'default' || (p.key.name === 'type' && !p.value.properties)))
       {
         schemaProps = [{key: {name:"[Single Property Component]"}, value: schema.value, loc: schema.loc}]

@@ -11,11 +11,16 @@ AFRAME.registerComponent('draw-canvas', {
     canvas: {type: 'selector'},
 
     // For VARTISTE use
-    compositor: {type: 'selector'}
-  },
+    compositor: {type: 'selector'},
 
+    emitDrawEvents: {default: false},
+  },
+  emits: {
+    drawing: {x: 0.0, y: 0.0, uv: null},
+  },
   init() {
     Pool.init(this)
+    Util.emitsEvents(this)
     // this.brush = new ProceduralBrush();
     let paintSystem = this.el.sceneEl.systems['paint-system']
     this.brush = paintSystem.brush
@@ -115,6 +120,14 @@ AFRAME.registerComponent('draw-canvas', {
     let {width, height} = canvas
 
     let {x,y} = this.uvToPoint(uv, canvas)
+
+    if (this.data.emitDrawEvents)
+    {
+      this.emitDetails.drawing.x = x
+      this.emitDetails.drawing.y = y
+      this.emitDetails.drawing.uv = uv
+      this.el.emit('drawing', this.emitDetails.drawing)
+    }
 
     let imageData
 

@@ -17,29 +17,6 @@
   <!--Just include the toolkit js file-->
   <script src="/vartiste-toolkit.js"></script>
   <link rel="icon" href="/assets/favicon.png">
-  <script>
-  AFRAME.components['draw-canvas'].dependencies = ['draw-canvas-emitter']
-  AFRAME.registerComponent('draw-canvas-emitter', {
-    events: {
-      drawing: function(e) {
-        console.log("Drawing", e.detail)
-      }
-    },
-    init() {
-      VARTISTE.Util.whenComponentInitialized(this.el, 'draw-canvas', () => {
-        let drawCanvas = this.el.components['draw-canvas'];
-        let oldDraw = drawCanvas.drawUV
-        drawCanvas.drawUV = function(uv, opts) {
-          let {canvas} = opts;
-          if (canvas === null) canvas = this.data.canvas
-          let {x,y} = this.uvToPoint(uv, canvas)
-          this.el.emit('drawing', {x,y,uv})
-          oldDraw.call(this, uv, opts)
-        };
-      })
-    }
-  })
-  </script>
 </head>
 
 <body>
@@ -153,7 +130,6 @@
               material="shader: standard; roughness: 0.3; metalness: 0.7" position="0 0.4 -0.4" radius="0.1"></a-sphere>
 
     <a-entity id="spectator-camera" camera="" position="2 1 1" rotation="0 80 0" camera-layers="layers: spectator"></a-entity>
-
 
     <a-box material="shader: standard; color: white" width="0.3" height="0.3" depth="0.3"
            position="-2.276 0.3 0.165"

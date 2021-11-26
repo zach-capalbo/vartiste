@@ -1084,3 +1084,20 @@ AFRAME.registerComponent('manipulator-weight', {
     }
   }
 })
+
+AFRAME.registerComponent('manipulator-console-debug', {
+  events: {
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+          let pos = this.el.getAttribute('position')
+          let rot = this.el.getAttribute('rotation')
+          let scale = this.el.getAttribute('scale')
+          console.log(`position="${pos.x} ${pos.y} ${pos.z}" rotation="${rot.x} ${rot.y} ${rot.z}" scale="${scale.x} ${scale.y} ${scale.z}"`)
+      }
+    }
+  },
+  init() {
+    this.el.classList.add('clickable')
+  }
+})

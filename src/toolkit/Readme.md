@@ -12,11 +12,14 @@ unpkg, specifying the version using _@version_:
 ```html
 <html>
 <head>
-  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.27.1/vartiste-toolkit.js"></script>
+  <script src="https://unpkg.com/aframe-vartiste-toolkit@1.32.0/vartiste-toolkit.js"></script>
 </head>
 ...
 </html>
 ```
+
+Latest Version:
+[![NPM Version](https://img.shields.io/npm/v/aframe-vartiste-toolkit.svg?style=for-the-badge&logo=npm&label=)](https://www.npmjs.com/package/aframe-vartiste-toolkit)
 
 Including the javascript file automatically registers the components and
 systems.

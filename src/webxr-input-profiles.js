@@ -1,6 +1,5 @@
 import {Util} from './util.js'
-import { fetchProfile, fetchProfileList, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
-window.fetchProfileList = fetchProfileList
+import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
 // Implements the [webxr-input-profiles
 // motion-controllers](https://github.com/immersive-web/webxr-input-profiles)
 // package. Use the [`webxr-motion-controller`](#webxr-motion-controller) as

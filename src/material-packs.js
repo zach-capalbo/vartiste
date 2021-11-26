@@ -626,7 +626,7 @@ AFRAME.registerComponent('material-pack', {
   },
   deactivateMask() {
     if (!this.el.querySelector('*[click-action="activateMask"]')) return;
-    
+
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].data.toggled = false
     this.el.querySelector('*[click-action="activateMask"]').components['toggle-button'].setToggle(false)
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
@@ -690,33 +690,44 @@ AFRAME.registerComponent('material-pack', {
       let repeat = this.data.repeat;
       let repeatXIncrement = Math.round(tmpCanvas.width / repeat);
       let repeatYIncrement = tmpCanvas.height / repeat;
+
+      tmpCtx.save()
       for (let y = 0; y < repeat; ++y)
       {
         for (let x = 0; x < repeat; ++x)
         {
+          tmpCtx.save()
+
+          if (this.data.flipY)
+          {
+            tmpCtx.translate(repeatXIncrement / 2.0, repeatYIncrement / 2.0)
+            tmpCtx.scale(1, -1)
+            tmpCtx.translate(-repeatXIncrement / 2.0, -repeatYIncrement / 2.0)
+          }
+
           if (this.data.rotations > 0)
           {
-            tmpCtx.save()
-            tmpCtx.translate(x * repeatXIncrement + repeatXIncrement / 2, y * repeatYIncrement + repeatYIncrement / 2)
+            tmpCtx.translate(repeatXIncrement / 2.0, repeatYIncrement / 2.0)
             tmpCtx.rotate(this.data.rotations * - Math.PI / 2)
-            if (this.data.rotations % 2 == 0)
-            {
-              tmpCtx.translate(-repeatXIncrement / 2, -repeatYIncrement / 2)
-              tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
-            }
-            else
-            {
-              tmpCtx.translate(-repeatYIncrement / 2, -repeatXIncrement / 2)
-              tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, y * repeatYIncrement, x * repeatXIncrement, repeatYIncrement, repeatXIncrement,)
-            }
-            tmpCtx.restore()
+            tmpCtx.translate(-repeatYIncrement / 2.0, -repeatXIncrement / 2.0)
+          }
+
+          if (this.data.rotations % 2 == 0)
+          {
+            tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height,
+                                            0, 0, repeatXIncrement, repeatYIncrement,)
           }
           else
           {
-            tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height, x * repeatXIncrement, y * repeatYIncrement, repeatXIncrement, repeatYIncrement,)
+            tmpCtx.drawImage(this.maps[map],0, 0, this.maps[map].width, this.maps[map].height,
+                                            0, 0, repeatYIncrement, repeatXIncrement,)
           }
+          tmpCtx.restore()
+          tmpCtx.translate(repeatXIncrement, 0)
         }
+        tmpCtx.translate(- repeat * repeatXIncrement, repeatYIncrement)
       }
+      tmpCtx.restore()
 
       if (!this.data[ENABLED_MAP[map]])
       {
@@ -734,16 +745,7 @@ AFRAME.registerComponent('material-pack', {
         }
       }
       let ctx = canvas.getContext('2d')
-      if (this.data.flipY)
-      {
-        ctx.scale(1, -1)
-        ctx.drawImage(tmpCanvas, 0, -canvas.height, canvas.width, canvas.height)
-        ctx.scale(1, -1)
-      }
-      else
-      {
-        ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
-      }
+      ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height)
       layer.touch()
       if (canvas.touch) canvas.touch()
       layer.needsUpdate = true
