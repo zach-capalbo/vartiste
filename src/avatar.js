@@ -4,9 +4,15 @@ import {CAMERA_LAYERS} from './layer-modes.js'
 
 var Tone;
 
+// System to display an avatar as for spectator / multiplayer
+//
+// Use the `setAvatarModel(model)` function to set an object as an avatar, or
+// use the [`spectator-avatar`](#spectator-avatar) component
 Util.registerComponentSystem('avatar', {
   schema: {
+    // VARTISTE internal use only
     importAvatar: {default: false},
+
     leftHandEl: {type: 'selector', default: '#left-hand'},
     rightHandEl: {type: 'selector', default: '#right-hand'},
     debug: {default: false},
@@ -229,12 +235,19 @@ Util.registerComponentSystem('avatar', {
 
         // console.log("Setting morph data", o, level, mappedLevel)
 
+        if (!(hubsData.name in o.morphTargetDictionary))
+        {
+          console.warn("No such morph target", hubsData.name, o)
+          return;
+        }
+
         o.morphTargetInfluences[o.morphTargetDictionary[hubsData.name]] = mappedLevel;
       })
     }
   }
 })
 
+// System to provide world relative information about the user's pose
 Util.registerComponentSystem('avatar-pose-export-provider', {
   schema: {
     throttle: {default: 100},
@@ -341,6 +354,8 @@ Util.registerComponentSystem('avatar-pose-export-provider', {
   }
 })
 
+// Displays a remote users's avatar. Uses data in the format supplied by
+// [avatar-pose-export-provider](#avatar-pose-export-provider)
 AFRAME.registerComponent('remote-avatar', {
   schema: {
     id: {type: 'string'},
@@ -389,6 +404,17 @@ AFRAME.registerComponent('remote-avatar', {
   }
 })
 
+// Sets this element's mesh object3D as the spectator avatar. This should have
+// a [Mozilla Hubs-style skeleton](https://github.com/MozillaReality/hubs-avatar-pipelines).
+// Also compatible with [Ready Player Me](https://readyplayer.me) half-body skeletons.
+//
+// Example:
+//
+//     <a-scene spectator-camera="camera: #spectator-camera; state: SPECTATOR_CAMERA">
+//         <a-entity vartiste-user-root></a-entity>
+//         <a-entity id="spectator-camera" position="0 1 -1.5" camera rotation="0 180 0"></a-entity>
+//         <a-entity gltf-model="bot-avatar.glb" specator-avatar></a-entity>
+//     </a-scene>
 AFRAME.registerComponent('spectator-avatar', {
   events: {
     'object3dset': function(e) {

@@ -1348,7 +1348,8 @@ AFRAME.registerComponent('eye-drop-tool', {
   }
 })
 
-// Spectator camera using pixel copying
+// Spectator camera using pixel copying. Avoid if possible. Much better to use
+// the [spectator-camera](#spectator-camera) system.
 AFRAME.registerComponent('slow-spectator-camera', {
   dependencies: ['grab-activate'],
   schema: {
@@ -1427,6 +1428,9 @@ const [
 // A-FRAME canvas
 // 3. `SPECTATOR_CAMERA` - Displays a view from a stationary camera. (Specified
 // by the `camera` property)
+//
+// See also: [spectator-avatar](#spectator-avatar) for using an avatar with the
+// spectator camera.
 Util.registerComponentSystem('spectator-camera', {
   schema: {
     // Current operating state
@@ -1435,7 +1439,8 @@ Util.registerComponentSystem('spectator-camera', {
     camera: {type: 'selector', default: '#camera'},
     // Use this to throttle spectator rendering for performance or other reasons
     throttle: {default: 20},
-    // If true, moves the mouse cursor to the spectator camera
+    // If true, moves the mouse cursor to the spectator camera to allow clicking
+    // through the camera
     spectatorCursor: {type: 'selector', default: "#mouse"},
   },
   events: {
