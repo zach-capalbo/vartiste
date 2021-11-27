@@ -66,6 +66,7 @@ async function addDocumentation(src)
   require('./pencil-tool')
   require('./brush-editor')
   require('./text')
+  require('./avatar')
 })(addDocumentation)
 
 Promise.all(contentPromises).then(a=> {
