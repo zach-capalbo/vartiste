@@ -845,9 +845,9 @@ Util.registerComponentSystem('shape-creation', {
   },
   autoCutShape() {
     this.startShape()
-    this.autoTrace({simplify: true})
+    this.autoTrace({simplify: true, simplificationFactor: 3})
   },
-  autoTrace({simplify = false, canvas} = {}) {
+  autoTrace({simplify = false, canvas, simplificationFactor = 1} = {}) {
     if (!canvas) canvas = Compositor.drawableCanvas
     Undo.pushCanvas(canvas)
     let tmpCanvas = Util.cloneCanvas(canvas)
@@ -860,7 +860,7 @@ Util.registerComponentSystem('shape-creation', {
     let brush = this.el.sceneEl.systems['paint-system'].brush
     if (simplify || (brush instanceof StretchBrush))
     {
-      simplified = simplify2d(simplified, 1)
+      simplified = simplify2d(simplified, simplificationFactor)
     }
     let ctx = canvas.getContext('2d')
     let tmpCtx = tmpCanvas.getContext('2d')
