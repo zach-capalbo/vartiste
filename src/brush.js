@@ -1149,8 +1149,20 @@ export class VectorBrush extends Brush {
   }
 }
 
-class FillShapeBrush extends VectorBrush{
-
+export class FillShapeBrush extends VectorBrush{
+  endDrawing(ctx) {
+    this.solo = false
+    ctx.beginPath()
+    ctx.globalAlpha = Math.sqrt(this.opacity)
+    ctx.fillStyle = "#" + this.color3.getHexString()
+    ctx.moveTo(this.shape.curves[0].v1.x, - this.shape.curves[0].v1.y)
+    for (let line of this.shape.curves)
+    {
+      ctx.lineTo(line.v2.x, - line.v2.y)
+    }
+    ctx.fill()
+    this.shape = undefined
+  }
 }
 
 class FloodFillBrush {
@@ -1161,4 +1173,4 @@ class FloodFillBrush {
   }
 }
 
-const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
+const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush, FillShapeBrush};
