@@ -466,5 +466,10 @@ Util.registerComponentSystem('cut-copy-system', {
   copy() {
     this.cutShape = false
     this.startCutout()
+  },
+  clear() {
+    Undo.pushCanvas(Compositor.component.activeLayer.canvas)
+    Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
+    Compositor.component.activeLayer.touch()
   }
 })

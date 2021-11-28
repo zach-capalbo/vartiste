@@ -32,7 +32,7 @@ SOFTWARE.
 
 const MarchingSquaresOpt = {};
 
-MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0, threshold = 0){
+MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0, threshold = 0, startingPoint = null){
     // Note: object should not be on the border of the array, since there is
     //       no padding of 1 pixel to handle points which touch edges
 
@@ -51,7 +51,7 @@ MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0
     }
 
     // find the starting point
-    const startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height, threshold);
+    startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height, threshold);
     if (null === startingPoint){
         console.log('[Warning] Marching Squares could not find an object in the given array');
         return [];
