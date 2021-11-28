@@ -1149,6 +1149,10 @@ export class VectorBrush extends Brush {
   }
 }
 
+class FillShapeBrush extends VectorBrush{
+
+}
+
 class FloodFillBrush {
   drawTo(ctx, x, y, opts = {}) {
     // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/

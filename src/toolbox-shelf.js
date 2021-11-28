@@ -3,6 +3,8 @@ import {Util} from './util.js'
 import Gif from 'gif.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
+import {VectorBrush} from './brush.js'
+import {Layer} from './layer.js'
 import {bumpCanvasToNormalCanvas} from './material-transformations.js'
 
 import './framework/SubdivisionModifier.js'
@@ -229,82 +231,8 @@ AFRAME.registerComponent('toolbox-shelf', {
     Compositor.component.layers.forEach(l => this.el.sceneEl.systems['settings-system'].download(l.canvas.toDataURL(), {extension: "png", suffix: i++}, l.id))
   },
   bumpCanvasToNormalCanvasAction() {
-    let shouldInvert = this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
-    let keepColor = this.el.querySelector('#color-normal-draw').getAttribute('toggle-button').toggled;
-    Undo.collect(() => {
-      Undo.pushCanvas(Compositor.drawableCanvas)
-      bumpCanvasToNormalCanvas(Compositor.drawableCanvas, {normalCanvas: Compositor.drawableCanvas, bumpScale: Math.pow(Compositor.component.activeLayer.opacity, 2.2), invert: shouldInvert, alphaOnly: keepColor})
-      Compositor.drawableCanvas.touch()
-      if (Compositor.component.activeLayer.mode === 'bumpMap')
-      {
-        Compositor.component.activeLayer.opacity = 1.0
-        Compositor.component.setLayerBlendMode(Compositor.component.activeLayer, 'normalMap')
-        Compositor.drawableCanvas.touch()
-      }
-    })
-  },
-  drawNormalAction() {
-    if (this.onEndDrawingCleanup)
-    {
-      this.onEndDrawingCleanup()
-      return;
-    }
-
-    let normalLayer = Compositor.component.layerforMap('normalMap');
-    let originalLayer = Compositor.component.activeLayer;
-
-    if (!this.normalProcessor)
-    {
-      this.normalProcessor = new CanvasShaderProcessor({source: require('./shaders/bump-to-normal-advanced.glsl')})
-    }
-    
-    if (Compositor.el.getAttribute('material').shader === 'flat')
-    {
-      Compositor.el.setAttribute('material', 'shader', 'matcap')
-    }
-
-    let activeLayer = Compositor.component.addLayer(Compositor.component.layers.indexOf(normalLayer));
-    let normalCtx = normalLayer.canvas.getContext('2d')
-    let activeCtx = activeLayer.canvas.getContext('2d')
-    let originalCtx = originalLayer.canvas.getContext('2d')
-
-    let onLayerChanged = () => {
-      this.onEndDrawingCleanup();
-    }
-
-    Compositor.el.addEventListener('layerupdated', onLayerChanged)
-
-    this.onEndDrawing = () => {
-      let shouldInvert = Compositor.component.data.flipNormal ? !this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled
-                                                              : this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
-      let keepColor = this.el.querySelector('#color-normal-draw').getAttribute('toggle-button').toggled;
-      Undo.stack.pop()
-      Undo.pushCanvas(normalLayer.canvas)
-      if (keepColor) {
-        originalCtx.drawImage(activeLayer.canvas, 0, 0)
-      }
-      this.normalProcessor.setInputCanvas(activeLayer.canvas)
-      this.normalProcessor.setUniform('u_bumpScale',  'uniform1f', Math.pow(activeLayer.opacity, 2.2))
-      this.normalProcessor.setUniform('u_invert', 'uniform1i', shouldInvert)
-      this.normalProcessor.setUniform('u_alphaOnly', 'uniform1i', (keepColor && !this.el.sceneEl.systems['paint-system'].brush.textured) ? 1 : 0)
-      this.normalProcessor.setCanvasAttribute('u_base', normalLayer.canvas)
-      this.normalProcessor.update()
-
-      normalCtx.globalCompositeOperation = 'source-over'
-      normalCtx.drawImage(this.normalProcessor.canvas, 0, 0)
-      activeCtx.clearRect(0, 0, activeLayer.canvas.width, activeLayer.canvas.height)
-      normalLayer.canvas.touch()
-      activeLayer.canvas.touch()
-    };
-    this.el.sceneEl.addEventListener('endcanvasdrawing', this.onEndDrawing);
-
-    this.onEndDrawingCleanup = () => {
-      Compositor.el.removeEventListener('layerupdated', onLayerChanged)
-      this.el.sceneEl.removeEventListener('endcanvasdrawing', this.onEndDrawing)
-      delete this.onEndDrawing
-      Compositor.component.deleteLayer(activeLayer)
-      delete this.onEndDrawingCleanup
-    };
+    console.warn("Deprecated call to toolbox bumpCanvasToNormalCanvasAction")
+    this.el.sceneEl.systems['normal-bump-drawing'].bumpCanvasToNormalCanvasAction()
   },
   defaultSpectatorAction() {
     // let camera = this.el.sceneEl.querySelector('#perspective-camera')
@@ -368,5 +296,175 @@ AFRAME.registerComponent('toolbox-click-action', {
     click: function(e) {
       this.el.sceneEl.querySelector('a-entity[toolbox-shelf]').components['toolbox-shelf'][this.data + "Action"]()
     }
+  }
+})
+
+AFRAME.registerComponent('advanced-drawing-shelf', {
+  events: {
+    click: function(e) {
+      if (e.target.hasAttribute('node-fx'))
+      {
+        this.el.sceneEl.querySelector('a-entity[toolbox-shelf]').components['toolbox-shelf'].applyFXAction(e.target.getAttribute('node-fx'))
+        return
+      }
+    }
+  }
+})
+
+Util.registerComponentSystem('normal-bump-drawing', {
+  schema: {
+    invert: {default: false},
+    keepColor: {default: true},
+  },
+  bumpCanvasToNormalCanvasAction() {
+    let shouldInvert = this.el.querySelector('#invert-normal-draw').getAttribute('toggle-button').toggled;
+    let keepColor = this.el.querySelector('#color-normal-draw').getAttribute('toggle-button').toggled;
+    Undo.collect(() => {
+      Undo.pushCanvas(Compositor.drawableCanvas)
+      bumpCanvasToNormalCanvas(Compositor.drawableCanvas, {normalCanvas: Compositor.drawableCanvas, bumpScale: Math.pow(Compositor.component.activeLayer.opacity, 2.2), invert: shouldInvert, alphaOnly: keepColor})
+      Compositor.drawableCanvas.touch()
+      if (Compositor.component.activeLayer.mode === 'bumpMap')
+      {
+        Compositor.component.activeLayer.opacity = 1.0
+        Compositor.component.setLayerBlendMode(Compositor.component.activeLayer, 'normalMap')
+        Compositor.drawableCanvas.touch()
+      }
+    })
+  },
+  drawNormal() {
+    if (this.onEndDrawingCleanup)
+    {
+      this.onEndDrawingCleanup()
+      return;
+    }
+
+    let normalLayer = Compositor.component.layerforMap('normalMap');
+    let originalLayer = Compositor.component.activeLayer;
+
+    if (!this.normalProcessor)
+    {
+      this.normalProcessor = new CanvasShaderProcessor({source: require('./shaders/bump-to-normal-advanced.glsl')})
+    }
+
+    if (Compositor.el.getAttribute('material').shader === 'flat')
+    {
+      Compositor.el.setAttribute('material', 'shader', 'matcap')
+    }
+
+    let activeLayer = Compositor.component.addLayer(Compositor.component.layers.indexOf(normalLayer));
+    let normalCtx = normalLayer.canvas.getContext('2d')
+    let activeCtx = activeLayer.canvas.getContext('2d')
+    let originalCtx = originalLayer.canvas.getContext('2d')
+
+    let onLayerChanged = () => {
+      this.onEndDrawingCleanup();
+    }
+
+    Compositor.el.addEventListener('layerupdated', onLayerChanged)
+
+    this.onEndDrawing = () => {
+      let shouldInvert = Compositor.component.data.flipNormal ? !this.data.invert
+                                                              : this.data.invert;
+      let keepColor = this.data.keepColor;
+      Undo.stack.pop()
+      Undo.pushCanvas(normalLayer.canvas)
+      if (keepColor) {
+        originalCtx.drawImage(activeLayer.canvas, 0, 0)
+      }
+      this.normalProcessor.setInputCanvas(activeLayer.canvas)
+      this.normalProcessor.setUniform('u_bumpScale',  'uniform1f', Math.pow(activeLayer.opacity, 2.2))
+      this.normalProcessor.setUniform('u_invert', 'uniform1i', shouldInvert)
+      this.normalProcessor.setUniform('u_alphaOnly', 'uniform1i', (keepColor && !this.el.sceneEl.systems['paint-system'].brush.textured) ? 1 : 0)
+      this.normalProcessor.setCanvasAttribute('u_base', normalLayer.canvas)
+      this.normalProcessor.update()
+
+      normalCtx.globalCompositeOperation = 'source-over'
+      normalCtx.drawImage(this.normalProcessor.canvas, 0, 0)
+      activeCtx.clearRect(0, 0, activeLayer.canvas.width, activeLayer.canvas.height)
+      normalLayer.canvas.touch()
+      activeLayer.canvas.touch()
+    };
+    this.el.sceneEl.addEventListener('endcanvasdrawing', this.onEndDrawing);
+
+    this.onEndDrawingCleanup = () => {
+      Compositor.el.removeEventListener('layerupdated', onLayerChanged)
+      this.el.sceneEl.removeEventListener('endcanvasdrawing', this.onEndDrawing)
+      delete this.onEndDrawing
+      Compositor.component.deleteLayer(activeLayer)
+      delete this.onEndDrawingCleanup
+    };
+  },
+})
+
+Util.registerComponentSystem('cut-copy-system', {
+  events: {
+    shapecreated: function(e) {
+      if (!this.cutoutStarted) return;
+
+      this.cutoutStarted = false
+      this.handleShape(e.detail)
+    }
+  },
+  init() {
+    this.cutBrush = new VectorBrush('vector')
+  },
+  handleShape(shape)
+  {
+    shape.autoClose = true
+    console.log("Handling shape", shape)
+
+    let canvas = Compositor.drawableCanvas
+    let baseLayer = Compositor.component.activeLayer
+    let layer = new Layer(canvas.width, canvas.height);
+
+    let dstCtx = layer.canvas.getContext('2d')
+
+    dstCtx.fillStyle = "#FFFFFF"
+    dstCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
+    for (let line of shape.curves)
+    {
+      dstCtx.lineTo(line.v2.x, - line.v2.y)
+    }
+    dstCtx.fill()
+
+    let oldOpacity = baseLayer.opacity
+    baseLayer.opacity = 1.0
+    baseLayer.draw(dstCtx, Compositor.component.currentFrame, {mode: 'source-in'})
+
+    if (this.cutShape)
+    {
+      let baseCtx = baseLayer.frame(Compositor.component.currentFrame).getContext('2d')
+      baseCtx.globalCompositeOperation = 'destination-out'
+      baseCtx.fillStyle = "#FFFFFF"
+      baseCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
+      for (let line of shape.curves)
+      {
+        baseCtx.lineTo(line.v2.x, - line.v2.y)
+      }
+      baseCtx.fill()
+    }
+
+    baseLayer.opacity = oldOpacity
+
+    Compositor.component.addLayer(Compositor.component.layers.indexOf(Compositor.component.activeLayer), {layer})
+
+    if (this.oldBrush)
+    {
+      this.el.sceneEl.systems['paint-system'].selectBrush(this.oldBrush)
+      this.oldBrush = null
+    }
+  },
+  startCutout() {
+    this.cutoutStarted = true
+    this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
+    this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  },
+  cut() {
+    this.cutShape = true
+    this.startCutout()
+  },
+  copy() {
+    this.cutShape = false
+    this.startCutout()
   }
 })
