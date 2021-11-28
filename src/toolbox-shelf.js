@@ -410,49 +410,60 @@ Util.registerComponentSystem('cut-copy-system', {
   },
   handleShape(shape)
   {
-    shape.autoClose = true
-    console.log("Handling shape", shape)
+    Undo.collect(() => {
+      this.cutoutStarted = false
+      shape.autoClose = true
+      console.log("Handling shape", shape)
 
-    let canvas = Compositor.drawableCanvas
-    let baseLayer = Compositor.component.activeLayer
-    let layer = new Layer(canvas.width, canvas.height);
+      let canvas = Compositor.drawableCanvas
+      let baseLayer = Compositor.component.activeLayer
+      let layer = new Layer(canvas.width, canvas.height);
 
-    let dstCtx = layer.canvas.getContext('2d')
+      let dstCtx = layer.canvas.getContext('2d')
 
-    dstCtx.fillStyle = "#FFFFFF"
-    dstCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
-    for (let line of shape.curves)
-    {
-      dstCtx.lineTo(line.v2.x, - line.v2.y)
-    }
-    dstCtx.fill()
-
-    let oldOpacity = baseLayer.opacity
-    baseLayer.opacity = 1.0
-    baseLayer.draw(dstCtx, Compositor.component.currentFrame, {mode: 'source-in'})
-
-    if (this.cutShape)
-    {
-      let baseCtx = baseLayer.frame(Compositor.component.currentFrame).getContext('2d')
-      baseCtx.globalCompositeOperation = 'destination-out'
-      baseCtx.fillStyle = "#FFFFFF"
-      baseCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
+      dstCtx.beginPath()
+      dstCtx.fillStyle = "#FFFFFFFF"
+      dstCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
       for (let line of shape.curves)
       {
-        baseCtx.lineTo(line.v2.x, - line.v2.y)
+        dstCtx.lineTo(line.v2.x, - line.v2.y)
       }
-      baseCtx.fill()
-    }
+      dstCtx.fill()
+      dstCtx.stroke()
 
-    baseLayer.opacity = oldOpacity
+      let oldOpacity = baseLayer.opacity
+      baseLayer.opacity = 1.0
+      baseLayer.draw(dstCtx, Compositor.component.currentFrame, {mode: 'source-in'})
 
-    Compositor.component.addLayer(Compositor.component.layers.indexOf(Compositor.component.activeLayer), {layer})
+      if (this.cutShape)
+      {
+        let baseCtx = baseLayer.frame(Compositor.component.currentFrame).getContext('2d')
+        let oldAlpha = baseCtx.globalAlpha
+        let oldOperation = baseCtx.globalCompositeOperation
+        baseCtx.globalAlpha = 1.0
+        baseCtx.globalCompositeOperation = 'destination-out'
+        baseCtx.fillStyle = "#FFFFFFFF"
+        baseCtx.beginPath()
+        baseCtx.moveTo(shape.curves[0].v1.x, - shape.curves[0].v1.y)
+        for (let line of shape.curves)
+        {
+          baseCtx.lineTo(line.v2.x, - line.v2.y)
+        }
+        baseCtx.fill()
+        baseCtx.globalAlpha = oldAlpha
+        baseCtx.globalCompositeOperation = oldOperation
+      }
 
-    if (this.oldBrush)
-    {
-      this.el.sceneEl.systems['paint-system'].selectBrush(this.oldBrush)
-      this.oldBrush = null
-    }
+      baseLayer.opacity = oldOpacity
+
+      Compositor.component.addLayer(Compositor.component.layers.indexOf(Compositor.component.activeLayer), {layer})
+
+      if (this.oldBrush)
+      {
+        this.el.sceneEl.systems['paint-system'].selectBrush(this.oldBrush)
+        this.oldBrush = null
+      }
+    })
   },
   startCutout() {
     this.cutoutStarted = true
