@@ -844,13 +844,14 @@ Util.registerComponentSystem('shape-creation', {
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
   },
   autoCutShape() {
+    this.startShape()
     this.autoTrace({simplify: true})
   },
   autoTrace({simplify = false, canvas} = {}) {
     if (!canvas) canvas = Compositor.drawableCanvas
     Undo.pushCanvas(canvas)
     let tmpCanvas = Util.cloneCanvas(canvas)
-    let points = MarchingSquaresOpt.getBlobOutlinePoints(canvas)
+    let points = MarchingSquaresOpt.getBlobOutlinePoints(canvas, undefined, undefined, 0)
     let simplified = []
     for (let i = 0; i < points.length; i += 2) {
       simplified.push({x: points[i], y: points[i + 1]})
@@ -859,7 +860,7 @@ Util.registerComponentSystem('shape-creation', {
     let brush = this.el.sceneEl.systems['paint-system'].brush
     if (simplify || (brush instanceof StretchBrush))
     {
-      simplified = simplify2d(simplified, '3')
+      simplified = simplify2d(simplified, 1)
     }
     let ctx = canvas.getContext('2d')
     let tmpCtx = tmpCanvas.getContext('2d')

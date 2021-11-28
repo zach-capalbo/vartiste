@@ -32,7 +32,7 @@ SOFTWARE.
 
 const MarchingSquaresOpt = {};
 
-MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0){
+MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0, threshold = 0){
     // Note: object should not be on the border of the array, since there is
     //       no padding of 1 pixel to handle points which touch edges
 
@@ -51,22 +51,22 @@ MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0
     }
 
     // find the starting point
-    const startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height);
+    const startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height, threshold);
     if (null === startingPoint){
         console.log('[Warning] Marching Squares could not find an object in the given array');
         return [];
     }
 
     // return list of w and h positions
-    return MarchingSquaresOpt.walkPerimeter(source_array, width, height, startingPoint.w, startingPoint.h);
+    return MarchingSquaresOpt.walkPerimeter(source_array, width, height, startingPoint.w, startingPoint.h, threshold);
 };
 
-MarchingSquaresOpt.getFirstNonTransparentPixelTopDown = function(source_array, width, height){
+MarchingSquaresOpt.getFirstNonTransparentPixelTopDown = function(source_array, width, height, threshold = 0){
     let idx;
     for(let h = 0|0; h < height; ++h){
         idx = (h * width)|0;
         for(let w = 0|0; w < width; ++w){
-            if(source_array[idx] > 0){
+            if(source_array[idx] > threshold){
                 return {w : w, h : h};
             }
             ++idx;
@@ -75,7 +75,7 @@ MarchingSquaresOpt.getFirstNonTransparentPixelTopDown = function(source_array, w
     return null;
 };
 
-MarchingSquaresOpt.walkPerimeter = function(source_array, width, height, start_w, start_h){
+MarchingSquaresOpt.walkPerimeter = function(source_array, width, height, start_w, start_h, threshold = 0){
 
     width = width|0;
     height = height|0;
@@ -98,7 +98,7 @@ MarchingSquaresOpt.walkPerimeter = function(source_array, width, height, start_w
     do {
         // evaluate our state, and set up our next direction
         idx = (h - 1) * width + (w - 1);
-        next_step = step_func(idx, source_array, width);
+        next_step = step_func(idx, source_array, width, threshold);
 
         // if our current point is within our image
         // add it to the list of points
@@ -126,15 +126,15 @@ MarchingSquaresOpt.walkPerimeter = function(source_array, width, height, start_w
 // represent our current state, and sets our current and
 // previous directions
 
-MarchingSquaresOpt.step = function(idx, source_array, width){
+MarchingSquaresOpt.step = function(idx, source_array, width, threshold = 0){
     //console.log('Sakri.MarchingSquaresOpt.step()');
     // Scan our 4 pixel area
     //Sakri.imageData = Sakri.MarchingSquaresOpt.sourceContext.getImageData(x-1, y-1, 2, 2).data;
 
-    const up_left = 0 < source_array[idx + 1],
-        up_right = 0 < source_array[idx + 2],
-        down_left = 0 < source_array[idx + width + 1],
-        down_right = 0 < source_array[idx + width + 2],
+    const up_left = 0 < source_array[idx + 1] - threshold,
+        up_right = 0 < source_array[idx + 2] - threshold,
+        down_left = 0 < source_array[idx + width + 1] - threshold,
+        down_right = 0 < source_array[idx + width + 2] - threshold,
         none = 0|0, up = 1|0, left = 2|0, down = 3|0, right = 4|0;
 
     // Determine which state we are in
