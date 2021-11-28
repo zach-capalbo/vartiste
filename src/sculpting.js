@@ -5,6 +5,8 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
 import {ExtrudeGeometry} from './framework/ExtrudeGeometry.js'
+import {MarchingSquaresOpt} from './framework/marching-squares.js'
+import simplify2d from 'simplify-2d'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -712,7 +714,14 @@ Util.registerComponentSystem('cutout-canvas', {
     this.cutoutStarted = true
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
-  }
+  },
+  autoCutShape() {
+    if (!this.el.sceneEl.systems['shape-creation'].shapeStarted)
+    {
+      this.startShapeCutout()
+    }
+    this.el.sceneEl.systems['shape-creation'].autoTrace({simplify: true})
+  },
 })
 
 Util.registerComponentSystem('vertex-editing', {
@@ -833,6 +842,41 @@ Util.registerComponentSystem('shape-creation', {
     this.shapeStarted = true
     this.oldBrush = this.el.sceneEl.systems['paint-system'].brush
     this.el.sceneEl.systems['paint-system'].selectBrush(this.cutBrush)
+  },
+  autoCutShape() {
+    this.autoTrace({simplify: true})
+  },
+  autoTrace({simplify = false, canvas} = {}) {
+    if (!canvas) canvas = Compositor.drawableCanvas
+    Undo.pushCanvas(canvas)
+    let tmpCanvas = Util.cloneCanvas(canvas)
+    let points = MarchingSquaresOpt.getBlobOutlinePoints(canvas)
+    let simplified = []
+    for (let i = 0; i < points.length; i += 2) {
+      simplified.push({x: points[i], y: points[i + 1]})
+    }
+
+    let brush = this.el.sceneEl.systems['paint-system'].brush
+    if (simplify || (brush instanceof StretchBrush))
+    {
+      simplified = simplify2d(simplified, '3')
+    }
+    let ctx = canvas.getContext('2d')
+    let tmpCtx = tmpCanvas.getContext('2d')
+    if (brush.startDrawing)
+    {
+      brush.startDrawing(ctx, points[0], points[1])
+    }
+    for (let i = 0; i < simplified.length; i ++) {
+      brush.drawOutline(tmpCtx, simplified[i].x, simplified[i].y)
+      brush.drawTo(ctx, simplified[i].x, simplified[i].y)
+    }
+    if (brush.endDrawing)
+    {
+      brush.endDrawing(ctx)
+    }
+
+    if (canvas.touch) canvas.touch()
   }
 })
 
