@@ -11,12 +11,12 @@ AFRAME.registerSystem('manipulator', {
     this.postManipulationCallbacks = []
     this.tick = AFRAME.utils.throttleTick(this.tick, 5000, this)
   },
-  postManipulation(el) {
+  postManipulation(el, localOffset) {
     if (!this.postManipulationCallbacks.length) return
 
     for (let c of this.postManipulationCallbacks)
     {
-      c(el)
+      c(el, localOffset)
     }
   },
   // Installs a constraint for the manipulating the given entity.  Multiple
@@ -554,7 +554,7 @@ AFRAME.registerComponent('manipulator', {
           c(t,dt, localOffset)
         }
       }
-      this.system.postManipulation(this.target)
+      this.system.postManipulation(this.target, localOffset)
     }
   }
 })
@@ -1101,3 +1101,64 @@ AFRAME.registerComponent('manipulator-console-debug', {
     this.el.classList.add('clickable')
   }
 })
+
+AFRAME.registerComponent('manipulator-snap-grid', {
+  schema: {
+    coordinates: {oneOf: ['local', 'global'], default: 'local'},
+    spacing: {type: 'vec3', default: {x: 1, y: 1, z: 1}},
+  },
+  init() {
+    this.constrainObject = this.constrainObject.bind(this)
+  },
+  play() {
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+  },
+  pause() {
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+  },
+  constrainObject(t, dt) {
+    let position = this.el.object3D.position
+    let isGlobal = this.data.coordinates === 'global'
+
+    if (isGlobal)
+    {
+      this.el.object3D.getWorldPosition(position)
+    }
+
+    position.x = Math.floor(position.x / this.data.spacing.x) * this.data.spacing.x
+    position.y = Math.floor(position.y / this.data.spacing.y) * this.data.spacing.y
+    position.z = Math.floor(position.z / this.data.spacing.z) * this.data.spacing.z
+
+    if (isGlobal)
+    {
+      this.el.object3D.parent.worldToLocal(position)
+    }
+  }
+})
+
+// AFRAME.registerComponent('manipulator-global-constraint-proxy', {
+//   init() {
+//     this.system = this.el.sceneEl.systems.manipulator
+//     this.postManipulation = this.postManipulation.bind(this)
+//   },
+//   play() {
+//     this.system.postManipulationCallbacks.push(this.postManipulation)
+//   },
+//   pause() {
+//     this.system.postManipulationCallbacks.splice(this.system.postManipulationCallbacks.indexOf(this.postManipulation), 1)
+//   },
+//   postManipulation(el, localOffset) {
+//     console.log("postManipulation", el)
+//     let t = this.el.sceneEl.time
+//     let dt = this.el.sceneEl.delta
+//
+//     if (this.el.manipulatorConstraint) this.el.manipulatorConstraint(t, dt)
+//     if (this.el.manipulatorConstraints) {
+//       for (let c of this.el.manipulatorConstraints)
+//       {
+//
+//         c(t,dt, localOffset)
+//       }
+//     }
+//   }
+// })
