@@ -224,6 +224,18 @@ AFRAME.registerComponent('object3d-view', {
   hide() {
     this.object.visible = !this.object.visible
   },
+  axesHelper() {
+    if (this.axisHelper)
+    {
+      this.axisHelper.parent.remove(this.axisHelper)
+      Util.recursiveDispose(this.axisHelper)
+      this.axisHelper = null
+      return
+    }
+    this.axisHelper = new THREE.AxesHelper()
+    this.axisHelper.userData.vartisteUI = true
+    this.object.add(this.axisHelper)
+  },
   reparent(newParent) {
 
     // TODO: Need to reparent view el, too

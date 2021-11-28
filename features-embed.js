@@ -25,5 +25,7 @@ const fs = require('fs')
 
   await Promise.all(promises);
 
+  features.mostRecentUpdate = new Date()
+
   fs.writeFileSync('C:/Users/Admin/scripts/vr/painting/src/static/features.yaml', YAML.dump(features, {lineWidth: -1}))
 })();

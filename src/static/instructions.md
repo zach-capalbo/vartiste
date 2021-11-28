@@ -41,7 +41,7 @@ Got a cool VARTISTE drawing? [Submit it here!](https://discord.gg/DZnQBE2grJ) I'
 
 There is a playlist of VARTISTE [tutorials on Youtube](https://www.youtube.com/playlist?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0)
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/videoseries?list=PLZewqT0OiTDR1k3xGuIe-dqZsmkshO8G0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Features
 

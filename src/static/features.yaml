@@ -54,6 +54,11 @@ sections:
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">This is really nice! I&#39;ve replaced the color picker in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> with OKHSL and it feels a lot nicer picking colors now! <a href="https://t.co/lK2cLsNhZ4">https://t.co/lK2cLsNhZ4</a> <a href="https://t.co/O6UZi8IY9N">pic.twitter.com/O6UZi8IY9N</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1436469767918006272?ref_src=twsrc%5Etfw">September 10, 2021</a></blockquote>
   - name: General Art
     features:
+      - name: 3D Tutorial
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1451324199239303172
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I put together a tutorial showing how to use some of the new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> content creation tools! It goes over 3D drawing, 3D shapes, and 3D cutouts, and how to put all the pieces together in VR.<a href="https://t.co/zbWFz3Wj4T">https://t.co/zbWFz3Wj4T</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1451324199239303172?ref_src=twsrc%5Etfw">October 21, 2021</a></blockquote>
       - name: Fancy Frame
         tweets:
           - url: https://twitter.com/zach_geek/status/1435549676535754754
@@ -142,6 +147,16 @@ sections:
           - url: https://twitter.com/zach_geek/status/1450225207457767435
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Alternately, bring the house into VR and apply decorations directly!<br>(House scan by <a href="https://twitter.com/AustinBeaulier?ref_src=twsrc%5Etfw">@AustinBeaulier</a>, retrieved from <a href="https://twitter.com/Sketchfab?ref_src=twsrc%5Etfw">@Sketchfab</a>) <a href="https://t.co/j0FaDNRpSJ">pic.twitter.com/j0FaDNRpSJ</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1450225207457767435?ref_src=twsrc%5Etfw">October 18, 2021</a></blockquote>
+      - name: VR Banjo
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1463649767079219201
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Most of the assets for this were created in <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> in VR with <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a><br><br>Heres&#39; how I made the banjo: <a href="https://t.co/dYYjngVzJh">pic.twitter.com/dYYjngVzJh</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1463649767079219201?ref_src=twsrc%5Etfw">November 24, 2021</a></blockquote>
+      - name: Painting a Duck
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1460427605912469505
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Painting a🦆in <a href="https://twitter.com/hashtag/VR?src=hash&amp;ref_src=twsrc%5Etfw">#VR</a> with <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> <a href="https://t.co/QhdaNq9TNT">pic.twitter.com/QhdaNq9TNT</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1460427605912469505?ref_src=twsrc%5Etfw">November 16, 2021</a></blockquote>
   - name: UI
     features:
       - name: UI Overhaul
@@ -194,6 +209,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1414361865556213760
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, controller settings now have their own dedicated shelf, and you can use levers to set motion smoothing on each controller exactly to your liking. Also, a brush size indicator and lever, in case you can&#39;t or don&#39;t want to use the joystick. <a href="https://t.co/BSICvlN8lS">pic.twitter.com/BSICvlN8lS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1414361865556213760?ref_src=twsrc%5Etfw">July 11, 2021</a></blockquote>
+      - name: Button Proxy
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1451372814045523979
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">One of the challenges of <a href="https://twitter.com/hashtag/WebXR?src=hash&amp;ref_src=twsrc%5Etfw">#WebXR</a> is that not all controllers will have all of the buttons you expect accessible through the browser. For <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>, I&#39;ve added a new button board that lets you simulate any of the standard buttons, even if they&#39;re not really on the controller. <a href="https://t.co/FWRdTil24r">pic.twitter.com/FWRdTil24r</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1451372814045523979?ref_src=twsrc%5Etfw">October 22, 2021</a></blockquote>
       - name: Import / Export
         tweets:
           - url: https://twitter.com/zach_geek/status/1437121338645307392
@@ -204,6 +224,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1436478687499669506
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Also, I&#39;ve switched the <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> UI to fully use <a href="https://twitter.com/hashtag/TroikaText?src=hash&amp;ref_src=twsrc%5Etfw">#TroikaText</a>, and finally be ready to support translations. <a href="https://t.co/RHpXdOvYLf">pic.twitter.com/RHpXdOvYLf</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1436478687499669506?ref_src=twsrc%5Etfw">September 10, 2021</a></blockquote>
+      - name: Grab Proxy
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1453524392944754689
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Small but useful new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature. A little grab proxy that lets you move the whole scene at once without moving the UI. <a href="https://t.co/XO0yeLFkeW">pic.twitter.com/XO0yeLFkeW</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1453524392944754689?ref_src=twsrc%5Etfw">October 28, 2021</a></blockquote>
   - name: Brushes
     features:
       - name: Cloud Brush Pack
@@ -255,6 +280,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1310003343054569474
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> Update brings a whole bunch of new texture stretch brushes! Opens up a lot of new possibilities to get artistic texture with VARTISTE. I&#39;ve added presets with the new brushes to the sketch and paint templates, too.<a href="https://twitter.com/hashtag/VRdrawing?src=hash&amp;ref_src=twsrc%5Etfw">#VRdrawing</a> <a href="https://twitter.com/hashtag/VRpainting?src=hash&amp;ref_src=twsrc%5Etfw">#VRpainting</a> <a href="https://t.co/FaYM1vR0JU">https://t.co/FaYM1vR0JU</a> <a href="https://t.co/sUEXKI8MWU">pic.twitter.com/sUEXKI8MWU</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1310003343054569474?ref_src=twsrc%5Etfw">September 26, 2020</a></blockquote>
+      - name: Pipe Brushes
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1452039854762643458
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Need some pipes in your <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> painting? You can make a pipe brush using the modular pipe pack from <a href="https://twitter.com/polyhaven?ref_src=twsrc%5Etfw">@polyhaven</a>. Drag-n-drop the zip file, snap a picture with the orthographic camera, add a new stretch brush with the brush editor. &amp; Voila! Pipes!<a href="https://t.co/3IE8sXrBVb">https://t.co/3IE8sXrBVb</a> <a href="https://t.co/L6CySzfbfG">pic.twitter.com/L6CySzfbfG</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1452039854762643458?ref_src=twsrc%5Etfw">October 23, 2021</a></blockquote>
   - name: Material Packs
     features:
       - name: Cork Material Demo
@@ -290,6 +320,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1447941343603531778
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I changed the interface for this slightly. You can now click the &quot;Set Layer Material&quot; button on the material pack directly. <a href="https://t.co/Ow5ZDaXZJH">pic.twitter.com/Ow5ZDaXZJH</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1447941343603531778?ref_src=twsrc%5Etfw">October 12, 2021</a></blockquote>
+      - name: More Material Packs
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1457089313183870978
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Added more brush packs and new, loadable material packs to <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a>. If anyone has any favorite CC0 textures, let me know and I can add them to a new loadable pack. <a href="https://t.co/s79EWdk1hj">pic.twitter.com/s79EWdk1hj</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1457089313183870978?ref_src=twsrc%5Etfw">November 6, 2021</a></blockquote>
   - name: Tools
     features:
       - name: Autorotate spray cans
@@ -387,6 +422,11 @@ sections:
           - url: https://twitter.com/zach_geek/status/1449917899238514689
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Adding &quot;weight&quot; to tools in <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> helps for smooth drawing. However, adding a weighted version of every tool would take up a lot of time and space. So instead here&#39;s a weight that you can clip to any tool. (&quot;B&quot; to clone it, and add even more weight) <a href="https://t.co/tnCATsmEI6">pic.twitter.com/tnCATsmEI6</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1449917899238514689?ref_src=twsrc%5Etfw">October 18, 2021</a></blockquote>
+      - name: Clip Plane Tool
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1459970877819342849
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">New <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> feature: Plane clipping tool. It will clip for the view, and for camera-based tools (like the spray can tool or the camera), however, it won&#39;t clip for raycast tools right now (like the controller trigger, or pencil tools). Also added scene &amp; UI quick grabbers. <a href="https://t.co/fwqNnXQGUH">pic.twitter.com/fwqNnXQGUH</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1459970877819342849?ref_src=twsrc%5Etfw">November 14, 2021</a></blockquote>
   - name: 3D Creation
     features:
       - name: 3D Drawing
@@ -689,3 +729,9 @@ sections:
           - url: https://twitter.com/zach_geek/status/1254407429959401472
             html: |
               <blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/hashtag/AI?src=hash&amp;ref_src=twsrc%5Etfw">#AI</a> Style transfer added to VARTISTE. Have the AI paint around your VR drawing in realtime! <a href="https://twitter.com/hashtag/VRart?src=hash&amp;ref_src=twsrc%5Etfw">#VRart</a> <a href="https://twitter.com/hashtag/AIart?src=hash&amp;ref_src=twsrc%5Etfw">#AIart</a> <a href="https://t.co/wSfapjliVI">https://t.co/wSfapjliVI</a> <a href="https://t.co/NXBiIUyOzm">pic.twitter.com/NXBiIUyOzm</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1254407429959401472?ref_src=twsrc%5Etfw">April 26, 2020</a></blockquote>
+      - name: Scene Inspector
+        tweets:
+          - url: https://twitter.com/zach_geek/status/1455683088172912640
+            html: |
+              <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Just in time for <a href="https://twitter.com/hashtag/nodevember?src=hash&amp;ref_src=twsrc%5Etfw">#nodevember</a>, I&#39;ve pushed the first pieces of a new <a href="https://twitter.com/hashtag/VARTISTE?src=hash&amp;ref_src=twsrc%5Etfw">#VARTISTE</a> node-based scene organizer. Right now you can re-parent objects, set position/rotation precisely, and hide things. But this is just the first step! More to come! <a href="https://t.co/tkeJZaUffS">pic.twitter.com/tkeJZaUffS</a></p>&mdash; Zach Capalbo (@zach_geek) <a href="https://twitter.com/zach_geek/status/1455683088172912640?ref_src=twsrc%5Etfw">November 2, 2021</a></blockquote>
+mostRecentUpdate: 2021-11-28T00:01:42.348Z
