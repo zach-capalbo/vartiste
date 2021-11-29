@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {Undo} from './undo.js'
 import shortid from 'shortid'
 
 Util.registerComponentSystem('scene-organizer', {
@@ -46,11 +47,12 @@ AFRAME.registerComponent('object3d-view', {
   events: {
     editfinished: function(e) {
       e.stopPropagation()
+      let values = this.getVectorEditors()
       switch (e.target) {
         case this.localPosition.x:
         case this.localPosition.y:
         case this.localPosition.z:
-          this.moveTarget(parseFloat(this.localPosition.x.getAttribute('text').value),parseFloat(this.localPosition.y.getAttribute('text').value), parseFloat(this.localPosition.z.getAttribute('text').value))
+          this.moveTarget(values.x, values.y, values.z)
           break
       }
     },
@@ -58,7 +60,7 @@ AFRAME.registerComponent('object3d-view', {
       e.stopPropagation()
       if (e.target.hasAttribute('object3d-view-action'))
       {
-        this[e.target.getAttribute('object3d-view-action')]()
+        this[e.target.getAttribute('object3d-view-action')](e)
       }
     },
     snappedtoinput: function(e) {
@@ -152,6 +154,15 @@ AFRAME.registerComponent('object3d-view', {
     editors.y.setAttribute('text', 'value', vector.y.toFixed(3))
     editors.z.setAttribute('text', 'value', vector.z.toFixed(3))
   },
+  getVectorEditors() {
+    let vectorReturn = this.pool("vectorReturn", THREE.Vector3);
+    vectorReturn.set(
+      parseFloat(this.localPosition.x.getAttribute('text').value),
+      parseFloat(this.localPosition.y.getAttribute('text').value),
+      parseFloat(this.localPosition.z.getAttribute('text').value)
+    );
+    return vectorReturn;
+  },
   loadChildren() {
     console.log('loading children', this.object.children)
     this.loadedChildren = true
@@ -235,6 +246,39 @@ AFRAME.registerComponent('object3d-view', {
     this.axisHelper = new THREE.AxesHelper()
     this.axisHelper.userData.vartisteUI = true
     this.object.add(this.axisHelper)
+  },
+  resetMatrix() {
+    Undo.collect(() => {
+      Undo.pushObjectMatrix(this.object)
+      this.object.matrix.decompose(this.object.position, this.object.quaternion, this.object.scale)
+      Util.callLater(() => this.onMoved())
+    })
+
+    Util.applyMatrix(this.object.matrix.identity(), this.object)
+    this.onMoved()
+  },
+  resetAxes(e) {
+    let axis = e.target.getAttribute('data-axis')
+    console.log("Resseting axis", axis)
+    let currentVector = this.getVectorEditors()
+
+    Undo.collect(() => {
+      Undo.pushObjectMatrix(this.object)
+      this.object.matrix.decompose(this.object.position, this.object.quaternion, this.object.scale)
+      Util.callLater(() => this.onMoved())
+    })
+
+    switch (this.data.activeProperty)
+    {
+      case 'localScale':
+        currentVector[axis] = 1.0;
+        break;
+      default:
+        currentVector[axis] = 0.0;
+        break;
+    }
+    this.moveTarget(currentVector.x, currentVector.y, currentVector.z)
+    this.onMoved()
   },
   reparent(newParent) {
 
