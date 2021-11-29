@@ -3,6 +3,7 @@ import Color from "color"
 import {CanvasShaderProcessor, UVStretcher} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {MarchingSquaresOpt} from './framework/marching-squares.js'
 
 export class Brush {
   static schema() {
@@ -1149,12 +1150,48 @@ export class VectorBrush extends Brush {
   }
 }
 
-class FloodFillBrush {
-  drawTo(ctx, x, y, opts = {}) {
-    // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
-    let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-    let data = new Uint32Array(imageData.data.buffer)
+export class FillShapeBrush extends VectorBrush{
+  endDrawing(ctx) {
+    this.solo = false
+    ctx.beginPath()
+    let oldGlobalAlpha = ctx.globalAlpha
+    ctx.globalAlpha = Math.sqrt(this.opacity)
+    ctx.fillStyle = "#" + this.color3.getHexString()
+    ctx.moveTo(this.shape.curves[0].v1.x, - this.shape.curves[0].v1.y)
+    for (let line of this.shape.curves)
+    {
+      ctx.lineTo(line.v2.x, - line.v2.y)
+    }
+    ctx.fill()
+    ctx.globalAlpha = oldGlobalAlpha
+    this.shape = undefined
   }
 }
 
-const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush};
+export class FloodFillBrush extends VectorBrush {
+  drawTo(ctx, x, y, opts = {}) {
+    // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
+    // let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+    // let data = new Uint32Array(imageData.data.buffer)
+    this.lastPos = {x, y}
+  }
+  endDrawing(ctx) {
+    let points = MarchingSquaresOpt.getBlobOutlinePoints(ctx.canvas, undefined, 0, 10)
+    console.log("Found", points)
+    this.solo = false
+    ctx.beginPath()
+    let oldGlobalAlpha = ctx.globalAlpha
+    ctx.globalAlpha = Math.sqrt(this.opacity)
+    ctx.fillStyle = "#" + this.color3.getHexString()
+    ctx.moveTo(points[0].x, points[0].y)
+    for (let p of points)
+    {
+      ctx.lineTo(p.x, p.y)
+    }
+    ctx.fill()
+    ctx.globalAlpha = oldGlobalAlpha
+    this.shape = undefined
+  }
+}
+
+const constructors = { Brush, ProceduralBrush, ImageBrush, LambdaBrush, FillBrush, NoiseBrush, FxBrush, LineBrush, StretchBrush, FillShapeBrush, FloodFillBrush};

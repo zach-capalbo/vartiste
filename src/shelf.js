@@ -204,3 +204,22 @@ AFRAME.registerComponent('shelf-content', {
     })
   }
 })
+
+AFRAME.registerComponent('hide-shelf-on-click', {
+  events: {
+    click: function(e) {
+      window.setTimeout(() => {
+        let el = this.el.parentEl
+        while (el)
+        {
+          if (el.hasAttribute('shelf'))
+          {
+            el.setAttribute('visible', 'false')
+            return;
+          }
+          el = el.parentEl
+        }
+      }, 200)
+    }
+  }
+})

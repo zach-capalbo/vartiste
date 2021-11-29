@@ -58,8 +58,8 @@ AFRAME.registerSystem('brush-system', {
       new Brush.FxBrush('nudge1', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
       new Brush.FxBrush('nudeg2', {baseBrush: new Brush.ImageBrush('', 'lines2', {width: 40, height: 20, connected: true}), dragRotate: true, type: 'nudge', previewSrc: require('./assets/nudge-brush.png')}),
       new Brush.ProceduralBrush('charcoal1', {connected: true, hqBlending: 'always', minMovement: 1.3, invertScale: true, tooltip: "Charcoal Stick"}),
-      new Brush.ProceduralBrush('charcoal2', {connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcoal Pencil"}),
       new Brush.LineBrush('straight', {tooltip: "Straight Line"}),
+      new Brush.FillShapeBrush('fill_shape', {tooltip: "Fill Shape", previewSrc: require('./assets/transition-masked.png')}),
       new Brush.StretchBrush('stretch_line_grunge1',"line_grunge1", {tooltip: "Grunge"}),
       new Brush.StretchBrush('stretch_lines1',"silky_textured", {tooltip: "Silky", textured: true}),
       new Brush.StretchBrush('stretch_leaf',"stamp_leaf1", {tooltip: "Leaf", textured: true}),
@@ -69,12 +69,15 @@ AFRAME.registerSystem('brush-system', {
       new Brush.StretchBrush('stretch_pencil',"pencil-stroke", {tooltip: "Pencil Stroke", textured: false}),
       new Brush.StretchBrush('stretch_pencil2',"pencil-line", {tooltip: "Crayon", textured: false, switchbackAngle: 90}),
       new Brush.StretchBrush('stretch_pencil3',"pencil2", {tooltip: "Pencil Line", textured: false, switchbackAngle: 90}),
+
+      // new Brush.FloodFillBrush('flood_fill', "flood"),
       // new Brush.FxBrush('oklab', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'oklab-blend', previewSrc: require('./assets/blur-preview.png')}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
     // new Brush.VectorBrush('vector'),
 
 
     // Hidden Brushes
+    new Brush.ProceduralBrush('charcoal2', {connected: true, hqBlending: 'always', minMovement: 0.5, tooltip: "Charcoal Pencil", hidden: true}),
     new Brush.ImageBrush('cloth1', 'cloth', {widht: 48, height: 48, drawEdges: true, tooltip: "Hatches", hidden: true}),
     ].filter(b => !b.invalid))
   },

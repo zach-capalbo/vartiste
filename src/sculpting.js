@@ -7,6 +7,7 @@ import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
 import {ExtrudeGeometry} from './framework/ExtrudeGeometry.js'
 import {MarchingSquaresOpt} from './framework/marching-squares.js'
 import simplify2d from 'simplify-2d'
+import simplify3d from 'simplify-3d'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -1082,7 +1083,7 @@ AFRAME.registerComponent('threed-line-tool', {
               if (dist < this.data.moveThreshold) return;
               dist = this.points[this.points.length - 1].l + dist
             }
-            this.points.push({
+            let newPoint = {
               x: tipWorld.x,
               y: tipWorld.y,
               z: tipWorld.z,
@@ -1091,7 +1092,18 @@ AFRAME.registerComponent('threed-line-tool', {
               fz: this.worldForward.z,
               l: dist,
               scale: 1
-            })
+            };
+            // if (this.points.length > 3)
+            // {
+            //   let l = this.points.length
+            //   let simplifiedPoints = simplify3d([this.points[l - 2], this.points[l - 1], newPoint], 0.01)
+            //   if (simplifiedPoints.length <= 2)
+            //   {
+            //     console.log("Discarding point")
+            //     this.points.pop()
+            //   }
+            // }
+            this.points.push(newPoint)
             this.createMesh(this.points)
           })
         }
