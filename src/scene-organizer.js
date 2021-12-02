@@ -556,3 +556,36 @@ AFRAME.registerComponent('organizer-lock-button', {
     this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
   }
 })
+
+AFRAME.registerComponent('organizer-grabbable-toggle', {
+  dependencies: ['toggle-button'],
+  events: {
+    stateadded: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      this.object3dview.targetEl.classList.add('clickable')
+    },
+    stateremoved: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      this.object3dview.targetEl.classList.remove('clickable')
+    },
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    Util.whenLoaded(this.el, () => {
+      console.log("Setting toggle", this.object3dview.targetEl.classList.contains('clickable'))
+      this.el.components['toggle-button'].setToggle(this.object3dview.targetEl.classList.contains('clickable'))
+    })
+  }
+})
+
+AFRAME.registerComponent('organizer-weight-lever', {
+  events: {
+    anglechanged: function(e) {
+      this.object3dview.targetEl.setAttribute('manipulator-weight', 'weight', Math.sqrt(e.detail.value))
+      this.object3dview.targetEl.setAttribute('manipulator-weight', 'type', 'slow')
+    }
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+  }
+})
