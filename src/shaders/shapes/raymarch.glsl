@@ -125,6 +125,7 @@ void main(){
         /* color.a = smoothstep(0.00001, 0.03, d); */
         color.a = 1.;
         color.rgb = color.rgb * color.a;
+        /* gl_FragDepth = gl_FragCoord.z - 1.0; */
   			break;
   		}
       else

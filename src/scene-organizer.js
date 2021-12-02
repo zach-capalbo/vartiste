@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import shortid from 'shortid'
+import {STATE_TOGGLED} from './icon-button.js'
 
 Util.registerComponentSystem('scene-organizer', {
   init() {
@@ -504,5 +505,54 @@ AFRAME.registerComponent("prop-movement-lever", {
       this.el.setAttribute('text', 'value', currentValue.toFixed(3))
       this.el.emit('editfinished')
     }
+  }
+})
+
+AFRAME.registerComponent('organizer-lock-button', {
+  dependencies: ['toggle-button'],
+  schema: {
+    axis: {type: 'string'},
+    prop: {default: 'lockedPositionAxes'}
+  },
+  events: {
+    stateadded: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      let axes = []
+      if (this.object3dview.targetEl.hasAttribute('manipulator-lock'))
+      {
+        axes = this.object3dview.targetEl.components['manipulator-lock'].data[this.data.prop]
+      }
+      if (axes.indexOf(this.data.axis) < 0)
+      {
+        axes.push(this.data.axis)
+      }
+      this.object3dview.targetEl.setAttribute('manipulator-lock', this.data.prop, axes)
+    },
+    stateremoved: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      let axes = []
+      if (this.object3dview.targetEl.hasAttribute('manipulator-lock'))
+      {
+        axes = this.object3dview.targetEl.components['manipulator-lock'].data[this.data.prop]
+      }
+      if (!axes) {
+        console.log("No axes", this.data.prop, this.object3dview.targetEl)
+      }
+      if (axes.indexOf(this.data.axis) >= 0)
+      {
+        axes.splice(axes.indexOf(this.data.axis), 1)
+      }
+      if (axes.length > 0)
+      {
+        this.object3dview.targetEl.setAttribute('manipulator-lock', this.data.prop, axes)
+      }
+      else
+      {
+        this.object3dview.targetEl.removeAttribute('manipulator-lock')
+      }
+    }
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
   }
 })

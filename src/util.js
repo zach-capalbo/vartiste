@@ -241,6 +241,20 @@ class VARTISTEUtil {
     }
   }
 
+  // Executes `fn` on all ancestors of `el`, stopping and returning the ancestor if `fn` returns `true`
+  traverseFindAncestor(el, fn)
+  {
+    el = el.parentEl
+    while (el)
+    {
+      if (fn(el))
+      {
+        return el;
+      }
+      el = el.parentEl
+    }
+  }
+
   // Uses THREE.Object3D.traverse to find the first object where `fn` returns
   // `true`
   traverseFind(obj3D, fn, {visibleOnly = false} = {})
