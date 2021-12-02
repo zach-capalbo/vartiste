@@ -1,8 +1,9 @@
 a-entity shelf="name: Constraints; pinnable: false; closable: true" grab-root=""
   a-entity shelf-content=""
     a-entity icon-row=""
-      a-entity icon-button="#asset-hand-right"
+      /a-entity icon-button="#asset-hand-right"
     a-entity icon-row=""
+      a-entity icon-row-text="Lock Transformations:"
     - for (let axis of ['x','y','z'])
       a-entity icon-row="mergeButtons: true"
         a-entity icon-button="" position="0 -9999999 0"

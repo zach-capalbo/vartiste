@@ -17,11 +17,11 @@ a-entity shelf-content=""
     a-entity icon-button="#asset-resize" tooltip="Scale" radio-button="target: #view-root; component: object3d-view; property: activeProperty; value: localScale"
     a-entity icon-button="#asset-rotate-orbit" tooltip="Rotation" radio-button="target: #view-root; component: object3d-view; property: activeProperty; value: localRotation"
     a-entity icon-button="#asset-undo" tooltip="Reset Local Transformation" object3d-view-action="resetMatrix"
-    a-entity icon-button="#asset-lock-outline" tooltip="Constraints" popup-button="popup: constraints-popup; deferred: true; autoScale: true" 
+    a-entity icon-button="#asset-lock-outline" tooltip="Constraints" popup-button="popup: constraints-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
   a-entity icon-row=""
     - for (let axis of ['x','y', 'z'])
       a-entity icon-row=""
-        a-entity.position class=axis edit-field="type: float" text=editfieldtext prop-movement-lever=""
+        a-entity.position class=axis edit-field="type: float" text=editfieldtext prop-movement-lever="" popup-button="offset: 0 0.0 0.7"
         a-entity icon-button="#asset-undo" position="2.25 0 0" tooltip="Reset" data-axis=axis object3d-view-action="resetAxes"
 
 
