@@ -547,14 +547,8 @@ AFRAME.registerComponent('organizer-lock-button', {
       {
         axes.splice(axes.indexOf(this.data.axis), 1)
       }
-      if (axes.length > 0)
-      {
+      
       viewTargetEl(this.object3dview).setAttribute('manipulator-lock', this.data.prop, axes)
-      }
-      else
-      {
-        viewTargetEl(this.object3dview).removeAttribute('manipulator-lock')
-      }
     }
   },
   init() {

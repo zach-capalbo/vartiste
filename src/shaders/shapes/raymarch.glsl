@@ -4,6 +4,7 @@ uniform mat4 projectionMatrix;
 in vec3 vOrigin;
 in vec3 vDirection;
 in vec3 lookDir;
+in vec4 oppositeSide;
 out vec4 color;
 uniform float threshold;
 uniform float steps;
@@ -105,8 +106,10 @@ void main(){
 	vec3 p = vOrigin + bounds.x * rayDir;
 	vec3 inc = 1.0 / abs( rayDir );
 	float delta = min( inc.x, min( inc.y, inc.z ) );
+	float nearDepth = 0.5 + 0.5 * oppositeSide.z / oppositeSide.w;
 	delta /= steps;
-	for ( float t = bounds.x; t < bounds.y; t += delta ) {
+	float t;
+	for ( t = bounds.x; t < bounds.y; t += delta ) {
 		float d = sample1( p + 0.5 );
     if (d > 0.0)
     {
@@ -136,5 +139,10 @@ void main(){
     }
 		p += rayDir * delta;
 	}
-	if ( color.a == 0.0 ) discard;
+	/* if ( color.a == 0.0 ) discard; */
+	gl_FragDepth = mix(gl_FragCoord.z, nearDepth, (t - bounds.x) / (bounds.x - bounds.y));
+	if (color.a == 0.0) {
+		/* gl_FragDepth = gl_FragCoord.z; */
+		color = vec4(1.0, 0.0, 1.0, 1.0);
+	}
 }
