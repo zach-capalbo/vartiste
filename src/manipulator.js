@@ -1162,3 +1162,65 @@ AFRAME.registerComponent('manipulator-snap-grid', {
 //     }
 //   }
 // })
+
+AFRAME.registerComponent('manipulator-lock', {
+  schema: {
+    // Which axes are explicitly locked by this constraint and can't be moved at all.
+    // Should be some combination of `x`, `y`, `z`
+    lockedPositionAxes: {type: 'array', default: []},
+    lockedRotationAxes: {type: 'array', default: []},
+    lockedScaleAxes: {type: 'array', default: []},
+  },
+  events: {
+    stateadded: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        this.setLocks()
+      }
+    }
+  },
+  init() {
+    this.lockedPosition = new THREE.Vector3;
+    this.lockedRotation = new THREE.Euler;
+    this.lockedScale = new THREE.Vector3;
+    this.constrainObject = this.constrainObject.bind(this)
+  },
+  play() {
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+  },
+  pause() {
+    console.log("Removing lock constraint")
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+  },
+  remove() {
+    this.pause()
+  },
+  constrainObject(t, dt) {
+    let obj = this.el.object3D
+    for (let axis of ['x', 'y', 'z'])
+    {
+      if (this.data.lockedPositionAxes.indexOf(axis) >= 0)
+      {
+        obj.position[axis] = this.lockedPosition[axis]
+      }
+      if (this.data.lockedRotationAxes.indexOf(axis) >= 0)
+      {
+        obj.rotation[axis] = this.lockedRotation[axis]
+      }
+      if (this.data.lockedScaleAxes.indexOf(axis) >= 0)
+      {
+        obj.scale[axis] = this.lockedScale[axis]
+      }
+    }
+  },
+  setLocks() {
+    let obj = this.el.object3D
+    this.lockedPosition.copy(obj.position)
+    this.lockedRotation.copy(obj.rotation)
+    this.lockedScale.copy(obj.scale)
+  },
+  update(oldData) {
+    if (!this.data.target) return;
+    this.setLocks()
+  },
+})

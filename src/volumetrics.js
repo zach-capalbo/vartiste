@@ -329,3 +329,69 @@ registerVolumeTool('brush', {
   },
   shape: 4,
 })
+
+AFRAME.registerComponent('instance-splat', {
+  init() {
+    let numPoints = 75
+    let delta = 1.0 / numPoints;
+    let sourceGeometry = new THREE.BoxGeometry(delta,delta,delta)
+    // let sourceGeometry = new THREE.PlaneGeometry(delta)//,delta,delta)
+    let material = new THREE.RawShaderMaterial({
+      fragmentShader: require('./shaders/shapes/instance-splat.glsl'),
+      vertexShader: require('./shaders/instance-pass-through.vert'),
+      // transparent: true,
+      // side: THREE.BackSide,
+      // side: THREE.DoubleSide,
+      // instancing: true
+    })
+    // material.instancing = true
+    let instancedMesh = new THREE.InstancedMesh(sourceGeometry, material, numPoints*numPoints*numPoints)
+    this.el.object3D.add(instancedMesh)
+    // this.el.setObject3D('mesh', instancedMesh)
+
+    let tmpMat = new THREE.Matrix4
+    let i = 0;
+    for (let x = 0; x < numPoints; ++x)
+    {
+      for (let y = 0; y < numPoints; ++y)
+      {
+        for (let z = 0; z < numPoints; ++z)
+        {
+          tmpMat.identity()
+          tmpMat.makeTranslation(delta * x, delta * y, delta * z)
+          instancedMesh.setMatrixAt(i++, tmpMat)
+        }
+      }
+    }
+    instancedMesh.instanceMatrix.needsUpdate = true
+    window.instancedMesh = instancedMesh
+  }
+})
+
+AFRAME.registerComponent('sdf-render-box', {
+  init() {
+    let texture = new THREE.Texture;
+    texture.image = this.el.sceneEl.querySelector('#asset-matcap')
+    texture.image.decode().then(() => texture.needsUpdate = true)
+    let sourceGeometry = new THREE.BoxGeometry(1,1,1)
+    let material = new THREE.RawShaderMaterial( {
+          glslVersion: THREE.GLSL3,
+					uniforms: {
+						matcap: { value: texture },
+						cameraPos: { value: new THREE.Vector3() },
+						threshold: { value: 0.01 },
+						steps: { value: 2000 }
+					},
+          fragmentShader: require('!!raw-loader!./shaders/shapes/raymarch.glsl').default,
+          vertexShader: require('!!raw-loader!./shaders/raymarch.vert').default,
+					side: THREE.BackSide,
+          // transparent: true,
+				} );
+    this.mesh = new THREE.Mesh(sourceGeometry, material)
+    this.el.object3D.add(this.mesh)
+    window.sdfMesh = this.mesh
+  },
+  tick(t, dt) {
+    Util.cameraObject3D().getWorldPosition(this.mesh.material.uniforms.cameraPos.value);
+  }
+})
