@@ -508,6 +508,11 @@ AFRAME.registerComponent("prop-movement-lever", {
   }
 })
 
+function viewTargetEl(object3dview)
+{
+  return object3dview.grabber.components['grab-redirector'].globe['redirect-grab']
+}
+
 AFRAME.registerComponent('organizer-lock-button', {
   dependencies: ['toggle-button'],
   schema: {
@@ -518,25 +523,25 @@ AFRAME.registerComponent('organizer-lock-button', {
     stateadded: function (e) {
       if (e.detail !== STATE_TOGGLED) return;
       let axes = []
-      if (this.object3dview.targetEl.hasAttribute('manipulator-lock'))
+      if (viewTargetEl(this.object3dview).hasAttribute('manipulator-lock'))
       {
-        axes = this.object3dview.targetEl.components['manipulator-lock'].data[this.data.prop]
+        axes = viewTargetEl(this.object3dview).components['manipulator-lock'].data[this.data.prop]
       }
       if (axes.indexOf(this.data.axis) < 0)
       {
         axes.push(this.data.axis)
       }
-      this.object3dview.targetEl.setAttribute('manipulator-lock', this.data.prop, axes)
+    viewTargetEl(this.object3dview).setAttribute('manipulator-lock', this.data.prop, axes)
     },
     stateremoved: function (e) {
       if (e.detail !== STATE_TOGGLED) return;
       let axes = []
-      if (this.object3dview.targetEl.hasAttribute('manipulator-lock'))
+      if (viewTargetEl(this.object3dview).hasAttribute('manipulator-lock'))
       {
-        axes = this.object3dview.targetEl.components['manipulator-lock'].data[this.data.prop]
+        axes = viewTargetEl(this.object3dview).components['manipulator-lock'].data[this.data.prop]
       }
       if (!axes) {
-        console.log("No axes", this.data.prop, this.object3dview.targetEl)
+        console.log("No axes", this.data.prop, viewTargetEl(this.object3dview))
       }
       if (axes.indexOf(this.data.axis) >= 0)
       {
@@ -544,12 +549,44 @@ AFRAME.registerComponent('organizer-lock-button', {
       }
       if (axes.length > 0)
       {
-        this.object3dview.targetEl.setAttribute('manipulator-lock', this.data.prop, axes)
+      viewTargetEl(this.object3dview).setAttribute('manipulator-lock', this.data.prop, axes)
       }
       else
       {
-        this.object3dview.targetEl.removeAttribute('manipulator-lock')
+        viewTargetEl(this.object3dview).removeAttribute('manipulator-lock')
       }
+    }
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+  }
+})
+
+AFRAME.registerComponent('organizer-grabbable-toggle', {
+  dependencies: ['toggle-button'],
+  events: {
+    stateadded: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      this.object3dview.targetEl.classList.add('clickable')
+    },
+    stateremoved: function (e) {
+      if (e.detail !== STATE_TOGGLED) return;
+      this.object3dview.targetEl.classList.remove('clickable')
+    },
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    Util.whenLoaded(this.el, () => {
+      this.el.components['toggle-button'].setToggle(this.object3dview.targetEl.classList.contains('clickable'))
+    })
+  }
+})
+
+AFRAME.registerComponent('organizer-weight-lever', {
+  events: {
+    anglechanged: function(e) {
+      viewTargetEl(this.object3dview).setAttribute('manipulator-weight', 'weight', Math.sqrt(e.detail.value))
+      viewTargetEl(this.object3dview).setAttribute('manipulator-weight', 'type', 'slow')
     }
   },
   init() {
