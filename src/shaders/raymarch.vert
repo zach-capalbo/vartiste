@@ -15,7 +15,7 @@ void main() {
   lookDir = (mvPosition).xyz - cameraPos;
   gl_Position = projectionMatrix * mvPosition;
 
-  vec4 oppositeSide4 = modelViewMatrix * vec4( position - 2.0 * normal, 1.0);
+  vec4 oppositeSide4 = modelViewMatrix * vec4( position - 1.0 * normal, 1.0);
   oppositeSide = projectionMatrix * oppositeSide4;
   /* gl_Position.z = oppositeSide.z;
   gl_Position.w = oppositeSide.w; */

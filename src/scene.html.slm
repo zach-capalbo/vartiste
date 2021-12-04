@@ -16,7 +16,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
     a-entity position="0 1.1 0.2" scale="0.05 0.05 0.05"
       /a-entity instance-splat=""
-      /a-entity sdf-render-box=""
+      /a-entity sdf-scene=""
 
 
     a-entity#environment-place gltf-model="#asset-place" visible="false" _ammo-body="type: static" _ammo-shape="type: mesh" shadow="receive: true; cast: false"
