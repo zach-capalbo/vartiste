@@ -141,6 +141,10 @@ AFRAME.registerComponent('edit-field', {
     else if (e.target.hasAttribute('text'))
     {
       let buttonValue = e.target.getAttribute('text').value
+      if (buttonValue === "")
+      {
+        buttonValue = " "
+      }
       let existingValue = this.el.getAttribute('text').value
       this.setValue(existingValue + buttonValue, {update: false})
     }
@@ -397,7 +401,7 @@ AFRAME.registerComponent('v-bind', {
     // The property the target property will bind to
     sourceProperty: {type: 'string'},
 
-    // When set to true, the target property will be set to the same value 
+    // When set to true, the target property will be set to the same value
     // as the sourceProperty when it loads
     setOnLoad: {default: false},
   },
