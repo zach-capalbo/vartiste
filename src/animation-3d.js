@@ -101,12 +101,16 @@ Util.registerComponentSystem('animation-3d', {
       Util.applyMatrix(obj.matrix, obj)
     }
   },
+  writeableTracks(obj) {
+    if (!(obj.uuid in this.objectMatrixTracks)) return null;
+
+    return Array.from(this.objectMatrixTracks[obj.uuid].entries())
+  },
   addTracksToUserData(obj) {
     obj.traverse(o => {
       if (o.uuid in this.objectMatrixTracks)
       {
-        o.userData.objectMatrixTracks = Array.from(this.objectMatrixTracks[o.uuid].entries())
-        console.log("Set User Data", o.userData)
+        o.userData.objectMatrixTracks = this.writeableTracks(o)
       }
     })
   },
@@ -124,7 +128,6 @@ Util.registerComponentSystem('animation-3d', {
   },
   readTracksFromUserData(obj) {
     obj.traverse(o => {
-      console.log("userData", o.userData)
       if (o.userData.objectMatrixTracks)
       {
         this.readObjectTracks(obj, o.userData.objectMatrixTracks, {recurse: false})
