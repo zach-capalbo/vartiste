@@ -774,7 +774,7 @@ AFRAME.registerComponent('six-dof-tool', {
         this.el.object3D.updateMatrixWorld()
         wm.copy(this.el.object3D.matrixWorld)
         this.el.object3D.parent.remove(this.el.object3D);
-        (document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D)
+        (document.querySelector('#activated-tool-root') || this.el.sceneEl).object3D.add(this.el.object3D)
         Util.applyMatrix(wm, this.el.object3D)
       }
     }

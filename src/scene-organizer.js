@@ -20,6 +20,13 @@ Util.registerComponentSystem('scene-organizer', {
     el.setAttribute('position', '0 1.1 0.2')
     el.setAttribute('scale', '0.05 0.05 0.05')
   },
+  launchToolsNode() {
+    let el = document.createElement('a-entity')
+    this.el.querySelector('#world-root').append(el)
+    el.setAttribute('object3d-view', 'target: #activated-tool-root')
+    el.setAttribute('position', '0 1.1 0.2')
+    el.setAttribute('scale', '0.05 0.05 0.05')
+  },
   inspect(what) {
     let view = this.viewFor(what)
 
@@ -71,6 +78,29 @@ AFRAME.registerComponent('object3d-view', {
       let snappedto = e.detail.snapped.parentEl;
 
       this.reparent(snappedto.components['object3d-view'].object)
+    },
+    dropdownoption: function(e) {
+      if (e.target.hasAttribute('data-new-object'))
+      {
+        e.stopPropagation()
+        // e.target.setAttribute('dropdown-button', 'selectedValue', '')
+        console.log("Adding new", e.detail)
+        if (e.detail === 'object')
+        {
+          let obj = new THREE.Object3D
+          obj.el = this.object.el
+          this.object.add(obj)
+        }
+        else if (e.detail === 'entity' && this.isEl)
+        {
+          let el = document.createElement('a-entity')
+          this.targetEl.append(el)
+        }
+        else if (e.detail === 'entity' && !this.isEl)
+        {
+          console.warn("NYI")
+        }
+      }
     }
   },
   init() {
@@ -79,7 +109,7 @@ AFRAME.registerComponent('object3d-view', {
     let rootId = "view-root-" + shortid.generate()
     this.el.id = rootId
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false; closeable: true')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3.5; height: 3; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
@@ -235,6 +265,17 @@ AFRAME.registerComponent('object3d-view', {
   },
   hide() {
     this.object.visible = !this.object.visible
+  },
+  keyframe() {
+    this.el.sceneEl.systems['animation-3d'].keyframe(this.object)
+  },
+  puppeteer(e) {
+    if (!this.targetEl) {
+      console.warn("Can't puppeteer obj3d yet")
+      return
+    }
+
+    this.targetEl.setAttribute('animation-3d-keyframed', 'puppeteering', e.target.is('toggled'))
   },
   axesHelper() {
     if (this.axisHelper)
@@ -547,7 +588,7 @@ AFRAME.registerComponent('organizer-lock-button', {
       {
         axes.splice(axes.indexOf(this.data.axis), 1)
       }
-      
+
       viewTargetEl(this.object3dview).setAttribute('manipulator-lock', this.data.prop, axes)
     }
   },
@@ -573,6 +614,31 @@ AFRAME.registerComponent('organizer-grabbable-toggle', {
     Util.whenLoaded(this.el, () => {
       this.el.components['toggle-button'].setToggle(this.object3dview.targetEl.classList.contains('clickable'))
     })
+  }
+})
+
+AFRAME.registerComponent('organizer-toggle-button', {
+  dependencies: ['icon-button'],
+  schema: {
+    component: {type: 'string'},
+    property: {type: 'string'},
+
+    autoSetAttribtue: {default: true},
+  },
+  init() {
+    let object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    this.targetEl = viewTargetEl(object3dview)
+  },
+  update(oldData) {
+    this.el.setAttribute('visible', !!this.targetEl)
+    if (this.targetEl)
+    {
+      if (!this.targetEl.hasAttribute(this.data.component))
+      {
+        this.targetEl.setAttribute(this.data.component, '')
+      }
+      this.el.setAttribute('toggle-button', {target: this.targetEl, component: this.data.component, property: this.data.property})
+    }
   }
 })
 

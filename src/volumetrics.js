@@ -21,7 +21,7 @@ Util.registerComponentSystem('volumetrics', {
     let canvas = document.createElement('canvas')
     canvas.width = Compositor.component.width * 2
     canvas.height = Compositor.component.height * 2
-    let proc = new CanvasShaderProcessor({source: require('./shaders/shapes/volumetrics.glsl'), vertexShader: require('./shaders/vertex-distance.vert'), canvas})
+    let proc = new CanvasShaderProcessor({source: require('./shaders/shapes/volumetrics.v3.glsl'), vertexShader: require('./shaders/vertex-distance.vert'), canvas})
     this.proc = proc
     this.initializeGeometry()
 
@@ -310,11 +310,14 @@ registerVolumeTool('cube', {
 
 registerVolumeTool('cone', {
   createTip() {
-    let tip = document.createElement('a-cone')
-    tip.setAttribute('height', this.data.baseSize * 3)
-    tip.setAttribute('radius-top', 0)
-    tip.setAttribute('radius-bottom', this.data.baseSize)
-    // tip.setAttribute('radius-bottom', this.data.baseSize * 0.1)
+    // let tip = document.createElement('a-cone')
+    // tip.setAttribute('height', this.data.baseSize * 3)
+    // tip.setAttribute('radius-top', 0)
+    // tip.setAttribute('radius-bottom', this.data.baseSize)
+
+    let tip = document.createElement('a-entity')
+    tip.setAttribute('sdf-brush-render-box', `boxSize: ${this.data.baseSize * 3} ${this.data.baseSize * 3} ${this.data.baseSize * 3}; u_size: 0.04`)
+    // tip.setAttribute('geometry', `width: ; height: ${this.data.baseSize * 3}; depth: ${this.data.baseSize * 3}`)
     return tip
   },
   shape: 3,
@@ -368,21 +371,31 @@ AFRAME.registerComponent('instance-splat', {
   }
 })
 
-AFRAME.registerComponent('sdf-render-box', {
+AFRAME.registerComponent('sdf-brush-render-box', {
+  schema: {
+    boxSize: {type: 'vec3', default: {x: 1, y: 1, z: 1}},
+    u_size: {default: 0.3}
+  },
   init() {
     let texture = new THREE.Texture;
     texture.image = this.el.sceneEl.querySelector('#asset-matcap')
     texture.image.decode().then(() => texture.needsUpdate = true)
-    let sourceGeometry = new THREE.BoxGeometry(1,1,1)
+    let sourceGeometry = new THREE.BoxGeometry(this.data.boxSize.x, this.data.boxSize.y, this.data.boxSize.z)
     let material = new THREE.RawShaderMaterial( {
           glslVersion: THREE.GLSL3,
 					uniforms: {
 						matcap: { value: texture },
 						cameraPos: { value: new THREE.Vector3() },
-						threshold: { value: 0.01 },
-						steps: { value: 2000 }
+						threshold: { value: 0.0 },
+						steps: { value: 2000 },
+
+            u_rand: {value: Math.random()},
+            u_onion: {value: false},
+            u_bumpy: {value: false},
+            u_bristles: {value: false},
+            u_size: {value: this.data.u_size},
 					},
-          fragmentShader: require('!!raw-loader!./shaders/shapes/raymarch.glsl').default,
+          fragmentShader: require('./shaders/shapes/brush-display.v3.glsl'),
           vertexShader: require('!!raw-loader!./shaders/raymarch.vert').default,
 					side: THREE.BackSide,
           // transparent: true,
@@ -391,7 +404,97 @@ AFRAME.registerComponent('sdf-render-box', {
     this.el.object3D.add(this.mesh)
     window.sdfMesh = this.mesh
   },
+  update(oldData) {
+    let uniforms = this.mesh.material.uniforms;
+    uniforms.u_size.value = this.data.u_size;
+  },
   tick(t, dt) {
-    Util.cameraObject3D().getWorldPosition(this.mesh.material.uniforms.cameraPos.value);
+    let uniforms = this.mesh.material.uniforms;
+    let volumetrics = this.el.sceneEl.systems.volumetrics
+    Util.cameraObject3D().getWorldPosition(uniforms.cameraPos.value);
+    uniforms.u_onion.value = volumetrics.data.onion
+    uniforms.u_bumpy.value = volumetrics.data.bumpy
+    uniforms.u_bristles.value = volumetrics.data.bristles
+
+    // this.mesh.material.uniforms.u_rand.value = Math.random()
   }
+})
+
+AFRAME.registerComponent('sdf-scene', {
+  schema: {
+    boxSize: {type: 'vec3', default: {x: 1, y: 1, z: 1}},
+    u_size: {default: 0.3}
+  },
+  init() {
+    let texture = new THREE.Texture;
+    texture.image = this.el.sceneEl.querySelector('#asset-matcap')
+    texture.image.decode().then(() => texture.needsUpdate = true)
+    let sourceGeometry = new THREE.BoxGeometry(this.data.boxSize.x, this.data.boxSize.y, this.data.boxSize.z)
+
+    const numShapes = 50
+    this.shapeUniforms = []
+    for (let i = 0; i < numShapes; ++i)
+    {
+      this.shapeUniforms[i] = {
+        matrix: new THREE.Matrix4().makeTranslation(0.2, 0, 0).multiply(new THREE.Matrix4().makeScale(0.5, 0.5, 0.5)),
+        color: new THREE.Color("red"),
+        shape: 1,
+        op: 5,
+        size: new THREE.Vector4(0.3, 0.3, 0.3, 0.05),
+        last: 1,
+      };
+    }
+
+    let material = new THREE.RawShaderMaterial( {
+          glslVersion: THREE.GLSL3,
+					uniforms: {
+						matcap: { value: texture },
+						cameraPos: { value: new THREE.Vector3() },
+						threshold: { value: 0.0 },
+						steps: { value: 2000 },
+
+            u_rand: {value: Math.random()},
+            u_onion: {value: false},
+            u_bumpy: {value: false},
+            u_bristles: {value: false},
+            u_size: {value: this.data.u_size},
+
+            u_scene: {value: this.shapeUniforms},
+					},
+          fragmentShader: require('./shaders/shapes/sdf-scene.v3.glsl'),
+          vertexShader: require('!!raw-loader!./shaders/raymarch.vert').default,
+					side: THREE.BackSide,
+          // transparent: true,
+				} );
+    this.mesh = new THREE.Mesh(sourceGeometry, material)
+    this.el.object3D.add(this.mesh)
+    window.sdfMesh = this.mesh
+  },
+  update(oldData) {
+    let uniforms = this.mesh.material.uniforms;
+    uniforms.u_size.value = this.data.u_size;
+  },
+  tick(t, dt) {
+    let uniforms = this.mesh.material.uniforms;
+    let volumetrics = this.el.sceneEl.systems.volumetrics
+    Util.cameraObject3D().getWorldPosition(uniforms.cameraPos.value);
+    uniforms.u_onion.value = volumetrics.data.onion
+    uniforms.u_bumpy.value = volumetrics.data.bumpy
+    uniforms.u_bristles.value = volumetrics.data.bristles
+
+    // this.mesh.material.uniforms.u_rand.value = Math.random()
+  }
+})
+
+AFRAME.registerComponent('sdf-join-op', {
+  schema: {
+    type: {oneOf: ['union', 'subtraction', 'intersection', 'smoothUnion', 'smoothSubtraction', 'smoothIntersection']}
+  }
+})
+
+AFRAME.registerComponent('sdf-shape', {
+  schema: {
+    shape: {oneOf: ['sphere', 'boundingBox', 'box', 'cone']},
+    op: {oneOf: ['union', 'subtraction', 'intersection', 'smoothUnion', 'smoothSubtraction', 'smoothIntersection']},
+  },
 })

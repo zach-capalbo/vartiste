@@ -47,6 +47,7 @@ Util.registerComponentSystem('primitive-constructs', {
       button = el.components.frame.addButton('#asset-newspaper-variant-outline')
       button.setAttribute('tooltip', 'Scene Organizer')
       button.addEventListener('click', () => {
+        console.log("Inspecting", el)
         this.el.sceneEl.systems['scene-organizer'].inspect(el)
       })
       this.el.sceneEl.emit('refreshobjects')

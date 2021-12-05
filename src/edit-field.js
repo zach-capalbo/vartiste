@@ -202,7 +202,7 @@ AFRAME.registerComponent('edit-field', {
 // Creates or uses an [`icon-button`](#icon-button), which when clicked will create a popup at
 // the location of the button
 AFRAME.registerComponent('popup-button', {
-  dependencies: ["text"],
+  // dependencies: ["text"],
   schema: {
     tooltip: {type: 'string'},
     icon: {type: 'string', default: '#asset-lead-pencil'},
@@ -462,6 +462,9 @@ AFRAME.registerComponent('dropdown-button', {
     popuplaunched: function(e) {
       this.populatePopup()
     }
+  },
+  emits: {
+    dropdownoption: {}
   },
   init() {
     this.el.setAttribute('popup-button', 'popup: dropdown-popup')

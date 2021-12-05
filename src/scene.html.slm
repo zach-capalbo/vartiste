@@ -16,7 +16,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
     /a-entity position="-1.1 0 -2.5" scale="0.3 0.3 0.3"
     a-entity position="0 1.1 0.2" scale="0.05 0.05 0.05"
       /a-entity instance-splat=""
-      /a-entity sdf-render-box=""
+      /a-entity sdf-scene=""
 
 
     a-entity#environment-place gltf-model="#asset-place" visible="false" _ammo-body="type: static" _ammo-shape="type: mesh" shadow="receive: true; cast: false"
@@ -44,6 +44,8 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
     a-entity light="type: directional; color: #fff; intensity: 1.26" position="0 -0.68 -0.45"
 
     a-entity#logo geometry="primitive: plane; width: 1023; height: 352" material="shader: flat; fog: false; src:#asset-vartiste; transparent: true; opacity: 0.2" scale="0.08 0.08 1" position="0 100 -150"
+
+    a-entity#activated-tool-root
 
     a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.21243601320796098"
       a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; _name: UI Toggle Shelf"

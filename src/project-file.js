@@ -29,6 +29,7 @@ class ProjectFile {
     if (!('userBrushes' in obj)) obj.userBrushes = []
     if (!('primitiveConstructs' in obj)) obj.primitiveConstructs = []
     if (!('shapeWands' in obj)) obj.shapeWands = []
+    if (!('tracksForElId' in obj)) obj.tracksForElId = {}
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -78,6 +79,7 @@ class ProjectFile {
     let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
     settings.setProjectName(obj.projectName)
     settings.el.setAttribute('settings-system', {'exportJPEG': obj.exportJPEG})
+    let animation3d = Compositor.el.sceneEl.systems['animation-3d']
 
     if (document.querySelector('#project-palette')) {
       document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
@@ -168,6 +170,7 @@ class ProjectFile {
         newEl.object3D.copy(objectLoader.parse(refJson))
         newEl.setObject3D('mesh', newEl.object3D.children[0])
         setupGlbReferenceEntity(newEl)
+        if (animation3d) animation3d.readTracksFromUserData(newEl.object3D)
       }
 
       let glbLoader = new THREE.GLTFLoader()
@@ -181,6 +184,7 @@ class ProjectFile {
         newEl.object3D.copy(model.scenes[0].children[0])
         newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
         setupGlbReferenceEntity(newEl)
+        if (animation3d) animation3d.readTracksFromUserData(newEl.object3D)
       }
     }
 
@@ -227,6 +231,7 @@ class ProjectFile {
       await Util.whenLoaded(el)
       Util.positionObject3DAtTarget(el.object3D, positioner)
       el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+      if (animation3d) animation3d.readObjectTracks(el.object3D, construct.track)
 
       // console.log("Loaded construct")//, mesh)
     }
@@ -285,22 +290,38 @@ class ProjectFile {
       let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
       settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
     }
+
+    for (let [id, tracks] of Object.entries(obj.tracksForElId))
+    {
+      console.log("Entries", id, tracks)
+      if (!tracks) continue;
+      let el = document.getElementById(id)
+      if (!el) {
+        console.warn("Could not find id for saved tracks", id)
+        continue
+      }
+      if (animation3d) animation3d.readObjectTracks(el.object3D, tracks)
+    }
   }
 
   async _save() {
     let obj = {}
     obj._fileVersion = FILE_VERSION
     let settings = document.querySelector('a-scene').systems['settings-system']
+    let animation3d = document.querySelector('a-scene').systems['animation-3d']
     obj.projectName = settings.projectName
     obj.exportJPEG = settings.data.exportJPEG
     Object.assign(obj, this.saveCompositor())
 
-    let canvasRoot = document.querySelector('#cavans-root')
+    obj.tracksForElId = {}
+
+    let canvasRoot = document.querySelector('#canvas-root')
     let originalCanvasMatrix
     if (canvasRoot)
     {
-      originalCanvasMatrix = new THREE.Matrix4().copy(canvasRoot.matrix)
-      Util.applyMatrix(canvasRoot.matrix.identity(), canvasRoot)
+      // originalCanvasMatrix = new THREE.Matrix4().copy(canvasRoot.object3D.matrix)
+      // Util.applyMatrix(canvasRoot.matrix.identity(), canvasRoot.object3D)
+      if (animation3d) obj.tracksForElId['canvas-root'] = animation3d.writeableTracks(canvasRoot.object3D)
     }
 
     let compositionView = document.getElementById('composition-view')
@@ -309,6 +330,7 @@ class ProjectFile {
       let glbMesh = compositionView.getObject3D('mesh')
       if (glbMesh)
       {
+        if (animation3d) animation3d.addTracksToUserData(glbMesh)
         let material = new THREE.MeshBasicMaterial()
         glbMesh.traverse(o => {
           if (o.type == "Mesh") { o.material = material}
@@ -320,7 +342,10 @@ class ProjectFile {
         })
         obj.glb = base64ArrayBuffer(glb)
       }
+      if (animation3d) obj.tracksForElId['composition-view'] = animation3d.writeableTracks(compositionView.object3D)
     }
+
+
 
     obj.palette = document.querySelector('#project-palette') ? document.querySelector('#project-palette').getAttribute('palette').colors
                                                              : []
@@ -347,6 +372,11 @@ class ProjectFile {
 
     for (let el of referenceEls)
     {
+      if (animation3d)
+      {
+        animation3d.addTracksToUserData(el.object3D)
+      }
+
       try {
         let glb = await settings.getExportableGLB(el.object3D)
         let buffer = base64ArrayBuffer(glb)
@@ -369,6 +399,11 @@ class ProjectFile {
       mesh.updateMatrixWorld()
       console.log("Exporting construct")//, mesh)
 
+      if (animation3d)
+      {
+        animation3d.addTracksToUserData(el.object3D)
+      }
+
       const useGLB = false
       let blankMaterial = new THREE.MeshBasicMaterial()
       if (useGLB)
@@ -379,7 +414,11 @@ class ProjectFile {
         //   exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true})
         // })
         let buffer = base64ArrayBuffer(glb)
-        obj.primitiveConstructs.push({glb: buffer, matrix: mesh.matrixWorld.elements})
+        obj.primitiveConstructs.push({
+          glb: buffer,
+          matrix: mesh.matrixWorld.elements,
+          track: animation3d ? animation3d.writeableTracks(el.object3D) : null
+        })
       }
       else
       {
@@ -392,7 +431,11 @@ class ProjectFile {
         newMesh.copy(mesh)
         constructObjRoot.add(newMesh)
 
-        obj.primitiveConstructs.push({uuid: newMesh.uuid, matrix: mesh.matrixWorld.elements})
+        obj.primitiveConstructs.push({
+          uuid: newMesh.uuid,
+          matrix: mesh.matrixWorld.elements,
+          track: animation3d ?animation3d.writeableTracks(el.object3D) : null
+        })
       }
     }
 
@@ -516,7 +559,7 @@ class ProjectFile {
 
     if (canvasRoot)
     {
-      Util.applyMatrix(originalCanvasMatrix, canvasRoot)
+      // Util.applyMatrix(originalCanvasMatrix, canvasRoot)
     }
 
     return obj
