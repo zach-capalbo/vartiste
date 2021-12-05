@@ -140,6 +140,7 @@ Util.registerComponentSystem('animation-3d', {
 AFRAME.registerComponent('animation-3d-keyframed', {
   schema: {
     puppeteering: {default: false},
+    enabled: {default: true}
   },
   init() {
     this.system = this.el.sceneEl.systems['animation-3d']
@@ -152,6 +153,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     Compositor.el.removeEventListener('framechanged', this.animate)
   },
   animate() {
+    if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
 
     this.el.object3D.traverseVisible(o => {
@@ -162,9 +164,9 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     // this.animate()
   },
   tock (t, dt) {
-    if (this.data.puppeteering)
+    if (this.data.puppeteering && this.el.is('grabbed'))
     {
-
+      this.system.keyframe(this.el.object3D)
     }
   }
 })
