@@ -71,6 +71,29 @@ AFRAME.registerComponent('object3d-view', {
       let snappedto = e.detail.snapped.parentEl;
 
       this.reparent(snappedto.components['object3d-view'].object)
+    },
+    dropdownoption: function(e) {
+      if (e.target.hasAttribute('data-new-object'))
+      {
+        e.stopPropagation()
+        // e.target.setAttribute('dropdown-button', 'selectedValue', '')
+        console.log("Adding new", e.detail)
+        if (e.detail === 'object')
+        {
+          let obj = new THREE.Object3D
+          obj.el = this.object.el
+          this.object.add(obj)
+        }
+        else if (e.detail === 'entity' && this.isEl)
+        {
+          let el = document.createElement('a-entity')
+          this.targetEl.append(el)
+        }
+        else if (e.detail === 'entity' && !this.isEl)
+        {
+          console.warn("NYI")
+        }
+      }
     }
   },
   init() {
@@ -79,7 +102,7 @@ AFRAME.registerComponent('object3d-view', {
     let rootId = "view-root-" + shortid.generate()
     this.el.id = rootId
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3; pinnable: false; closeable: true')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3.5; height: 3; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
@@ -235,6 +258,9 @@ AFRAME.registerComponent('object3d-view', {
   },
   hide() {
     this.object.visible = !this.object.visible
+  },
+  keyframe() {
+    this.el.sceneEl.systems['animation-3d'].keyframe(this.object)
   },
   axesHelper() {
     if (this.axisHelper)
@@ -547,7 +573,7 @@ AFRAME.registerComponent('organizer-lock-button', {
       {
         axes.splice(axes.indexOf(this.data.axis), 1)
       }
-      
+
       viewTargetEl(this.object3dview).setAttribute('manipulator-lock', this.data.prop, axes)
     }
   },

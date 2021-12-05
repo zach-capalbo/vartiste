@@ -1,0 +1,6 @@
+a-entity shelf="name: 3D Animation; pinnable: false; closable: true" grab-root=""
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity icon-button="#asset-plus-box-outline" tooltip="Insert Keyframe" object3d-view-action="keyframe"
+      /a-entity icon-button="#asset-hand-right" tooltip="Puppeteer"
+      a-entity icon-button="#asset-oven" tooltip="Bake Animation"

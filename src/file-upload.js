@@ -1083,8 +1083,8 @@ AFRAME.registerComponent('reference-glb', {
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
     this.el.setAttribute('action-tooltips', 'b: Clone')
     Util.whenComponentInitialized(this.el, 'frame', () => {
-      let decomposeButton = this.el.components['frame'].addButton('#asset-collage')
-      decomposeButton.setAttribute('tooltip', 'Decompose to primitive constructs')
+      let decomposeButton = this.el.components['frame'].addButton('#asset-shape-outline')
+      decomposeButton.setAttribute('tooltip', 'Decompose to shape constructs')
       decomposeButton.setAttribute('tooltip-style', this.el.components['frame'].data.tooltipStyle)
       decomposeButton.addEventListener('click', () => {
         this.el.sceneEl.systems['primitive-constructs'].decomposeReferences([this.el])

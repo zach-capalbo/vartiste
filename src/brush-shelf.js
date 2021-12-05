@@ -120,6 +120,6 @@ AFRAME.registerComponent('brush-shelf', {
     this.system.scaleBrush(-100)
   },
   clearLayerAction() {
-    this.el.sceneEl.systems['cut-copy-system'].clearLayer()
+    this.el.sceneEl.systems['cut-copy-system'].clear()
   }
 })
