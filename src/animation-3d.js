@@ -100,6 +100,37 @@ Util.registerComponentSystem('animation-3d', {
       })
       Util.applyMatrix(obj.matrix, obj)
     }
+  },
+  addTracksToUserData(obj) {
+    obj.traverse(o => {
+      if (o.uuid in this.objectMatrixTracks)
+      {
+        o.userData.objectMatrixTracks = Array.from(this.objectMatrixTracks[o.uuid].entries())
+        console.log("Set User Data", o.userData)
+      }
+    })
+  },
+  readObjectTracks(obj, tracks, {recurse = true} = {}) {
+    if (tracks)
+    {
+      let map = this.objectMatrixTracks[obj.uuid] = new Map();
+      for (let [frameIdx, mat] of tracks)
+      {
+        map.set(frameIdx, new THREE.Matrix4().fromArray(mat.elements))
+      }
+      if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
+    }
+    if (recurse) this.readTracksFromUserData(obj)
+  },
+  readTracksFromUserData(obj) {
+    obj.traverse(o => {
+      console.log("userData", o.userData)
+      if (o.userData.objectMatrixTracks)
+      {
+        this.readObjectTracks(obj, o.userData.objectMatrixTracks, {recurse: false})
+        delete o.userData.objectMatrixTracks;
+      }
+    })
   }
 })
 

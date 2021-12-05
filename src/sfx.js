@@ -51,7 +51,7 @@ class SfxMgr {
     // el.setAttribute('sound', `src: #asset-${sfx.sfx || sfx}; distanceModel: inverse; refDistance: 0.8; rolloffFactor: 1.3; volume: ${volume}`)
     // el.components.sound.playSound()
 
-    console.log("Finding", `sfx-${sfx.sfx || sfx}`)
+    // console.log("Finding", `sfx-${sfx.sfx || sfx}`)
     let sound = document.getElementById(`sfx-${sfx.sfx || sfx}`)
     if (!sound) {
       console.warn("No sound asset for", sfx)
