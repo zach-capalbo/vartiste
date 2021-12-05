@@ -417,7 +417,7 @@ class ProjectFile {
         obj.primitiveConstructs.push({
           glb: buffer,
           matrix: mesh.matrixWorld.elements,
-          track: animation3d ? animtaion3d.writeableTracks(el.object3D) : null
+          track: animation3d ? animation3d.writeableTracks(el.object3D) : null
         })
       }
       else
@@ -434,7 +434,7 @@ class ProjectFile {
         obj.primitiveConstructs.push({
           uuid: newMesh.uuid,
           matrix: mesh.matrixWorld.elements,
-          track: animation3d ?animtaion3d.writeableTracks(el.object3D) : null
+          track: animation3d ?animation3d.writeableTracks(el.object3D) : null
         })
       }
     }

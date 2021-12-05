@@ -8,6 +8,7 @@ Util.registerComponentSystem('animation-3d', {
     this.morphKeyFrames = {}
     this.animations = []
     this.objectMatrixTracks = {}
+    this.frameIndices = {}
   },
   bakeMatrixListToClip(obj, animations) {
     let clip = new THREE.AnimationClip(shortid.generate(), (this.data.frameCount - 1 / fps), tracks)
@@ -16,18 +17,21 @@ Util.registerComponentSystem('animation-3d', {
     if (!(obj.uuid in this.objectMatrixTracks))
     {
       this.objectMatrixTracks[obj.uuid] = new Map()
+      this.frameIndices[obj.uuid] = []
     }
 
     if (!this.objectMatrixTracks[obj.uuid].has(frameIdx))
     {
       this.objectMatrixTracks[obj.uuid].set(frameIdx, new THREE.Matrix4)
+      this.frameIndices[obj.uuid].push(frameIdx)
+      this.frameIndices[obj.uuid].sort((a, b) => a - b)
       // Util.callLater(() => this.el.emit('keyframeadded', this.emitDetails.keyframeadded))
     }
 
     return this.objectMatrixTracks[obj.uuid].get(frameIdx)
   },
   keyframe(obj) {
-    let frameIdx = this.currentFrameIdx()
+    let frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
     let matrix = this.trackFrameMatrix(obj, frameIdx)
     obj.updateMatrix()
     matrix.copy(obj.matrix)
@@ -36,19 +40,21 @@ Util.registerComponentSystem('animation-3d', {
       obj.el.setAttribute('animation-3d-keyframed', '')
     }
   },
-  currentFrameIdx() {
-    return Compositor.component.currentFrame % this.data.frameCount
+  currentFrameIdx(obj) {
+    if (!this.frameIndices[obj.uuid]) return Compositor.component.currentFrame
+    return Compositor.component.currentFrame % this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1]
+    // return Compositor.component.currentFrame % this.data.frameCount
   },
-  frameIdx(idx) {
-    idx = idx % this.data.frameCount
-    if (idx < 0) idx = this.data.frameCount + idx
-    return idx
-  },
+  // frameIdx(idx) {
+  //   idx = idx % this.data.frameCount
+  //   if (idx < 0) idx = this.data.frameCount + idx
+  //   return idx
+  // },
   animate(obj) {
     if (!(obj.uuid in this.objectMatrixTracks)) return;
 
     let track = this.objectMatrixTracks[obj.uuid];
-    let frameIdx = this.currentFrameIdx()
+    let frameIdx = this.currentFrameIdx(obj)
     if (track.has(frameIdx))
     {
       Util.applyMatrix(track.get(frameIdx), obj)
@@ -64,10 +70,9 @@ Util.registerComponentSystem('animation-3d', {
     }
     else
     {
-      let frameIndices = Array.from(track.keys());
-      frameIndices.sort((a, b) => a - b);
-      let frameCount = this.data.frameCount;
+      let frameIndices = this.frameIndices[obj.uuid]
       let l = frameIndices.length
+      let frameCount = frameIndices[l - 1] + 1;//this.data.frameCount;
       let startFrame = 0
       let endFrame = l
 
@@ -87,12 +92,12 @@ Util.registerComponentSystem('animation-3d', {
         {
           if (track.has(startFrame)) break
         }
-        for (endFrame = frameIdx; endFrame <= this.data.frameCount; endFrame++)
+        for (endFrame = frameIdx; endFrame <= frameCount; endFrame++)
         {
           if (track.has(endFrame)) break
         }
       }
-      // console.log("Interp", frameIdx, startFrame, endFrame)
+      console.log("Interp", frameIdx, startFrame, endFrame)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
@@ -122,6 +127,8 @@ Util.registerComponentSystem('animation-3d', {
       {
         map.set(frameIdx, new THREE.Matrix4().fromArray(mat.elements))
       }
+      this.frameIndices[obj.uuid] = Array.from(map.keys())
+      this.frameIndices[obj.uuid].sort((a, b) => a - b)
       if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
     }
     if (recurse) this.readTracksFromUserData(obj)
@@ -141,6 +148,14 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   schema: {
     puppeteering: {default: false},
     enabled: {default: true}
+  },
+  events: {
+    stateadded: function(e) {
+      if (this.data.enabled && this.data.puppeteering && e.detail === 'grabbed')
+      {
+        Compositor.component.jumpToFrame(0)
+      }
+    }
   },
   init() {
     this.system = this.el.sceneEl.systems['animation-3d']
