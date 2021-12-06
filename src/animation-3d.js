@@ -1,10 +1,13 @@
+import shortid from 'shortid'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 Util.registerComponentSystem('animation-3d', {
   schema: {
     frameCount: {default: 50},
   },
   init() {
+    Pool.init(this)
     this.morphKeyFrames = {}
     this.animations = []
     this.objectMatrixTracks = {}
@@ -141,19 +144,64 @@ Util.registerComponentSystem('animation-3d', {
         delete o.userData.objectMatrixTracks;
       }
     })
+  },
+  generateTHREETracks(obj) {
+    if (!(obj.uuid in this.objectMatrixTracks)) return []
+
+    let times = []
+    let positionValues = []
+    let rotationValues = []
+    let scaleValues = []
+    let position = this.pool('position', THREE.Vector3)
+    let rotation = this.pool('rot', THREE.Quaternion)
+    let scale = this.pool('scale', THREE.Vector3)
+    let frames = this.frameIndices[obj.uuid]
+    let fps = Compositor.component.data.frameRate
+    for (let frameIdx of frames)
+    {
+      times.push(frameIdx / fps)
+      let matrix = this.trackFrameMatrix(obj, frameIdx)
+      matrix.decompose(position, rotation, scale)
+      positionValues.push(...position.toArray())
+      rotationValues.push(...rotation.toArray())
+      scaleValues.push(...scale.toArray())
+    }
+
+    // if (wrap)
+
+    let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
+    let rotationTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
+    let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
+    return [positionTrack, rotationTrack, quaternionTrack]
+  },
+  generateAnimation(obj, {name} = {})
+  {
+    let tracks = []
+    let maxTime = 0.0
+    obj.traverse(o => {
+      let newTracks = this.generateTHREETracks(o)
+      if (newTracks.length <= 0) return;
+      
+      maxTime = Math.max(maxTime, newTracks[0].times[newTracks[0].times.length - 1])
+      tracks.push(...newTracks)
+    })
+    if (!name) name = `vartiste-${shortid.generate()}`
+    return new THREE.AnimationClip(name, maxTime, tracks)
   }
 })
 
 AFRAME.registerComponent('animation-3d-keyframed', {
   schema: {
     puppeteering: {default: false},
-    enabled: {default: true}
+    restartAnimationOnGrab: {default: true},
+
+    enabled: {default: true},
   },
   events: {
     stateadded: function(e) {
-      if (this.data.enabled && this.data.puppeteering && e.detail === 'grabbed')
+      if (this.data.enabled && this.data.puppeteering && this.data.restartAnimationOnGrab && e.detail === 'grabbed')
       {
-        Compositor.component.jumpToFrame(0)
+        Compositor.component.jumpToFrame(1)
       }
     }
   },
