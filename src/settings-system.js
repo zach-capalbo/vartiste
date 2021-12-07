@@ -275,6 +275,19 @@ Util.registerComponentSystem('settings-system', {
       AFRAME.utils.extendDeep(outputJSON.extensions, mesh.userData.gltfExtensions)
     }
 
+    let animation3d = this.el.sceneEl.systems['animation-3d'];
+    if (animation3d) {
+      let activeAnimation = animation3d.generateAnimation(mesh)
+      if (mesh.animations)
+      {
+        mesh.animations.push(activeAnimation)
+      }
+      else
+      {
+        mesh.animations = [activeAnimation]
+      }
+    }
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
       exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), imageQuality: this.compressionQuality(), postProcessJSON})
