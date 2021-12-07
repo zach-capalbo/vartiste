@@ -134,6 +134,7 @@ AFRAME.registerComponent('object3d-view', {
       else
       {
         //this.inputNode.setAttribute('visible', false)
+        this.haveNodesBeenInitialized = true;
       }
 
       this.grabber = this.el.querySelector('.grab-redirector')
@@ -323,10 +324,13 @@ AFRAME.registerComponent('object3d-view', {
     this.onMoved()
   },
   reparent(newParent) {
+    console.log("Reparenting", this.object, "to parent", newParent)
 
     // TODO: Need to reparent view el, too
     // this.el.parentEl.remove(this.el)
-    this.system.childViews.get(newParent).object3D.add(this.el.object3D)
+    Util.keepingWorldPosition(this.el.object3D, () => {
+      this.system.childViews.get(newParent).object3D.add(this.el.object3D)
+    })
 
     Util.keepingWorldPosition(this.object, () => {
       newParent.add(this.object)

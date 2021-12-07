@@ -100,7 +100,7 @@ Util.registerComponentSystem('animation-3d', {
           if (track.has(endFrame)) break
         }
       }
-      console.log("Interp", frameIdx, startFrame, endFrame)
+      // console.log("Interp", frameIdx, startFrame, endFrame)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
