@@ -181,7 +181,7 @@ Util.registerComponentSystem('animation-3d', {
     obj.traverse(o => {
       let newTracks = this.generateTHREETracks(o)
       if (newTracks.length <= 0) return;
-      
+
       maxTime = Math.max(maxTime, newTracks[0].times[newTracks[0].times.length - 1])
       tracks.push(...newTracks)
     })
@@ -201,7 +201,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     stateadded: function(e) {
       if (this.data.enabled && this.data.puppeteering && this.data.restartAnimationOnGrab && e.detail === 'grabbed')
       {
-        Compositor.component.jumpToFrame(1)
+        Compositor.component.jumpToFrame(0)
       }
     }
   },
