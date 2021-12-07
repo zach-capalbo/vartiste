@@ -37,6 +37,8 @@ Util.registerComponentSystem('scene-organizer', {
       view.setAttribute('object3d-view', {target: (what.object3D || what)})
     }
 
+    view.setAttribute('visible', true)
+
     Util.whenLoaded(view, () => {
       this.positioner.rotation.set(0, 0, 0)
       this.positioner.position.set(0, 1.1, 0.2)
@@ -206,11 +208,14 @@ AFRAME.registerComponent('object3d-view', {
       if (obj.userData.vartisteUI) return false;
       return true;
     })
+    let existingChildEntities = this.el.getChildEntities()
     for (let i = 0; i < validChildren.length; ++i)
     {
       let obj = validChildren[i]
       if (this.system.childViews.has(obj)) {
         let view = this.system.childViews.get(obj)
+        if (existingChildEntities.indexOf(view) < 0) { this.el.append(view) }
+        view.setAttribute('visible', true)
         view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
         view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
         this.connectNodeTo(view)

@@ -360,6 +360,7 @@ AFRAME.registerComponent("frame", {
     else
     {
       this.el.parentEl.removeChild(this.el)
+      // this.el.destroy()
     }
   },
   pinFrame(e) {
