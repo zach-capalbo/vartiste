@@ -2,6 +2,8 @@ import {Pool} from './pool.js'
 import {Util} from './util.js'
 import * as NodeTypes from './layer.js'
 
+AFRAME.registerSystem('node-connector-system', {})
+
 AFRAME.registerComponent('node-grabber', {
   init() {
     this.el.setAttribute('grab-options', 'showHand: false')
@@ -33,7 +35,8 @@ AFRAME.registerComponent('node-output', {
     radius: {default: 0.1}
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['node-connector-system']
+    Pool.init(this, {useSystem: true})
     let radius = this.data.radius
     this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}; segments: 8`)
     this.el.setAttribute("material", "color: #34eb80; shader: flat")
@@ -171,7 +174,8 @@ AFRAME.registerComponent('node-input', {
     compositionNode: {default: true},
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['node-connector-system']
+    Pool.init(this, {useSystem: true})
     let radius = 0.1
     this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}; segments: 8`)
     if (!this.el.hasAttribute('material'))
@@ -235,7 +239,7 @@ AFRAME.registerComponent('node-input', {
       {
         return
       }
-      
+
       this.lastSnappedWorldPos.copy(v2)
       this.snappedTo.object3D.worldToLocal(v)
       this.snappedGrabber.object3D.position.copy(v)
