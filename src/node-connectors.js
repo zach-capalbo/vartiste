@@ -2,6 +2,8 @@ import {Pool} from './pool.js'
 import {Util} from './util.js'
 import * as NodeTypes from './layer.js'
 
+AFRAME.registerSystem('node-connector-system', {})
+
 AFRAME.registerComponent('node-grabber', {
   init() {
     this.el.setAttribute('grab-options', 'showHand: false')
@@ -33,10 +35,11 @@ AFRAME.registerComponent('node-output', {
     radius: {default: 0.1}
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['node-connector-system']
+    Pool.init(this, {useSystem: true})
     let radius = this.data.radius
-    this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}`)
-    this.el.setAttribute("material", "color: #34eb80")
+    this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}; segments: 8`)
+    this.el.setAttribute("material", "color: #34eb80; shader: flat")
     this.el.setAttribute('action-tooltips', 'grip: Make Connection')
     this.el.classList.add("clickable")
 
@@ -52,6 +55,7 @@ AFRAME.registerComponent('node-output', {
       {
         grabber.grabLine.attributes.position.setXYZ(1, 0, 0, 0)
         grabber.grabLine.attributes.position.needsUpdate = true
+        grabber.grabLine.computeBoundingSphere()
 
         if (grabber !== this.grabber)
         {
@@ -93,7 +97,7 @@ AFRAME.registerComponent('node-output', {
      new THREE.Vector3(0,0,0),
      new THREE.Vector3(0,0,0)])
     this.grabLineObject = new THREE.Line(this.grabLine, new THREE.LineBasicMaterial( { color: 0x34eb80, linewidth: 50 } ))
-    this.grabLineObject.frustumCulled = false
+    // this.grabLineObject.frustumCulled = false
     grabber.grabLineObject = this.grabLineObject
     grabber.grabLine = this.grabLine
     this.el.object3D.add(this.grabLineObject);
@@ -106,6 +110,7 @@ AFRAME.registerComponent('node-output', {
       grabber.object3D.position.set(0, 0, 0)
       grabber.grabLine.attributes.position.setXYZ(1,0,0,0)
       grabber.grabLine.attributes.position.needsUpdate = true
+      grabber.grabLine.computeBoundingSphere()
     }
 
     if (grabber.snappedTo != snapped)
@@ -169,11 +174,22 @@ AFRAME.registerComponent('node-input', {
     compositionNode: {default: true},
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['node-connector-system']
+    Pool.init(this, {useSystem: true})
     let radius = 0.1
-    this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}`)
-    if (!this.el.hasAttribute('material')) this.el.setAttribute("material", "color: #f57242")
+    this.el.setAttribute("geometry", `primitive: circle; radius: ${radius}; segments: 8`)
+    if (!this.el.hasAttribute('material'))
+    {
+      this.el.setAttribute("material", "color: #f57242; shader: flat")
+    }
+    else
+    {
+      Util.whenLoaded(this.el, () => {
+        this.el.setAttribute('material', 'shader', 'flat')
+      })
+    }
     this.el.classList.add("clickable")
+    this.lastSnappedWorldPos = new THREE.Vector3;
 
     this.el['redirect-grab'] = this.el.parentEl
 
@@ -217,10 +233,19 @@ AFRAME.registerComponent('node-input', {
       let {grabLine} = this.snappedGrabber
       let v = this.pool('v', THREE.Vector3)
       this.el.object3D.getWorldPosition(v)
+      let v2 = this.pool('v2', THREE.Vector3)
+      this.snappedTo.object3D.getWorldPosition(v2)
+      if (v2.sub(v).distanceToSquared(this.lastSnappedWorldPos) < 0.00001)
+      {
+        return
+      }
+
+      this.lastSnappedWorldPos.copy(v2)
       this.snappedTo.object3D.worldToLocal(v)
       this.snappedGrabber.object3D.position.copy(v)
       grabLine.attributes.position.setXYZ(1, v.x, v.y, v.z)
       grabLine.attributes.position.needsUpdate = true
+      grabLine.computeBoundingSphere()
     }
   }
 })

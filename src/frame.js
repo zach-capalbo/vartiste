@@ -101,7 +101,7 @@ AFRAME.registerComponent("frame", {
     }
   },
   init() {
-    Pool.init(this)
+    Pool.init(this, {useSystem: true})
     let target = (this.data.geometryTarget || this.el)
     this.center = new THREE.Vector3;
     this.updateBounds();
@@ -337,7 +337,7 @@ AFRAME.registerComponent("frame", {
         b.object3D.scale.z = 1
         continue;
       }
-      
+
       b.object3D.position.set(width / 2 - 0.2 * worldScale.x - i * 0.55 / parentScale.x * worldScale.x, height / 2 + 0.2 * worldScale.y, 0)
       b.setAttribute('scale', worldScale)
       i++
@@ -360,6 +360,7 @@ AFRAME.registerComponent("frame", {
     else
     {
       this.el.parentEl.removeChild(this.el)
+      // this.el.destroy()
     }
   },
   pinFrame(e) {
