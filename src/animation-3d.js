@@ -43,9 +43,10 @@ Util.registerComponentSystem('animation-3d', {
       obj.el.setAttribute('animation-3d-keyframed', '')
     }
   },
-  currentFrameIdx(obj) {
+  currentFrameIdx(obj, wrap = true) {
     if (!this.frameIndices[obj.uuid]) return Compositor.component.currentFrame
-    return Compositor.component.currentFrame % this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1]
+    if (!wrap) return Compositor.component.currentFrame
+    return Math.abs(Compositor.component.currentFrame) % this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1]
     // return Compositor.component.currentFrame % this.data.frameCount
   },
   // frameIdx(idx) {
@@ -53,11 +54,11 @@ Util.registerComponentSystem('animation-3d', {
   //   if (idx < 0) idx = this.data.frameCount + idx
   //   return idx
   // },
-  animate(obj) {
+  animate(obj, {wrapAnimation = true, useGlobalNumberOfFrames = false} = {}) {
     if (!(obj.uuid in this.objectMatrixTracks)) return;
 
     let track = this.objectMatrixTracks[obj.uuid];
-    let frameIdx = this.currentFrameIdx(obj)
+    let frameIdx = this.currentFrameIdx(obj, wrapAnimation)
     if (track.has(frameIdx))
     {
       Util.applyMatrix(track.get(frameIdx), obj)
@@ -68,7 +69,7 @@ Util.registerComponentSystem('animation-3d', {
     }
     else if (track.size === 1)
     {
-      console.log("Track", track)
+      // console.log("Track", track)
       Util.applyMatrix(track.values().next().value, obj)
     }
     else
@@ -81,11 +82,21 @@ Util.registerComponentSystem('animation-3d', {
 
       if (frameIndices[0] > frameIdx)
       {
+        if (!wrapAnimation)
+        {
+          Util.applyMatrix(track.get(frameIndices[0]), obj)
+          return;
+        }
         startFrame = frameIndices[l - 1]
         endFrame = frameIndices[0] + frameCount
       }
       else if (frameIndices[l - 1] < frameIdx)
       {
+        if (!wrapAnimation)
+        {
+          Util.applyMatrix(track.get(frameIndices[l - 1]), obj)
+          return;
+        }
         startFrame = frameIndices[l - 1]
         endFrame = frameIndices[0] + frameCount
       }
@@ -100,7 +111,7 @@ Util.registerComponentSystem('animation-3d', {
           if (track.has(endFrame)) break
         }
       }
-      // console.log("Interp", frameIdx, startFrame, endFrame)
+      console.log("Interp", frameIdx, startFrame, endFrame)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
@@ -195,6 +206,9 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     puppeteering: {default: false},
     restartAnimationOnGrab: {default: true},
 
+    wrapAnimation: {default: true},
+    useGlobalNumberOfFrames: {default: false},
+
     enabled: {default: true},
   },
   events: {
@@ -220,7 +234,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     if (this.el.is("grabbed")) return;
 
     this.el.object3D.traverseVisible(o => {
-      this.system.animate(o)
+      this.system.animate(o, this.data)
     })
   },
   tick(t, dt) {
