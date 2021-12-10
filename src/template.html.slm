@@ -19,7 +19,7 @@ html
     meta property="twitter:description" content=desc
     meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
 
-    meta http-equiv="origin-trial" content="Agh2MgKp6jR2UIo+xAmMML4rdhM/FUw3foB1wBJ9St2wP0pljnEDdgKy3B0tftW2RULk7WI9F730mtqvbDQJmwIAAABjeyJvcmlnaW4iOiJodHRwczovL3ZhcnRpc3RlLnh5ejo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"
+    meta http-equiv="origin-trial" content="AmaZzI13Ja+rPDsKWBS01EGrfugM0xsJeBsTHepHjRpjr0REomv7+daPXyN0pyREHi9dds7mEyNRZ9/zmrWmLQ4AAABjeyJvcmlnaW4iOiJodHRwczovL3ZhcnRpc3RlLnh5ejo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2NTg4Nzk5OTl9"
 
     - if false
       script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'

@@ -275,6 +275,10 @@ AFRAME.registerComponent('object3d-view', {
   keyframe() {
     this.el.sceneEl.systems['animation-3d'].keyframe(this.object)
   },
+  deleteAllKeyframes()
+  {
+    this.el.sceneEl.systems['animation-3d'].clearTrack(this.object)
+  },
   puppeteer(e) {
     if (!this.targetEl) {
       console.warn("Can't puppeteer obj3d yet")

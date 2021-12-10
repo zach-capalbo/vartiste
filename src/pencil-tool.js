@@ -1613,3 +1613,9 @@ AFRAME.registerComponent('tool-weight-tool', {
     })
   }
 })
+
+AFRAME.registerComponent('lathe-selection-tool', {
+  init() {
+    this.el.setAttribute('selection-box-tool', 'boxSize: 0.1 0.4 0.1')
+  }
+})

@@ -310,13 +310,14 @@ registerVolumeTool('cube', {
 
 registerVolumeTool('cone', {
   createTip() {
-    // let tip = document.createElement('a-cone')
-    // tip.setAttribute('height', this.data.baseSize * 3)
-    // tip.setAttribute('radius-top', 0)
-    // tip.setAttribute('radius-bottom', this.data.baseSize)
+    let tip = document.createElement('a-cone')
+    tip.setAttribute('height', this.data.baseSize * 3)
+    tip.setAttribute('radius-top', 0)
+    tip.setAttribute('radius-bottom', this.data.baseSize)
 
-    let tip = document.createElement('a-entity')
-    tip.setAttribute('sdf-brush-render-box', `boxSize: ${this.data.baseSize * 3} ${this.data.baseSize * 3} ${this.data.baseSize * 3}; u_size: 0.04`)
+    // let tip = document.createElement('a-entity')
+    // tip.setAttribute('sdf-brush-render-box', `boxSize: ${this.data.baseSize * 3} ${this.data.baseSize * 3} ${this.data.baseSize * 3}; u_size: 0.04`)
+
     // tip.setAttribute('geometry', `width: ; height: ${this.data.baseSize * 3}; depth: ${this.data.baseSize * 3}`)
     return tip
   },
