@@ -324,6 +324,8 @@ AFRAME.registerComponent('timeline-tool', {
       scrubber.object3D.position.y = 0
       scrubber.object3D.position.z = 0
 
+      scrubber.object3D.rotation.set(0, 0, 0)
+
       let tickNumber = Math.round((scrubber.object3D.position.x - width / 2.0) / width * this.numTicks)
       scrubber.object3D.position.x = tickNumber / this.numTicks * width + width / 2.0
       let frameIdx = tickNumber + Math.floor(this.numTicks)
@@ -335,16 +337,19 @@ AFRAME.registerComponent('timeline-tool', {
 
     this.onFrameChange = this.onFrameChange.bind(this)
     this.onKeyframed = this.onKeyframed.bind(this)
+    this.onPlayingChanged = this.onPlayingChanged.bind(this)
   },
   play() {
     this.updateTicks()
     this.el.sceneEl.addEventListener('objectkeyframed', this.onKeyframed)
     Compositor.el.addEventListener('framechanged', this.onFrameChange)
+    Compositor.el.addEventListener('playpause', this.onPlayingChanged)
     this.onFrameChange()
   },
   pause() {
     this.el.sceneEl.removeEventListener('objectkeyframed', this.onKeyframed)
     Compositor.el.removeEventListener('framechanged', this.onFrameChange)
+    Compositor.el.removeEventListener('playpause', this.onPlayingChanged)
   },
   update(oldData) {
     if (this.data.target)
@@ -400,6 +405,7 @@ AFRAME.registerComponent('timeline-tool', {
   },
   updateKeyframes() {
     if (!this.data.target) return;
+
     let object = this.object
     let animation3d = this.el.sceneEl.systems['animation-3d']
 
@@ -455,9 +461,24 @@ AFRAME.registerComponent('timeline-tool', {
     if (!this.data.target) return;
     if (e.detail.object !== this.data.target && e.detail.object !== this.data.target.object3D) return;
 
+    if (Compositor.component.isPlayingAnimation)
+    {
+      this.needsUpdate = true;
+      return;
+    }
+
     this.updateTicks()
     this.onFrameChange()
     this.updateKeyframes()
+  },
+  onPlayingChanged() {
+    if (!this.needsUpdate) return
+
+    this.updateTicks()
+    this.onFrameChange()
+    this.updateKeyframes()
+
+    this.needsUpdate = false
   }
 })
 
