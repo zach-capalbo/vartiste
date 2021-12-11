@@ -496,3 +496,19 @@ AFRAME.registerComponent('timeline-keyframe', {
     animation3d.deleteKeyframe(object, this.data.frame)
   }
 })
+
+AFRAME.registerComponent('animation-3d-path', {
+  schema: {
+    target: {type: 'selector'}
+  },
+  init() {
+    this.constructLine()
+  },
+  update(oldData) {
+  },
+  constructLine() {
+    let object = this.data.target.object3D || this.data.target
+    let points = []
+
+  }
+})
