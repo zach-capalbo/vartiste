@@ -10,7 +10,7 @@ Util.registerComponentSystem('animation-3d', {
     objectkeyframed: {
       object: null,
       frameIdx: 0
-    }
+    },
   },
   init() {
     Pool.init(this)
@@ -57,6 +57,25 @@ Util.registerComponentSystem('animation-3d', {
   clearTrack(obj) {
     delete this.frameIndices[obj.uuid]
     delete this.objectMatrixTracks[obj.uuid]
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = -1
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  deleteKeyframe(obj, frameIdx) {
+    if (!(obj.uuid in this.objectMatrixTracks)) return
+    this.objectMatrixTracks[obj.uuid].delete(frameIdx)
+    this.frameIndices[obj.uuid].splice(this.frameIndices[obj.uuid].indexOf(frameIdx), 1)
+
+    if (this.frameIndices[obj.uuid].length === 0)
+    {
+      delete this.frameIndices[obj.uuid]
+      delete this.objectMatrixTracks[obj.uuid]
+    }
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
   },
   wrappedFrameIndex(obj, frameIdx) {
     return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
@@ -134,7 +153,7 @@ Util.registerComponentSystem('animation-3d', {
           if (track.has(endFrame)) break
         }
       }
-      console.log("Interp", frameIdx, startFrame, endFrame)
+      // console.log("Interp", frameIdx, startFrame, endFrame)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
@@ -383,8 +402,20 @@ AFRAME.registerComponent('timeline-tool', {
     if (!this.data.target) return;
     let object = this.object
     let animation3d = this.el.sceneEl.systems['animation-3d']
-    if (!(object.uuid in animation3d.frameIndices)) return
+
+    if (!(object.uuid in animation3d.frameIndices)) {
+      for (let [frameIdx, el] of this.keyframes.entries())
+      {
+        el.remove()
+        this.keyframes.delete(frameIdx)
+      }
+      return;
+    }
+
     let indices = animation3d.frameIndices[object.uuid]
+
+    let usedKeyframes = new Set()
+
     for (let frameIdx of indices)
     {
       let keyframe = this.keyframes.get(frameIdx)
@@ -397,6 +428,15 @@ AFRAME.registerComponent('timeline-tool', {
       }
 
       keyframe.setAttribute('position', `${frameIdx / this.numTicks * this.width - this.width / 2.0} ${this.height * 2} 0`)
+      usedKeyframes.add(frameIdx)
+    }
+
+    for (let frameIdx of this.keyframes.keys())
+    {
+      if (usedKeyframes.has(frameIdx)) continue;
+      let view = this.keyframes.get(frameIdx)
+      view.remove()
+      this.keyframes.delete(frameIdx)
     }
   },
   onFrameChange() {
@@ -426,6 +466,14 @@ AFRAME.registerComponent('timeline-keyframe', {
     target: {type: 'selector'},
     frame: {default: 1}
   },
+  events: {
+    click: function(e) {
+      if (!e.target.hasAttribute('click-action')) return;
+
+      e.stopPropagation()
+      this[e.target.getAttribute('click-action')](e)
+    }
+  },
   init() {
     this.el.innerHTML = require('./partials/timeline-keyframe.html.slm')
     // this.el.setAttribute('button-style', 'autoPosition: false')
@@ -436,5 +484,15 @@ AFRAME.registerComponent('timeline-keyframe', {
     Util.whenLoaded(frameText, () => {
       frameText.setAttribute('icon-row-text', `${this.data.frame}`)
     })
+  },
+  applyKeyframe() {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    let object = this.data.target.object3D || this.data.target
+    Util.applyMatrix(animation3d.trackFrameMatrix(object, this.data.frame), object)
+  },
+  deleteKeyframe() {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    let object = this.data.target.object3D || this.data.target
+    animation3d.deleteKeyframe(object, this.data.frame)
   }
 })

@@ -666,3 +666,14 @@ AFRAME.registerComponent('organizer-weight-lever', {
     this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
   }
 })
+
+AFRAME.registerComponent('organizer-set-target', {
+  schema: {
+    component: {type: 'string'},
+    property: {default: 'target'},
+  },
+  update(oldData) {
+    let object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    this.el.setAttribute(this.data.component, this.data.property, object3dview.data.target)
+  }
+})
