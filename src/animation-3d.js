@@ -354,7 +354,14 @@ AFRAME.registerComponent('timeline-tool', {
   update(oldData) {
     if (this.data.target)
     {
+      if (this.targetEl)
+      {
+        this.targetEl.removeEventListener('stateremoved', this.onPlayingChanged)
+      }
+
       this.object = this.data.target.object3D || this.data.target
+      this.targetEl = this.object.el
+      this.targetEl.addEventListener('stateremoved', this.onPlayingChanged)
     }
     this.updateTicks()
   },
@@ -461,7 +468,7 @@ AFRAME.registerComponent('timeline-tool', {
     if (!this.data.target) return;
     if (e.detail.object !== this.data.target && e.detail.object !== this.data.target.object3D) return;
 
-    if (Compositor.component.isPlayingAnimation)
+    if (Compositor.component.isPlayingAnimation && (this.data.target.el || this.data.target).is('grabbed'))
     {
       this.needsUpdate = true;
       return;
