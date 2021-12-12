@@ -475,6 +475,8 @@ AFRAME.registerComponent('toggle-button', {
     toggled: {type: 'boolean', default: false},
 
     useUntoggledColor: {default: true},
+
+    invert: {default: false},
   },
   events: {
     click: function() {
@@ -538,6 +540,7 @@ AFRAME.registerComponent('toggle-button', {
   },
   setToggle(value) {
     this.data.toggled = value
+    if (this.data.invert) vale = !value
     if (value)
     {
       this.el.removeState(STATE_TOGGLED)
@@ -764,7 +767,9 @@ AFRAME.registerComponent('radio-button', {
     // The component containing the target property
     component: {type: 'string'},
     // The property the radio button sets a value for
-    property: {type: 'string'}
+    property: {type: 'string'},
+
+    useUntoggledColor: {default: true},
   },
   events: {
     click: function() {
@@ -787,6 +792,11 @@ AFRAME.registerComponent('radio-button', {
     }
   },
   update(oldData) {
+    if (this.data.useUntoggledColor !== oldData.useUntoggledColor)
+    {
+      if (!this.el.is(STATE_UNTOGGLED) && this.data.useUntoggledColor) this.el.addState(STATE_UNTOGGLED)
+    }
+
     if (this.data.target !== oldData.target)
     {
       if (oldData.target)
@@ -814,12 +824,14 @@ AFRAME.registerComponent('radio-button', {
     this.data.toggled = value
     if (value)
     {
+      this.el.removeState(STATE_UNTOGGLED)
       this.el.addState(STATE_TOGGLED)
       this.el.components['icon-button'].updateStateColor()
     }
     else
     {
       this.el.removeState(STATE_TOGGLED)
+      if (this.data.useUntoggledColor) this.el.addState(STATE_UNTOGGLED)
     }
   }
 })

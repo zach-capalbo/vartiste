@@ -1,6 +1,6 @@
 a-entity icon-row="mergeButtons: true" position="-1.5 1.35 0"
   /a-entity click-action="toggleRotation" icon-button="#asset-rotate-3d-variant" tooltip="Toggle Brush Rotation"
-  a-entity icon-button="#asset-lead-pencil" tooltip="Brush Editor" toggle-button="target: #brush-editor; component: visible"
+  a-entity icon-button="#asset-lead-pencil" tooltip="Brush Editor" toggle-button="target: #brush-editor; component: visible; useUntoggledColor: false"
   a-entity icon-button="#asset-swap-horizontal-variant" toggle-button="system: paint-system; property: wrapX" tooltip="Toggle Wrap X"
   a-entity icon-button="#asset-swap-vertical-variant" toggle-button="system: paint-system; property: wrapY" tooltip="Toggle Wrap Y"
   a-entity click-action="increaseBrushSize" icon-button="#asset-chevron-up" tooltip="Increase Brush Size"

@@ -13,7 +13,7 @@ a-entity#advanced-drawing-shelf grab-root="" shelf="name: Advanced Drawing Shelf
 
     a-entity icon-row="": a-entity icon-row-text="Bump/Normal Drawing"
     a-entity icon-row="mergeButtons: true"
-      a-entity icon-button="#asset-brush" tooltip="Draw bumps to normal" system-click-action="system: normal-bump-drawing; action: drawNormal" toggle-button=""
+      a-entity icon-button="#asset-brush" tooltip="Draw bumps to normal" system-click-action="system: normal-bump-drawing; action: drawNormal" toggle-button="useUntoggledColor: false"
       a-entity#invert-normal-draw icon-button="#asset-chevron-down" tooltip="Invert Bump Drawing" toggle-button="target: a-scene; component: normal-bump-drawing; property: invert"
       a-entity#color-normal-draw icon-button="#asset-brightness-4" tooltip="Keep Color with Normal" toggle-button="target: a-scene; component: normal-bump-drawing; property: keepColor"
     a-entity icon-row="": a-entity icon-row-text="Other Tools"
