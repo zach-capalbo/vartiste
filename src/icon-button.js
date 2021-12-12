@@ -6,6 +6,7 @@ const DEFAULT_BUTTON_STYLE_SCHEMA = {
   clickColor: {type: 'color', default: '#aea'},
   intersectedColor: {type: 'color', default: '#cef'},
   toggleOnColor: {type: 'color', default: '#bea'},
+  togglableColor: {type: 'color', default: '#ede5d8'},
   keepAspect: {type: 'bool', default: true},
   buttonType: {default: 'button'}
 }
@@ -28,6 +29,7 @@ AFRAME.registerComponent('button-style', {
     clickColor: {type: 'color', default: '#aea'},
     intersectedColor: {type: 'color', default: '#cef'},
     toggleOnColor: {type: 'color', default: '#bea'},
+    togglableColor: {type: 'color', default: '#ede5d8'}, //#a4bcc6
 
     // If true, preserves icon image aspect ratio
     keepAspect: {type: 'bool', default: true},
@@ -43,12 +45,14 @@ export const [
   STATE_NORMAL,
   STATE_HOVERED,
   STATE_PRESSED,
-  STATE_TOGGLED
+  STATE_TOGGLED,
+  STATE_UNTOGGLED,
 ] = [
   "BUTTON_STATE_NORMAL",
   "BUTTON_STATE_HOVERED",
   "BUTTON_STATE_PRESSED",
-  "BUTTON_STATE_TOGGLED"
+  "BUTTON_STATE_TOGGLED",
+  "BUTTON_STATE_UNTOGGLED",
 ]
 
 function RoundEdgedBox(width, height, depth, radius, widthSegments, heightSegments, depthSegments, smoothness) {
@@ -398,6 +402,12 @@ AFRAME.registerComponent('icon-button', {
       return
     }
 
+    if (this.el.is(STATE_UNTOGGLED))
+    {
+      this.setColor(this.style.togglableColor)
+      return
+    }
+
     this.setColor(this.style.color)
   },
   setColor(color) {
@@ -462,7 +472,9 @@ AFRAME.registerComponent('toggle-button', {
     system: {type: 'string'},
 
     // State of being toggled, when not using target and component
-    toggled: {type: 'boolean', default: false}
+    toggled: {type: 'boolean', default: false},
+
+    useUntoggledColor: {default: true},
   },
   events: {
     click: function() {
@@ -490,6 +502,10 @@ AFRAME.registerComponent('toggle-button', {
     }
   },
   update(oldData) {
+    if (this.data.useUntoggledColor !== oldData.useUntoggledColor)
+    {
+      if (!this.el.is(STATE_UNTOGGLED) && this.data.useUntoggledColor) this.el.addState(STATE_UNTOGGLED)
+    }
     if (this.data.target !== oldData.target)
     {
       if (oldData.target)
@@ -524,12 +540,14 @@ AFRAME.registerComponent('toggle-button', {
     this.data.toggled = value
     if (value)
     {
+      this.el.removeState(STATE_TOGGLED)
       this.el.addState(STATE_TOGGLED)
       this.el.components['icon-button'].updateStateColor()
     }
     else
     {
       this.el.removeState(STATE_TOGGLED)
+      if (this.data.useUntoggledColor) this.el.addState(STATE_UNTOGGLED)
     }
   }
 })
