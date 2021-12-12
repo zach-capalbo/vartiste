@@ -1,0 +1,5 @@
+a-entity shelf="width: 0.25; height: 0.65; closeable: false; pinnable: false; frame: false" position="0 0.2 0" propogate-grab=""
+  a-entity scale="0.4 0.4 0.4" position="0 0.2 0"
+    a-entity icon-row="": a-entity icon-button="#asset-skeletonator" tooltip="Apply Keyframe" click-action="applyKeyframe"
+    a-entity icon-row="": a-entity icon-button="#asset-delete" tooltip="Remove Keyframe" click-action="deleteKeyframe"
+    a-entity icon-row="": a-entity.frame-number icon-row-text=""

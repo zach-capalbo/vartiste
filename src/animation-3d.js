@@ -6,8 +6,15 @@ Util.registerComponentSystem('animation-3d', {
   schema: {
     frameCount: {default: 50},
   },
+  emits: {
+    objectkeyframed: {
+      object: null,
+      frameIdx: 0
+    },
+  },
   init() {
     Pool.init(this)
+    Util.emitsEvents(this)
     this.morphKeyFrames = {}
     this.animations = []
     this.objectMatrixTracks = {}
@@ -42,12 +49,47 @@ Util.registerComponentSystem('animation-3d', {
     {
       obj.el.setAttribute('animation-3d-keyframed', '')
     }
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  clearTrack(obj) {
+    delete this.frameIndices[obj.uuid]
+    delete this.objectMatrixTracks[obj.uuid]
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = -1
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  deleteKeyframe(obj, frameIdx) {
+    if (!(obj.uuid in this.objectMatrixTracks)) return
+    this.objectMatrixTracks[obj.uuid].delete(frameIdx)
+    this.frameIndices[obj.uuid].splice(this.frameIndices[obj.uuid].indexOf(frameIdx), 1)
+
+    if (this.frameIndices[obj.uuid].length === 0)
+    {
+      delete this.frameIndices[obj.uuid]
+      delete this.objectMatrixTracks[obj.uuid]
+    }
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  wrappedFrameIndex(obj, frameIdx) {
+    return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
   },
   currentFrameIdx(obj, wrap = true) {
     if (!this.frameIndices[obj.uuid]) return Compositor.component.currentFrame
     if (!wrap) return Compositor.component.currentFrame
-    return Math.abs(Compositor.component.currentFrame) % this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1]
+    return this.wrappedFrameIndex(obj, Compositor.component.currentFrame)
     // return Compositor.component.currentFrame % this.data.frameCount
+  },
+  isWrapping(obj) {
+    if (obj.el) obj = obj.el;
+    if (!obj.hasAttribute('animation-3d-keyframed')) return true
+    return obj.getAttribute('animation-3d-keyframed').wrapAnimation
   },
   // frameIdx(idx) {
   //   idx = idx % this.data.frameCount
@@ -111,7 +153,7 @@ Util.registerComponentSystem('animation-3d', {
           if (track.has(endFrame)) break
         }
       }
-      console.log("Interp", frameIdx, startFrame, endFrame)
+      // console.log("Interp", frameIdx, startFrame, endFrame)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
@@ -245,5 +287,256 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     {
       this.system.keyframe(this.el.object3D)
     }
+  }
+})
+
+
+AFRAME.registerComponent('timeline-tool', {
+  dependencies: ['grabbable', 'grab-root'],
+  schema: {
+    target: {type: 'selector'}
+  },
+  init() {
+    let width = 5
+    let height = 0.1
+    this.width = width
+    this.height = height
+
+    this.keyframes = new Map()
+
+    let bg = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({color: '#657B86'}))
+    this.el.setObject3D('mesh', bg)
+
+    let scrubber = this.scrubber = document.createElement('a-entity')
+    scrubber.setAttribute('geometry', `primitive: box; width: 0.1; height: 0.2; depth: 0.2`)
+    scrubber.setAttribute('material', 'shader: flat; color: #B97542')
+    scrubber.setAttribute('grabbable', '')
+    scrubber.setAttribute('grab-options', 'showHand: false')
+    scrubber.setAttribute('action-tooltips', 'grab: Scrub timeline')
+    this.el.append(scrubber)
+
+    let wrappingScrubber = this.wrappingScrubber = document.createElement('a-entity')
+    wrappingScrubber.setAttribute('geometry', `primitive: box; width: 0.08; height: 0.1; depth: 0.1`)
+    wrappingScrubber.setAttribute('material', 'shader: flat; color: #598269')
+    this.el.append(wrappingScrubber)
+
+    this.el.sceneEl.systems['manipulator'].installConstraint(scrubber, () => {
+      scrubber.object3D.position.y = 0
+      scrubber.object3D.position.z = 0
+
+      scrubber.object3D.rotation.set(0, 0, 0)
+
+      let tickNumber = Math.round((scrubber.object3D.position.x - width / 2.0) / width * this.numTicks)
+      scrubber.object3D.position.x = tickNumber / this.numTicks * width + width / 2.0
+      let frameIdx = tickNumber + Math.floor(this.numTicks)
+      if (Compositor.component.currentFrame !== frameIdx)
+      {
+        Compositor.component.jumpToFrame(frameIdx)
+      }
+    })
+
+    this.onFrameChange = this.onFrameChange.bind(this)
+    this.onKeyframed = this.onKeyframed.bind(this)
+    this.onPlayingChanged = this.onPlayingChanged.bind(this)
+  },
+  play() {
+    this.updateTicks()
+    this.el.sceneEl.addEventListener('objectkeyframed', this.onKeyframed)
+    Compositor.el.addEventListener('framechanged', this.onFrameChange)
+    Compositor.el.addEventListener('playpause', this.onPlayingChanged)
+    this.onFrameChange()
+  },
+  pause() {
+    this.el.sceneEl.removeEventListener('objectkeyframed', this.onKeyframed)
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
+    Compositor.el.removeEventListener('playpause', this.onPlayingChanged)
+  },
+  update(oldData) {
+    if (this.data.target)
+    {
+      if (this.targetEl)
+      {
+        this.targetEl.removeEventListener('stateremoved', this.onPlayingChanged)
+      }
+
+      this.object = this.data.target.object3D || this.data.target
+      this.targetEl = this.object.el
+      this.targetEl.addEventListener('stateremoved', this.onPlayingChanged)
+    }
+    this.updateTicks()
+  },
+  updateTicks() {
+    if (this.ticks)
+    {
+      this.ticks.parent.remove(this.ticks)
+      this.ticks.geometry.dispose()
+    }
+
+    let width = this.width
+    let numTicks = 10
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+
+    if (!animation3d.frameIndices) return;
+
+    if (this.data.target)
+    {
+      let object = this.data.target.object3D || this.data.target
+      if (object.uuid in animation3d.frameIndices)
+      {
+        let indices = animation3d.frameIndices[object.uuid]
+        numTicks = Math.min(Math.max(indices[indices.length - 1] + 5, 10), 50)
+      }
+    }
+
+    this.numTicks = numTicks
+    let tickGeometries = []
+    let tickWidth = 0.03
+    let tickHeight = 0.1
+    let initialTickGeometry = new THREE.PlaneGeometry(tickWidth, tickHeight);
+    let tickTransform = new THREE.Matrix4()
+    tickTransform.makeTranslation(-width / 2.0, 0, 0)
+    initialTickGeometry.applyMatrix4(tickTransform)
+    tickTransform.makeTranslation(width / numTicks, 0, 0)
+    for (let i = 0; i <= numTicks; ++i)
+    {
+      tickGeometries[i] = initialTickGeometry.clone()
+      initialTickGeometry.applyMatrix4(tickTransform)
+    }
+    let ticks = this.ticks = new THREE.Mesh(THREE.BufferGeometryUtils.mergeBufferGeometries(tickGeometries, false), this.el.getObject3D('mesh').material)
+    for (let t of tickGeometries)
+    {
+      t.dispose()
+    }
+    ticks.position.set(0, this.height / 2.0, 0)
+    this.el.getObject3D('mesh').add(ticks)
+  },
+  updateKeyframes() {
+    if (!this.data.target) return;
+
+    let object = this.object
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+
+    if (!(object.uuid in animation3d.frameIndices)) {
+      for (let [frameIdx, el] of this.keyframes.entries())
+      {
+        el.remove()
+        this.keyframes.delete(frameIdx)
+      }
+      return;
+    }
+
+    let indices = animation3d.frameIndices[object.uuid]
+
+    let usedKeyframes = new Set()
+
+    for (let frameIdx of indices)
+    {
+      let keyframe = this.keyframes.get(frameIdx)
+      if (!keyframe)
+      {
+        keyframe = document.createElement('a-entity')
+        this.el.append(keyframe)
+        keyframe.setAttribute('timeline-keyframe', {target: this.data.target, frame: frameIdx})
+        this.keyframes.set(frameIdx, keyframe)
+      }
+
+      keyframe.setAttribute('position', `${frameIdx / this.numTicks * this.width - this.width / 2.0} ${this.height * 2} 0`)
+      usedKeyframes.add(frameIdx)
+    }
+
+    for (let frameIdx of this.keyframes.keys())
+    {
+      if (usedKeyframes.has(frameIdx)) continue;
+      let view = this.keyframes.get(frameIdx)
+      view.remove()
+      this.keyframes.delete(frameIdx)
+    }
+  },
+  onFrameChange() {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    let frameIdx = Compositor.component.currentFrame
+    let wrappedIdx = animation3d.currentFrameIdx(this.object, animation3d.isWrapping(this.object))
+    let width = this.width
+    let numTicks = this.numTicks
+    if (!this.scrubber.is('grabbed')) {
+      this.scrubber.object3D.position.x = frameIdx / numTicks * width - width / 2
+      this.scrubber.object3D.visible = this.scrubber.object3D.position.x >= - width / 2 && this.scrubber.object3D.position.x <= width / 2
+    }
+    this.wrappingScrubber.object3D.position.x = (wrappedIdx) / numTicks * width - width / 2
+  },
+  onKeyframed(e) {
+    if (!this.data.target) return;
+    if (e.detail.object !== this.data.target && e.detail.object !== this.data.target.object3D) return;
+
+    if (Compositor.component.isPlayingAnimation && (this.data.target.el || this.data.target).is('grabbed'))
+    {
+      this.needsUpdate = true;
+      return;
+    }
+
+    this.updateTicks()
+    this.onFrameChange()
+    this.updateKeyframes()
+  },
+  onPlayingChanged() {
+    if (!this.needsUpdate) return
+
+    this.updateTicks()
+    this.onFrameChange()
+    this.updateKeyframes()
+
+    this.needsUpdate = false
+  }
+})
+
+AFRAME.registerComponent('timeline-keyframe', {
+  schema: {
+    target: {type: 'selector'},
+    frame: {default: 1}
+  },
+  events: {
+    click: function(e) {
+      if (!e.target.hasAttribute('click-action')) return;
+
+      e.stopPropagation()
+      this[e.target.getAttribute('click-action')](e)
+    }
+  },
+  init() {
+    this.el.innerHTML = require('./partials/timeline-keyframe.html.slm')
+    // this.el.setAttribute('button-style', 'autoPosition: false')
+    // this.el.setAttribute('icon-button', '')
+  },
+  update(oldData) {
+    let frameText = this.el.querySelector('.frame-number')
+    Util.whenLoaded(frameText, () => {
+      frameText.setAttribute('icon-row-text', `${this.data.frame}`)
+    })
+  },
+  applyKeyframe() {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    let object = this.data.target.object3D || this.data.target
+    Util.applyMatrix(animation3d.trackFrameMatrix(object, this.data.frame), object)
+  },
+  deleteKeyframe() {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    let object = this.data.target.object3D || this.data.target
+    animation3d.deleteKeyframe(object, this.data.frame)
+  }
+})
+
+AFRAME.registerComponent('animation-3d-path', {
+  schema: {
+    target: {type: 'selector'}
+  },
+  init() {
+    this.constructLine()
+  },
+  update(oldData) {
+  },
+  constructLine() {
+    let object = this.data.target.object3D || this.data.target
+    let points = []
+
   }
 })

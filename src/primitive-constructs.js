@@ -388,7 +388,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       }
     }
     this.el.classList.add('clickable')
-    this.el.setAttribute('action-tooltips', 'b: Clone shape')
+    this.el.setAttribute('action-tooltips', 'b: Clone shape (Grabbed)')
   },
   update(oldData) {
     if (this.data.detached) {

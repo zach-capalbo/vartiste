@@ -33,7 +33,9 @@ AFRAME.registerComponent('button-style', {
     keepAspect: {type: 'bool', default: true},
 
     // Either 'flat' or 'button'
-    buttonType: {default: 'button'}
+    buttonType: {default: 'button'},
+
+    autoPosition: {default: true}
   }
 })
 
@@ -302,9 +304,12 @@ AFRAME.registerComponent('icon-button', {
 
     this.el.classList.add('clickable')
 
-    let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
-    this.el.object3D.position.z += depth
-    this.el.object3D.position.x += (width + 0.05) * indexId
+    if (buttonStyle.autoPosition)
+    {
+      let indexId = Array.from(this.el.parentEl.children).filter(e => e.hasAttribute('icon-button')).indexOf(this.el)
+      this.el.object3D.position.z += depth
+      this.el.object3D.position.x += (width + 0.05) * indexId
+    }
 
     let bg;
     if (buttonStyle.buttonType === 'plane')
