@@ -139,8 +139,10 @@ if (!AFRAME.utils.device.isOculusBrowser() && typeof WebXRLayersPolyfill !== 'un
 AFRAME.registerSystem('vartiste-init', {
   play() {
     Util.whenLoaded(this.el.sceneEl, () => {
-      document.getElementById('right-hand').setAttribute('right-hand-controls', "")
-      document.getElementById('left-hand').setAttribute('left-hand-controls', "")
+      Util.busy(() => {
+        document.getElementById('right-hand').setAttribute('right-hand-controls', "")
+        document.getElementById('left-hand').setAttribute('left-hand-controls', "")
+      })
     })
 
     document.addEventListener('keydown', e => {
