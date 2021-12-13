@@ -138,15 +138,12 @@ if (!AFRAME.utils.device.isOculusBrowser() && typeof WebXRLayersPolyfill !== 'un
 }
 AFRAME.registerSystem('vartiste-init', {
   init() {
-  document.getElementById('right-hand').setAttribute('right-hand-controls', "")
-  document.getElementById('left-hand').setAttribute('left-hand-controls', "")
+    document.addEventListener('keydown', e => {
+      if (e.key == "r") document.querySelector('a-scene').systems['artist-root'].resetCameraLocation()
+    })
 
-  document.addEventListener('keydown', e => {
-    if (e.key == "r") document.querySelector('a-scene').systems['artist-root'].resetCameraLocation()
-  })
-
-  document.getElementById('got-it').addEventListener('click', e => {
-    document.getElementById('need-help-notification').classList.add('hidden')
-  })
-}
+    document.getElementById('got-it').addEventListener('click', e => {
+      document.getElementById('need-help-notification').classList.add('hidden')
+    })
+  }
 })

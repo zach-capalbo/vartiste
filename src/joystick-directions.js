@@ -167,7 +167,7 @@ const JoystickDirections = {
 // presses the joystick left or right. Also known as snap turning.
 AFRAME.registerComponent('joystick-turn', {
   schema: {
-    // The angle of the turn expressed as a number in radians, where 3.14 is one full turn 
+    // The angle of the turn expressed as a number in radians, where 3.14 is one full turn
     // e.g. 3.14 / 4 for a quarter turn, 3.14 / 2 for a half turn
     amount: {type: 'number', default: 3.14 / 4},
     // The target element
@@ -198,6 +198,9 @@ AFRAME.registerComponent('joystick-turn', {
 AFRAME.registerComponent('action-tooltips', {
   multiple: true,
   schema: {
+    // Label for what you're pointing at. Can be used where a tooltip will get in the way
+    label: {type: 'string', default: null, parse: (o) => o},
+
     // Tooltip for moving the joystick up and down
     updown: {type: 'string', default: null, parse: (o) => o},
 
@@ -245,6 +248,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
     this.buttons = [
+      'label',
       'trigger',
       'updown',
       'leftright',
@@ -254,6 +258,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
     ]
 
     this.names = {
+      'label': "",
       'updown': "Up/Down",
       'leftright': "Left/Right",
       'a': "A",
@@ -333,7 +338,14 @@ AFRAME.registerComponent('hand-action-tooltip', {
     {
       if (this.message[k] !== null)
       {
-        messageString[i++]= `> ${this.names[k]}: ${this.message[k]}`
+        if (this.names[k].length > 0)
+        {
+          messageString[i++]= `> ${this.names[k]}: ${this.message[k]}`
+        }
+        else
+        {
+          messageString[i++]= `${this.message[k]}`
+        }
       }
     }
 

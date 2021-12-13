@@ -3,7 +3,7 @@ a-entity.view.clickable.grab-root frame="closable: true; closePopup: true; outli
     a-entity scale="0.45 0.45 0.45" position="-0.5 0 0"
       a-entity icon-row="mergeButtons: true"
         a-entity icon-button="#asset-format-color-fill" tooltip="Fill Material" click-action="fillMaterial"
-        a-entity icon-button="#asset-brush" tooltip="Draw with Material" click-action="activateMask" toggle-button=""
+        a-entity icon-button="#asset-brush" tooltip="Draw with Material" click-action="activateMask" toggle-button="useUntoggledColor: false"
         a-entity icon-button="#asset-resize" tooltip="Set Layer Material" click-action="setLayerMaterial"
         a-entity icon-button="#asset-chevron-up" tooltip="Increase Repeat" click-action="increaseRepeat"
         a-entity icon-button="#asset-chevron-down" tooltip="Decrease Repeat" click-action="decreaseRepeat"

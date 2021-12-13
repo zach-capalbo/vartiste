@@ -15,7 +15,7 @@ a-entity#artist-root position="0 0 0"
           a-entity id="hand-root${hand}"
             a-entity[
               id="${hand}-hand"
-              mixins="hand ${hand}-hand-mixin"
+              mixin="hand ${hand}-hand-mixin"
               _laser-controls="hand: ${hand}"
               raycaster="objects: .clickable, .canvas; interval: 10; lineColor: #74BEC1"
               raycaster-layers="layers: default, left-eye"

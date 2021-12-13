@@ -470,3 +470,100 @@ Util.registerComponentSystem('settings-system', {
     }
   }
 })
+
+Util.registerComponentSystem('export-3d-helper-system', {
+  schema: {
+    exportCanvas: {default: true, selector: '#canvas-view'},
+    exportMesh: {default: true, selector: '#composition-view'},
+    exportShapes: {default: true, selector: '#shape-root'},
+    exportReferenceObjects: {default: true, selector: '#reference-spawn'},
+    exportReferenceImages: {default: false, selector: '#reference-spawn'},
+  },
+  async runExportFn(fn) {
+    let objects = []
+    for (let prop in this.schema)
+    {
+      if (this.data[prop])
+      {
+        objects.push(this.el.sceneEl.querySelector(this.schema[prop].selector))
+      }
+    }
+
+    if (objects.length === 1)
+    {
+      await fn(objects[0].object3D)
+      return
+    }
+
+    let oldProps = new Map()
+
+    for (let prop in this.schema)
+    {
+      let el = this.el.sceneEl.querySelector(this.schema[prop].selector)
+      oldProps.set(el, {
+        visible: el.object3D.visible
+      })
+
+      if (this.data[prop])
+      {
+        el.object3D.visible = true
+      }
+      else
+      {
+        el.object3D.visible = false
+      }
+    }
+
+    let originalMap = Compositor.material.map.image
+    Compositor.material.map.image = Compositor.component.preOverlayCanvas
+    Compositor.material.map.needsUpdate = true
+    try {
+      await fn(this.el.sceneEl.querySelector('#canvas-root').object3D)
+    }
+    finally {
+      for (let [el, p] of oldProps.entries())
+      {
+        el.object3D.visible = p.visible
+      }
+
+      Compositor.material.map.image = originalMap
+      Compositor.material.map.needsUpdate = true
+    }
+  },
+  export3dAction() {
+    this.runExportFn(async rootObj => {
+      this.el.sceneEl.systems['settings-system'].export3dAction(rootObj)
+    })
+    // this.el.sceneEl.systems['settings-system'].export3dAction()
+  },
+  cloneAsReference() {
+    this.runExportFn(async rootObj => {
+      let el = document.createElement('a-entity')
+      el.setAttribute('reference-glb', '')
+      el.classList.add('clickable')
+      document.querySelector('#reference-spawn').append(el)
+
+      let material = Compositor.component.frozenMaterial()
+
+      let newObject = rootObj.clone(true)
+      newObject.traverse(o => {
+        if (o.material && o.material === Compositor.material)
+        {
+          o.material = material
+        }
+        if (o.type === 'SkinnedMesh')
+        {
+          let base = Compositor.meshes.find(m => m.name === o.name)
+          if (!base) return
+          o.bind(new THREE.Skeleton(base.skeleton.bones.map(b => b.clone()), base.skeleton.boneInverses.map(i => new THREE.Matrix4().copy(i))), new THREE.Matrix4().copy(base.bindMatrix))
+        }
+      })
+      newObject.matrix.identity()
+      // Util.applyMatrix(Compositor.meshRoot.el.object3D.matrix, newObject)
+      el.setObject3D('mesh', newObject)
+      await Util.whenLoaded(el)
+      Util.positionObject3DAtTarget(el.object3D, rootObj)
+      console.log("Setting reference", newObject, el)
+    })
+  }
+})

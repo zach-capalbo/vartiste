@@ -294,7 +294,8 @@ AFRAME.registerComponent('animation-3d-keyframed', {
 AFRAME.registerComponent('timeline-tool', {
   dependencies: ['grabbable', 'grab-root'],
   schema: {
-    target: {type: 'selector'}
+    target: {type: 'selector'},
+    loadAllKeyframes: {default: false},
   },
   init() {
     let width = 5
@@ -364,6 +365,10 @@ AFRAME.registerComponent('timeline-tool', {
       this.targetEl.addEventListener('stateremoved', this.onPlayingChanged)
     }
     this.updateTicks()
+    if (this.data.loadAllKeyframes !== oldData.loadAllKeyframes && this.data.loadAllKeyframes)
+    {
+      this.updateKeyframes()
+    }
   },
   updateTicks() {
     if (this.ticks)
@@ -429,19 +434,34 @@ AFRAME.registerComponent('timeline-tool', {
 
     let usedKeyframes = new Set()
 
-    for (let frameIdx of indices)
+    if (indices.length < 10 || this.data.loadAllKeyframes)
     {
-      let keyframe = this.keyframes.get(frameIdx)
-      if (!keyframe)
-      {
-        keyframe = document.createElement('a-entity')
-        this.el.append(keyframe)
-        keyframe.setAttribute('timeline-keyframe', {target: this.data.target, frame: frameIdx})
-        this.keyframes.set(frameIdx, keyframe)
+      if (this.loadAllButton) {
+        this.loadAllButton.remove()
       }
+      for (let frameIdx of indices)
+      {
+        let keyframe = this.keyframes.get(frameIdx)
+        if (!keyframe)
+        {
+          keyframe = document.createElement('a-entity')
+          this.el.append(keyframe)
+          keyframe.setAttribute('timeline-keyframe', {target: this.data.target, frame: frameIdx})
+          this.keyframes.set(frameIdx, keyframe)
+        }
 
-      keyframe.setAttribute('position', `${frameIdx / this.numTicks * this.width - this.width / 2.0} ${this.height * 2} 0`)
-      usedKeyframes.add(frameIdx)
+        keyframe.setAttribute('position', `${frameIdx / this.numTicks * this.width - this.width / 2.0} ${this.height * 2} 0`)
+        usedKeyframes.add(frameIdx)
+      }
+    }
+    else if (!this.data.loadAllKeyframes && !this.loadAllButton)
+    {
+      let loadAllButton = this.loadAllButton = document.createElement('a-entity')
+      this.el.append(loadAllButton)
+      loadAllButton.setAttribute('icon-button', '#asset-folder-open-outline')
+      loadAllButton.setAttribute('tooltip', 'Load all keyframes')
+      loadAllButton.setAttribute('toggle-button', {target: this.el, component: this.attrName, property: 'loadAllKeyframes'})
+      loadAllButton.setAttribute('position', `0 ${this.height * 2} 0`)
     }
 
     for (let frameIdx of this.keyframes.keys())
