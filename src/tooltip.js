@@ -140,6 +140,7 @@ AFRAME.registerComponent('preactivate-tooltip', {
   schema: {default: ""},
   events: {
     activate: function() {
+      this.el.setAttribute('action-tooltips', 'label', this.data)
       this.el.removeAttribute('tooltip')
       this.el.removeAttribute('preactivate-tooltip')
     }
