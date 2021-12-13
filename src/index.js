@@ -137,14 +137,7 @@ if (!AFRAME.utils.device.isOculusBrowser() && typeof WebXRLayersPolyfill !== 'un
   new WebXRLayersPolyfill()
 }
 AFRAME.registerSystem('vartiste-init', {
-  play() {
-    Util.whenLoaded(this.el.sceneEl, () => {
-      Util.busy(() => {
-        document.getElementById('right-hand').setAttribute('right-hand-controls', "")
-        document.getElementById('left-hand').setAttribute('left-hand-controls', "")
-      })
-    })
-
+  init() {
     document.addEventListener('keydown', e => {
       if (e.key == "r") document.querySelector('a-scene').systems['artist-root'].resetCameraLocation()
     })
