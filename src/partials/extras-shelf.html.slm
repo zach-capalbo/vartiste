@@ -1,0 +1,10 @@
+a-entity shelf="Name: Extras Shelf; closeable: true"
+  a-entity shelf-content=""
+    a-entity icon-row="": a-entity icon-row-text="Load Extras:"
+    a-entity icon-row="mergeButtons: true"
+      a-entity tooltip="Reference Images" icon-button="#asset-newspaper-variant-outline" vartiste-extras-popup="category: reference-images; forceReference: true"
+      a-entity tooltip="Reference Models" icon-button="#asset-web" vartiste-extras-popup="category: reference-models; forceReference: true"
+      a-entity tooltip="Drawable Models" icon-button="#asset-lead-pencil" vartiste-extras-popup="category: reference-models; forceReference: false"
+
+      a-entity tooltip="Material Packs" icon-button="#asset-palette-swatch-outline" vartiste-extras-popup="category: material-packs"
+      a-entity tooltip="Brush Packs" icon-button="#asset-brush" vartiste-extras-popup="category: brush-packs"

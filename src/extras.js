@@ -2,11 +2,11 @@ import {Util} from './util.js'
 
 Util.registerComponentSystem('vartiste-extras', {
   schema: {
-    url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'},
-    cacheBusterDuration: {default: 1000 * 60},
+    // url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'},
+    // cacheBusterDuration: {default: 1000 * 60},
 
-    // url: {default: 'http://localhost:8081/'},
-    // cacheBusterDuration: {default: 1},
+    url: {default: 'http://localhost:8081/'},
+    cacheBusterDuration: {default: 1},
   },
   init() {
   },
@@ -26,6 +26,7 @@ Util.registerComponentSystem('vartiste-extras', {
 AFRAME.registerComponent('vartiste-extras-popup', {
   schema: {
     category: {type: 'string'},
+    forceReference: {default: false},
   },
   events: {
     'popuplaunched': function(e) {
@@ -43,7 +44,7 @@ AFRAME.registerComponent('vartiste-extras-popup', {
     let contents = popup.querySelector('a-entity[shelf-content]')
     popup.addEventListener('click', (e) => {
       if (!e.target.hasAttribute('data-vartiste-extra')) return;
-      this.el.sceneEl.systems['file-upload'].handleURL(`${this.system.data.url}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`)
+      this.el.sceneEl.systems['file-upload'].handleURL(`${this.system.data.url}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`, {forceReference: this.data.forceReference})
     })
     for (let item of this.system.index[this.data.category])
     {
