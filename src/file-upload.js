@@ -81,6 +81,7 @@ export function addImageReferenceViewer(image) {
 async function addImageReference(file) {
   let image = new Image()
   image.src = toSrcString(file)
+  image.crossOrigin = "anonymous"
   image.id = "img"
 
   await new Promise((r,e) => image.onload = r)
@@ -818,7 +819,7 @@ Util.registerComponentSystem('file-upload', {
     this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
     document.body.append(this.inputEl)
   },
-  handleFile(file, {itemType, positionIdx, loadingManager, busy, sceneName} = {}) {
+  handleFile(file, {itemType, positionIdx, loadingManager, busy, sceneName, forceReference} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
@@ -827,7 +828,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.(mp4|mov|avi|m4v|webm|mkv|gif)$/.test(file.name))
     {
-      if (settings.data.addReferences)
+      if (forceReference || settings.data.addReferences)
       {
         addMovieReference(file).then(() => busy.done())
       }
@@ -846,7 +847,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (isImage)
     {
-      if (settings.data.addReferences)
+      if (forceReference || settings.data.addReferences)
       {
         addImageReference(file).then(reference => {
           if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
@@ -896,7 +897,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (HANDLED_MODEL_FORMAT_REGEX.test(file.name))
     {
-      if (settings.data.addReferences)
+      if (forceReference || settings.data.addReferences)
       {
         addGlbReference(file, {loadingManager}).then(() => busy.done())
       }
@@ -987,7 +988,7 @@ Util.registerComponentSystem('file-upload', {
           let blobFile = blobs[gltfFile];
           blobFile.name = gltfFile;
 
-          this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, "")})
+          this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
           busy.done()
           return;
         }
@@ -1004,7 +1005,7 @@ Util.registerComponentSystem('file-upload', {
 
         for (let blobFile of items)
         {
-          this.handleFile(blobFile, {loadingManager: manager})
+          this.handleFile(blobFile, {loadingManager: manager, forceReference})
         }
         busy.done()
       })
@@ -1037,8 +1038,8 @@ Util.registerComponentSystem('file-upload', {
 
     console.warn("Unknown file", file.name)
   },
-  handleURL(url, {positionIdx} = {}) {
-    this.handleFile(new URLFileAdapter(url))
+  handleURL(url, opts) {
+    this.handleFile(new URLFileAdapter(url), opts)
   },
   handleBrowse(e) {
     let items = Array.from(this.inputEl.files)
