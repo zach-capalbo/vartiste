@@ -569,7 +569,7 @@ AFRAME.registerComponent('normal-meld-tool', {
 Util.registerComponentSystem('mesh-clipping', {
   schema: {
     throttle: {default: 200},
-    forceDoubleSided: {default: true},
+    forceDoubleSided: {default: false},
   },
   init() {
     Pool.init(this)
@@ -609,7 +609,7 @@ Util.registerComponentSystem('mesh-clipping', {
       el.getObject3D('mesh').traverseVisible(o => {
         if (o.material) {
           o.material.clippingPlanes = this.clippingPlanes
-          if (this.data.forceDoubleSided)
+          if (this.data.forceDoubleSided && this.el.sceneEl.renderer.localClippingEnabled)
           {
             o.material.side = THREE.DoubleSide
           }
