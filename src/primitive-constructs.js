@@ -10,6 +10,7 @@ Util.registerComponentSystem('primitive-constructs', {
     container: {type: 'selector', default: '#shape-root'},
     shareMaterial: {default: false},
     allowFlat: {default: false},
+
   },
   init() {
     Pool.init(this)
@@ -313,6 +314,8 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     gltfModel: {default: ""},
     manualMesh: {default: false},
     detached: {default: false},
+
+    // TODO Transparent
   },
   events: {
     stateadded: function(e) {
@@ -393,6 +396,10 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   update(oldData) {
     if (this.data.detached) {
       this.el.setAttribute('mesh-can-be-clipped', '')
+      if (!this.el.getObject3D('mesh').material.transparent)
+      {
+        this.el.setAttribute('shadow', 'cast', true)
+      }
     }
   },
   remove() {

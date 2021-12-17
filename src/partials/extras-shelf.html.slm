@@ -8,3 +8,4 @@ a-entity shelf="Name: Extras Shelf; closeable: true"
 
       a-entity tooltip="Material Packs" icon-button="#asset-palette-swatch-outline" vartiste-extras-popup="category: material-packs"
       a-entity tooltip="Brush Packs" icon-button="#asset-brush" vartiste-extras-popup="category: brush-packs"
+      a-entity tooltip="HDRI Environments" icon-button="#asset-image-filter-hdr" vartiste-extras-popup="category: hdris"

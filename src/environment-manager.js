@@ -2,6 +2,7 @@ import Color from 'color'
 // import { PMREMGenerator} from './framework/PMREMGenerator.js'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 const [
   STATE_COLOR,
@@ -359,7 +360,7 @@ AFRAME.registerComponent('light-tool', {
       this.system.activateShadow()
       let light = document.createElement('a-entity')
       this.el.append(light)
-      light.setAttribute('light', 'type: spot; intensity: 3; castShadow: true; shadowCameraVisible: false; shadowCameraNear: 0.001')
+      light.setAttribute('light', 'type: spot; intensity: 3; castShadow: true; shadowCameraVisible: false; shadowCameraNear: 0.001; shadowMapWidth: 1024; shadowMapHeight: 1024')
       light.setAttribute('fix-light-shadow', '')
       this.light = light
 
@@ -414,13 +415,32 @@ AFRAME.registerComponent('light-bauble', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   events: {
     activate: function() {
+      console.log("Activating", 'light-bauble')
       this.system.activateShadow()
 
-      this.sun.setAttribute('light', 'type: directional; castShadow: true; intensity: 5')
+      this.light = document.createElement('a-entity')
+      this.el.sceneEl.append(this.light)
+
+      let lightTarget = document.createElement('a-entity')
+      this.el.sceneEl.append(lightTarget)
+      lightTarget.setAttribute('position', '0 1 0')
+
+      let shadowBoxSize = 0.5;
+      this.light.setAttribute('light', `type: directional; castShadow: true; intensity: 5; shadowMapWidth: 1024; shadowCameraVisible: false; shadowMapHeight: 1024; shadowCameraLeft: -${shadowBoxSize}; shadowCameraRight: ${shadowBoxSize}; shadowCameraTop: ${shadowBoxSize}; shadowCameraBottom: -${shadowBoxSize}`)
+      this.light.setAttribute('light', 'target', lightTarget)
+      this.light.setAttribute('fix-light-shadow', '')
+
       this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
+    },
+    'bbuttonup': function(e) {
+      if (this.el.is("grabbed"))
+      {
+        this.makeClone()
+      }
     }
   },
   init() {
+    Pool.init(this)
     this.system = this.el.sceneEl.systems['light-tool']
     this.el.classList.add('grab-root')
 
@@ -435,7 +455,22 @@ AFRAME.registerComponent('light-bauble', {
     this.sun = sun
   },
   sunMoved(el) {
-    this.sun.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 5))
+    if (!this.light) return
+    let spherical = this.pool('spherical', THREE.Spherical)
+    this.light.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 3))
+    this.sun.object3D.getWorldPosition(this.light.object3D.position)
+    this.light.object3D.position.y -= 1.0
+    spherical.setFromCartesianCoords(this.light.object3D.position.x, this.light.object3D.position.y, this.light.object3D.position.z)
+    spherical.radius = 5
+    this.light.object3D.position.setFromSpherical(spherical)
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    this.el.parentEl.append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+      el.setAttribute(this.attrName, this.data)
+    })
   }
 })
 
@@ -454,5 +489,26 @@ AFRAME.registerComponent('tonemapping-tooltip', {
   },
   setMapping(e) {
     this.el.setAttribute('tooltip__tonemapping', this.mappings.find(m => THREE[m] == e.detail))
+  }
+})
+
+AFRAME.registerComponent('fix-doublesided-shadow', {
+  events: {
+    object3dset: function(e) {
+      this.updateShadow()
+    }
+  },
+  play() {
+    this.updateShadow()
+  },
+  updateShadow() {
+    this.el.object3D.traverse(o => {
+      // if (o.material)
+      if (o.material && o.material.side === THREE.DoubleSide)
+      {
+        o.material.shadowSide = THREE.FrontSide
+        o.material.needsUpdate = true
+      }
+    })
   }
 })

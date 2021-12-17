@@ -127,6 +127,7 @@ AFRAME.registerComponent('pencil-tool', {
   },
   async init() {
     this.el.classList.add('grab-root')
+    this.el.setAttribute('shadow', 'cast: true; receive: false')
 
     if (this.el.hasAttribute('set-brush'))
     {
@@ -248,7 +249,7 @@ AFRAME.registerComponent('pencil-tool', {
     tip.setAttribute('height', tipHeight)
     tip.setAttribute('position', `0 -${cylinderHeight / 2 + tipHeight / 2} 0`)
 
-    if (this.el.is("erasing"))
+    if (this.el.is("erasing") || (this.el.hasAttribute('set-brush') && this.el.getAttribute('set-brush').mode === 'destination-out'))
     {
       tip.setAttribute('material', 'metalness: 0; roughness: 0.9; color: #eee')
     }
