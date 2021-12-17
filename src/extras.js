@@ -2,11 +2,11 @@ import {Util} from './util.js'
 
 Util.registerComponentSystem('vartiste-extras', {
   schema: {
-    // url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'},
-    // cacheBusterDuration: {default: 1000 * 60},
+    url: {default: 'https://zach-geek.gitlab.io/vartiste-extras/'},
+    cacheBusterDuration: {default: 1000 * 60},
 
-    url: {default: 'http://localhost:8081/'},
-    cacheBusterDuration: {default: 1},
+    // url: {default: 'http://localhost:8081/'},
+    // cacheBusterDuration: {default: 1},
   },
   init() {
   },
