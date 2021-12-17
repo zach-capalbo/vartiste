@@ -127,7 +127,7 @@ AFRAME.registerComponent('pencil-tool', {
   },
   async init() {
     this.el.classList.add('grab-root')
-    this.el.setAttribute('shadow', 'cast: true, receive: false')
+    this.el.setAttribute('shadow', 'cast: true; receive: false')
 
     if (this.el.hasAttribute('set-brush'))
     {

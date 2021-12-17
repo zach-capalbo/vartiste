@@ -415,6 +415,7 @@ AFRAME.registerComponent('light-bauble', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   events: {
     activate: function() {
+      console.log("Activating", 'light-bauble')
       this.system.activateShadow()
 
       this.light = document.createElement('a-entity')
@@ -430,6 +431,12 @@ AFRAME.registerComponent('light-bauble', {
       this.light.setAttribute('fix-light-shadow', '')
 
       this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
+    },
+    'bbuttonup': function(e) {
+      if (this.el.is("grabbed"))
+      {
+        this.makeClone()
+      }
     }
   },
   init() {
@@ -450,12 +457,20 @@ AFRAME.registerComponent('light-bauble', {
   sunMoved(el) {
     if (!this.light) return
     let spherical = this.pool('spherical', THREE.Spherical)
-    this.light.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 5))
+    this.light.setAttribute('light', 'intensity', THREE.MathUtils.mapLinear(this.el.object3D.scale.x, 0, 0.065, 0, 3))
     this.sun.object3D.getWorldPosition(this.light.object3D.position)
     this.light.object3D.position.y -= 1.0
     spherical.setFromCartesianCoords(this.light.object3D.position.x, this.light.object3D.position.y, this.light.object3D.position.z)
     spherical.radius = 5
     this.light.object3D.position.setFromSpherical(spherical)
+  },
+  makeClone() {
+    let el = document.createElement('a-entity')
+    this.el.parentEl.append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+      el.setAttribute(this.attrName, this.data)
+    })
   }
 })
 
