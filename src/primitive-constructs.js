@@ -393,6 +393,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   update(oldData) {
     if (this.data.detached) {
       this.el.setAttribute('mesh-can-be-clipped', '')
+      this.el.setAttribute('shadow', 'cast', true)
     }
   },
   remove() {
