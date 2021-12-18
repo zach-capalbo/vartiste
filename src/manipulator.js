@@ -1104,25 +1104,54 @@ AFRAME.registerComponent('manipulator-console-debug', {
 
 AFRAME.registerComponent('manipulator-snap-grid', {
   schema: {
-    coordinates: {oneOf: ['local', 'global'], default: 'local'},
-    spacing: {type: 'vec3', default: {x: 1, y: 1, z: 1}},
+    coordinates: {oneOf: ['local', 'global'], default: 'global'},
+    spacing: {type: 'vec3', default: {x: 0.05, y: 0.05, z: 0.05}},
+    spacingCubeSize: {default: 0.05},
+
+    enabled: {default: true},
   },
   init() {
     this.constrainObject = this.constrainObject.bind(this)
+    this.system = this.el.sceneEl.systems.manipulator
+    this.postManipulation = this.postManipulation.bind(this)
   },
   play() {
-    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    if (this.el === this.el.sceneEl)
+    {
+      this.system.postManipulationCallbacks.push(this.postManipulation)
+    }
+    else
+    {
+      this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    }
   },
   pause() {
-    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+    if (this.el === this.el.sceneEl)
+    {
+      this.system.postManipulationCallbacks.splice(this.system.postManipulationCallbacks.indexOf(this.postManipulation), 1)
+    }
+    else
+    {
+      this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+    }
   },
-  constrainObject(t, dt) {
-    let position = this.el.object3D.position
+  update(oldData) {
+    if (this.data.spacingCubeSize !== oldData.spacingCubeSize && this.data.spacingCubeSize > 0.0)
+    {
+      this.data.spacing.x = this.data.spacingCubeSize
+      this.data.spacing.y = this.data.spacingCubeSize
+      this.data.spacing.z = this.data.spacingCubeSize
+    }
+  },
+  snapToGrid(object3D) {
+    if (!this.data.enabled) return;
+
+    let position = object3D.position
     let isGlobal = this.data.coordinates === 'global'
 
     if (isGlobal)
     {
-      this.el.object3D.getWorldPosition(position)
+      object3D.getWorldPosition(position)
     }
 
     position.x = Math.floor(position.x / this.data.spacing.x) * this.data.spacing.x
@@ -1131,8 +1160,14 @@ AFRAME.registerComponent('manipulator-snap-grid', {
 
     if (isGlobal)
     {
-      this.el.object3D.parent.worldToLocal(position)
+      object3D.parent.worldToLocal(position)
     }
+  },
+  constrainObject(t, dt) {
+    this.snapToGrid(this.el.object3D)
+  },
+  postManipulation(el, localOffset) {
+    this.snapToGrid(el.object3D)
   }
 })
 

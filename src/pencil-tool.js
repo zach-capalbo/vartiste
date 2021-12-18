@@ -1262,7 +1262,7 @@ AFRAME.registerComponent('selection-box-tool', {
 
     for (let obj of Object.values(this.grabbers))
     {
-      if (!this.grabbed[obj.uuid].object3D || !this.grabbed[obj.uuid].object3D.parent)
+      if (!this.grabbed[obj.uuid] || !this.grabbed[obj.uuid].object3D || !this.grabbed[obj.uuid].object3D.parent)
       {
         console.warn("Grabbed object disappeared", obj)
         delete this.grabbed[obj.uuid]

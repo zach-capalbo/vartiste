@@ -1,0 +1,6 @@
+a-entity shelf="name: Grid Options; closeable: true"
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity icon-button="#asset-dots-square" tooltip="Snap to grid" toggle-button="target: a-scene; component: manipulator-snap-grid; property: enabled"
+    a-entity icon-row=""
+      a-entity text="width: 3; anchor: right; align: right; xOffset: 1.5; wrapCount: 14" edit-field="target: a-scene; component: manipulator-snap-grid; property: spacingCubeSize; tooltip: Grid Spacing; type: float"
