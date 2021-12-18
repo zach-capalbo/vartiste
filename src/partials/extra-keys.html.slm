@@ -1,0 +1,6 @@
+a-entity shelf="closeable: true; pinnable: false; width: 2.3"
+  a-entity shelf-content=""
+    - for (let letters of ".,:/\\[]()-=!@#$%^&*".match(/(.{1,4})/g))
+      a-entity icon-row="mergeButtons: true"
+        - for (let k of letters)
+          a-entity icon-button="" text="value: ${k}; color: #FFF; wrapCount: 3; align: center; width: 0.4"
