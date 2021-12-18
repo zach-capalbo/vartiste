@@ -819,7 +819,7 @@ Util.registerComponentSystem('file-upload', {
     this.inputEl.addEventListener('change', (e) => {this.handleBrowse(e)})
     document.body.append(this.inputEl)
   },
-  handleFile(file, {itemType, positionIdx, loadingManager, busy, sceneName, forceReference} = {}) {
+  async handleFile(file, {itemType, positionIdx, loadingManager, busy, sceneName, forceReference} = {}) {
     let settings = document.querySelector('a-scene').systems['settings-system']
 
     let isImage = itemType ? /image\//.test(itemType) : /\.(png|jpg|jpeg|bmp|svg)$/i.test(file.name)
@@ -830,18 +830,18 @@ Util.registerComponentSystem('file-upload', {
     {
       if (forceReference || settings.data.addReferences)
       {
-        addMovieReference(file).then(() => busy.done())
+        await addMovieReference(file).then(() => busy.done())
       }
       else
       {
-        addMovieLayer(file).then(() => busy.done())
+        await addMovieLayer(file).then(() => busy.done())
       }
       return;
     }
 
     if (/\.(svg)$/i.test(file.name))
     {
-      addSVGShapes(file).then(() => busy.done())
+      await addSVGShapes(file).then(() => busy.done())
       return;
     }
 
@@ -849,7 +849,7 @@ Util.registerComponentSystem('file-upload', {
     {
       if (forceReference || settings.data.addReferences)
       {
-        addImageReference(file).then(reference => {
+        await addImageReference(file).then(reference => {
           if (positionIdx === undefined) positionIdx = document.querySelectorAll('.reference-image').length
           reference.setAttribute('position', `${positionIdx * 0.1} 0 ${positionIdx * -0.02}`)
           busy.done()
@@ -857,20 +857,20 @@ Util.registerComponentSystem('file-upload', {
       }
       else
       {
-        addImageLayer(file, {setMapFromFilename: this.data.setMapFromFilename}).then(() => busy.done())
+        await addImageLayer(file, {setMapFromFilename: this.data.setMapFromFilename}).then(() => busy.done())
       }
       return
     }
 
     if (/\.(hdri?|exr)$/i.test(file.name))
     {
-      addHDRImage(file).then(busy.done())
+      await addHDRImage(file).then(busy.done())
       return
     }
 
     if (/\.materialpack$/i.test(file.name))
     {
-      (async () => {
+      await (async () => {
       let loader = new THREE.GLTFLoader(loadingManager)
       loader.register((parser) => {
         console.log("Switching texture loader", parser)
@@ -899,11 +899,11 @@ Util.registerComponentSystem('file-upload', {
     {
       if (forceReference || settings.data.addReferences)
       {
-        addGlbReference(file, {loadingManager}).then(() => busy.done())
+        await addGlbReference(file, {loadingManager}).then(() => busy.done())
       }
       else
       {
-        addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager, sceneName}).then(() => busy.done())
+        await addGlbViewer(file, {postProcessMesh: this.data.postProcessMesh, loadingManager, sceneName}).then(() => busy.done())
       }
       return
     }
@@ -916,7 +916,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.(vartiste-brushes)$/i.test(file.name))
     {
-      file.text().then(t => {
+      await file.text().then(t => {
         this.el.sceneEl.systems['brush-system'].addUserBrushes(JSON.parse(t))
         busy.done()
       })
@@ -925,7 +925,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.(vartiste-brushez)$/i.test(file.name))
     {
-      file.arrayBuffer().then(b => {
+      await file.arrayBuffer().then(b => {
         let inflated = Pako.inflate(b)
         let t = (new TextDecoder("utf-8")).decode(inflated)
         this.el.sceneEl.systems['brush-system'].addUserBrushes(JSON.parse(t))
@@ -936,7 +936,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.zip$/i.test(file.name))
     {
-      file.arrayBuffer().then(async (b) => {
+      await file.arrayBuffer().then(async (b) => {
         let zip = new JSZip();
         zip = await zip.loadAsync(b)
         console.log("New zip", zip)
@@ -988,7 +988,7 @@ Util.registerComponentSystem('file-upload', {
           let blobFile = blobs[gltfFile];
           blobFile.name = gltfFile;
 
-          this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
+          await this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
           busy.done()
           return;
         }
@@ -1005,7 +1005,7 @@ Util.registerComponentSystem('file-upload', {
 
         for (let blobFile of items)
         {
-          this.handleFile(blobFile, {loadingManager: manager, forceReference})
+          await this.handleFile(blobFile, {loadingManager: manager, forceReference})
         }
         busy.done()
       })
@@ -1015,7 +1015,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.vartistez$/i.test(file.name))
     {
-      file.arrayBuffer().then(b => {
+      await file.arrayBuffer().then(b => {
         console.time('decompressProject')
         let inflated = Pako.inflate(b)
         inflated = (new TextDecoder("utf-8")).decode(inflated)
@@ -1029,7 +1029,7 @@ Util.registerComponentSystem('file-upload', {
 
     if (/\.vartiste$/i.test(file.name))
     {
-      file.text().then(t => {
+      await file.text().then(t => {
         settings.load(t)
         busy.done()
       }).catch(e => console.error("Couldn't load", e))
