@@ -616,7 +616,7 @@ AFRAME.registerComponent('smoothed-webxr-motion-controller', {
   dependencies: ['webxr-motion-controller'],
   schema: {
     // **[0..1]** How much smoothing to apply. 0 means no smoothing, 1 means infinite smoothing (i.e., the controller never moves)
-    amount: {default: 0.8},
+    amount: {default: Util.isLowPower() ? 0.2 : 0.8},
   },
   init() {
     let smoothing = this;

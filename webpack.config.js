@@ -17,6 +17,10 @@ let config = {
   devServer: devMode ? {
     contentBase: './dist',
     disableHostCheck: true,
+    
+    https: true,
+    host: '0.0.0.0',
+    port: 7979,
   } : undefined,
   output: {
     filename: '[name].bundle.[contenthash].js',

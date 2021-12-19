@@ -142,7 +142,7 @@ AFRAME.registerComponent('add-extras-edit-field', {
 
       if (!value.startsWith("http"))
       {
-        value = "http://" + value;
+        value = "https://" + value;
       }
 
       this.el.sceneEl.setAttribute('vartiste-extras', {extraURLs: [].concat(this.el.sceneEl.components['vartiste-extras'].data.extraURLs, [value])})
