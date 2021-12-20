@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
+
 // Implements the [webxr-input-profiles
 // motion-controllers](https://github.com/immersive-web/webxr-input-profiles)
 // package. Use the [`webxr-motion-controller`](#webxr-motion-controller) as
@@ -15,6 +16,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
     disableTrackedControls: {default: true},
 
     enableFallbackProfile: {default: true},
+
+    forceProfile: {default: ""},
   },
   start() {
     this.start = function() {};
@@ -33,6 +36,13 @@ AFRAME.registerSystem('webxr-input-profiles', {
     }
 
     this.updateControllerList = this.updateControllerList.bind(this)
+  },
+  resetControllers() {
+    for (let controller of this.motionControllers.values())
+    {
+      // console.log("Removing controller", controller)
+      this.motionControllers.delete(controller.xrInputSource)
+    }
   },
   updateReferenceSpace() {
     var self = this;
@@ -105,7 +115,19 @@ AFRAME.registerSystem('webxr-input-profiles', {
       {
         this.loadingControllers.add(input)
         try {
-          let prof = await fetchProfile(input, this.data.url, "generic-trigger")
+          let profileInput = input;
+
+          if (this.data.forceProfile.length > 0)
+          {
+            profileInput = {
+              profiles: [this.data.forceProfile],
+              gamepad: input.gamepad,
+              handedness: input.handedness,
+            }
+          }
+
+          let prof = await fetchProfile(profileInput, this.data.url, "generic-trigger")
+          console.log("Fetched profile", prof, input)
           let m = new MotionController(input, prof.profile, prof.assetPath)
 
           m.seen = true

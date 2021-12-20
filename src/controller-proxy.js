@@ -49,3 +49,15 @@ AFRAME.registerComponent('controller-touch-button', {
 
   }
 })
+
+AFRAME.registerComponent('controller-force-profile-button', {
+  events: {
+    dropdownoption: function(e) {
+      console.log("Forcing controller profile", e.detail)
+      let inputSystem = this.el.sceneEl.systems['webxr-input-profiles']
+      inputSystem.data.forceProfile = e.detail
+      inputSystem.resetControllers()
+      inputSystem.updateControllerList()
+    }
+  }
+})

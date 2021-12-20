@@ -20,6 +20,7 @@ a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false
   a-entity icon-button="#asset-account-voice" toggle-button="target: a-scene; component: speech; property: speak" tooltip="Toggle Screen Reader"
   a-entity icon-button="#asset-ear-hearing" speech-recognition-button="" tooltip="Listen for voice command"
   a-entity icon-button="#asset-hand-no-lines" tooltip="Controller Options" popup-button="popup: controller-setup-shelf; deferred: true"
+  a-entity icon-button="#asset-video-vintage" tooltip="Reset View" system-click-action="system: artist-root; action: resetCameraLocation"
 
 
 a-entity position="-0.3 0.1 0"
