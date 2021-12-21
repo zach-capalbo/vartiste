@@ -18,6 +18,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
     enableFallbackProfile: {default: true},
 
     forceProfile: {default: ""},
+
+    enableWorkarounds: {default: true},
   },
   start() {
     this.start = function() {};
@@ -89,6 +91,17 @@ AFRAME.registerSystem('webxr-input-profiles', {
       }
     }
   },
+  profileWorkarounds(input) {
+    if (input.profiles[0] === 'htc-vive-focus-plus' && input.gamepad.buttons.length > 3)
+    {
+      return {
+        profiles: ['htc-vive-focus-3'].concat(input.profiles),
+        gamepad: input.gamepad,
+        handedness: input.handedness,
+      }
+    }
+    return input;
+  },
   async updateControllerList() {
     let xrSession = this.el.sceneEl.xrSession;
     if (!xrSession) return;
@@ -124,6 +137,10 @@ AFRAME.registerSystem('webxr-input-profiles', {
               gamepad: input.gamepad,
               handedness: input.handedness,
             }
+          }
+          else if (this.data.enableWorkarounds)
+          {
+            profileInput = this.profileWorkarounds(input)
           }
 
           let prof = await fetchProfile(profileInput, this.data.url, "generic-trigger")
