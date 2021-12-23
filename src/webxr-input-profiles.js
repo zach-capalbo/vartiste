@@ -17,8 +17,12 @@ AFRAME.registerSystem('webxr-input-profiles', {
 
     enableFallbackProfile: {default: true},
 
+    // If set, will force all controllers to use this input profile. Should be a
+    // profile name from the [webxr-input-profiles registry](https://github.com/immersive-web/webxr-input-profiles/blob/main/packages/registry/README.md)
     forceProfile: {default: ""},
 
+    // If true, will add some extra workarounds for browser/controller
+    // configurations that don't always report correctly
     enableWorkarounds: {default: true},
   },
   start() {
