@@ -11,13 +11,23 @@ const webpack = require('webpack')
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
 
+const hostInfo = process.env["HTTPS"] === "true" ?
+{
+  contentBase: './dist',
+  disableHostCheck: true,
+
+  https: true,
+  host: '0.0.0.0',
+  port: 7979,
+} : {
+  contentBase: './dist',
+  disableHostCheck: true,  
+};
+
 let config = {
   mode: devMode ? "development" : "production",
   devtool: devMode ? 'inline-cheap-module-source-map' : undefined,
-  devServer: devMode ? {
-    contentBase: './dist',
-    disableHostCheck: true,
-  } : undefined,
+  devServer: devMode ? hostInfo : undefined,
   output: {
     filename: '[name].bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),

@@ -1108,12 +1108,16 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     spacing: {type: 'vec3', default: {x: 0.05, y: 0.05, z: 0.05}},
     spacingCubeSize: {default: 0.05},
 
+    angleStep: {default: 45.0},
+
     enabled: {default: true},
   },
   init() {
     this.constrainObject = this.constrainObject.bind(this)
     this.system = this.el.sceneEl.systems.manipulator
     this.postManipulation = this.postManipulation.bind(this)
+
+    Pool.init(this, {useSystem: true})
   },
   play() {
     if (this.el === this.el.sceneEl)
@@ -1149,18 +1153,34 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     let position = object3D.position
     let isGlobal = this.data.coordinates === 'global'
 
+    let rotation = object3D.rotation
+
     if (isGlobal)
     {
       object3D.getWorldPosition(position)
+      rotation.setFromRotationMatrix(object3D.matrixWorld)
     }
 
     position.x = Math.floor(position.x / this.data.spacing.x) * this.data.spacing.x
     position.y = Math.floor(position.y / this.data.spacing.y) * this.data.spacing.y
     position.z = Math.floor(position.z / this.data.spacing.z) * this.data.spacing.z
 
+    let angleStep = this.data.angleStep * Math.PI / 180.0
+    rotation.x = Math.floor(rotation.x / angleStep) * angleStep
+    rotation.y = Math.floor(rotation.y / angleStep) * angleStep
+    rotation.z = Math.floor(rotation.z / angleStep) * angleStep
+
+
     if (isGlobal)
     {
       object3D.parent.worldToLocal(position)
+
+      let rotationMatrix = this.pool('rotationMatrix', THREE.Matrix4)
+      let world = this.pool('world', THREE.Matrix4)
+      world.copy(object3D.parent.matrixWorld)
+      world.invert()
+
+      // rotationMatrix.makeRotationFromEuler(rotation)
     }
   },
   constrainObject(t, dt) {

@@ -1,5 +1,6 @@
 import {Util} from './util.js'
 import { fetchProfile, MotionController, Constants } from '@webxr-input-profiles/motion-controllers/dist/motion-controllers.module.js'
+
 // Implements the [webxr-input-profiles
 // motion-controllers](https://github.com/immersive-web/webxr-input-profiles)
 // package. Use the [`webxr-motion-controller`](#webxr-motion-controller) as
@@ -15,6 +16,14 @@ AFRAME.registerSystem('webxr-input-profiles', {
     disableTrackedControls: {default: true},
 
     enableFallbackProfile: {default: true},
+
+    // If set, will force all controllers to use this input profile. Should be a
+    // profile name from the [webxr-input-profiles registry](https://github.com/immersive-web/webxr-input-profiles/blob/main/packages/registry/README.md)
+    forceProfile: {default: ""},
+
+    // If true, will add some extra workarounds for browser/controller
+    // configurations that don't always report correctly
+    enableWorkarounds: {default: true},
   },
   start() {
     this.start = function() {};
@@ -33,6 +42,13 @@ AFRAME.registerSystem('webxr-input-profiles', {
     }
 
     this.updateControllerList = this.updateControllerList.bind(this)
+  },
+  resetControllers() {
+    for (let controller of this.motionControllers.values())
+    {
+      // console.log("Removing controller", controller)
+      this.motionControllers.delete(controller.xrInputSource)
+    }
   },
   updateReferenceSpace() {
     var self = this;
@@ -79,6 +95,17 @@ AFRAME.registerSystem('webxr-input-profiles', {
       }
     }
   },
+  profileWorkarounds(input) {
+    if (input.profiles[0] === 'htc-vive-focus-plus' && input.gamepad.buttons.length > 3)
+    {
+      return {
+        profiles: ['htc-vive-focus-3'].concat(input.profiles),
+        gamepad: input.gamepad,
+        handedness: input.handedness,
+      }
+    }
+    return input;
+  },
   async updateControllerList() {
     let xrSession = this.el.sceneEl.xrSession;
     if (!xrSession) return;
@@ -105,7 +132,23 @@ AFRAME.registerSystem('webxr-input-profiles', {
       {
         this.loadingControllers.add(input)
         try {
-          let prof = await fetchProfile(input, this.data.url, "generic-trigger")
+          let profileInput = input;
+
+          if (this.data.forceProfile.length > 0)
+          {
+            profileInput = {
+              profiles: [this.data.forceProfile],
+              gamepad: input.gamepad,
+              handedness: input.handedness,
+            }
+          }
+          else if (this.data.enableWorkarounds)
+          {
+            profileInput = this.profileWorkarounds(input)
+          }
+
+          let prof = await fetchProfile(profileInput, this.data.url, "generic-trigger")
+          console.log("Fetched profile", prof, input)
           let m = new MotionController(input, prof.profile, prof.assetPath)
 
           m.seen = true
@@ -616,7 +659,7 @@ AFRAME.registerComponent('smoothed-webxr-motion-controller', {
   dependencies: ['webxr-motion-controller'],
   schema: {
     // **[0..1]** How much smoothing to apply. 0 means no smoothing, 1 means infinite smoothing (i.e., the controller never moves)
-    amount: {default: 0.8},
+    amount: {default: Util.isLowPower() ? 0.2 : 0.8},
   },
   init() {
     let smoothing = this;
