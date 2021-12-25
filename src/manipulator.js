@@ -1108,7 +1108,7 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     spacing: {type: 'vec3', default: {x: 0.05, y: 0.05, z: 0.05}},
     spacingCubeSize: {default: 0.05},
 
-    angleStep: {default: 45.0},
+    angleStep: {default: 90.0},
 
     enabled: {default: true},
   },
@@ -1116,6 +1116,9 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     this.constrainObject = this.constrainObject.bind(this)
     this.system = this.el.sceneEl.systems.manipulator
     this.postManipulation = this.postManipulation.bind(this)
+
+    this.positioner = new THREE.Object3D
+    this.el.sceneEl.object3D.add(this.positioner)
 
     Pool.init(this, {useSystem: true})
   },
@@ -1158,7 +1161,7 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     if (isGlobal)
     {
       object3D.getWorldPosition(position)
-      rotation.setFromRotationMatrix(object3D.matrixWorld)
+      // rotation.setFromRotationMatrix(object3D.matrixWorld)
     }
 
     position.x = Math.floor(position.x / this.data.spacing.x) * this.data.spacing.x
@@ -1166,16 +1169,42 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     position.z = Math.floor(position.z / this.data.spacing.z) * this.data.spacing.z
 
     let angleStep = this.data.angleStep * Math.PI / 180.0
-    rotation.x = Math.floor(rotation.x / angleStep) * angleStep
-    rotation.y = Math.floor(rotation.y / angleStep) * angleStep
-    rotation.z = Math.floor(rotation.z / angleStep) * angleStep
 
+    for (let v of [[0, 0, 1], [1, 0, 0]])
+    {
+      object3D.updateMatrixWorld()
+      let dir = this.pool('dir', THREE.Vector3)
+      // object3D.getWorldDirection(dir)
+      let worldQuat = this.pool('worldQuat', THREE.Quaternion)
+      object3D.getWorldQuaternion(worldQuat)
+      dir.set(v[0],v[1],v[2])
+      dir.applyQuaternion(worldQuat)
+      let quaternion = this.pool('quaternion', THREE.Quaternion)
+      let spherical = this.pool('spherical', THREE.Spherical)
+      spherical.setFromCartesianCoords(dir.x, dir.y, dir.z)
+      spherical.phi = Math.round(spherical.phi / angleStep) * angleStep
+      spherical.theta = Math.round(spherical.theta / angleStep) * angleStep
+      spherical.makeSafe()
+      if (spherical.theta < 0)
+      {
+        spherical.theta += Math.PI * 2.0
+      }
+      let snappedDir = this.pool('snappedDir', THREE.Vector3)
+      snappedDir.setFromSpherical(spherical)
+      quaternion.setFromUnitVectors(dir, snappedDir)
+
+      let originalQuaternion = this.pool('oq', THREE.Quaternion)
+      originalQuaternion.copy(object3D.quaternion)
+      object3D.applyQuaternion(quaternion)
+      // object3D.quaternion.slerp(originalQuaternion, 0.3)
+      console.log(dir, snappedDir, quaternion, quaternion.length())
+    }
 
     if (isGlobal)
     {
       object3D.parent.worldToLocal(position)
 
-      let rotationMatrix = this.pool('rotationMatrix', THREE.Matrix4)
+      // let rotationMatrix = this.pool('rotationMatrix', THREE.Matrix4)
       let world = this.pool('world', THREE.Matrix4)
       world.copy(object3D.parent.matrixWorld)
       world.invert()
@@ -1187,7 +1216,10 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     this.snapToGrid(this.el.object3D)
   },
   postManipulation(el, localOffset) {
-    this.snapToGrid(el.object3D)
+    // this.snapToGrid(el.object3D)
+    Util.positionObject3DAtTarget(this.positioner, el.object3D)
+    this.snapToGrid(this.positioner)
+    Util.positionObject3DAtTarget(el.object3D, this.positioner)
   }
 })
 
