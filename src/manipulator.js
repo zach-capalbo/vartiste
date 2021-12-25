@@ -1108,7 +1108,7 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     spacing: {type: 'vec3', default: {x: 0.05, y: 0.05, z: 0.05}},
     spacingCubeSize: {default: 0.05},
 
-    angleStep: {default: 90.0},
+    angleStep: {default: 45.0},
 
     enabled: {default: true},
   },
