@@ -1197,7 +1197,6 @@ AFRAME.registerComponent('manipulator-snap-grid', {
       originalQuaternion.copy(object3D.quaternion)
       object3D.applyQuaternion(quaternion)
       // object3D.quaternion.slerp(originalQuaternion, 0.3)
-      console.log(dir, snappedDir, quaternion, quaternion.length())
     }
 
     if (isGlobal)
