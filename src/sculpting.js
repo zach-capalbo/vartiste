@@ -1193,6 +1193,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
     this.el.sceneEl.addEventListener('brushchanged', this.markMaterial)
     this.el.sceneEl.addEventListener('materialmaskactivated', this.markMaterial)
+    Compositor.el.addEventListener('componentchanged', this.markMaterial)
 
     Util.whenLoaded(this.el, () => {
       this.initialScale = this.el.object3D.scale.x

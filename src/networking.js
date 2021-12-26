@@ -191,7 +191,6 @@ AFRAME.registerSystem('networking', {
         this.onpose(id, d)
         break;
       }
-
     })
 
 
