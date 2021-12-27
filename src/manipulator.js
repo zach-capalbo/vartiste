@@ -1154,15 +1154,9 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     if (!this.data.enabled) return;
 
     let position = object3D.position
-    let isGlobal = this.data.coordinates === 'global'
 
     let rotation = object3D.rotation
 
-    if (isGlobal)
-    {
-      object3D.getWorldPosition(position)
-      // rotation.setFromRotationMatrix(object3D.matrixWorld)
-    }
 
     position.x = Math.floor(position.x / this.data.spacing.x) * this.data.spacing.x
     position.y = Math.floor(position.y / this.data.spacing.y) * this.data.spacing.y
@@ -1198,27 +1192,26 @@ AFRAME.registerComponent('manipulator-snap-grid', {
       object3D.applyQuaternion(quaternion)
       // object3D.quaternion.slerp(originalQuaternion, 0.3)
     }
-
-    if (isGlobal)
-    {
-      object3D.parent.worldToLocal(position)
-
-      // let rotationMatrix = this.pool('rotationMatrix', THREE.Matrix4)
-      let world = this.pool('world', THREE.Matrix4)
-      world.copy(object3D.parent.matrixWorld)
-      world.invert()
-
-      // rotationMatrix.makeRotationFromEuler(rotation)
-    }
   },
   constrainObject(t, dt) {
     this.snapToGrid(this.el.object3D)
   },
   postManipulation(el, localOffset) {
     // this.snapToGrid(el.object3D)
-    Util.positionObject3DAtTarget(this.positioner, el.object3D)
-    this.snapToGrid(this.positioner)
-    Util.positionObject3DAtTarget(el.object3D, this.positioner)
+    if (this.data.coordinates === 'global')
+    {
+      Util.positionObject3DAtTarget(this.positioner, el.object3D)
+      this.snapToGrid(this.positioner)
+      Util.positionObject3DAtTarget(el.object3D, this.positioner)
+
+      let box = this.pool('box', THREE.Box3)
+      Util.recursiveBoundingBox(el.object3D, box)
+
+    }
+    else
+    {
+      this.snapToGrid(this.el.object3D)
+    }
   }
 })
 

@@ -190,3 +190,9 @@ AFRAME.registerComponent('extras-sources-list', {
     }
   }
 })
+
+Util.registerComponentSystem('peer-extras', {
+  init() {
+
+  }
+})
