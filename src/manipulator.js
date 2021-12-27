@@ -1203,6 +1203,10 @@ AFRAME.registerComponent('manipulator-snap-grid', {
       Util.positionObject3DAtTarget(this.positioner, el.object3D)
       this.snapToGrid(this.positioner)
       Util.positionObject3DAtTarget(el.object3D, this.positioner)
+
+      let box = this.pool('box', THREE.Box3)
+      Util.recursiveBoundingBox(el.object3D, box)
+
     }
     else
     {
