@@ -625,6 +625,10 @@ class VARTISTEUtil {
       m.updateMatrixWorld()
       tmpBox.copy(m.geometry.boundingBox)
       tmpBox.applyMatrix4(m.matrixWorld)
+
+      // Hidden Icon buttons
+      if (tmpBox.min.y < -9999) return;
+
       boundingBox.union(tmpBox)
     })
 

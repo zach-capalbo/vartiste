@@ -238,6 +238,7 @@ AFRAME.registerComponent('manipulator', {
 
     this.target.object3D.getWorldPosition(this.endPoint.position)
     this.startPoint.worldToLocal(this.endPoint.position)
+    this.endPoint.scale.copy(this.target.object3D.scale)
 
     this.startPoint.updateMatrixWorld()
 
@@ -496,7 +497,9 @@ AFRAME.registerComponent('manipulator', {
           if (this.grabOptions.scalable)
           {
             let scaleFactor = 1.0 - (0.2 * this.scaleAmmount * dt / 100)
-            this.target.object3D.scale.multiplyScalar(scaleFactor)
+            // this.target.object3D.scale.multiplyScalar(scaleFactor)
+            this.endPoint.scale.multiplyScalar(scaleFactor)
+            this.grabber.object3D.scale.multiplyScalar(1.0 / scaleFactor)
             this.offset.multiplyScalar(scaleFactor)
           }
         }
@@ -540,6 +543,7 @@ AFRAME.registerComponent('manipulator', {
       localOffset.applyQuaternion(this.target.object3D.quaternion)
 
       this.target.object3D.position.sub(localOffset)
+      this.target.object3D.scale.copy(this.endPoint.scale)
 
       if (this.resetZoom) {
         this.zoomAmmount = 0
@@ -1109,6 +1113,7 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     spacingCubeSize: {default: 0.05},
 
     angleStep: {default: 45.0},
+    scaleSteps: {default: 2.0},
 
     enabled: {default: true},
   },
@@ -1197,7 +1202,7 @@ AFRAME.registerComponent('manipulator-snap-grid', {
     this.snapToGrid(this.el.object3D)
   },
   postManipulation(el, localOffset) {
-    // this.snapToGrid(el.object3D)
+    if (!this.data.enabled) return;
     if (this.data.coordinates === 'global')
     {
       Util.positionObject3DAtTarget(this.positioner, el.object3D)
@@ -1205,8 +1210,25 @@ AFRAME.registerComponent('manipulator-snap-grid', {
       Util.positionObject3DAtTarget(el.object3D, this.positioner)
 
       let box = this.pool('box', THREE.Box3)
-      Util.recursiveBoundingBox(el.object3D, box)
+      Util.recursiveBoundingBox(el.object3D, {box})
+      let maxSide = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z)
+      let scaleSnap = (this.data.spacing.x / this.data.scaleSteps)
+      let scaledMaxSide = Math.round(maxSide / scaleSnap) * scaleSnap
 
+      if (el.hasAttribute('manipulator-weight') && Math.abs(scaledMaxSide - maxSide) < scaleSnap * 0.1) return;
+
+      let scaleAmmount = scaledMaxSide / maxSide
+      el.object3D.scale.multiplyScalar(scaleAmmount)
+      // console.log("Box", scaleSnap, scaledMaxSide, maxSide, scaleAmmount, JSON.stringify(box), JSON.stringify(el.object3D.scale))
+
+      // this.positioner.scale.set(
+      //   this.positioner.scale.x / (Math.round((box.max.x - box.min.x) / (this.data.spacing.x / this.data.scaleSteps)) * this.data.spacing.x / this.data.scaleSteps),
+      //   this.positioner.scale.y / (box.max.y - box.min.y),
+      //   // this.positioner.scale.y / (Math.round((box.max.y - box.min.y) / (this.data.spacing.y / this.data.scaleSteps)) * this.data.spacing.y / this.data.scaleSteps),
+      //   this.positioner.scale.z,
+      // )
+      //
+      // Util.positionObject3DAtTarget(el.object3D, this.positioner)
     }
     else
     {
