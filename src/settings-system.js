@@ -473,7 +473,7 @@ Util.registerComponentSystem('settings-system', {
 
 Util.registerComponentSystem('export-3d-helper-system', {
   schema: {
-    exportCanvas: {default: true, selector: '#canvas-view'},
+    exportCanvas: {default: false, selector: '#canvas-view'},
     exportMesh: {default: true, selector: '#composition-view'},
     exportShapes: {default: true, selector: '#shape-root'},
     exportReferenceObjects: {default: true, selector: '#reference-spawn'},

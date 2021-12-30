@@ -149,6 +149,19 @@ AFRAME.registerSystem('webxr-input-profiles', {
 
           let prof = await fetchProfile(profileInput, this.data.url, "generic-trigger")
           console.log("Fetched profile", prof, input)
+          if (!input.gamepad)
+          {
+            console.warn("No gamepad specified for", input)
+            let originalInput = input;
+            input = new Proxy(input, {
+              get: function(target, prop, receiver) {
+                if (prop === "gamepad") return {buttons: []};
+
+                return originalInput[prop];
+                return Reflect.get(originalInput, prop, receiver);
+              }
+            })
+          }
           let m = new MotionController(input, prof.profile, prof.assetPath)
 
           m.seen = true
@@ -447,6 +460,8 @@ AFRAME.registerComponent('webxr-motion-controller', {
       } else if (visualResponse.valueNodeProperty === 'transform') {
         const minNode = motionControllerRoot.getObjectByName(visualResponse.minNodeName);
         const maxNode = motionControllerRoot.getObjectByName(visualResponse.maxNodeName);
+
+        if (!minNode || !maxNode) continue;
 
         THREE.Quaternion.slerp(
           minNode.quaternion,
