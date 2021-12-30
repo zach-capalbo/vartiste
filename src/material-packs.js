@@ -307,6 +307,12 @@ Util.registerComponentSystem('material-pack-system', {
           {
             attr[m] = await bitmapToImage(o.material[m].image, true)
           }
+
+          if (m === 'metalnessMap')
+          {
+            attr["metalness"] = 1
+          }
+
           hasAttr = true
         }
         if (o.material.map && o.material.map.image) {
