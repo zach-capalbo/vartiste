@@ -477,7 +477,6 @@ Util.registerComponentSystem('export-3d-helper-system', {
     exportMesh: {default: true, selector: '#composition-view'},
     exportShapes: {default: true, selector: '#shape-root'},
     exportReferenceObjects: {default: true, selector: '#reference-spawn'},
-    exportReferenceImages: {default: false, selector: '#reference-spawn'},
   },
   async runExportFn(fn) {
     let objects = []
