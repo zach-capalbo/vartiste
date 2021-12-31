@@ -21,7 +21,16 @@ Util.registerComponentSystem('vartiste-extras', {
     })
 
     let urls = await db.extraURLs.toArray()
-    this.el.setAttribute('vartiste-extras', {extraURLs: urls.map(u => u.url)})
+    let queryUrls = []
+
+    let params = new URLSearchParams(document.location.search)
+    let queryStr = params.get("extrasURL")
+    if (queryStr)
+    {
+      queryUrls.push(queryStr)
+    }
+
+    this.el.setAttribute('vartiste-extras', {extraURLs: urls.map(u => u.url).concat(queryUrls)})
   },
   update(oldData) {
     if (this.data.url !== oldData.url || this.data.extraURLs !== oldData.extraURLs)
@@ -32,6 +41,11 @@ Util.registerComponentSystem('vartiste-extras', {
   async fetchIndex() {
     let res = await fetch(this.data.url + "index.json" + "?v=" + Date.now());
     this.index = await res.json()
+  },
+  addExtraURL(value) {
+    if (this.data.extraURLs.indexOf(value) >= 0) return;
+
+    this.el.sceneEl.setAttribute('vartiste-extras', {extraURLs: [].concat(this.data.extraURLs, [value])})
   },
   async updateExtraURLs() {
     this.indices = new Map()
@@ -145,7 +159,8 @@ AFRAME.registerComponent('add-extras-edit-field', {
         value = "https://" + value;
       }
 
-      this.el.sceneEl.setAttribute('vartiste-extras', {extraURLs: [].concat(this.el.sceneEl.components['vartiste-extras'].data.extraURLs, [value])})
+      this.el.sceneEl.systems['vartiste-extras'].addExtraURL(value)
+      // this.el.sceneEl.setAttribute('vartiste-extras', {extraURLs: [].concat(this.el.sceneEl.components['vartiste-extras'].data.extraURLs, [value])})
       this.el.setAttribute('text', 'value', '')
     }
   },
