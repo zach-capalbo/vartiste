@@ -21,16 +21,25 @@ Util.registerComponentSystem('vartiste-extras', {
     })
 
     let urls = await db.extraURLs.toArray()
+    let dbUrls = urls.map(u => u.url)
     let queryUrls = []
 
     let params = new URLSearchParams(document.location.search)
     let queryStr = params.get("extrasURL")
     if (queryStr)
     {
-      queryUrls.push(queryStr)
+      if (queryStr.endsWith("/"))
+      {
+        queryStr = queryStr.slice(0, -1)
+      }
+      if (dbUrls.indexOf(queryStr) < 0)
+      {
+        console.log("Adding url extra", queryStr, dbUrls)
+        queryUrls.push(queryStr)
+      }
     }
 
-    this.el.setAttribute('vartiste-extras', {extraURLs: urls.map(u => u.url).concat(queryUrls)})
+    this.el.setAttribute('vartiste-extras', {extraURLs: dbUrls.concat(queryUrls)})
   },
   update(oldData) {
     if (this.data.url !== oldData.url || this.data.extraURLs !== oldData.extraURLs)
