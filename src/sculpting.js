@@ -883,7 +883,142 @@ Util.registerComponentSystem('shape-creation', {
 })
 
 Util.registerComponentSystem('threed-line-system', {
+  init() {
+    this.materialNeedsUpdate = true
+  },
+  markMaterial() {
+    this.materialNeedsUpdate = true
+  },
+  getMaterial(distance) {
+    // return new THREE.MeshNormalMaterial()
+    if (this.material && !this.materialNeedsUpdate) return this.material;
+    console.log("Regenerating material")
+    if (this.material) this.material.dispose()
+    let brush = this.el.sceneEl.systems['paint-system'].brush;
 
+    let canvas, color, opacity;
+
+    let transparent = true;
+
+    if (brush instanceof StretchBrush)
+    {
+      canvas = brush.image
+      color = new THREE.Color(brush.color3)
+      color.convertSRGBToLinear()
+      opacity = brush.opacity
+      canvas = Util.cloneCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
+    }
+    else
+    {
+      canvas = document.createElement('canvas')
+
+      if (Util.isLowPower())
+      {
+        canvas.width = 256
+        canvas.height = 64
+      }
+      else
+      {
+        canvas.width = 512
+        canvas.height = 128
+      }
+
+      let ctx = canvas.getContext('2d')
+
+      if (brush.startDrawing)
+      {
+        brush.startDrawing(ctx, 0, 0.5 * canvas.height)
+      }
+
+      let pointCount = brush.connected ? 40 : 10
+      for (let i = 1; i < pointCount; ++i)
+      {
+        brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
+      }
+
+      if (brush.endDrawing)
+      {
+        brush.endDrawing(ctx)
+      }
+
+      canvas = Util.autoCropCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
+    }
+
+    if (opacity < 1.0) transparent = true;
+
+    let texture = new THREE.Texture;
+    texture.image = canvas
+    texture.needsUpdate = true
+    texture.encoding = THREE.sRGBEncoding
+    texture.generateMipmaps = false
+    texture.minFilter = THREE.LinearFilter
+    let materialType = THREE.MeshBasicMaterial;
+
+    switch (Compositor.el.getAttribute('material').shader)
+    {
+      case 'standard': materialType = THREE.MeshStandardMaterial; break;
+      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+    }
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      materialType = THREE.MeshStandardMaterial
+    }
+
+    // materialType = THREE.MeshNormalMaterial;
+
+    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
+      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
+      for (let map in maps)
+      {
+        if (!maskData[ENABLED_MAP[map]]) continue;
+        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
+        if (map === 'src') {
+          console.log("Painting over canvas")
+          let ctx = canvas.getContext('2d')
+          let globalCompositeOperation = ctx.globalCompositeOperation
+          ctx.globalCompositeOperation = 'source-in'
+          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
+                                   0, 0, canvas.width, canvas.height)
+          ctx.globalCompositeOperation = globalCompositeOperation
+          this.material.map.needsUpdate = true
+          continue;
+        }
+        if (map === 'metalnessMap')
+        {
+          this.material.metalness = 1
+        }
+        texture = new THREE.Texture;
+        texture.image = maps[map]
+        texture.needsUpdate = true
+        texture.encoding = THREE.sRGBEncoding
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        this.material[map] = texture
+
+        console.log("Set", map)
+      }
+      this.material.needsUpdate = true
+    }
+
+    this.materialNeedsUpdate = false
+
+    return this.material;
+  },
 })
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
@@ -995,7 +1130,7 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     draw: function(e) {
       if (this.data.pointToPoint) return;
-      if (!this.material || this.materialNeedsUpdate) {
+      if (!this.system.material || this.system.materialNeedsUpdate) {
         this.getMaterial()
         return;
       }
@@ -1127,7 +1262,8 @@ AFRAME.registerComponent('threed-line-tool', {
     }
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['threed-line-system']
+    Pool.init(this, {useSystem: true})
     this.doneDrawing = this.doneDrawing.bind(this)
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
@@ -1188,8 +1324,8 @@ AFRAME.registerComponent('threed-line-tool', {
     this.worldForward = new THREE.Vector3
     this.forward2 = new THREE.Vector3
 
-    this.materialNeedsUpdate = true
-    this.markMaterial = this.markMaterial.bind(this)
+
+    this.markMaterial = this.system.markMaterial.bind(this.system)
 
     this.el.sceneEl.addEventListener('colorchanged', this.markMaterial)
     this.el.sceneEl.addEventListener('opacitychanged', this.markMaterial)
@@ -1207,9 +1343,6 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   calcScale() {
     return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
-  },
-  markMaterial() {
-    this.materialNeedsUpdate = true
   },
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
@@ -1622,138 +1755,11 @@ AFRAME.registerComponent('threed-line-tool', {
 
     if (!this.el.sceneEl.systems['primitive-constructs'].data.shareMaterial)
     {
-      this.material = this.material.clone()
+      this.system.material = this.system.material.clone()
     }
   },
-  getMaterial(distance) {
-    // return new THREE.MeshNormalMaterial()
-    if (this.material && !this.materialNeedsUpdate) return this.material;
-    console.log("Regenerating material")
-    if (this.material) this.material.dispose()
-    let brush = this.el.sceneEl.systems['paint-system'].brush;
-
-    let canvas, color, opacity;
-
-    let transparent = true;
-
-    if (brush instanceof StretchBrush)
-    {
-      canvas = brush.image
-      color = new THREE.Color(brush.color3)
-      color.convertSRGBToLinear()
-      opacity = brush.opacity
-      canvas = Util.cloneCanvas(canvas)
-
-      if (!Util.isLowPower())
-      {
-        transparent = !Util.isCanvasFullyOpaque(canvas)
-      }
-    }
-    else
-    {
-      canvas = document.createElement('canvas')
-
-      if (Util.isLowPower())
-      {
-        canvas.width = 256
-        canvas.height = 64
-      }
-      else
-      {
-        canvas.width = 512
-        canvas.height = 128
-      }
-
-      let ctx = canvas.getContext('2d')
-
-      if (brush.startDrawing)
-      {
-        brush.startDrawing(ctx, 0, 0.5 * canvas.height)
-      }
-
-      let pointCount = brush.connected ? 40 : 10
-      for (let i = 1; i < pointCount; ++i)
-      {
-        brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
-      }
-
-      if (brush.endDrawing)
-      {
-        brush.endDrawing(ctx)
-      }
-
-      canvas = Util.autoCropCanvas(canvas)
-
-      if (!Util.isLowPower())
-      {
-        transparent = !Util.isCanvasFullyOpaque(canvas)
-      }
-    }
-
-    if (opacity < 1.0) transparent = true;
-
-    let texture = new THREE.Texture;
-    texture.image = canvas
-    texture.needsUpdate = true
-    texture.encoding = THREE.sRGBEncoding
-    texture.generateMipmaps = false
-    texture.minFilter = THREE.LinearFilter
-    let materialType = THREE.MeshBasicMaterial;
-
-    switch (Compositor.el.getAttribute('material').shader)
-    {
-      case 'standard': materialType = THREE.MeshStandardMaterial; break;
-      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
-    }
-
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-    {
-      materialType = THREE.MeshStandardMaterial
-    }
-
-    // materialType = THREE.MeshNormalMaterial;
-
-    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
-
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-    {
-      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
-      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
-      for (let map in maps)
-      {
-        if (!maskData[ENABLED_MAP[map]]) continue;
-        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
-        if (map === 'src') {
-          console.log("Painting over canvas")
-          let ctx = canvas.getContext('2d')
-          let globalCompositeOperation = ctx.globalCompositeOperation
-          ctx.globalCompositeOperation = 'source-in'
-          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
-                                   0, 0, canvas.width, canvas.height)
-          ctx.globalCompositeOperation = globalCompositeOperation
-          this.material.map.needsUpdate = true
-          continue;
-        }
-        if (map === 'metalnessMap')
-        {
-          this.material.metalness = 1
-        }
-        texture = new THREE.Texture;
-        texture.image = maps[map]
-        texture.needsUpdate = true
-        texture.encoding = THREE.sRGBEncoding
-        texture.generateMipmaps = false
-        texture.minFilter = THREE.LinearFilter
-        this.material[map] = texture
-
-        console.log("Set", map)
-      }
-      this.material.needsUpdate = true
-    }
-
-    this.materialNeedsUpdate = false
-
-    return this.material;
+  getMaterial(...args) {
+    return this.system.getMaterial(...args);
   },
   makePrimitives() {
     if (!this.meshes.length) return;

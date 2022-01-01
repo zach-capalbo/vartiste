@@ -989,8 +989,12 @@ Util.registerComponentSystem('file-upload', {
           blobFile.name = gltfFile;
 
           await this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
-          busy.done()
-          return;
+
+          if (!gltfFile.endsWith('obj'))
+          {
+            busy.done()
+            return;
+          }
         }
 
         let items = Object.values(blobs);
