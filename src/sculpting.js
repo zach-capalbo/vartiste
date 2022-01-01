@@ -882,6 +882,10 @@ Util.registerComponentSystem('shape-creation', {
   }
 })
 
+Util.registerComponentSystem('threed-line-system', {
+
+})
+
 const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -890,7 +894,7 @@ AFRAME.registerComponent('threed-line-tool', {
     switchbackAngle: {default: 80.0},
     moveThreshold: {default: 0.001},
     pointToPoint: {default: false},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart', 'custom']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom']},
   },
   events: {
     activate: function(e) {
@@ -1383,8 +1387,13 @@ AFRAME.registerComponent('threed-line-tool', {
       case 'oval':
         this.shape = new THREE.Shape()
           .moveTo( 0, 0 )
-          .ellipse(0, 0, sqLength, sqLength * 2, 0, 2 * Math.PI)
+          .ellipse(0, 0, sqLength, sqLength * 2, Math.PI / 2, 2 * Math.PI + Math.PI / 2)
           break;
+      case 'circle':
+        this.shape = new THREE.Shape()
+          .moveTo( 0, 0 )
+          .ellipse(0, 0, sqLength, sqLength, Math.PI / 2, 2 * Math.PI + Math.PI / 2)
+        break;
       case 'star': {
         let ir = sqLength * 0.5;
         let numPoints = 5;
