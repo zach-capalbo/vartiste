@@ -1019,6 +1019,16 @@ Util.registerComponentSystem('threed-line-system', {
 
     return this.material;
   },
+  shapeToBrush(shapeEl) {
+    let el = document.createElement('a-entity')
+    this.el.sceneEl.querySelector('#activated-tool-root').append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, shapeEl.object3D, {offset: {x: 0, y: -0.3, z: -0.3}})
+      el.object3D.scale.set(0.3, 0.3, 0.3)
+      el.setAttribute('threed-line-tool', {shape: 'mesh', mesh: shapeEl})
+
+    })
+  }
 })
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
@@ -1085,7 +1095,29 @@ AFRAME.registerComponent('threed-line-tool', {
         this.points[last].z = tipWorld.z
         this.points[last].scale = scale
 
-        if (this.data.shape !== 'line')
+        if (this.data.shape === 'mesh')
+        {
+          this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.75)
+          this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.75)
+          this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.75)
+          this.points[1].l = 0.24
+          this.points[1].scale = scale
+
+          this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
+          this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
+          this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
+          this.points[2].l = 0.5
+          this.points[2].scale = scale
+
+          this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.25)
+          this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.25)
+          this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.25)
+          this.points[3].l = 0.75
+          this.points[3].scale = scale
+
+          this.points[4].l = 1.00
+        }
+        else if (this.data.shape !== 'line')
         {
           this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
           this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
@@ -1293,8 +1325,12 @@ AFRAME.registerComponent('threed-line-tool', {
       this.el.append(tip)
       console.log("Mesh", this.data.mesh)
       Util.whenLoaded([tip, this.data.mesh], () => {
-        tip.setObject3D('mesh', this.data.mesh.getObject3D('mesh'))
+        let mesh = this.data.mesh.getObject3D('mesh').clone()
+        tip.setObject3D('mesh', mesh)
         tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+        mesh.geometry.computeBoundingSphere()
+        let r = mesh.geometry.boundingSphere.radius
+        mesh.scale.set(tipHeight / r, tipHeight / r, tipHeight / r)
       })
     }
     else
@@ -1783,6 +1819,8 @@ AFRAME.registerComponent('threed-line-tool', {
       return points.length - 1;
     }
 
+    let aspect = (this.baseGeometry.boundingBox.max.x - this.baseGeometry.boundingBox.min.x) / (this.baseGeometry.boundingBox.max.z - this.baseGeometry.boundingBox.min.z)
+
     for (let i = 0; i < baseAttr.count; ++i)
     {
       p.fromBufferAttribute(baseAttr, i)
@@ -1792,31 +1830,32 @@ AFRAME.registerComponent('threed-line-tool', {
       let pct = boxParam.y
       boxParam.x -= 0.5
       boxParam.z -= 0.5
+      boxParam.x *= aspect
 
       let s = closestPointIndexLessThan(pct) + 1
       let curvePoint = points[s - 1]
 
-      if (s < 2 ) s = 2
+      if (s < 1 ) s = 1
       if (s > points.length - 1) s = points.length - 1
 
-      tangent.subVectors(points[s - 1], points[s]).normalize()
+      tangent.subVectors(points[s], points[s - 1]).normalize()
       normal.set(points[s].fx, points[s].fy, points[s].fz)
       binormal.crossVectors(tangent, normal)
 
       binormal.multiplyScalar(boxParam.x * points[s].scale * sqLength)
       normal.multiplyScalar(boxParam.z * points[s].scale * sqLength)
 
-      p.copy(points[s]).add(normal).add(binormal)
+      p.lerpVectors(points[s - 1], points[s], THREE.Math.mapLinear(pct, points[s - 1].l / lastLength, points[s].l / lastLength, 0, 1)).add(normal).add(binormal)
       attr.setXYZ(i, p.x, p.y, p.z);
 
       if (normalAttr)
       {
         curveNormal.fromBufferAttribute(baseNormalAttr, i)
 
-        normal.set(points[s].fx, points[s].fy, points[s].fz)
+        normal.set(points[s-1].fx, points[s-1].fy, points[s-1].fz)
         binormal.crossVectors(tangent, normal)
-        binormal.multiplyScalar(- curveNormal.x)
-        normal.multiplyScalar(- curveNormal.y)
+        binormal.multiplyScalar(curveNormal.x)
+        normal.multiplyScalar(curveNormal.y)
         normal.add(binormal).normalize()
         normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
       }
@@ -1824,6 +1863,7 @@ AFRAME.registerComponent('threed-line-tool', {
 
     attr.needsUpdate = true
     this.geometry.computeBoundingSphere()
+    this.geometry.computeBoundingBox()
 
     let material = this.getMaterial(1)
 

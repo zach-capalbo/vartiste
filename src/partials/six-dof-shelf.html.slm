@@ -110,7 +110,6 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         - let linePos = () => [`-0.35 ${Math.floor((lineToolI) / 3) * -0.6} 0`, `-0.27 ${Math.floor((lineToolI) / 3) * -0.6} -0.1`, `-0.43 ${Math.floor((lineToolI) / 3) * -0.6} -0.1`][lineToolI++ % 3]
         a-entity threed-line-tool="" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
         a-entity threed-line-tool="pointToPoint: true" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Straight Line Tool"
-        a-entity threed-line-tool="shape: mesh" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Straight Line Tool"
         a-entity threed-line-tool="shape: square" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
         a-entity threed-line-tool="shape: oval" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
         a-entity threed-line-tool="shape: star" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
@@ -125,7 +124,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
 
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: unwrapped-dodecahedron; radius: 0.5"
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: head-base"
-        a-entity#character-base position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: character-base"
+        a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: character-base"
 
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: cone; radiusBottom: 0.5; radiusTop: 0; segmentsHeight: 5; segmentsRadial: 10"
 
