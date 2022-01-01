@@ -882,6 +882,155 @@ Util.registerComponentSystem('shape-creation', {
   }
 })
 
+Util.registerComponentSystem('threed-line-system', {
+  init() {
+    this.materialNeedsUpdate = true
+  },
+  markMaterial() {
+    this.materialNeedsUpdate = true
+  },
+  getMaterial(distance) {
+    // return new THREE.MeshNormalMaterial()
+    if (this.material && !this.materialNeedsUpdate) return this.material;
+    console.log("Regenerating material")
+    if (this.material) this.material.dispose()
+    let brush = this.el.sceneEl.systems['paint-system'].brush;
+
+    let canvas, color, opacity;
+
+    let transparent = true;
+
+    if (brush instanceof StretchBrush)
+    {
+      canvas = brush.image
+      color = new THREE.Color(brush.color3)
+      color.convertSRGBToLinear()
+      opacity = brush.opacity
+      canvas = Util.cloneCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
+    }
+    else
+    {
+      canvas = document.createElement('canvas')
+
+      if (Util.isLowPower())
+      {
+        canvas.width = 256
+        canvas.height = 64
+      }
+      else
+      {
+        canvas.width = 512
+        canvas.height = 128
+      }
+
+      let ctx = canvas.getContext('2d')
+
+      if (brush.startDrawing)
+      {
+        brush.startDrawing(ctx, 0, 0.5 * canvas.height)
+      }
+
+      let pointCount = brush.connected ? 40 : 10
+      for (let i = 1; i < pointCount; ++i)
+      {
+        brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
+      }
+
+      if (brush.endDrawing)
+      {
+        brush.endDrawing(ctx)
+      }
+
+      canvas = Util.autoCropCanvas(canvas)
+
+      if (!Util.isLowPower())
+      {
+        transparent = !Util.isCanvasFullyOpaque(canvas)
+      }
+    }
+
+    if (opacity < 1.0) transparent = true;
+
+    let texture = new THREE.Texture;
+    texture.image = canvas
+    texture.needsUpdate = true
+    texture.encoding = THREE.sRGBEncoding
+    texture.generateMipmaps = false
+    texture.minFilter = THREE.LinearFilter
+    let materialType = THREE.MeshBasicMaterial;
+
+    switch (Compositor.el.getAttribute('material').shader)
+    {
+      case 'standard': materialType = THREE.MeshStandardMaterial; break;
+      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+    }
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      materialType = THREE.MeshStandardMaterial
+    }
+
+    // materialType = THREE.MeshNormalMaterial;
+
+    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
+
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    {
+      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
+      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
+      for (let map in maps)
+      {
+        if (!maskData[ENABLED_MAP[map]]) continue;
+        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
+        if (map === 'src') {
+          console.log("Painting over canvas")
+          let ctx = canvas.getContext('2d')
+          let globalCompositeOperation = ctx.globalCompositeOperation
+          ctx.globalCompositeOperation = 'source-in'
+          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
+                                   0, 0, canvas.width, canvas.height)
+          ctx.globalCompositeOperation = globalCompositeOperation
+          this.material.map.needsUpdate = true
+          continue;
+        }
+        if (map === 'metalnessMap')
+        {
+          this.material.metalness = 1
+        }
+        texture = new THREE.Texture;
+        texture.image = maps[map]
+        texture.needsUpdate = true
+        texture.encoding = THREE.sRGBEncoding
+        texture.generateMipmaps = false
+        texture.minFilter = THREE.LinearFilter
+        this.material[map] = texture
+
+        console.log("Set", map)
+      }
+      this.material.needsUpdate = true
+    }
+
+    this.materialNeedsUpdate = false
+
+    return this.material;
+  },
+  shapeToBrush(shapeEl) {
+    let el = document.createElement('a-entity')
+    this.el.sceneEl.querySelector('#activated-tool-root').append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, shapeEl.object3D, {offset: {x: 0, y: -0.3, z: -0.3}})
+      el.object3D.scale.set(0.3, 0.3, 0.3)
+      el.setAttribute('threed-line-tool', {shape: 'mesh', mesh: shapeEl})
+
+    })
+  }
+})
+
 const FORWARD = new THREE.Vector3(0, 0, 1)
 AFRAME.registerComponent('threed-line-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -890,7 +1039,8 @@ AFRAME.registerComponent('threed-line-tool', {
     switchbackAngle: {default: 80.0},
     moveThreshold: {default: 0.001},
     pointToPoint: {default: false},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'star', 'heart', 'custom']},
+    mesh: {default: '#character-base', type: 'selector'},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh']},
   },
   events: {
     activate: function(e) {
@@ -945,7 +1095,29 @@ AFRAME.registerComponent('threed-line-tool', {
         this.points[last].z = tipWorld.z
         this.points[last].scale = scale
 
-        if (this.data.shape !== 'line')
+        if (this.data.shape === 'mesh')
+        {
+          this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.75)
+          this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.75)
+          this.points[1].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.75)
+          this.points[1].l = 0.24
+          this.points[1].scale = scale
+
+          this.points[2].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.5)
+          this.points[2].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.5)
+          this.points[2].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.5)
+          this.points[2].l = 0.5
+          this.points[2].scale = scale
+
+          this.points[3].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.25)
+          this.points[3].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.25)
+          this.points[3].z = THREE.Math.lerp(tipWorld.z, this.points[0].z, 0.25)
+          this.points[3].l = 0.75
+          this.points[3].scale = scale
+
+          this.points[4].l = 1.00
+        }
+        else if (this.data.shape !== 'line')
         {
           this.points[1].x = THREE.Math.lerp(tipWorld.x, this.points[0].x, 0.99)
           this.points[1].y = THREE.Math.lerp(tipWorld.y, this.points[0].y, 0.99)
@@ -991,7 +1163,7 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     draw: function(e) {
       if (this.data.pointToPoint) return;
-      if (!this.material || this.materialNeedsUpdate) {
+      if (!this.system.material || this.system.materialNeedsUpdate) {
         this.getMaterial()
         return;
       }
@@ -1123,7 +1295,8 @@ AFRAME.registerComponent('threed-line-tool', {
     }
   },
   init() {
-    Pool.init(this)
+    this.system = this.el.sceneEl.systems['threed-line-system']
+    Pool.init(this, {useSystem: true})
     this.doneDrawing = this.doneDrawing.bind(this)
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
@@ -1144,6 +1317,21 @@ AFRAME.registerComponent('threed-line-tool', {
       tip.setAttribute('height', tipHeight)
       tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
       tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+    }
+    else if (this.data.shape === 'mesh')
+    {
+      this.shapeDist = 0
+      tip = this.tip = document.createElement('a-entity')
+      this.el.append(tip)
+      console.log("Mesh", this.data.mesh)
+      Util.whenLoaded([tip, this.data.mesh], () => {
+        let mesh = this.data.mesh.getObject3D('mesh').clone()
+        tip.setObject3D('mesh', mesh)
+        tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+        mesh.geometry.computeBoundingSphere()
+        let r = mesh.geometry.boundingSphere.radius
+        mesh.scale.set(tipHeight / r, tipHeight / r, tipHeight / r)
+      })
     }
     else
     {
@@ -1184,8 +1372,8 @@ AFRAME.registerComponent('threed-line-tool', {
     this.worldForward = new THREE.Vector3
     this.forward2 = new THREE.Vector3
 
-    this.materialNeedsUpdate = true
-    this.markMaterial = this.markMaterial.bind(this)
+
+    this.markMaterial = this.system.markMaterial.bind(this.system)
 
     this.el.sceneEl.addEventListener('colorchanged', this.markMaterial)
     this.el.sceneEl.addEventListener('opacitychanged', this.markMaterial)
@@ -1204,12 +1392,13 @@ AFRAME.registerComponent('threed-line-tool', {
   calcScale() {
     return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
   },
-  markMaterial() {
-    this.materialNeedsUpdate = true
-  },
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
 
+    if (this.data.shape === 'mesh')
+    {
+      return this.stretchMesh(points);
+    }
     if (this.data.shape !== 'line')
     {
       return this.extrudeMesh(points);
@@ -1383,8 +1572,13 @@ AFRAME.registerComponent('threed-line-tool', {
       case 'oval':
         this.shape = new THREE.Shape()
           .moveTo( 0, 0 )
-          .ellipse(0, 0, sqLength, sqLength * 2, 0, 2 * Math.PI)
+          .ellipse(0, 0, sqLength, sqLength * 2, Math.PI / 2, 2 * Math.PI + Math.PI / 2)
           break;
+      case 'circle':
+        this.shape = new THREE.Shape()
+          .moveTo( 0, 0 )
+          .ellipse(0, 0, sqLength, sqLength, Math.PI / 2, 2 * Math.PI + Math.PI / 2)
+        break;
       case 'star': {
         let ir = sqLength * 0.5;
         let numPoints = 5;
@@ -1583,6 +1777,106 @@ AFRAME.registerComponent('threed-line-tool', {
     this.mesh.position.copy(this.startPoint)
     this.data.meshContainer.object3D.add(this.mesh)
   },
+  stretchMesh(points) {
+    if (!this.baseGeometry)
+    {
+      this.baseGeometry = this.data.mesh.getObject3D('mesh').geometry.clone()
+      this.baseGeometry.computeBoundingBox()
+    }
+
+    this.geometry = new THREE.BufferGeometry().copy(this.baseGeometry);
+
+    let attr = this.geometry.attributes.position;
+    let baseAttr = this.baseGeometry.attributes.position;
+    let normalAttr = this.geometry.attributes.normal;
+    let baseNormalAttr = this.geometry.attributes.normal;
+    let p = this.pool('p', THREE.Vector3)
+    let curvePoint = this.pool('cp', THREE.Vector3)
+    let curveNormal = this.pool('cn', THREE.Vector3)
+
+    let tangent = this.pool('tangent', THREE.Vector3)
+    let normal = this.pool('normal', THREE.Vector3)
+    let binormal = this.pool('binormal', THREE.Vector3)
+
+    let lastLength = points[points.length - 1].l
+
+    // let spline = new THREE.CurvePath();
+    // for (let p = 0; p < points.length - 1; ++p)
+    // {
+    //   spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x - this.startPoint.x, points[p].y - this.startPoint.y, points[p].z - this.startPoint.z),
+    //                                   new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
+    // }
+
+    let boxParam = this.pool('boxParam', THREE.Vector3)
+
+    const sqLength = 0.5 * this.el.object3D.scale.x / 0.7;
+
+    function closestPointIndexLessThan(s) {
+      for (let i = 1; i < points.length; i++)
+      {
+        if (points[i].l / lastLength > s) return i - 1
+      }
+      return points.length - 1;
+    }
+
+    let aspect = (this.baseGeometry.boundingBox.max.x - this.baseGeometry.boundingBox.min.x) / (this.baseGeometry.boundingBox.max.z - this.baseGeometry.boundingBox.min.z)
+
+    for (let i = 0; i < baseAttr.count; ++i)
+    {
+      p.fromBufferAttribute(baseAttr, i)
+
+      // let s = (p.y - this.baseGeometry.boundingBox.min.y)/(this.baseGeometry.boundingBox.max.y - this.baseGeometry.boundingBox.min.y)
+      this.baseGeometry.boundingBox.getParameter(p, boxParam)
+      let pct = boxParam.y
+      boxParam.x -= 0.5
+      boxParam.z -= 0.5
+      boxParam.x *= aspect
+
+      let s = closestPointIndexLessThan(pct) + 1
+      let curvePoint = points[s - 1]
+
+      if (s < 1 ) s = 1
+      if (s > points.length - 1) s = points.length - 1
+
+      tangent.subVectors(points[s], points[s - 1]).normalize()
+      normal.set(points[s].fx, points[s].fy, points[s].fz)
+      binormal.crossVectors(tangent, normal)
+
+      binormal.multiplyScalar(boxParam.x * points[s].scale * sqLength)
+      normal.multiplyScalar(boxParam.z * points[s].scale * sqLength)
+
+      p.lerpVectors(points[s - 1], points[s], THREE.Math.mapLinear(pct, points[s - 1].l / lastLength, points[s].l / lastLength, 0, 1)).add(normal).add(binormal)
+      attr.setXYZ(i, p.x, p.y, p.z);
+
+      if (normalAttr)
+      {
+        curveNormal.fromBufferAttribute(baseNormalAttr, i)
+
+        normal.set(points[s-1].fx, points[s-1].fy, points[s-1].fz)
+        binormal.crossVectors(tangent, normal)
+        binormal.multiplyScalar(curveNormal.x)
+        normal.multiplyScalar(curveNormal.y)
+        normal.add(binormal).normalize()
+        normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
+      }
+    }
+
+    attr.needsUpdate = true
+    this.geometry.computeBoundingSphere()
+    this.geometry.computeBoundingBox()
+
+    let material = this.getMaterial(1)
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
+    }
+
+    this.mesh = new THREE.Mesh(this.geometry, material)
+    this.mesh.position.copy(this.startPoint)
+    this.data.meshContainer.object3D.add(this.mesh)
+  },
   doneDrawing() {
     if (this.endDrawingEl)
     {
@@ -1613,138 +1907,11 @@ AFRAME.registerComponent('threed-line-tool', {
 
     if (!this.el.sceneEl.systems['primitive-constructs'].data.shareMaterial)
     {
-      this.material = this.material.clone()
+      this.system.material = this.system.material.clone()
     }
   },
-  getMaterial(distance) {
-    // return new THREE.MeshNormalMaterial()
-    if (this.material && !this.materialNeedsUpdate) return this.material;
-    console.log("Regenerating material")
-    if (this.material) this.material.dispose()
-    let brush = this.el.sceneEl.systems['paint-system'].brush;
-
-    let canvas, color, opacity;
-
-    let transparent = true;
-
-    if (brush instanceof StretchBrush)
-    {
-      canvas = brush.image
-      color = new THREE.Color(brush.color3)
-      color.convertSRGBToLinear()
-      opacity = brush.opacity
-      canvas = Util.cloneCanvas(canvas)
-
-      if (!Util.isLowPower())
-      {
-        transparent = !Util.isCanvasFullyOpaque(canvas)
-      }
-    }
-    else
-    {
-      canvas = document.createElement('canvas')
-
-      if (Util.isLowPower())
-      {
-        canvas.width = 256
-        canvas.height = 64
-      }
-      else
-      {
-        canvas.width = 512
-        canvas.height = 128
-      }
-
-      let ctx = canvas.getContext('2d')
-
-      if (brush.startDrawing)
-      {
-        brush.startDrawing(ctx, 0, 0.5 * canvas.height)
-      }
-
-      let pointCount = brush.connected ? 40 : 10
-      for (let i = 1; i < pointCount; ++i)
-      {
-        brush.drawTo(ctx, i / pointCount * canvas.width, 0.5 * canvas.height)
-      }
-
-      if (brush.endDrawing)
-      {
-        brush.endDrawing(ctx)
-      }
-
-      canvas = Util.autoCropCanvas(canvas)
-
-      if (!Util.isLowPower())
-      {
-        transparent = !Util.isCanvasFullyOpaque(canvas)
-      }
-    }
-
-    if (opacity < 1.0) transparent = true;
-
-    let texture = new THREE.Texture;
-    texture.image = canvas
-    texture.needsUpdate = true
-    texture.encoding = THREE.sRGBEncoding
-    texture.generateMipmaps = false
-    texture.minFilter = THREE.LinearFilter
-    let materialType = THREE.MeshBasicMaterial;
-
-    switch (Compositor.el.getAttribute('material').shader)
-    {
-      case 'standard': materialType = THREE.MeshStandardMaterial; break;
-      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
-    }
-
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-    {
-      materialType = THREE.MeshStandardMaterial
-    }
-
-    // materialType = THREE.MeshNormalMaterial;
-
-    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
-
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-    {
-      let maps = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps
-      let maskData = this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data
-      for (let map in maps)
-      {
-        if (!maskData[ENABLED_MAP[map]]) continue;
-        if (maps[map].id && maps[map].id.startsWith('default-')) continue;
-        if (map === 'src') {
-          console.log("Painting over canvas")
-          let ctx = canvas.getContext('2d')
-          let globalCompositeOperation = ctx.globalCompositeOperation
-          ctx.globalCompositeOperation = 'source-in'
-          ctx.drawImage(maps[map], 0, 0, maps[map].width, maps[map].height,
-                                   0, 0, canvas.width, canvas.height)
-          ctx.globalCompositeOperation = globalCompositeOperation
-          this.material.map.needsUpdate = true
-          continue;
-        }
-        if (map === 'metalnessMap')
-        {
-          this.material.metalness = 1
-        }
-        texture = new THREE.Texture;
-        texture.image = maps[map]
-        texture.needsUpdate = true
-        texture.encoding = THREE.sRGBEncoding
-        texture.generateMipmaps = false
-        texture.minFilter = THREE.LinearFilter
-        this.material[map] = texture
-
-        console.log("Set", map)
-      }
-      this.material.needsUpdate = true
-    }
-
-    this.materialNeedsUpdate = false
-
-    return this.material;
+  getMaterial(...args) {
+    return this.system.getMaterial(...args);
   },
   makePrimitives() {
     if (!this.meshes.length) return;

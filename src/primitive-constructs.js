@@ -51,6 +51,13 @@ Util.registerComponentSystem('primitive-constructs', {
         console.log("Inspecting", el)
         this.el.sceneEl.systems['scene-organizer'].inspect(el)
       })
+
+      button = el.components.frame.addButton('#asset-brush')
+      button.setAttribute('tooltip', 'Create Stretch Wand')
+      button.addEventListener('click', () => {
+        this.el.sceneEl.systems['threed-line-system'].shapeToBrush(el)
+      })
+
       this.el.sceneEl.emit('refreshobjects')
     })
   },
