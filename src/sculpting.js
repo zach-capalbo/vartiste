@@ -1029,7 +1029,8 @@ AFRAME.registerComponent('threed-line-tool', {
     switchbackAngle: {default: 80.0},
     moveThreshold: {default: 0.001},
     pointToPoint: {default: false},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom']},
+    mesh: {default: '#character-base', type: 'selector'},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh']},
   },
   events: {
     activate: function(e) {
@@ -1285,6 +1286,17 @@ AFRAME.registerComponent('threed-line-tool', {
       tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
       tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
     }
+    else if (this.data.shape === 'mesh')
+    {
+      this.shapeDist = 0
+      tip = this.tip = document.createElement('a-entity')
+      this.el.append(tip)
+      console.log("Mesh", this.data.mesh)
+      Util.whenLoaded([tip, this.data.mesh], () => {
+        tip.setObject3D('mesh', this.data.mesh.getObject3D('mesh'))
+        tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+      })
+    }
     else
     {
       tip = document.createElement('a-entity')
@@ -1347,6 +1359,10 @@ AFRAME.registerComponent('threed-line-tool', {
   createMesh(points, {maxDistance = 100} = {}) {
     if (points.length < 2) return;
 
+    if (this.data.shape === 'mesh')
+    {
+      return this.stretchMesh(points);
+    }
     if (this.data.shape !== 'line')
     {
       return this.extrudeMesh(points);
@@ -1712,6 +1728,102 @@ AFRAME.registerComponent('threed-line-tool', {
 			};
 
     this.geometry = new THREE.BufferGeometry().copy(new ExtrudeGeometry( shape, extrudeSettings ));
+
+    let material = this.getMaterial(1)
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
+    }
+
+    this.mesh = new THREE.Mesh(this.geometry, material)
+    this.mesh.position.copy(this.startPoint)
+    this.data.meshContainer.object3D.add(this.mesh)
+  },
+  stretchMesh(points) {
+    if (!this.baseGeometry)
+    {
+      this.baseGeometry = this.data.mesh.getObject3D('mesh').geometry.clone()
+      this.baseGeometry.computeBoundingBox()
+    }
+
+    this.geometry = new THREE.BufferGeometry().copy(this.baseGeometry);
+
+    let attr = this.geometry.attributes.position;
+    let baseAttr = this.baseGeometry.attributes.position;
+    let normalAttr = this.geometry.attributes.normal;
+    let baseNormalAttr = this.geometry.attributes.normal;
+    let p = this.pool('p', THREE.Vector3)
+    let curvePoint = this.pool('cp', THREE.Vector3)
+    let curveNormal = this.pool('cn', THREE.Vector3)
+
+    let tangent = this.pool('tangent', THREE.Vector3)
+    let normal = this.pool('normal', THREE.Vector3)
+    let binormal = this.pool('binormal', THREE.Vector3)
+
+    let lastLength = points[points.length - 1].l
+
+    // let spline = new THREE.CurvePath();
+    // for (let p = 0; p < points.length - 1; ++p)
+    // {
+    //   spline.add(new THREE.LineCurve3(new THREE.Vector3(points[p].x - this.startPoint.x, points[p].y - this.startPoint.y, points[p].z - this.startPoint.z),
+    //                                   new THREE.Vector3(points[p+1].x - this.startPoint.x, points[p+1].y - this.startPoint.y, points[p+1].z - this.startPoint.z)))
+    // }
+
+    let boxParam = this.pool('boxParam', THREE.Vector3)
+
+    const sqLength = 0.5 * this.el.object3D.scale.x / 0.7;
+
+    function closestPointIndexLessThan(s) {
+      for (let i = 1; i < points.length; i++)
+      {
+        if (points[i].l / lastLength > s) return i - 1
+      }
+      return points.length - 1;
+    }
+
+    for (let i = 0; i < baseAttr.count; ++i)
+    {
+      p.fromBufferAttribute(baseAttr, i)
+
+      // let s = (p.y - this.baseGeometry.boundingBox.min.y)/(this.baseGeometry.boundingBox.max.y - this.baseGeometry.boundingBox.min.y)
+      this.baseGeometry.boundingBox.getParameter(p, boxParam)
+      let pct = boxParam.y
+      boxParam.x -= 0.5
+      boxParam.z -= 0.5
+
+      let s = closestPointIndexLessThan(pct) + 1
+      let curvePoint = points[s - 1]
+
+      if (s < 2 ) s = 2
+      if (s > points.length - 1) s = points.length - 1
+
+      tangent.subVectors(points[s - 1], points[s]).normalize()
+      normal.set(points[s].fx, points[s].fy, points[s].fz)
+      binormal.crossVectors(tangent, normal)
+
+      binormal.multiplyScalar(boxParam.x * points[s].scale * sqLength)
+      normal.multiplyScalar(boxParam.z * points[s].scale * sqLength)
+
+      p.copy(points[s]).add(normal).add(binormal)
+      attr.setXYZ(i, p.x, p.y, p.z);
+
+      if (normalAttr)
+      {
+        curveNormal.fromBufferAttribute(baseNormalAttr, i)
+
+        normal.set(points[s].fx, points[s].fy, points[s].fz)
+        binormal.crossVectors(tangent, normal)
+        binormal.multiplyScalar(- curveNormal.x)
+        normal.multiplyScalar(- curveNormal.y)
+        normal.add(binormal).normalize()
+        normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
+      }
+    }
+
+    attr.needsUpdate = true
+    this.geometry.computeBoundingSphere()
 
     let material = this.getMaterial(1)
 
