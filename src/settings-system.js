@@ -18,6 +18,7 @@ Util.registerComponentSystem('settings-system', {
     addReferences: {default: false},
     exportJPEG: {default: false},
     compressProject: {default: true},
+    extra3DCompression: {default: true},
   },
   events: {
     startcanvasdrawing: function(e) {
@@ -123,14 +124,24 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
-  imageURLType(canvas) {
-    if (!canvas) return this.data.exportJPEG ? "image/jpeg" : "image/png"
-    if (this.data.exportJPEG) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
+  imageURLType(canvas, mapName) {
+    if (!canvas) return (this.data.exportJPEG || this.data.extra3DCompression) ? "image/jpeg" : "image/png"
+    if (this.data.exportJPEG || this.data.extra3DCompression) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
     return "image/png"
   },
-  compressionQuality() {
+  compressionQuality(canvas, mapName) {
     if (this.compressionQualityOverride) return this.compressionQualityOverride;
+    if (this.data.extra3DCompression &&
+        (mapName === 'aoMap' || mapName === 'metalnessMap')) return 0.55;
+
     return this.data.exportJPEG ? 0.85 : undefined;
+  },
+  maxTextureSize(image, mapName) {
+    if (this.data.extra3DCompression) {
+        if (mapName === 'aoMap' || mapName === 'metalnessMap') return Math.floor(Math.max(Compositor.component.width, Compositor.component.height) / 2)
+        return Math.max(Compositor.component.width, Compositor.component.height)
+    }
+    return Infinity
   },
   imageExtension() {
     return this.data.exportJPEG ? "jpg" : "png"
@@ -248,7 +259,7 @@ Util.registerComponentSystem('settings-system', {
     let db = this.openProjectsDB()
     await db.projects.delete(projectName)
   },
-  async getExportableGLB(exportMesh, {undoStack} = {}) {
+  async getExportableGLB(exportMesh, {undoStack, compressionQualityOverride, smartCompression} = {}) {
     let mesh = exportMesh;
     let material = mesh.material || Compositor.material
     let originalImage
@@ -290,7 +301,14 @@ Util.registerComponentSystem('settings-system', {
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), imageQuality: this.compressionQuality(), postProcessJSON})
+      exporter.parse(mesh, r, {
+        binary: true,
+        animations: mesh.animations || [],
+        includeCustomExtensions: true,
+        mimeType: (canvas, mapName) => this.imageURLType(canvas, mapName),
+        imageQuality: (canvas, mapName) => this.compressionQuality(canvas, mapName),
+        maxTextureSize: (image, mapName) => this.maxTextureSize(image, mapName),
+        postProcessJSON})
     })
 
     if (material.map && originalImage)

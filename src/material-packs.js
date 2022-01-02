@@ -356,6 +356,7 @@ Util.registerComponentSystem('material-pack-system', {
       })
       // await settings.downloadCompressed(JSON.stringify(materialPackRoot.toJSON()), {extension: 'materialpack'}, 'Material Pack')
       let oldExportJPEG = settings.data.exportJPEG
+      let oldCompressionOverride = settings.compressionQualityOverride
       settings.data.exportJPEG = true
       try {
         settings.compressionQualityOverride = 0.85
@@ -363,6 +364,7 @@ Util.registerComponentSystem('material-pack-system', {
       }
       finally {
         settings.data.exportJPEG = oldExportJPEG
+        settings.compressionQualityOverride = oldCompressionOverride
       }
     }
   },

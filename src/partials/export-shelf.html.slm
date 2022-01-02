@@ -4,6 +4,7 @@ a-entity.grab-root shelf="name: Export; closeable: true; height: 4.3" scale="0.0
       a-entity icon-row-text="Export Options:"
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: exportJPEG" tooltip="Use JPEG Compression"
+      a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: extra3DCompression" tooltip="Extra 3D Texture Compression"
     a-entity icon-row=""
       a-entity icon-row-text="2D Export Actions:"
     a-entity icon-row=""
