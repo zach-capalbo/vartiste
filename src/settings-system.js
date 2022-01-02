@@ -124,20 +124,20 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
-  imageURLType(canvas, mapName) {
-    if (!canvas) return (this.data.exportJPEG || this.data.extra3DCompression) ? "image/jpeg" : "image/png"
-    if (this.data.exportJPEG || this.data.extra3DCompression) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
+  imageURLType(canvas, mapName, {smartCompression} = {}) {
+    if (!canvas) return (this.data.exportJPEG || smartCompression) ? "image/jpeg" : "image/png"
+    if (this.data.exportJPEG || smartCompression) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
     return "image/png"
   },
-  compressionQuality(canvas, mapName) {
-    if (this.compressionQualityOverride) return this.compressionQualityOverride;
-    if (this.data.extra3DCompression &&
+  compressionQuality(canvas, mapName, {compressionQualityOverride, smartCompression} = {}) {
+    if (compressionQualityOverride) return compressionQualityOverride;
+    if (smartCompression &&
         (mapName === 'aoMap' || mapName === 'metalnessMap')) return 0.55;
 
     return this.data.exportJPEG ? 0.85 : undefined;
   },
-  maxTextureSize(image, mapName) {
-    if (this.data.extra3DCompression) {
+  maxTextureSize(image, mapName, {smartCompression} = {}) {
+    if (smartCompression) {
         if (mapName === 'aoMap' || mapName === 'metalnessMap') return Math.floor(Math.max(Compositor.component.width, Compositor.component.height) / 2)
         return Math.max(Compositor.component.width, Compositor.component.height)
     }
@@ -299,15 +299,17 @@ Util.registerComponentSystem('settings-system', {
       }
     }
 
+    let imageOpts = {compressionQualityOverride, smartCompression}
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
       exporter.parse(mesh, r, {
         binary: true,
         animations: mesh.animations || [],
         includeCustomExtensions: true,
-        mimeType: (canvas, mapName) => this.imageURLType(canvas, mapName),
-        imageQuality: (canvas, mapName) => this.compressionQuality(canvas, mapName),
-        maxTextureSize: (image, mapName) => this.maxTextureSize(image, mapName),
+        mimeType: (canvas, mapName) => this.imageURLType(canvas, mapName, imageOpts),
+        imageQuality: (canvas, mapName) => this.compressionQuality(canvas, mapName, imageOpts),
+        maxTextureSize: (image, mapName) => this.maxTextureSize(image, mapName, imageOpts),
         postProcessJSON})
     })
 
@@ -319,10 +321,13 @@ Util.registerComponentSystem('settings-system', {
 
     return glb
   },
-  async export3dAction(exportMesh, {extension} = {}) {
+  async export3dAction(exportMesh, {extension, compressionQualityOverride, smartCompression} = {}) {
     if (!exportMesh) exportMesh = Compositor.meshRoot
     let undoStack = new UndoStack({maxSize: -1})
-    let glb = await this.getExportableGLB(exportMesh, {undoStack})
+
+    if (typeof smartCompression === 'undefined') smartCompression = this.data.extra3DCompression;
+
+    let glb = await this.getExportableGLB(exportMesh, {undoStack, compressionQualityOverride, smartCompression})
 
     if (!extension && exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
     {
