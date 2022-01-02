@@ -52,10 +52,16 @@ Util.registerComponentSystem('primitive-constructs', {
         this.el.sceneEl.systems['scene-organizer'].inspect(el)
       })
 
-      button = el.components.frame.addButton('#asset-brush')
-      button.setAttribute('tooltip', 'Create Stretch Wand')
+      button = el.components.frame.addButton('#asset-swap-vertical-variant')
+      button.setAttribute('tooltip', 'Create Height Stretch Wand')
       button.addEventListener('click', () => {
-        this.el.sceneEl.systems['threed-line-system'].shapeToBrush(el)
+        this.el.sceneEl.systems['threed-line-system'].shapeToBrush(el, 'y')
+      })
+
+      button = el.components.frame.addButton('#asset-swap-horizontal-variant')
+      button.setAttribute('tooltip', 'Create Width Stretch Wand')
+      button.addEventListener('click', () => {
+        this.el.sceneEl.systems['threed-line-system'].shapeToBrush(el, 'x')
       })
 
       this.el.sceneEl.emit('refreshobjects')

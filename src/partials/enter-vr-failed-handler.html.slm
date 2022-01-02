@@ -29,10 +29,15 @@
       starting Windows Mixed Reality, click the "Fix it" button then restart the
       browser.
 
-    - *SteamVR*: Under SteamVR settings, in the Developer tab, click
-      "Set SteamVR as OpenXR Runtime", restart the browser, and try again.
+    - *SteamVR*: Under SteamVR settings, in the Developer tab, click "Set
+      SteamVR as OpenXR Runtime", restart the browser, and try again. If there
+      is no Developer tab or OpenXR runtime button, then you may need to enable
+      "Show Advanced Settings"
 
-    - *Oculus*: Follow the instructions [here](https://flightsimulator.zendesk.com/hc/en-us/articles/360018555179-How-to-install-OpenXR-)
+    - *Oculus*: Oculus devices seem to work best when using SteamVR and
+      following the SteamVR instructions above. Nonetheless, if you wish, you
+      can try using Oculus OpenXR runtime, by enabling it in Oculus settings
+      under the General tab, then "Set Oculus as active"
 
     If you continue having trouble entering VR, feel free to [file an issue on the issue tracker](https://gitlab.com/zach-geek/vartiste/-/issues/new?issue%5Btitle%5D=EnterVR) or ask a question in the [Discord chat](https://discord.gg/vRHM8MYNby)
 

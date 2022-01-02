@@ -883,6 +883,9 @@ Util.registerComponentSystem('shape-creation', {
 })
 
 Util.registerComponentSystem('threed-line-system', {
+  schema: {
+    usePressure: {default: true},
+  },
   init() {
     this.materialNeedsUpdate = true
   },
@@ -1019,13 +1022,13 @@ Util.registerComponentSystem('threed-line-system', {
 
     return this.material;
   },
-  shapeToBrush(shapeEl) {
+  shapeToBrush(shapeEl, axis="y") {
     let el = document.createElement('a-entity')
     this.el.sceneEl.querySelector('#activated-tool-root').append(el)
     Util.whenLoaded(el, () => {
       Util.positionObject3DAtTarget(el.object3D, shapeEl.object3D, {offset: {x: 0, y: -0.3, z: -0.3}})
       el.object3D.scale.set(0.3, 0.3, 0.3)
-      el.setAttribute('threed-line-tool', {shape: 'mesh', mesh: shapeEl})
+      el.setAttribute('threed-line-tool', {shape: 'mesh', mesh: shapeEl, stretchAxis: axis})
 
     })
   }
@@ -1040,6 +1043,7 @@ AFRAME.registerComponent('threed-line-tool', {
     moveThreshold: {default: 0.001},
     pointToPoint: {default: false},
     mesh: {default: '#character-base', type: 'selector'},
+    stretchAxis: {default: 'y', oneOf: ['x', 'y']},
     shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh']},
   },
   events: {
@@ -1214,7 +1218,7 @@ AFRAME.registerComponent('threed-line-tool', {
         }
       }
 
-      let scale = e.detail.pressure * this.calcScale();
+      let scale = (this.system.data.usePressure ? e.detail.pressure : 1.0) * this.calcScale()
 
       // TODO
       if (this.el.hasAttribute('manipulator-weight')) {
@@ -1784,6 +1788,9 @@ AFRAME.registerComponent('threed-line-tool', {
       this.baseGeometry.computeBoundingBox()
     }
 
+    const mainAxisY = this.data.stretchAxis === 'y'
+    const mainAxisX = !mainAxisY
+
     this.geometry = new THREE.BufferGeometry().copy(this.baseGeometry);
 
     let attr = this.geometry.attributes.position;
@@ -1820,6 +1827,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     let aspect = (this.baseGeometry.boundingBox.max.x - this.baseGeometry.boundingBox.min.x) / (this.baseGeometry.boundingBox.max.z - this.baseGeometry.boundingBox.min.z)
+    if (mainAxisX) aspect = (this.baseGeometry.boundingBox.max.y - this.baseGeometry.boundingBox.min.y) / (this.baseGeometry.boundingBox.max.z - this.baseGeometry.boundingBox.min.z)
 
     for (let i = 0; i < baseAttr.count; ++i)
     {
@@ -1827,10 +1835,21 @@ AFRAME.registerComponent('threed-line-tool', {
 
       // let s = (p.y - this.baseGeometry.boundingBox.min.y)/(this.baseGeometry.boundingBox.max.y - this.baseGeometry.boundingBox.min.y)
       this.baseGeometry.boundingBox.getParameter(p, boxParam)
+
       let pct = boxParam.y
-      boxParam.x -= 0.5
-      boxParam.z -= 0.5
-      boxParam.x *= aspect
+      if (mainAxisY)
+      {
+        boxParam.x -= 0.5
+        boxParam.z -= 0.5
+        boxParam.x *= aspect
+      }
+      else
+      {
+        pct = boxParam.x
+        boxParam.y -= 0.5
+        boxParam.z -= 0.5
+        boxParam.y *= aspect
+      }
 
       let s = closestPointIndexLessThan(pct) + 1
       let curvePoint = points[s - 1]
@@ -1838,12 +1857,20 @@ AFRAME.registerComponent('threed-line-tool', {
       if (s < 1 ) s = 1
       if (s > points.length - 1) s = points.length - 1
 
+      let scale = points[s].scale
+
+      // if (s > points.length - 10) {
+      //   for (let ii = s; ii >= 0 && i >= s - 10; ii--) {
+      //     scale = Math.max(scale, points[ii].scale)
+      //   }
+      // }
+
       tangent.subVectors(points[s], points[s - 1]).normalize()
       normal.set(points[s].fx, points[s].fy, points[s].fz)
       binormal.crossVectors(tangent, normal)
 
-      binormal.multiplyScalar(boxParam.x * points[s].scale * sqLength)
-      normal.multiplyScalar(boxParam.z * points[s].scale * sqLength)
+      binormal.multiplyScalar((mainAxisY ? boxParam.x : boxParam.z) * scale * sqLength)
+      normal.multiplyScalar((mainAxisY ? boxParam.z : boxParam.y) * scale * sqLength)
 
       p.lerpVectors(points[s - 1], points[s], THREE.Math.mapLinear(pct, points[s - 1].l / lastLength, points[s].l / lastLength, 0, 1)).add(normal).add(binormal)
       attr.setXYZ(i, p.x, p.y, p.z);
@@ -1854,8 +1881,8 @@ AFRAME.registerComponent('threed-line-tool', {
 
         normal.set(points[s-1].fx, points[s-1].fy, points[s-1].fz)
         binormal.crossVectors(tangent, normal)
-        binormal.multiplyScalar(curveNormal.x)
-        normal.multiplyScalar(curveNormal.y)
+        binormal.multiplyScalar(mainAxisY ? curveNormal.x : curveNormal.z)
+        normal.multiplyScalar(mainAxisY ? curveNormal.z : curveNormal.y)
         normal.add(binormal).normalize()
         normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
       }

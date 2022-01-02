@@ -140,6 +140,25 @@ Util.registerComponentSystem('uv-unwrapper', {
 
     this.shapes.push(sphere)
   },
+  createPlane() {
+    let boundingBox = this.pool('boundingBox', THREE.Box3)
+    let tmpBox = this.pool('tmpBox', THREE.Box3)
+    Compositor.mesh.geometry.computeBoundingBox()
+    boundingBox.copy(Compositor.mesh.geometry.boundingBox)
+    boundingBox.applyMatrix4(Compositor.mesh.matrixWorld)
+
+    for (let mesh of Compositor.nonCanvasMeshes)
+    {
+      mesh.geometry.computeBoundingBox()
+      tmpBox.copy(mesh.geometry.boundingBox)
+      tmpBox.applyMatrix4(mesh.matrixWorld)
+      boundingBox.union(tmpBox)
+    }
+
+    let center = this.pool('center', THREE.Vector3)
+    boundingBox.getCenter(center)
+    let plane = document.createElement('a-plane')
+  },
 
   unwrapMesh(mesh)
   {
