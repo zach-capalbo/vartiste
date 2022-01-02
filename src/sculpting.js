@@ -883,6 +883,9 @@ Util.registerComponentSystem('shape-creation', {
 })
 
 Util.registerComponentSystem('threed-line-system', {
+  schema: {
+    usePressure: {default: true},
+  },
   init() {
     this.materialNeedsUpdate = true
   },
@@ -1214,7 +1217,7 @@ AFRAME.registerComponent('threed-line-tool', {
         }
       }
 
-      let scale = e.detail.pressure * this.calcScale();
+      let scale = (this.system.data.usePressure ? e.detail.pressure : 1.0) * this.calcScale()
 
       // TODO
       if (this.el.hasAttribute('manipulator-weight')) {
@@ -1838,12 +1841,20 @@ AFRAME.registerComponent('threed-line-tool', {
       if (s < 1 ) s = 1
       if (s > points.length - 1) s = points.length - 1
 
+      let scale = points[s].scale
+
+      // if (s > points.length - 10) {
+      //   for (let ii = s; ii >= 0 && i >= s - 10; ii--) {
+      //     scale = Math.max(scale, points[ii].scale)
+      //   }
+      // }
+
       tangent.subVectors(points[s], points[s - 1]).normalize()
       normal.set(points[s].fx, points[s].fy, points[s].fz)
       binormal.crossVectors(tangent, normal)
 
-      binormal.multiplyScalar(boxParam.x * points[s].scale * sqLength)
-      normal.multiplyScalar(boxParam.z * points[s].scale * sqLength)
+      binormal.multiplyScalar(boxParam.x * scale * sqLength)
+      normal.multiplyScalar(boxParam.z * scale * sqLength)
 
       p.lerpVectors(points[s - 1], points[s], THREE.Math.mapLinear(pct, points[s - 1].l / lastLength, points[s].l / lastLength, 0, 1)).add(normal).add(binormal)
       attr.setXYZ(i, p.x, p.y, p.z);

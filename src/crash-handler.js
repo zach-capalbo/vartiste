@@ -104,7 +104,7 @@ AFRAME.registerSystem('crash-handler', {
     this.el.sceneEl.systems['settings-system'].saveAction()
   },
   saveGLB() {
-    this.el.sceneEl.systems['settings-system'].export3dAction()
+    this.el.sceneEl.systems['export-3d-helper-system'].export3dAction()
   },
   saveLayers() {
     this.el.sceneEl.querySelector('*[toolbox-shelf]').components['toolbox-shelf'].downloadAllLayersAction()
