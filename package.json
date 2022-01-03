@@ -67,6 +67,9 @@
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",
     "@ffmpeg/ffmpeg": "^0.10.0",
+    "@gltf-transform/core": "^1.2.4",
+    "@gltf-transform/extensions": "^1.2.4",
+    "@gltf-transform/functions": "^1.2.4",
     "@tensorflow/tfjs": "^1.7.3",
     "@webxr-input-profiles/motion-controllers": "^1.0.0",
     "aframe-leap-hands": "^0.8.0",

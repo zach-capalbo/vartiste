@@ -9,6 +9,12 @@ import {Sfx} from './sfx.js'
 import Pako from 'pako'
 import CompressionWorker from './compression.worker.js'
 
+import { WebIO } from '@gltf-transform/core';
+import { dedup, quantize, weld, resample, prune } from '@gltf-transform/functions';
+import { KHRONOS_EXTENSIONS, DracoMeshCompression } from '@gltf-transform/extensions';
+
+import './wasm/draco_encoder.js';
+
 window.CompressionWorker = CompressionWorker
 
 import {CanvasRecorder} from './canvas-recorder.js'
@@ -18,7 +24,8 @@ Util.registerComponentSystem('settings-system', {
     addReferences: {default: false},
     exportJPEG: {default: false},
     compressProject: {default: true},
-    extra3DCompression: {default: true},
+    extra3DCompression: {default: false},
+    dracoCompression: {default: false},
   },
   events: {
     startcanvasdrawing: function(e) {
@@ -259,6 +266,48 @@ Util.registerComponentSystem('settings-system', {
     let db = this.openProjectsDB()
     await db.projects.delete(projectName)
   },
+  async postTransformGLB(glb) {
+    let io = this.webIO;
+
+    if (!io)
+    {
+      io = this.webIO = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
+    }
+
+    let doc = io.readBinary(glb)
+    await doc.transform(
+      weld(),
+      this.data.dracoCompression ? dedup() : quantize(),
+      dedup(),
+      resample(),
+      prune(),
+    )
+
+    if (this.data.dracoCompression)
+    {
+      if (!this.registerDraco)
+      {
+        this.registerDraco = new Promise(async (r, e) => {
+          await io.registerDependencies({
+            'draco3d.encoder': await new DracoEncoderModule()
+          });
+          r();
+        })
+      }
+
+      await this.registerDraco;
+
+      doc.createExtension(DracoMeshCompression)
+      .setRequired(true)
+      .setEncoderOptions({
+          method: DracoMeshCompression.EncoderMethod.EDGEBREAKER,
+          encodeSpeed: 5,
+          decodeSpeed: 5,
+      });
+    }
+
+    return await io.writeBinary(doc)
+  },
   async getExportableGLB(exportMesh, {undoStack, compressionQualityOverride, smartCompression} = {}) {
     let mesh = exportMesh;
     let material = mesh.material || Compositor.material
@@ -317,6 +366,11 @@ Util.registerComponentSystem('settings-system', {
     {
       material.map.image = originalImage
       material.map.needsUpdate = true
+    }
+
+    if (smartCompression && (!mesh.userData.gltfExtensions || mesh.userData.gltfExtensions.length === 0))
+    {
+      glb = await this.postTransformGLB(glb)
     }
 
     return glb
