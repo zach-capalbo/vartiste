@@ -358,8 +358,7 @@ Util.registerComponentSystem('material-pack-system', {
       let oldExportJPEG = settings.data.exportJPEG
       settings.data.exportJPEG = true
       try {
-        settings.compressionQualityOverride = 0.85
-        await settings.export3dAction(materialPackRoot, {extension: 'materialpack'})
+        await settings.export3dAction(materialPackRoot, {extension: 'materialpack', compressionQualityOverride: 0.85, smartCompression: false})
       }
       finally {
         settings.data.exportJPEG = oldExportJPEG
@@ -481,6 +480,8 @@ AFRAME.registerComponent('material-pack', {
       let action = e.target.getAttribute('click-action')
       if (!(action in this)) return
       this[action](e);
+      e.preventDefault()
+      e.stopPropagation()
     },
     materialtextureloaded: function (e) {
       this.updateRepeat()

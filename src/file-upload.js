@@ -282,6 +282,7 @@ async function addGlbViewer(file, {postProcessMesh = true, loadingManager = unde
   else
   {
     let loader = new THREE.GLTFLoader(loadingManager)
+    loader.setDRACOLoader(Compositor.el.sceneEl.systems['gltf-model'].dracoLoader)
     let buffer = await file.arrayBuffer()
     try {
       model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
@@ -638,6 +639,7 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
   asset.id = `asset-model-${id}`
 
   let loader = new THREE.GLTFLoader(loadingManager)
+  loader.setDRACOLoader(Compositor.el.sceneEl.systems['gltf-model'].dracoLoader)
 
   let buffer = await file.arrayBuffer()
   let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
@@ -872,6 +874,8 @@ Util.registerComponentSystem('file-upload', {
     {
       await (async () => {
       let loader = new THREE.GLTFLoader(loadingManager)
+      loader.setDRACOLoader(this.el.sceneEl.systems['gltf-model'].dracoLoader)
+
       loader.register((parser) => {
         console.log("Switching texture loader", parser)
         parser.textureLoader = new THREE.TextureLoader( loadingManager );

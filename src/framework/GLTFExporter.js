@@ -728,7 +728,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {Boolean} flipY before writing out the image
 		 * @return {Integer}     Index of the processed texture in the "images" array
 		 */
-		function processImage( image, format, flipY ) {
+		function processImage( image, format, flipY, mapName ) {
 
 			if ( ! cachedData.images.has( image ) ) {
 
@@ -756,10 +756,18 @@ THREE.GLTFExporter.prototype = {
 
 			if ( options.embedImages ) {
 
+
 				var canvas = cachedCanvas = cachedCanvas || document.createElement( 'canvas' );
 
-				canvas.width = Math.min( image.width, options.maxTextureSize );
-				canvas.height = Math.min( image.height, options.maxTextureSize );
+				var maxTextureSize = options.maxTextureSize;
+
+				if (typeof maxTextureSize === 'function')
+				{
+					maxTextureSize = maxTextureSize(image, mapName);
+				}
+
+				canvas.width = Math.min( image.width, maxTextureSize );
+				canvas.height = Math.min( image.height, maxTextureSize );
 
 				if ( options.forcePowerOfTwoTextures && ! isPowerOfTwo( canvas ) ) {
 
@@ -779,7 +787,20 @@ THREE.GLTFExporter.prototype = {
 
 				}
 
-				ctx.drawImage( image, 0, 0, canvas.width, canvas.height );
+				ctx.drawImage( image, 0, 0, image.width, image.height,
+															0, 0, canvas.width, canvas.height );
+
+				if (typeof mimeType === 'function')
+				{
+					mimeType = mimeType(canvas, mapName)
+					gltfImage.mimeType = mimeType
+				}
+
+				var imageQuality = options.imageQuality
+				if (typeof imageQuality === 'function')
+				{
+					imageQuality = imageQuality(canvas, mapName)
+				}
 
 				if ( options.binary === true ) {
 
@@ -795,13 +816,13 @@ THREE.GLTFExporter.prototype = {
 
 							} );
 
-						}, mimeType, options.imageQuality );
+						}, mimeType, imageQuality );
 
 					} ) );
 
 				} else {
 
-					gltfImage.uri = canvas.toDataURL( mimeType, options.imageQuality );
+					gltfImage.uri = canvas.toDataURL( mimeType, imageQuality );
 
 				}
 
@@ -853,7 +874,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {Texture} map Map to process
 		 * @return {Integer}     Index of the processed texture in the "textures" array
 		 */
-		function processTexture( map ) {
+		function processTexture( map, mapSlot ) {
 
 			if ( cachedData.textures.has( map ) ) {
 
@@ -870,7 +891,7 @@ THREE.GLTFExporter.prototype = {
 			var gltfTexture = {
 
 				sampler: processSampler( map ),
-				source: processImage( map.image, map.format, map.flipY )
+				source: processImage( map.image, map.format, map.flipY, mapSlot )
 
 			};
 
@@ -878,6 +899,8 @@ THREE.GLTFExporter.prototype = {
 
 				gltfTexture.name = map.name;
 
+			} else {
+				gltfTexture.name = mapSlot;
 			}
 
 			outputJSON.textures.push( gltfTexture );
@@ -988,7 +1011,7 @@ THREE.GLTFExporter.prototype = {
 
 				if ( material.metalnessMap === material.roughnessMap ) {
 
-					var metalRoughMapDef = { index: processTexture( material.metalnessMap ) };
+					var metalRoughMapDef = { index: processTexture( material.metalnessMap, "metalnessMap" ) };
 					applyTextureTransform( metalRoughMapDef, material.metalnessMap );
 					gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture = metalRoughMapDef;
 
@@ -1003,7 +1026,7 @@ THREE.GLTFExporter.prototype = {
 			// pbrMetallicRoughness.baseColorTexture or pbrSpecularGlossiness diffuseTexture
 			if ( material.map ) {
 
-				var baseColorMapDef = { index: processTexture( material.map ) };
+				var baseColorMapDef = { index: processTexture( material.map, "map" ) };
 				applyTextureTransform( baseColorMapDef, material.map );
 
 				if ( material.isGLTFSpecularGlossinessMaterial ) {
@@ -1019,7 +1042,7 @@ THREE.GLTFExporter.prototype = {
 			// pbrSpecularGlossiness specular map
 			if ( material.isGLTFSpecularGlossinessMaterial && material.specularMap ) {
 
-				var specularMapDef = { index: processTexture( material.specularMap ) };
+				var specularMapDef = { index: processTexture( material.specularMap, "specularMap" ) };
 				applyTextureTransform( specularMapDef, material.specularMap );
 				gltfMaterial.extensions.KHR_materials_pbrSpecularGlossiness.specularGlossinessTexture = specularMapDef;
 
@@ -1039,7 +1062,7 @@ THREE.GLTFExporter.prototype = {
 				// emissiveTexture
 				if ( material.emissiveMap ) {
 
-					var emissiveMapDef = { index: processTexture( material.emissiveMap ) };
+					var emissiveMapDef = { index: processTexture( material.emissiveMap, "emissiveMap" ) };
 					applyTextureTransform( emissiveMapDef, material.emissiveMap );
 					gltfMaterial.emissiveTexture = emissiveMapDef;
 
@@ -1050,7 +1073,7 @@ THREE.GLTFExporter.prototype = {
 			// normalTexture
 			if ( material.normalMap ) {
 
-				var normalMapDef = { index: processTexture( material.normalMap ) };
+				var normalMapDef = { index: processTexture( material.normalMap, "normalMap" ) };
 
 				if ( material.normalScale && material.normalScale.x !== - 1 ) {
 
@@ -1074,7 +1097,7 @@ THREE.GLTFExporter.prototype = {
 			if ( material.aoMap ) {
 
 				var occlusionMapDef = {
-					index: processTexture( material.aoMap ),
+					index: processTexture( material.aoMap, "aoMap" ),
 					texCoord: 1
 				};
 

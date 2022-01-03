@@ -1,6 +1,6 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
-import {prepareModelForExport} from './material-transformations.js'
+import {prepareModelForExport, dedupMaterials} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo, UndoStack} from './undo.js'
 import {Util} from './util.js'
@@ -8,6 +8,12 @@ import {Pool} from './pool.js'
 import {Sfx} from './sfx.js'
 import Pako from 'pako'
 import CompressionWorker from './compression.worker.js'
+
+import { WebIO } from '@gltf-transform/core';
+import { dedup, quantize, weld, resample, prune } from '@gltf-transform/functions';
+import { KHRONOS_EXTENSIONS, DracoMeshCompression } from '@gltf-transform/extensions';
+
+import './wasm/draco_encoder.js';
 
 window.CompressionWorker = CompressionWorker
 
@@ -18,6 +24,8 @@ Util.registerComponentSystem('settings-system', {
     addReferences: {default: false},
     exportJPEG: {default: false},
     compressProject: {default: true},
+    extra3DCompression: {default: true},
+    dracoCompression: {default: false},
   },
   events: {
     startcanvasdrawing: function(e) {
@@ -123,14 +131,24 @@ Util.registerComponentSystem('settings-system', {
     if (suffix) suffix = `-${suffix}`
     return `${this.projectName}-${this.formatFileDate()}${suffix}.${extension}`
   },
-  imageURLType(canvas) {
-    if (!canvas) return this.data.exportJPEG ? "image/jpeg" : "image/png"
-    if (this.data.exportJPEG) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
+  imageURLType(canvas, mapName, {smartCompression} = {}) {
+    if (!canvas) return (this.data.exportJPEG || smartCompression) ? "image/jpeg" : "image/png"
+    if (this.data.exportJPEG || smartCompression) return Util.isCanvasFullyOpaque(canvas) ? "image/jpeg" : "image/png"
     return "image/png"
   },
-  compressionQuality() {
-    if (this.compressionQualityOverride) return this.compressionQualityOverride;
+  compressionQuality(canvas, mapName, {compressionQualityOverride, smartCompression} = {}) {
+    if (compressionQualityOverride) return compressionQualityOverride;
+    if (smartCompression &&
+        (mapName === 'aoMap' || mapName === 'metalnessMap')) return 0.55;
+
     return this.data.exportJPEG ? 0.85 : undefined;
+  },
+  maxTextureSize(image, mapName, {smartCompression} = {}) {
+    if (smartCompression) {
+        if (mapName === 'aoMap' || mapName === 'metalnessMap') return Math.floor(Math.max(Compositor.component.width, Compositor.component.height) / 2)
+        return Math.max(Compositor.component.width, Compositor.component.height)
+    }
+    return Infinity
   },
   imageExtension() {
     return this.data.exportJPEG ? "jpg" : "png"
@@ -248,7 +266,49 @@ Util.registerComponentSystem('settings-system', {
     let db = this.openProjectsDB()
     await db.projects.delete(projectName)
   },
-  async getExportableGLB(exportMesh, {undoStack} = {}) {
+  async postTransformGLB(glb) {
+    let io = this.webIO;
+
+    if (!io)
+    {
+      io = this.webIO = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
+    }
+
+    let doc = io.readBinary(glb)
+    await doc.transform(
+      weld(),
+      this.data.dracoCompression ? dedup() : quantize(),
+      dedup(),
+      resample(),
+      prune(),
+    )
+
+    if (this.data.dracoCompression)
+    {
+      if (!this.registerDraco)
+      {
+        this.registerDraco = new Promise(async (r, e) => {
+          await io.registerDependencies({
+            'draco3d.encoder': await new DracoEncoderModule()
+          });
+          r();
+        })
+      }
+
+      await this.registerDraco;
+
+      doc.createExtension(DracoMeshCompression)
+      .setRequired(true)
+      .setEncoderOptions({
+          method: DracoMeshCompression.EncoderMethod.EDGEBREAKER,
+          encodeSpeed: 5,
+          decodeSpeed: 5,
+      });
+    }
+
+    return await io.writeBinary(doc)
+  },
+  async getExportableGLB(exportMesh, {undoStack, compressionQualityOverride, smartCompression} = {}) {
     let mesh = exportMesh;
     let material = mesh.material || Compositor.material
     let originalImage
@@ -258,6 +318,11 @@ Util.registerComponentSystem('settings-system', {
       originalImage = material.map.image
       material.map.image = Compositor.component.preOverlayCanvas
       material.map.needsUpdate = true
+    }
+
+    if (smartCompression)
+    {
+      dedupMaterials(exportMesh, {undoStack})
     }
 
     // Need to traverse to get all materials
@@ -288,9 +353,18 @@ Util.registerComponentSystem('settings-system', {
       }
     }
 
+    let imageOpts = {compressionQualityOverride, smartCompression}
+
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {binary: true, animations: mesh.animations || [], includeCustomExtensions: true, mimeType: this.imageURLType(), imageQuality: this.compressionQuality(), postProcessJSON})
+      exporter.parse(mesh, r, {
+        binary: true,
+        animations: mesh.animations || [],
+        includeCustomExtensions: true,
+        mimeType: (canvas, mapName) => this.imageURLType(canvas, mapName, imageOpts),
+        imageQuality: (canvas, mapName) => this.compressionQuality(canvas, mapName, imageOpts),
+        maxTextureSize: (image, mapName) => this.maxTextureSize(image, mapName, imageOpts),
+        postProcessJSON})
     })
 
     if (material.map && originalImage)
@@ -299,12 +373,20 @@ Util.registerComponentSystem('settings-system', {
       material.map.needsUpdate = true
     }
 
+    if (smartCompression && (!mesh.userData.gltfExtensions || mesh.userData.gltfExtensions.length === 0))
+    {
+      glb = await this.postTransformGLB(glb)
+    }
+
     return glb
   },
-  async export3dAction(exportMesh, {extension} = {}) {
+  async export3dAction(exportMesh, {extension, compressionQualityOverride, smartCompression} = {}) {
     if (!exportMesh) exportMesh = Compositor.meshRoot
     let undoStack = new UndoStack({maxSize: -1})
-    let glb = await this.getExportableGLB(exportMesh, {undoStack})
+
+    if (typeof smartCompression === 'undefined') smartCompression = this.data.extra3DCompression;
+
+    let glb = await this.getExportableGLB(exportMesh, {undoStack, compressionQualityOverride, smartCompression})
 
     if (!extension && exportMesh.userData && exportMesh.userData.gltfExtensions && exportMesh.userData.gltfExtensions.VRM)
     {
