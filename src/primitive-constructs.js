@@ -298,6 +298,7 @@ AFRAME.registerComponent("show-current-color-or-material", {
 
     this.onMaterialMaskChanged = (e) => {
       console.log("mask",e.detail.mask)
+      // console.trace()
       let maps = e.detail.mask.maps
       this.applyMaps(maps)
     }

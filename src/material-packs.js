@@ -480,6 +480,8 @@ AFRAME.registerComponent('material-pack', {
       let action = e.target.getAttribute('click-action')
       if (!(action in this)) return
       this[action](e);
+      e.preventDefault()
+      e.stopPropagation()
     },
     materialtextureloaded: function (e) {
       this.updateRepeat()

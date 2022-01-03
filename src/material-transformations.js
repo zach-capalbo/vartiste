@@ -3,6 +3,8 @@ import {UndoStack} from './undo.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import './framework/GLTFExporter.js'
 import {CanvasShaderProcessor} from './canvas-shader-processor.js'
+import {THREED_MODES} from './layer-modes.js'
+import shortid from 'shortid'
 
 // Contains utilities for transforming materials and textures. Singleton
 // accessible via VARTISTE.MaterialTransformations.
@@ -201,6 +203,66 @@ class MaterialTransformations {
     model.geometry.addAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3))
   }
 
+  static dedupMaterials(rootOrMeshes, {undoStack} = {})
+  {
+    function materialHash(material, imageHash) {
+      let parts = []
+      for (let m of ['map'].concat(THREED_MODES))
+      {
+        if (!material[m]) continue;
+        if (!material[m].image) continue;
+
+        let hash = imageHash.get(material[m].image)
+        if (!hash)
+        {
+          hash = shortid.generate()
+          imageHash.set(material[m].image, hash)
+        }
+
+        parts.push(hash)
+      }
+      return parts.join()
+    }
+    let meshes = rootOrMeshes
+    if (!rootOrMeshes.length)
+    {
+      meshes = Util.traverseFindAll(rootOrMeshes, m => m.visible && m.material)
+    }
+
+    let imageHash = new Map;
+    let originalMaterials = new Map;
+    let materialCache = new Map;
+
+    for (let m of meshes)
+    {
+      if (!m.material) continue;
+
+      let hash = materialHash(m.material, imageHash)
+      let cached = materialCache.get(hash)
+
+      if (!cached)
+      {
+        materialCache.set(hash, m.material)
+        cached = m.material
+      }
+
+      if (undoStack) {
+        originalMaterials.set(m, m.material)
+      }
+
+      m.material = cached
+    }
+
+    if (undoStack) {
+      undoStack.push(() => {
+        for (let [m, material] of originalMaterials.entries())
+        {
+          m.material = material
+        }
+      })
+    }
+  }
+
   // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
   static prepareModelForExport(model, material, {undoStack} = {}) {
     if (!material) material = model.material
@@ -337,9 +399,9 @@ class MaterialTransformations {
   }
 }
 
-const {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency} = MaterialTransformations
+const {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, dedupMaterials} = MaterialTransformations
 
-export {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, MaterialTransformations}
+export {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, dedupMaterials, MaterialTransformations}
 
 // System to allow easy exporting of entities and objects as GLB files. Can also
 // be used as a component on an entity.

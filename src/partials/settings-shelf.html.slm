@@ -2,7 +2,7 @@ a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false
   a-entity click-action="save" icon-button="#asset-floppy" tooltip="Download project"
   a-entity click-action="storeToBrowser" icon-button="#asset-save-to-browser" tooltip="Save Project to Browser"
   a-entity icon-button="#asset-folder-open-outline" popup-button="popup: load-shelf; deferred: true; tooltip: Load;"
-  a-entity click-action="export" icon-button="#asset-camera" tooltip="Save PNG"
+  a-entity click-action="export" icon-button="#asset-camera" tooltip="Save Image"
   a-entity icon-button="#asset-cube-send" tooltip="Export" popup-button="popup: export-shelf; deferred: true; tooltip: Export;"
   /a-entity.sketchfab-button click-action="exportSketchfab" icon-button="#asset-sketchfab" tooltip="Export to Sketchfab"
   /a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: exportJPEG" tooltip="Use JPEG Compression"

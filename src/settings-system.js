@@ -1,6 +1,6 @@
 import {THREED_MODES} from './layer-modes.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
-import {prepareModelForExport} from './material-transformations.js'
+import {prepareModelForExport, dedupMaterials} from './material-transformations.js'
 import {ProjectFile} from './project-file.js'
 import {Undo, UndoStack} from './undo.js'
 import {Util} from './util.js'
@@ -24,7 +24,7 @@ Util.registerComponentSystem('settings-system', {
     addReferences: {default: false},
     exportJPEG: {default: false},
     compressProject: {default: true},
-    extra3DCompression: {default: false},
+    extra3DCompression: {default: true},
     dracoCompression: {default: false},
   },
   events: {
@@ -318,6 +318,11 @@ Util.registerComponentSystem('settings-system', {
       originalImage = material.map.image
       material.map.image = Compositor.component.preOverlayCanvas
       material.map.needsUpdate = true
+    }
+
+    if (smartCompression)
+    {
+      dedupMaterials(exportMesh, {undoStack})
     }
 
     // Need to traverse to get all materials
