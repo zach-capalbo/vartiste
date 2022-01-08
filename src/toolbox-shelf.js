@@ -154,7 +154,14 @@ AFRAME.registerComponent('toolbox-shelf', {
 
     if (!skeletonatorEl)
     {
-      document.querySelector('#composition-view').setAttribute('skeletonator', "")
+      if (Compositor.nonCanvasMeshes.length > 0)
+      {
+        document.querySelector('#composition-view').setAttribute('skeletonator', "")
+      }
+      else
+      {
+        console.warn("No non-canvas meshes")
+      }
       return
     }
 

@@ -1,14 +1,19 @@
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 import { IK, IKChain, IKJoint, IKBallConstraint, IKHelper } from './framework/three-ik.js';
 import {setZForward} from './framework/three-ik-axis-util.js'
 // import * as THREEIK from 'three-ik'
 // window.THREEIK = THREEIK
+
+window.ossos = require('ossos')
+import {Armature, BipedRig} from 'ossos'
 
 Util.registerComponentSystem('ik-solving', {
   init() {
 
   },
   setZForward(el) {
+    console.log("Setting Z Forward on ", el)
     if (el) {
       el.object3D.traverse(o => {
         if (o.isSkinnedMesh && o.material.skinning)
@@ -35,14 +40,12 @@ Util.registerComponentSystem('ik-solving', {
   }
 })
 
-const constraints = [new THREE.IKBallConstraint(180)];
-const FIXED_CONSTRAINTS = [new THREE.IKBallConstraint(3)];
 AFRAME.registerComponent('ik-handle-tool', {
   dependencies: ['selection-box-tool'],
   schema: {
     throttle: {default: 30},
     selector: {type: 'string', default: '#composition-view, .reference-glb'},
-    ikLength: {default: 3},
+    ikLength: {default: 2},
   },
   events: {
     stateadded: function(e) {
@@ -85,7 +88,6 @@ AFRAME.registerComponent('ik-handle-tool', {
       this.originalStartGrab = this.startGrab;
       this.startGrab = function() {
         console.log("IK Start Grab")
-        this.zCorrectedEls = new Set();
         this.originalStartGrab();
         let allBones = new Set();
         this.ikBones.clear();
@@ -94,7 +96,8 @@ AFRAME.registerComponent('ik-handle-tool', {
           allBones.add(bone.object3D)
         }
 
-        this.ik = new IK();
+        this.createRig(allBones)
+
         for (let bone of allBones)
         {
           let p = bone.parent
@@ -121,20 +124,15 @@ AFRAME.registerComponent('ik-handle-tool', {
       this.originalStopGrap = this.stopGrab;
       this.stopGrab = function() {
         this.originalStopGrap();
-        delete this.ik;
-        for (let helper of this.ikHelpers)
-        {
-          helper.parent.remove(helper);
-        }
-        this.ikHelpers.length = 0;
+
+        // for (let helper of this.ikHelpers)
+        // {
+        //   helper.parent.remove(helper);
+        // }
+        // this.ikHelpers.length = 0;
       };
 
       this.preprocessContainedTarget = function (target) {
-        if (this.zCorrectedEls.has(target.object3D.el)) return;
-
-        this.el.sceneEl.systems['ik-solving'].setZForward(target.object3D.el);
-
-        this.zCorrectedEls.add(target.object3D.el)
       };
 
       this._tick = (function(t, dt) {
@@ -176,42 +174,267 @@ AFRAME.registerComponent('ik-handle-tool', {
         }
         boneChain.reverse();
 
-        let ikchain = new IKChain()
-        for (let i = 0; i < boneChain.length; ++i)
-        {
-          let currentJoint = new IKJoint(boneChain[i], {constraints});
-          ikchain.add(
-            currentJoint,
-            { target: i === boneChain.length - 1 ? target : null});
+        this.rig
 
-          if (i === boneChain.length - 1) break;
-
-          for (let c of boneChain[i].children)
-          {
-            if (!c.isBone) continue;
-            if (boneChain.indexOf(c) >= 0) continue;
-
-            console.log("Adding subchain", ikchain)
-
-            let subTarget = new THREE.Object3D()
-            this.el.sceneEl.object3D.add(subTarget)
-            Util.positionObject3DAtTarget(subTarget, c)
-
-            let subchain = new IKChain()
-            subchain.add(currentJoint, {constraints})
-            subchain.add(new IKJoint(c, {constraints: FIXED_CONSTRAINTS}, {target: subTarget}))
-            ikchain.connect(subchain)
-          }
-        }
-
-        console.log("Created IK Chain for", bone, ikchain, target)
-
-        this.ik.add(ikchain)
-
-        let helper = new IKHelper(this.ik);
-        this.ikHelpers.push(helper);
         this.el.sceneEl.object3D.add(helper)
       };
     }).call(this.el.components['selection-box-tool'], this);
   },
 })
+
+AFRAME.registerComponent('ossos-biped-rig', {
+  schema: {
+    restPoseType: {default: 'T', oneOf: ['A', 'T']}
+  },
+  init() {
+    Pool.init(this)
+
+    if (this.el.hasAttribute('skeletonator'))
+    {
+      this.isSkeletonator = true
+      this.setupMesh(Skeletonator.mesh)
+    }
+    else
+    {
+      this.setupMesh(Util.traverseFind(this.el.object3D, o => o.skeleton))
+    }
+  },
+  remove() {
+    for (let targetEl of this.targets)
+    {
+      this.el.remove(targetEl)
+      targetEl.destroy()
+    }
+  },
+  setupMesh(mesh) {
+    let skeleton = this.skeleton = mesh.skeleton
+
+    let armature = this.armature = new Armature
+    for (let b of skeleton.bones)
+    {
+      let pidx = skeleton.bones.indexOf(b.parent)
+      armature.addBone(b.name, pidx < 0 ? null : pidx, b.quaternion.toArray(), b.position.toArray(), b.scale.toArray())
+    }
+
+    let rig = this.rig = new BipedRig
+    rig.autoRig(armature)
+
+    let pose = armature.newPose()
+    this.basePose = pose
+
+    if (this.data.restPoseType === 'A')
+    {
+      pose.rotLocal('LeftShoulder', -20)
+      pose.rotLocal('LeftArm', -40)
+
+      pose.rotLocal('RightShoulder', -20)
+      pose.rotLocal('RightArm', -40)
+    }
+
+    pose.updateWorld()
+    rig.bindPose(pose);
+    rig.useSolversForRetarget( pose )
+    this.updateSkeleton(pose)
+
+    let ikPose = this.ikPose = armature.newPose()
+    ikPose.updateWorld()
+
+    this.targets = []
+    this.setupIKLimbTarget(rig.armL, rig.handL, new THREE.Vector3(0, 0, 1))
+    this.setupIKLimbTarget(rig.legL, rig.footL, new THREE.Vector3(0, 1, 0))
+    this.setupIKLimbTarget(rig.armR, rig.handR, new THREE.Vector3(0, 0, 1))
+    this.setupIKLimbTarget(rig.legR, rig.footR, new THREE.Vector3(0, 1, 0))
+
+    this.setupIKLookTarget(rig.head, new THREE.Vector3(0, 1, 0))
+
+  },
+  setupIKLimbTarget(limb, joint, forward) {
+    let targetEl = document.createElement('a-entity')
+    this.el.append(targetEl)
+    targetEl.setAttribute('gltf-model', '#asset-hand')
+    targetEl.setAttribute('grabbable', '')
+    let bone = this.skeleton.bones[joint.links[0].idx]
+
+    targetEl.limb = limb
+    targetEl.joint = joint
+    targetEl.bone = bone
+    targetEl.forward = forward
+
+    Util.whenLoaded(targetEl, () => {
+      Util.positionObject3DAtTarget(targetEl.object3D, bone)
+      targetEl.object3D.scale.set(0.3, 0.3, 0.3)
+      // targetEl.object3D.rotation.set(0, 0, 0)
+      this.targets.push(targetEl)
+    })
+
+  },
+  setupIKLookTarget(joint, forward) {
+    let targetEl = document.createElement('a-entity')
+    this.el.append(targetEl)
+    targetEl.setAttribute('gltf-model', '#asset-hand')
+    targetEl.setAttribute('grabbable', '')
+    let bone = this.skeleton.bones[joint.links[0].idx]
+
+    targetEl.joint = joint
+    targetEl.bone = bone
+    targetEl.armatureBone = this.ikPose.bones[joint.links[0].idx]
+    targetEl.forward = forward
+    targetEl.isLook = true
+
+    Util.whenLoaded(targetEl, () => {
+      Util.positionObject3DAtTarget(targetEl.object3D, bone, {transformOffset: {x: 0, y: 0, z: 0.1}})
+      targetEl.object3D.scale.set(0.3, 0.3, 0.3)
+      this.targets.push(targetEl)
+    })
+  },
+  updateSkeleton(pose) {
+    let skeleton = this.skeleton
+    let basePose = this.basePose
+    for (let i = 0; i < pose.bones.length; ++i)
+    {
+      skeleton.bones[i].position.set(...pose.bones[i].local.pos)
+      if (isNaN(pose.bones[i].local.rot[0]))
+      {
+        skeleton.bones[i].quaternion.set(...basePose.bones[i].local.rot)
+      }
+      else
+      {
+        skeleton.bones[i].quaternion.set(...pose.bones[i].local.rot)
+      }
+      skeleton.bones[i].scale.set(...pose.bones[i].local.scl)
+      skeleton.bones[i].updateMatrix()
+      skeleton.bones[i].updateMatrixWorld()
+    }
+  },
+  runSolvers() {
+    let rig = this.rig
+    let originalPosition = this.pool('position', THREE.Vector3)
+    let originalScale = this.pool('scale', THREE.Vector3)
+    let forward = this.pool('forward', THREE.Vector3)
+
+    for (let targetEl of this.targets)
+    {
+      let target = targetEl.object3D
+
+      if (targetEl.limb)
+      {
+        forward.copy(targetEl.forward)
+        forward.applyQuaternion(target.quaternion)
+        targetEl.limb.solver
+          .setTargetPos( target.position.toArray() )
+          .setTargetPole(forward.toArray())
+          // .setTargetPole( [0,0, 1] )
+      }
+      else if (targetEl.isLook)
+      {
+        originalPosition.set(...targetEl.armatureBone.world.pos)
+        originalPosition.sub(target.position).multiplyScalar(-1.0)
+        targetEl.joint.solver
+          .setTargetDir(originalPosition.toArray(), targetEl.forward.toArray())
+      }
+    }
+
+    rig.resolveToPose( this.ikPose );
+    this.updateSkeleton(this.ikPose)
+
+    for (let targetEl of this.targets)
+    {
+      if (targetEl.isLook) continue;
+
+      let target = targetEl.object3D
+      let bone = targetEl.bone
+      originalPosition.copy(bone.position)
+      originalScale.copy(bone.scale)
+      Util.positionObject3DAtTarget(bone, target)
+      bone.position.copy(originalPosition)
+      bone.scale.copy(originalScale)
+    }
+  },
+  tick(t, dt) {
+    if (this.ikPose)
+    {
+      this.runSolvers()
+
+      if (this.isSkeletonator)
+      {
+        Skeletonator.updateHandles()
+      }
+    }
+  }
+})
+
+window.OssosUtil = {
+  setupMesh(mesh) {
+    if (mesh === undefined) mesh = Skeletonator.mesh;
+    let skeleton = mesh.skeleton
+
+    let armature = this.armature = new Armature
+    for (let b of skeleton.bones)
+    {
+      let pidx = skeleton.bones.indexOf(b.parent)
+      armature.addBone(b.name, pidx < 0 ? null : pidx, b.quaternion.toArray(), b.position.toArray(), b.scale.toArray())
+    }
+
+    let rig = new BipedRig
+    rig.autoRig(armature)
+
+    let pose = armature.newPose()
+    let basePose = pose
+    pose.rotLocal('LeftShoulder', -20)
+    pose.rotLocal('LeftArm', -40)
+
+    pose.rotLocal('RightShoulder', -20)
+    pose.rotLocal('RightArm', -40)
+
+    pose.updateWorld()
+    rig.bindPose(pose);
+    rig.useSolversForRetarget( pose )
+
+    let updateSkeleton = (pose) => {
+      for (let i = 0; i < pose.bones.length; ++i)
+      {
+
+        skeleton.bones[i].position.set(...pose.bones[i].local.pos)
+        if (isNaN(pose.bones[i].local.rot[0]))
+        {
+          skeleton.bones[i].quaternion.set(...basePose.bones[i].local.rot)
+        }
+        else
+        {
+          skeleton.bones[i].quaternion.set(...pose.bones[i].local.rot)
+        }
+        skeleton.bones[i].scale.set(...pose.bones[i].local.scl)
+      }
+    };
+
+    updateSkeleton(pose)
+
+    return {
+      armature,
+      rig,
+      pose,
+      updateSkeleton,
+      rigMove: () => {
+        let resolved = armature.newPose()
+        const apos = [ 0.3, 0.6, -0.1 ];
+        const lpos = [ 0.2, 0.1, 0.1 ];
+
+        // Set Solvers with IK Data
+        rig.armL.solver.setTargetPos( apos ).setTargetPole( [0,0,-1] );
+        rig.armR.solver.setTargetPos( apos ).setTargetPole( [0,0,-1] );
+        // rig.legL.solver.setTargetPos( lpos ).setTargetPole( [0.5,0,0.5] );
+        // rig.footL.solver.setTargetDir( [0,0,1], [0,1,0] );
+        // rig.spine.solver.setEndDir( [0,1,0], [0,0,1] ).setEndDir( [0,1,0], [0.5,0,0.5] );
+        rig.head.solver.setTargetDir( [0,0.5,0.5], [0,1,0] );
+        //
+        // rig.hip.solver
+        //     .setMovePos( [0,-0.3,0], false )
+        //     .setTargetDir( [-0.5,0,0.5], [0,1,0] );
+
+        rig.resolveToPose( resolved );
+        updateSkeleton(resolved)
+        return resolved;
+      }
+    }
+  }
+}

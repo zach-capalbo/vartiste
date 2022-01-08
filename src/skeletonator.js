@@ -1047,6 +1047,22 @@ AFRAME.registerComponent("skeletonator-control-panel", {
     this.el.skeletonator.pause()
     this.el.object3D.visible = false
   },
+  autoRigAPose() {
+    if (Skeletonator.el.hasAttribute('ossos-biped-rig'))
+    {
+      Skeletonator.el.removeAttribute('ossos-biped-rig')
+      return;
+    }
+    Skeletonator.el.setAttribute('ossos-biped-rig', 'restPoseType: A')
+  },
+  autoRigTPose() {
+    if (Skeletonator.el.hasAttribute('ossos-biped-rig'))
+    {
+      Skeletonator.el.removeAttribute('ossos-biped-rig')
+      return;
+    }
+    Skeletonator.el.setAttribute('ossos-biped-rig', 'restPoseType: T')
+  }
 })
 
 AFRAME.registerComponent("new-bone-wand", {

@@ -15,6 +15,8 @@ a-entity.grab-root shelf="name: Skeletonator" summoner-position="el: #quick-menu
     a-entity icon-button="#asset-eye" tooltip="Toggle Material Display" toggle-button="target: *[skeletonator]; component: skeletonator; property: hideSkeleton"
     a-entity icon-button="#asset-hand-no-lines" tooltip="Rotate Only" toggle-button="target: a-scene; component: skeletonator-system; property: lockLength"
     a-entity icon-button="#asset-swap-horizontal-variant" tooltip="Set bone weights by distance" click-action="skinFromDistance"
+    a-entity icon-button="#asset-skeletonator" tooltip="Biped IK Controls A-Pose" click-action="autoRigAPose"
+    a-entity icon-button="#asset-skeletonator" tooltip="Biped IK Controls T-Pose" click-action="autoRigTPose"
   a-entity icon-row="" position="-1.5 1.1 0"
     a-entity click-action="bakeAnimations" icon-button="#asset-oven" tooltip="Bake Animation" position="2.7 0 0"
     a-entity click-action="bakeMorphTarget" icon-button="#asset-cylinder" tooltip="Bake to Morph Target" position="2.7 0 0"

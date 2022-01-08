@@ -279,6 +279,22 @@ AFRAME.registerComponent('object3d-view', {
   {
     this.el.sceneEl.systems['animation-3d'].clearTrack(this.object)
   },
+  autoRigPose(pose) {
+    if (!this.targetEl)
+    {
+      console.warn("Can't autoRig object3D")
+      return
+    }
+
+    if (this.targetEl.hasAttribute('ossos-biped-rig'))
+    {
+      this.targetEl.removeAttribute('ossos-biped-rig')
+      return
+    }
+    this.targetEl.setAttribute('ossos-biped-rig', 'restPoseType', pose)
+  },
+  autoRigAPose() { this.autoRigPose('A')},
+  autoRigTPose() { this.autoRigPose('T')},
   puppeteer(e) {
     if (!this.targetEl) {
       console.warn("Can't puppeteer obj3d yet")
