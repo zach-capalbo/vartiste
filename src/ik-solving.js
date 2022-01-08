@@ -183,6 +183,9 @@ AFRAME.registerComponent('ik-handle-tool', {
 })
 
 AFRAME.registerComponent('ossos-biped-rig', {
+  schema: {
+    restPoseType: {default: 'T', oneOf: ['A', 'T']}
+  },
   init() {
     Pool.init(this)
 
@@ -194,6 +197,13 @@ AFRAME.registerComponent('ossos-biped-rig', {
     else
     {
       this.setupMesh(Util.traverseFind(this.el.object3D, o => o.skeleton))
+    }
+  },
+  remove() {
+    for (let targetEl of this.targets)
+    {
+      this.el.remove(targetEl)
+      targetEl.destroy()
     }
   },
   setupMesh(mesh) {
@@ -211,11 +221,15 @@ AFRAME.registerComponent('ossos-biped-rig', {
 
     let pose = armature.newPose()
     this.basePose = pose
-    pose.rotLocal('LeftShoulder', -20)
-    pose.rotLocal('LeftArm', -40)
-    //
-    pose.rotLocal('RightShoulder', -20)
-    pose.rotLocal('RightArm', -40)
+
+    if (this.data.restPoseType === 'A')
+    {
+      pose.rotLocal('LeftShoulder', -20)
+      pose.rotLocal('LeftArm', -40)
+
+      pose.rotLocal('RightShoulder', -20)
+      pose.rotLocal('RightArm', -40)
+    }
 
     pose.updateWorld()
     rig.bindPose(pose);
@@ -223,12 +237,15 @@ AFRAME.registerComponent('ossos-biped-rig', {
     this.updateSkeleton(pose)
 
     let ikPose = this.ikPose = armature.newPose()
+    ikPose.updateWorld()
 
     this.targets = []
     this.setupIKLimbTarget(rig.armL, rig.handL, new THREE.Vector3(0, 0, 1))
     this.setupIKLimbTarget(rig.legL, rig.footL, new THREE.Vector3(0, 1, 0))
     this.setupIKLimbTarget(rig.armR, rig.handR, new THREE.Vector3(0, 0, 1))
     this.setupIKLimbTarget(rig.legR, rig.footR, new THREE.Vector3(0, 1, 0))
+
+    this.setupIKLookTarget(rig.head, new THREE.Vector3(0, 1, 0))
 
   },
   setupIKLimbTarget(limb, joint, forward) {
@@ -251,6 +268,25 @@ AFRAME.registerComponent('ossos-biped-rig', {
     })
 
   },
+  setupIKLookTarget(joint, forward) {
+    let targetEl = document.createElement('a-entity')
+    this.el.append(targetEl)
+    targetEl.setAttribute('gltf-model', '#asset-hand')
+    targetEl.setAttribute('grabbable', '')
+    let bone = this.skeleton.bones[joint.links[0].idx]
+
+    targetEl.joint = joint
+    targetEl.bone = bone
+    targetEl.armatureBone = this.ikPose.bones[joint.links[0].idx]
+    targetEl.forward = forward
+    targetEl.isLook = true
+
+    Util.whenLoaded(targetEl, () => {
+      Util.positionObject3DAtTarget(targetEl.object3D, bone, {transformOffset: {x: 0, y: 0, z: 0.1}})
+      targetEl.object3D.scale.set(0.3, 0.3, 0.3)
+      this.targets.push(targetEl)
+    })
+  },
   updateSkeleton(pose) {
     let skeleton = this.skeleton
     let basePose = this.basePose
@@ -270,18 +306,18 @@ AFRAME.registerComponent('ossos-biped-rig', {
       skeleton.bones[i].updateMatrixWorld()
     }
   },
-  tick(t, dt) {
-    if (this.ikPose)
+  runSolvers() {
+    let rig = this.rig
+    let originalPosition = this.pool('position', THREE.Vector3)
+    let originalScale = this.pool('scale', THREE.Vector3)
+    let forward = this.pool('forward', THREE.Vector3)
+
+    for (let targetEl of this.targets)
     {
-      let rig = this.rig
-      let originalPosition = this.pool('position', THREE.Vector3)
-      let originalScale = this.pool('scale', THREE.Vector3)
-      let forward = this.pool('forward', THREE.Vector3)
+      let target = targetEl.object3D
 
-      for (let targetEl of this.targets)
+      if (targetEl.limb)
       {
-        let target = targetEl.object3D
-
         forward.copy(targetEl.forward)
         forward.applyQuaternion(target.quaternion)
         targetEl.limb.solver
@@ -289,20 +325,35 @@ AFRAME.registerComponent('ossos-biped-rig', {
           .setTargetPole(forward.toArray())
           // .setTargetPole( [0,0, 1] )
       }
-
-      rig.resolveToPose( this.ikPose );
-      this.updateSkeleton(this.ikPose)
-
-      for (let targetEl of this.targets)
+      else if (targetEl.isLook)
       {
-        let target = targetEl.object3D
-        let bone = targetEl.bone
-        originalPosition.copy(bone.position)
-        originalScale.copy(bone.scale)
-        Util.positionObject3DAtTarget(bone, target)
-        bone.position.copy(originalPosition)
-        bone.scale.copy(originalScale)
+        originalPosition.set(...targetEl.armatureBone.world.pos)
+        originalPosition.sub(target.position).multiplyScalar(-1.0)
+        targetEl.joint.solver
+          .setTargetDir(originalPosition.toArray(), targetEl.forward.toArray())
       }
+    }
+
+    rig.resolveToPose( this.ikPose );
+    this.updateSkeleton(this.ikPose)
+
+    for (let targetEl of this.targets)
+    {
+      if (targetEl.isLook) continue;
+
+      let target = targetEl.object3D
+      let bone = targetEl.bone
+      originalPosition.copy(bone.position)
+      originalScale.copy(bone.scale)
+      Util.positionObject3DAtTarget(bone, target)
+      bone.position.copy(originalPosition)
+      bone.scale.copy(originalScale)
+    }
+  },
+  tick(t, dt) {
+    if (this.ikPose)
+    {
+      this.runSolvers()
 
       if (this.isSkeletonator)
       {
