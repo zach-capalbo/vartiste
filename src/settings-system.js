@@ -648,3 +648,9 @@ Util.registerComponentSystem('export-3d-helper-system', {
     })
   }
 })
+
+AFRAME.registerComponent('export-origin-helper', {
+  init() {
+    
+  }
+})
