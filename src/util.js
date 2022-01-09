@@ -606,7 +606,7 @@ class VARTISTEUtil {
     })
   }
 
-  recursiveBoundingBox(rootObj, {box = undefined} = {})
+  recursiveBoundingBox(rootObj, {box = undefined, onlyVisible = true, includeUI = true, world = true} = {})
   {
     let boundingBox = box || this.pool('boundingBox', THREE.Box3)
     let tmpBox = this.pool('tmpBox', THREE.Box3)
@@ -620,6 +620,8 @@ class VARTISTEUtil {
     boundingBox.applyMatrix4(firstModel.matrixWorld)
 
     rootObj.traverse(m => {
+      if (onlyVisible && !m.visible) return;
+      if (!includeUI && m.userData && m.userData.vartisteUI) return;
       if (!m.geometry) return
       m.geometry.computeBoundingBox()
       m.updateMatrixWorld()
@@ -631,6 +633,13 @@ class VARTISTEUtil {
 
       boundingBox.union(tmpBox)
     })
+
+    if (!world)
+    {
+      let invMat = this.pool('invMat', THREE.Matrix4)
+      invMat.copy(rootObj.matrixWorld).invert()
+      boundingBox.applyMatrix4(invMat)
+    }
 
     return boundingBox
   }

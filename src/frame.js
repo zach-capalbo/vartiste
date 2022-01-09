@@ -156,7 +156,7 @@ AFRAME.registerComponent("frame", {
         box = Util.recursiveBoundingBox(target.object3D)
         m.copy(target.object3D.matrixWorld).invert()
         box.applyMatrix4(m)
-        box.expandByScalar(0.3)
+        box.expandByScalar(0.3 / (box.max.x - box.min.x))
         box.getCenter(this.center)
         width = (box.max.x - box.min.x)
         height = (box.max.y - box.min.y)
