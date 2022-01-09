@@ -87,9 +87,15 @@ AFRAME.registerComponent('skeletonator', {
 
       mat.copy(mesh.matrix)
       let parent = mesh.parent
+      let localRootBone = rootBone
 
-      while (parent && !Util.traverseFind(parent, o => o === rootBone))
+      while (parent)
       {
+        if (Util.traverseFind(parent, o => o === rootBone)) break;
+        if (parent.isBone) {
+          localRootBone = parent
+          break;
+        }
         mat.premultiply(parent.matrix)
         parent = parent.parent
       }
@@ -102,10 +108,10 @@ AFRAME.registerComponent('skeletonator', {
       let meshRootBone = new THREE.Bone
       this.allBones.push(meshRootBone)
       meshRootBone.name = skinnedMesh.name + "_root"
-      rootBone.add(meshRootBone)
+      localRootBone.add(meshRootBone)
       Util.positionObject3DAtTarget(meshRootBone, mesh)
 
-      skinnedMesh.bind(new THREE.Skeleton([rootBone, meshRootBone], [new THREE.Matrix4, new THREE.Matrix4]), new THREE.Matrix4)
+      skinnedMesh.bind(new THREE.Skeleton([localRootBone, meshRootBone], [new THREE.Matrix4, new THREE.Matrix4]), new THREE.Matrix4)
 
       meshRootBone.add(skinnedMesh)
       Util.positionObject3DAtTarget(skinnedMesh, mesh)

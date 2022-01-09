@@ -26,6 +26,8 @@ Util.registerComponentSystem('settings-system', {
     compressProject: {default: true},
     extra3DCompression: {default: true},
     dracoCompression: {default: false},
+    centerOnExport: {default: true},
+    pruneEmptyNodes: {default: true},
   },
   events: {
     startcanvasdrawing: function(e) {
@@ -333,6 +335,32 @@ Util.registerComponentSystem('settings-system', {
       }
     })
 
+    function pruneEmptyNodes(o, undoStack) {
+      if (!o.visible) return false
+      let anyVisible = false
+
+      if (o.material) return true
+
+      for (let c of o.children) {
+        if (pruneEmptyNodes(c, undoStack)) anyVisible = true
+      }
+
+      if (!anyVisible) {
+        undoStack.push(() => o.visible = true)
+        o.visible = false
+      }
+
+      return anyVisible
+    }
+
+    if (this.data.pruneEmptyNodes)
+    {
+      pruneEmptyNodes(mesh, undoStack)
+    }
+
+    mesh.traverseVisible(o => {
+      if (o.el && o.el.object3D === o && o.el.id && !o.name) o.name = o.el.id
+    })
 
     function postProcessJSON(outputJSON) {
       if (!outputJSON.extensions) outputJSON.extensions = {}
@@ -570,11 +598,11 @@ Util.registerComponentSystem('export-3d-helper-system', {
       }
     }
 
-    if (objects.length === 1)
-    {
-      await fn(objects[0].object3D)
-      return
-    }
+    // if (objects.length === 1)
+    // {
+    //   await fn(objects[0].object3D)
+    //   return
+    // }
 
     let oldProps = new Map()
 
@@ -598,10 +626,40 @@ Util.registerComponentSystem('export-3d-helper-system', {
     let originalMap = Compositor.material.map.image
     Compositor.material.map.image = Compositor.component.preOverlayCanvas
     Compositor.material.map.needsUpdate = true
+    let root = this.el.sceneEl.querySelector('#canvas-root').object3D
+    let box
+    let worldScale
+    let originalPosition
+    if (this.el.sceneEl.systems['settings-system'].data.centerOnExport)
+    {
+      originalPosition = new THREE.Vector3().copy(root.position)
+      root.position.set(0, 0, 0)
+      box = Util.recursiveBoundingBox(root, {onlyVisible: true, includeUI: false})
+      worldScale = new THREE.Vector3
+      root.getWorldScale(worldScale)
+      console.log("Export box", box)
+      for (let c of root.children)
+      {
+        c.position.x += - (box.max.x + box.min.x) / 2 / worldScale.x
+        c.position.y += - box.min.y / worldScale.y
+        c.position.z += - (box.max.z + box.min.z) / 2 / worldScale.z
+      }
+    }
     try {
-      await fn(this.el.sceneEl.querySelector('#canvas-root').object3D)
+      await fn(root)
     }
     finally {
+      if (this.el.sceneEl.systems['settings-system'].data.centerOnExport)
+      {
+        root.position.copy(originalPosition)
+        for (let c of root.children)
+        {
+          c.position.x -= - (box.max.x + box.min.x) / 2 / worldScale.x
+          c.position.y -= - box.min.y / worldScale.y
+          c.position.z -= - (box.max.z + box.min.z) / 2 / worldScale.z
+        }
+      }
+
       for (let [el, p] of oldProps.entries())
       {
         el.object3D.visible = p.visible
@@ -651,6 +709,6 @@ Util.registerComponentSystem('export-3d-helper-system', {
 
 AFRAME.registerComponent('export-origin-helper', {
   init() {
-    
+
   }
 })

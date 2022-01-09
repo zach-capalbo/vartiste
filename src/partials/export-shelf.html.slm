@@ -6,6 +6,8 @@ a-entity.grab-root shelf="name: Export; closeable: true; height: 4.3" scale="0.0
       a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: exportJPEG" tooltip="JPEG Compression"
       a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: extra3DCompression" tooltip="Smart Compression"
       a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: dracoCompression" tooltip="Draco Compression"
+      a-entity icon-button="#asset-arrow-all" toggle-button="target: a-scene; component: settings-system; property: centerOnExport" tooltip="Center on Export"
+      a-entity icon-button="#asset-backspace-outline" toggle-button="target: a-scene; component: settings-system; property: pruneEmptyNodes" tooltip="Prune Empty Nodes"
     a-entity icon-row=""
       a-entity icon-row-text="2D Export Actions:"
     a-entity icon-row=""
