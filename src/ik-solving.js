@@ -358,6 +358,10 @@ AFRAME.registerComponent('ossos-biped-rig', {
       if (this.isSkeletonator)
       {
         Skeletonator.updateHandles()
+        // for (let bone of this.skeleton.bones)
+        // {
+        //   Skeletonator.keyframe(bone)
+        // }
       }
     }
   }

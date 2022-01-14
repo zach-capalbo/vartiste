@@ -693,10 +693,18 @@ Util.registerComponentSystem('file-upload', {
     document.body.ondragover = (e) => {
       // console.log("Drag over", e.detail, e.target)
       e.preventDefault()
-      if (this.dragIndicator)
+
+      if (this.dragIndicator && this.dragIndicator.className.length)
       {
         this.dragIndicator.className = ""
       }
+
+      if (this.dragSet.size === 0)
+      {
+        // this.el.sceneEl.querySelector('a-entity[shelf-summoner="name: Settings Shelf"]').components['shelf-summoner'].summon(true)
+        // this.el.sceneEl.querySelector('#settings-shelf-load-button').emit('click', {})
+      }
+
       this.dragSet.add(e.target)
     }
 
