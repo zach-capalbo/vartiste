@@ -1052,22 +1052,6 @@ AFRAME.registerComponent('threed-line-tool', {
         this.initialScale = this.el.object3D.scale.x
       })
     },
-    click: function(e) {
-      return;
-
-      let tipWorld = this.pool('tipWorld', THREE.Vector3)
-      this.tipPoint.getWorldPosition(tipWorld)
-      this.points.push({
-        x: tipWorld.x,
-        y: tipWorld.y,
-        z: tipWorld.z,
-        fx: 0,
-        fy: 0,
-        fz: 1,
-        scale: 1
-      })
-      this.createMesh(this.points)
-    },
     triggerdown: function(e) {
       if (!this.data.pointToPoint) return;
       console.log("Trigger down")
@@ -1186,8 +1170,16 @@ AFRAME.registerComponent('threed-line-tool', {
 
       let tipWorld = this.pool('tipWorld', THREE.Vector3)
       let worldScale = this.pool('worldScale', THREE.Vector3)
-      this.tipPoint.getWorldDirection(this.worldForward)
+      let worldQuat = this.pool('worldQuat', THREE.Quaternion)
+      // let worldUp = this.pool('worldUp', THREE.Vector3)
+      // let worldRight = this.pool('worldRight', THREE.Vector3)
+      // this.tipPoint.getWorldDirection(this.worldForward)
       this.tipPoint.getWorldPosition(tipWorld)
+
+      this.tipPoint.getWorldQuaternion(worldQuat)
+      // worldUp.set(0, 1, 0).applyQuaternion(worldQuat)
+      // worldRight.set(1, 0, 0).applyQuaternion(worldQuat)
+      this.worldForward.set(0, 0, 1).applyQuaternion(worldQuat)
 
       let oldVec = this.pool('oldVec', THREE.Vector3)
       let newVec = this.pool('newVec', THREE.Vector3)
@@ -1239,9 +1231,15 @@ AFRAME.registerComponent('threed-line-tool', {
         x: tipWorld.x,
         y: tipWorld.y,
         z: tipWorld.z,
+        // rx: worldUp.x,
+        // ry: worldUp.y,
+        // rz: worldUp.z,
         fx: this.worldForward.x,
         fy: this.worldForward.y,
         fz: this.worldForward.z,
+        // tx: worldRight.x,
+        // ty: worldRight.y,
+        // tz: worldRight.z,
         l: dist,
         scale: scale,
       })
@@ -1339,6 +1337,10 @@ AFRAME.registerComponent('threed-line-tool', {
         let mesh = this.data.mesh.getObject3D('mesh').clone()
         tip.setObject3D('mesh', mesh)
         tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+        tip.setAttribute('grabbable', '')
+        if (this.data.stretchAxis === 'y') {
+          tip.setAttribute('rotation', '0 0 90')
+        }
         mesh.geometry.computeBoundingSphere()
         let r = mesh.geometry.boundingSphere.radius
         mesh.scale.set(tipHeight / r, tipHeight / r, tipHeight / r)
@@ -1361,6 +1363,9 @@ AFRAME.registerComponent('threed-line-tool', {
     tip.object3D.add(tipPoint);
     tipPoint.position.set(0, this.data.pointToPoint ? 0 : tipHeight / 2.0, 0);
     tipPoint.rotation.set(- Math.PI / 2, 0, 0);
+    if (this.data.shape === 'mesh' && this.data.stretchAxis === 'y') {
+      tipPoint.rotation.set(0, 0, 0);
+    }
     this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
 
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
@@ -1873,8 +1878,10 @@ AFRAME.registerComponent('threed-line-tool', {
       // }
 
       tangent.subVectors(points[s], points[s - 1]).normalize()
+      // tangent.set(points[s].tx, points[s].ty, points[s].tz)
       normal.set(points[s].fx, points[s].fy, points[s].fz)
       binormal.crossVectors(tangent, normal)
+      // binormal.set(points[s].rx, points[s].ry, points[s].rz)
 
       binormal.multiplyScalar((mainAxisY ? boxParam.x : boxParam.z) * scale * sqLength)
       normal.multiplyScalar((mainAxisY ? boxParam.z : boxParam.y) * scale * sqLength)
