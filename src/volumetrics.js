@@ -235,7 +235,7 @@ function registerVolumeTool(name, toolOpts) {
 
       proc.setUniform('u_matrix', 'uniformMatrix4fv', false, invMat.elements)
 
-      proc.setUniform('u_color', 'uniform4f', this.system.brush.color3.r, this.system.brush.color3.g, this.system.brush.color3.b, this.system.brush.opacity)
+      proc.setUniform('u_color', 'uniform4f', this.system.color3.r, this.system.color3.g, this.system.color3.b, this.system.brush.opacity)
 
       proc.setUniform('u_shape', 'uniform1i', toolOpts.shape)
 

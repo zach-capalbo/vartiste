@@ -134,7 +134,7 @@ AFRAME.registerComponent('shelf-summoner', {
       this.shelfEl = null
     }
   },
-  summon() {
+  summon(forceSummon = false) {
     if (!this.shelfEl) {
       console.log("Cannot summon unknown shelf", this.data.name, this.data.selector)
       return
@@ -149,14 +149,14 @@ AFRAME.registerComponent('shelf-summoner', {
 
     let lastSummoned = this.system.lastSummoned[key]
 
-    if (lastSummoned === this.shelfEl && !lastSummoned.is('grab-activated') && lastSummoned.getAttribute('visible'))
+    if (lastSummoned === this.shelfEl && !lastSummoned.is('grab-activated') && lastSummoned.getAttribute('visible') && !forceSummon)
     {
       lastSummoned.setAttribute('visible', false)
       this.el.sceneEl.emit('refreshobjects')
       return
     }
 
-    if (lastSummoned && !lastSummoned.is('grab-activated'))
+    if (lastSummoned && !lastSummoned.is('grab-activated') && !forceSummon)
     {
       lastSummoned.setAttribute('visible', false)
     }
