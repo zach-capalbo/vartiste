@@ -583,7 +583,7 @@ AFRAME.registerComponent('axis-handles', {
   remove() {
     for (let handle of Object.values(this.handles))
     {
-      handle.parentEl.remove(handle)
+      Util.disposeEl(handle)
     }
     this.handles = {}
   },
@@ -602,7 +602,7 @@ AFRAME.registerComponent('axis-handles', {
       }
       else if (!this.data[axis] && this.handles[axis])
       {
-        this.handles[axis].remove()
+        Util.disposeEl(this.handles[axis])
         delete this.handles[axis]
       }
     }
@@ -688,12 +688,16 @@ AFRAME.registerComponent('axis-handle-control', {
     this.target = this.el.parentEl.getObject3D('mesh')
     this.target.geometry.computeBoundingBox()
     let box = this.target.geometry.boundingBox
-    this.offset = 0.08
+    this.offset = 0.08 * 0
     switch (this.data.axis)
     {
       case 'x': this.el.setAttribute('position', `${box.max.x * this.target.scale.x + this.offset} 0 0`); break;
       case 'y': this.el.setAttribute('position', `0 ${box.max.y * this.target.scale.y + this.offset} 0`); break;
       case 'z': this.el.setAttribute('position', `0 0 ${box.max.z * this.target.scale.z  + this.offset}`); break;
     }
+
+    let m = this.el.getObject3D('mesh')
+    m.getWorldScale(m.scale)
+    m.scale.set(0.2 / m.scale.x, 0.2 / m.scale.y, 0.2 / m.scale.z)
   }
 })

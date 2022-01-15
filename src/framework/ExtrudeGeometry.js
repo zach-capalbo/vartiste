@@ -476,6 +476,7 @@ class ExtrudeGeometry extends BufferGeometry {
             tangent.subVectors(extrudePts[s - 1], extrudePts[s]).normalize()
             normal.set( extrudePts[s].fx,  extrudePts[s].fy, extrudePts[s].fz)//.multiplyScalar(-1)//.cross(tangent).multiplyScalar( vert.y );
             binormal.crossVectors(tangent, normal)
+            // binormal.set(extrudePts[s].rx, extrudePts[s].ry, extrudePts[s].rz)
 
             binormal.multiplyScalar( vert.x * extrudePts[s].scale );
             normal.multiplyScalar( vert.y * extrudePts[s].scale);

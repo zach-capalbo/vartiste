@@ -297,6 +297,13 @@ class VARTISTEUtil {
     return true
   }
 
+  disposeEl(el) {
+    if (el.parentEl) {
+      el.removeFromParent();
+      el.remove()
+    }
+    el.destroy()
+  }
   recursiveDispose(obj)
   {
     if (obj.object3D) { obj = obj.object3D; }
@@ -612,16 +619,26 @@ class VARTISTEUtil {
     let tmpBox = this.pool('tmpBox', THREE.Box3)
     let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
 
-    rootObj.updateMatrixWorld()
+    rootObj.updateMatrixWorld(true, true)
 
     firstModel.geometry.computeBoundingBox()
     boundingBox.copy(firstModel.geometry.boundingBox)
     firstModel.updateMatrixWorld()
     boundingBox.applyMatrix4(firstModel.matrixWorld)
 
+    let skipSet = new Set()
     rootObj.traverse(m => {
       if (onlyVisible && !m.visible) return;
-      if (!includeUI && m.userData && m.userData.vartisteUI) return;
+      if (!includeUI)
+      {
+        if (skipSet.has(m)) return;
+
+        if (m.userData && m.userData.vartisteUI) {
+          m.traverse(mm => skipSet.add(mm))
+        }
+        return
+      }
+
       if (!m.geometry) return
       m.geometry.computeBoundingBox()
       m.updateMatrixWorld()
