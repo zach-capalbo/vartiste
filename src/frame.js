@@ -150,24 +150,25 @@ AFRAME.registerComponent("frame", {
     {
       let target = (this.data.geometryTarget || this.el)
       let box;
-      if (!target.getObject3D('mesh') || !target.getObject3D('mesh').geometry)
-      {
+      // if (!target.getObject3D('mesh') || !target.getObject3D('mesh').geometry)
+      // {
         let m = this.pool('inv', THREE.Matrix4)
         box = Util.recursiveBoundingBox(target.object3D)
+        box.expandByScalar(0.05)
         m.copy(target.object3D.matrixWorld).invert()
         box.applyMatrix4(m)
-        box.expandByScalar(0.3 / (box.max.x - box.min.x))
+        // box.expandByScalar(0.3 / (box.max.x - box.min.x))
         box.getCenter(this.center)
         width = (box.max.x - box.min.x)
         height = (box.max.y - box.min.y)
-      }
-      else
-      {
-        target.getObject3D('mesh').geometry.computeBoundingBox()
-        box = target.getObject3D('mesh').geometry.boundingBox
-        width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
-        height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
-      }
+      // }
+      // else
+      // {
+      //   target.getObject3D('mesh').geometry.computeBoundingBox()
+      //   box = target.getObject3D('mesh').geometry.boundingBox
+      //   width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
+      //   height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
+      // }
       console.log("Bounds", box, width, height)
     }
     else

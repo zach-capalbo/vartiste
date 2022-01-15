@@ -573,7 +573,8 @@ AFRAME.registerComponent('vertex-handles', {
   remove() {
     for (let el of this.handles)
     {
-      this.el.removeChild(el)
+      Util.disposeEl(el)
+      // this.el.removeChild(el)
     }
     this.meshes.length = 0
 
