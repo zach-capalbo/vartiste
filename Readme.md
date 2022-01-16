@@ -18,4 +18,4 @@ from [vartiste.xyz](https://vartiste.xyz)
 
 # aframe-vartiste-toolkit
 
-VARTISTE and the aframe-vartiste-toolkit are built from the same source code. The best places to start with the aframe-vartiste-toolkit are the [npm page]()
+VARTISTE and the aframe-vartiste-toolkit are built from the same source code. The best places to start with the aframe-vartiste-toolkit are the [npm page](https://www.npmjs.com/package/aframe-vartiste-toolkit)
