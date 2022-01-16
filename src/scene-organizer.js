@@ -111,7 +111,7 @@ AFRAME.registerComponent('object3d-view', {
     let rootId = "view-root-" + shortid.generate()
     this.el.id = rootId
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3.5; height: 3; pinnable: false; closeable: true')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3.5; height: 3.5; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
@@ -303,6 +303,18 @@ AFRAME.registerComponent('object3d-view', {
 
     this.targetEl.setAttribute('animation-3d-keyframed', 'puppeteering', e.target.is('toggled'))
   },
+  toggleBoundsHelper() {
+    if (this.boundsHelper)
+    {
+      this.boundsHelper.parent.remove(this.boundsHelper)
+      Util.recursiveDispose(this.boundsHelper)
+      this.boundsHelper = null
+      return
+    }
+    this.boundsHelper = new THREE.Box3Helper(Util.recursiveBoundingBox(this.object, {includeUI: false, world: false}))
+    this.boundsHelper.userData.vartisteUI = true
+    this.object.add(this.boundsHelper)
+  },
   axesHelper() {
     if (this.axisHelper)
     {
@@ -314,6 +326,26 @@ AFRAME.registerComponent('object3d-view', {
     this.axisHelper = new THREE.AxesHelper()
     this.axisHelper.userData.vartisteUI = true
     this.object.add(this.axisHelper)
+  },
+  applyTransformation() {
+    this.object.updateMatrix()
+
+    if (this.object.geometry)
+    {
+      let geometry = this.object.geometry
+      geometry.applyMatrix(this.object.matrix)
+      if (geometry.boundsTree) geometry.computeBoundsTree()
+      geometry.computeBoundingSphere()
+      geometry.computeBoundingBox()
+    }
+
+    for (let c of this.object.children)
+    {
+      Util.applyMatrix(c.matrix.premultiply(this.object.matrix), c)
+    }
+
+    Util.applyMatrix(this.object.matrix.identity(), this.object)
+    this.onMoved()
   },
   resetMatrix() {
     Undo.collect(() => {
