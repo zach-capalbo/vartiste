@@ -12,7 +12,7 @@ a-entity shelf-content=""
     a-entity icon-button="#asset-folder-open-outline" tooltip="Load Children" object3d-view-action="loadChildren"
   a-entity icon-row="mergeButtons: true"
     a-entity icon-button="#asset-brush" tooltip="Material" popup-button="popup: object-material-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
-    a-entity icon-button="#asset-brush" tooltip="Physics"
+    /a-entity icon-button="#asset-brush" tooltip="Physics"
     a-entity icon-button="#asset-arrow-all" tooltip="Transformation Actions" popup-button="popup: transformations-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
 
     a-entity icon-button="#asset-video-vintage" tooltip="Animation" popup-button="popup: object-animation-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
@@ -34,5 +34,5 @@ a-entity shelf-content=""
 
 
 a-entity.grab-redirector position="-1.2 -1.75 0"
-a-entity node-input="compositionNode: false" position="-1.85 1.2 0.01" scale="1 1 0.3"
-a-entity node-output="" position="1.85 1.2 0.01" scale="1 1 0.3"
+a-entity node-input="compositionNode: false" position="-1.55 1.2 0.01" scale="1 1 0.3"
+a-entity node-output="" position="1.55 1.2 0.01" scale="1 1 0.3"

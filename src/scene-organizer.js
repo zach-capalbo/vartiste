@@ -3,6 +3,8 @@ import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import shortid from 'shortid'
 import {STATE_TOGGLED} from './icon-button.js'
+import {THREED_MODES} from './layer-modes.js'
+import {Layer} from './layer.js'
 
 Util.registerComponentSystem('scene-organizer', {
   init() {
@@ -111,7 +113,7 @@ AFRAME.registerComponent('object3d-view', {
     let rootId = "view-root-" + shortid.generate()
     this.el.id = rootId
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
-    this.el.setAttribute('shelf', 'name: Object3D; width: 3.5; height: 3.5; pinnable: false; closeable: true')
+    this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3.5; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
@@ -269,9 +271,67 @@ AFRAME.registerComponent('object3d-view', {
       this.object.parent.add(this.object.clone())
     }
   },
+
   hide() {
     this.object.visible = !this.object.visible
   },
+  applyCompositorMaterialLive() {
+    if (this.object.material) {
+      this.object.material = Compositor.material
+      return;
+    }
+    if (this.isEl)
+    {
+      this.targetEl.setAttribute('material', Compositor.el.getAttribute('material'))
+      return
+    }
+    this.object.traverse(o => {
+      if (o.material) o.material = Compositor.material
+    })
+  },
+  applyCompositorMaterialFrozen() {
+    if (this.object.material) {
+      this.object.material = Compositor.component.frozenMaterial()
+      return;
+    }
+    if (this.isEl)
+    {
+      this.targetEl.setAttribute('material', Compositor.el.getAttribute('material'))
+      return
+    }
+    let frozen = Compositor.component.frozenMaterial();
+    this.object.traverse(o => {
+      if (o.material) o.material = frozen
+    })
+  },
+  applySculptingMaterial() {
+    let material = this.el.sceneEl.systems['threed-line-system'].getMaterial(1.0)
+    this.object.traverse(o => {
+      if (o.material) o.material = material
+    })
+  },
+  createMaterialPack() {
+    this.el.sceneEl.systems['material-pack-system'].addPacksFromObjects(this.object)
+  },
+  createLayers() {
+    Util.traverseCondition(this.object, o => !o.userData || !o.userData.vartisteUI, o => {
+      if (!o.material) return;
+      for (let map of ['map'].concat(THREED_MODES))
+      {
+        if (map === 'envMap') continue;
+        if (!o.material[map] || !o.material[map].image) continue;
+        let image = o.material[map].image
+        let layer = new Layer(image.width, image.height)
+        layer.canvas.getContext('2d').drawImage(image, 0, 0)
+        if (map !== 'map') {
+          layer.mode = map
+        }
+
+        Compositor.component.addLayer(Compositor.component.layers.length - 1, {layer})
+      }
+    })
+  },
+
   keyframe() {
     this.el.sceneEl.systems['animation-3d'].keyframe(this.object)
   },

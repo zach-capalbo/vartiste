@@ -286,6 +286,16 @@ class VARTISTEUtil {
     return outputArray;
   }
 
+  traverseCondition(obj3D, condition, fn) {
+    if (!condition(obj3D)) return;
+
+    fn(obj3D)
+    for (let c of obj3D.children)
+    {
+      this.traverseCondition(c, condition, fn)
+    }
+  }
+
   visibleWithAncestors(obj)
   {
     if (!obj.visible) return false
