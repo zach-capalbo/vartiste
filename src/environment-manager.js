@@ -3,6 +3,7 @@ import Color from 'color'
 import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 const [
   STATE_COLOR,
@@ -430,7 +431,7 @@ AFRAME.registerComponent('light-bauble', {
       this.light.setAttribute('light', 'target', lightTarget)
       this.light.setAttribute('fix-light-shadow', '')
 
-      this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this))
+      this.el.sceneEl.systems['manipulator'].installConstraint(this.el, this.sunMoved.bind(this), POST_MANIPULATION_PRIORITY)
     },
     'bbuttonup': function(e) {
       if (this.el.is("grabbed"))
