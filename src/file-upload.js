@@ -954,11 +954,11 @@ Util.registerComponentSystem('file-upload', {
         console.log("New zip", zip)
 
         let blobs = {}
-        let gltfFile = undefined
+        let gltfFiles = []
 
         for (let fileName in zip.files)
         {
-          if (HANDLED_MODEL_FORMAT_REGEX.test(fileName)) gltfFile = fileName;
+          if (HANDLED_MODEL_FORMAT_REGEX.test(fileName)) gltfFiles.push(fileName);
 
           console.log("Blobbing", fileName)
           let unzipped = await zip.file(fileName)
@@ -995,18 +995,31 @@ Util.registerComponentSystem('file-upload', {
           }
         };
         manager.setURLModifier(urlModifier);
-        if (gltfFile)
+        let foundGltfFile = false
+        if (gltfFiles.length > 0)
         {
-          let blobFile = blobs[gltfFile];
-          blobFile.name = gltfFile;
-
-          await this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
-
-          if (!gltfFile.endsWith('obj'))
+          for (let gltfFile of gltfFiles)
           {
-            busy.done()
-            return;
+            let blobFile = blobs[gltfFile];
+            blobFile.name = gltfFile;
+
+            await this.handleFile(blobFile, {loadingManager: manager, sceneName: file.name.replace(/\.zip$/i, ""), forceReference})
+
+            if (!gltfFile.endsWith('obj') && !gltfFile.endsWith('fbx'))
+            {
+              foundGltfFile = true
+            }
+            else
+            {
+              break
+            }
           }
+        }
+
+        if (foundGltfFile)
+        {
+          busy.done()
+          return;
         }
 
         let items = Object.values(blobs);
