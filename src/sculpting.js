@@ -1820,6 +1820,16 @@ AFRAME.registerComponent('threed-line-tool', {
 
     let lastLength = points[points.length - 1].l
 
+    this.startPoint.set(0, 0, 0)
+    for (let i = 0; i < points.length; ++i)
+    {
+      this.startPoint.x += points[i].x
+      this.startPoint.y += points[i].y
+      this.startPoint.z += points[i].z
+    }
+
+    this.startPoint.multiplyScalar(1.0 / points.length)
+
     // let spline = new THREE.CurvePath();
     // for (let p = 0; p < points.length - 1; ++p)
     // {
@@ -1888,7 +1898,7 @@ AFRAME.registerComponent('threed-line-tool', {
       normal.multiplyScalar((mainAxisY ? boxParam.z : boxParam.y) * scale * sqLength)
 
       p.lerpVectors(points[s - 1], points[s], THREE.Math.mapLinear(pct, points[s - 1].l / lastLength, points[s].l / lastLength, 0, 1)).add(normal).add(binormal)
-      attr.setXYZ(i, p.x, p.y, p.z);
+      attr.setXYZ(i, p.x - this.startPoint.x, p.y - this.startPoint.y, p.z - this.startPoint.z);
 
       if (normalAttr)
       {
