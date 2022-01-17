@@ -276,37 +276,19 @@ AFRAME.registerComponent('object3d-view', {
     this.object.visible = !this.object.visible
   },
   applyCompositorMaterialLive() {
-    if (this.object.material) {
-      this.object.material = Compositor.material
-      return;
-    }
-    if (this.isEl)
-    {
-      this.targetEl.setAttribute('material', Compositor.el.getAttribute('material'))
-      return
-    }
-    this.object.traverse(o => {
+    Util.traverseCondition(this.object, o => !o.userData || !o.userData.vartisteUI,  o => {
       if (o.material) o.material = Compositor.material
     })
   },
   applyCompositorMaterialFrozen() {
-    if (this.object.material) {
-      this.object.material = Compositor.component.frozenMaterial()
-      return;
-    }
-    if (this.isEl)
-    {
-      this.targetEl.setAttribute('material', Compositor.el.getAttribute('material'))
-      return
-    }
     let frozen = Compositor.component.frozenMaterial();
-    this.object.traverse(o => {
+    Util.traverseCondition(this.object, o => !o.userData || !o.userData.vartisteUI, o => {
       if (o.material) o.material = frozen
     })
   },
   applySculptingMaterial() {
     let material = this.el.sceneEl.systems['threed-line-system'].getMaterial(1.0)
-    this.object.traverse(o => {
+    Util.traverseCondition(this.object, o => !o.userData || !o.userData.vartisteUI, o => {
       if (o.material) o.material = material
     })
   },
