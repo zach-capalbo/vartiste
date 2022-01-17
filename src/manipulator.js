@@ -3,12 +3,20 @@ import {Undo} from './undo.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 
+export const IMMEDIATE_PRIORITY = 0
+export const GRID_PRIORITY = 100
+export const DEFAULT_GLOBAL_PRIORITY = 400
+export const DEFAULT_PRIORITY = 500
+export const CONSTRAINT_PRIORITY = 600
+export const POST_MANIPULATION_PRIORITY = 1000
+
 // Utility for managing all manipulators.
 // Add a callback function to the `sceneEl.systems.manipulator.postManipulationCallbacks`
 // to be notified of any changes to manipulated objects anywhere.
 AFRAME.registerSystem('manipulator', {
   init() {
-    this.postManipulationCallbacks = []
+    this.postManipulationCallbacks = new Map()
+    this.knownPriorities = [DEFAULT_PRIORITY]
     this.tick = AFRAME.utils.throttleTick(this.tick, 5000, this)
   },
   postManipulation(el, localOffset) {
@@ -24,15 +32,56 @@ AFRAME.registerSystem('manipulator', {
   // constraint once per entity.
   //
   // Returns the constraintFn, to make it easier to use with anonymous functions.
-  installConstraint(el, constraintFn) {
-    if (!el.manipulatorConstraints) el.manipulatorConstraints = []
-    el.manipulatorConstraints.push(constraintFn)
+  installConstraint(el, constraintFn, priority = DEFAULT_PRIORITY) {
+    if (!el.manipulatorConstraints) el.manipulatorConstraints = new Map()
+    let priorityList = el.manipulatorConstraints.get(priority)
+    if (!priorityList) {
+      priorityList = []
+      el.manipulatorConstraints.set(priority, priorityList)
+    }
+    priorityList.push(constraintFn)
+    if (this.knownPriorities.indexOf(priority) < 0)
+    {
+      this.knownPriorities.push(priority)
+      this.knownPriorities.sort((a, b) => a - b)
+    }
     return constraintFn
   },
   // Removes the constraint for manipulating the given entity
   removeConstraint(el, constraintFn) {
-    if (!el.manipulatorConstraints) el.manipulatorConstraints = []
-    el.manipulatorConstraints.splice(el.manipulatorConstraints.indexOf(constraintFn), 1)
+    if (!el.manipulatorConstraints) return;
+    for (let priorityList of el.manipulatorConstraints.values())
+    {
+      let idx = priorityList.indexOf(constraintFn)
+      if (idx >= 0)
+      {
+        priorityList.splice(idx, 1)
+      }
+    }
+  },
+  installGlobalConstraint(constraintFn, priority = DEFAULT_GLOBAL_PRIORITY) {
+    let priorityList = this.postManipulationCallbacks.get(priority)
+    if (!priorityList) {
+      priorityList = []
+      this.postManipulationCallbacks.set(priority, priorityList)
+    }
+    priorityList.push(constraintFn)
+    if (this.knownPriorities.indexOf(priority) < 0)
+    {
+      this.knownPriorities.push(priority)
+      this.knownPriorities.sort((a, b) => a - b)
+    }
+    return constraintFn
+  },
+  removeGlobalConstraint(constraintFn) {
+    for (let priorityList of this.postManipulationCallbacks.values())
+    {
+      let idx = priorityList.indexOf(constraintFn)
+      if (idx >= 0)
+      {
+        priorityList.splice(idx, 1)
+      }
+    }
   },
   tick(t, dt) {
     this.el.emit('refreshobjects')
@@ -551,14 +600,32 @@ AFRAME.registerComponent('manipulator', {
         this.resetZoom = false
       }
 
-      if (this.target.manipulatorConstraint) this.target.manipulatorConstraint(t, dt)
-      if (this.target.manipulatorConstraints) {
-        for (let c of this.target.manipulatorConstraints)
-        {
-          c(t,dt, localOffset)
+      if (this.target.manipulatorConstraint) {
+        console.trace("manipulatorConstraint is deprecated. Please use sceneEl.systems.manipulator.installConstraint instead")
+        this.target.manipulatorConstraint(t, dt)
+      }
+
+
+      for (let priority of this.system.knownPriorities)
+      {
+        let priorityList;
+        if (this.target.manipulatorConstraints) {
+          priorityList = this.target.manipulatorConstraints.get(priority)
+          if (priorityList) {
+            for (let c of priorityList)
+            {
+              c(t,dt, localOffset)
+            }
+          }
+        }
+        priorityList = this.system.postManipulationCallbacks.get(priority)
+        if (priorityList) {
+          for (let c of priorityList)
+          {
+            c(this.target, t,dt, localOffset)
+          }
         }
       }
-      this.system.postManipulation(this.target, localOffset)
     }
   }
 })
@@ -745,13 +812,13 @@ AFRAME.registerComponent('grab-activate', {
 AFRAME.registerComponent('manipulator-info-text', {
   dependencies: ['text'],
   init() {
-    this.el.sceneEl.systems.manipulator.postManipulationCallbacks.push((el) => {
+    this.el.sceneEl.systems.manipulator.installGlobalConstraint((el) => {
       this.el.setAttribute('text', 'value', `position="${AFRAME.utils.coordinates.stringify(el.object3D.position)}"\nrotation="${AFRAME.utils.coordinates.stringify({
         x: THREE.Math.radToDeg(el.object3D.rotation.x),
         y: THREE.Math.radToDeg(el.object3D.rotation.y),
         z: THREE.Math.radToDeg(el.object3D.rotation.z),
       })}"\nscale="${AFRAME.utils.coordinates.stringify(el.object3D.scale)}"`)
-    })
+    }, POST_MANIPULATION_PRIORITY)
   }
 })
 
@@ -790,7 +857,7 @@ AFRAME.registerComponent('constrain-to-sphere', {
     })
   },
   play() {
-    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject, CONSTRAINT_PRIORITY)
   },
   pause() {
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
@@ -875,7 +942,7 @@ AFRAME.registerComponent('lever', {
     this.grip = grip
     angler.append(grip)
 
-    grip.manipulatorConstraint = this.constrainObject.bind(this)
+    this.el.sceneEl.systems.manipulator.installConstraint(grip, this.constrainObject.bind(this), CONSTRAINT_PRIORITY)
     Util.whenLoaded([this.el, grip, body], () => this.setValue(this.data.initialValue))
 
     this.el['redirect-grab'] = this.grip
@@ -1130,17 +1197,17 @@ AFRAME.registerComponent('manipulator-snap-grid', {
   play() {
     if (this.el === this.el.sceneEl)
     {
-      this.system.postManipulationCallbacks.push(this.postManipulation)
+      this.system.installGlobalConstraint(this.postManipulation, GRID_PRIORITY)
     }
     else
     {
-      this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+      this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject, GRID_PRIORITY)
     }
   },
   pause() {
     if (this.el === this.el.sceneEl)
     {
-      this.system.postManipulationCallbacks.splice(this.system.postManipulationCallbacks.indexOf(this.postManipulation), 1)
+      this.system.removeGlobalConstraint(this.postManipulation)
     }
     else
     {
@@ -1287,7 +1354,7 @@ AFRAME.registerComponent('manipulator-lock', {
     this.constrainObject = this.constrainObject.bind(this)
   },
   play() {
-    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject, CONSTRAINT_PRIORITY)
   },
   pause() {
     console.log("Removing lock constraint")

@@ -8,6 +8,7 @@ import {ExtrudeGeometry} from './framework/ExtrudeGeometry.js'
 import {MarchingSquaresOpt} from './framework/marching-squares.js'
 import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
@@ -1138,7 +1139,7 @@ AFRAME.registerComponent('threed-line-tool', {
         }
 
         this.createMesh(this.points)
-      })
+      }, POST_MANIPULATION_PRIORITY)
     },
     triggerup: function(e) {
       if (!this.data.pointToPoint) return;
@@ -1287,7 +1288,7 @@ AFRAME.registerComponent('threed-line-tool', {
             // }
             this.points.push(newPoint)
             this.createMesh(this.points)
-          })
+          }, POST_MANIPULATION_PRIORITY)
         }
       }
     },

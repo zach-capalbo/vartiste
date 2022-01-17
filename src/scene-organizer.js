@@ -5,6 +5,7 @@ import shortid from 'shortid'
 import {STATE_TOGGLED} from './icon-button.js'
 import {THREED_MODES} from './layer-modes.js'
 import {Layer} from './layer.js'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 Util.registerComponentSystem('scene-organizer', {
   init() {
@@ -586,7 +587,7 @@ AFRAME.registerComponent('grab-redirector', {
           this.el.sceneEl.append(fakeTarget)
           this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
             Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
-          })
+          }, POST_MANIPULATION_PRIORITY)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
           })

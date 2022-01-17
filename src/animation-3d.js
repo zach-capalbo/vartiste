@@ -1,6 +1,7 @@
 import shortid from 'shortid'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
+import {CONSTRAINT_PRIORITY} from './manipulator.js'
 
 Util.registerComponentSystem('animation-3d', {
   schema: {
@@ -334,7 +335,7 @@ AFRAME.registerComponent('timeline-tool', {
       {
         Compositor.component.jumpToFrame(frameIdx)
       }
-    })
+    }, CONSTRAINT_PRIORITY)
 
     this.onFrameChange = this.onFrameChange.bind(this)
     this.onKeyframed = this.onKeyframed.bind(this)

@@ -4,6 +4,7 @@ import {Pool} from './pool.js'
 import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
 import {THREED_MODES} from './layer-modes.js'
 import './framework/TessellateModifier'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 Util.registerComponentSystem('mesh-tools', {
   init()  {
@@ -380,7 +381,7 @@ AFRAME.registerComponent('hide-mesh-tool', {
     this.el.sceneEl.systems.manipulator.installConstraint(() => {
       this.el.components.raycaster.data.far = this.calcFar()
       this.updateRaycaster.call(this.el.components.raycaster)
-    })
+    }, POST_MANIPULATION_PRIORITY)
   },
 })
 

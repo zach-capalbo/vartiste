@@ -839,7 +839,7 @@ AFRAME.registerComponent("bone-handle", {
           // this.startingUp.applyQuaternion(this.el.parentEl.object3D.quaternion)
           this.startingPosition = this.startingPosition || new THREE.Vector3
           this.startingPosition.copy(this.el.object3D.position)
-          this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint)
+          this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.trackParentConstraint, CONSTRAINT_PRIORITY)
           // this.el.parentEl.addState("constrained")
           // console.log("P", this.el.parentEl)
 
