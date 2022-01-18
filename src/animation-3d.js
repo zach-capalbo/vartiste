@@ -5,11 +5,15 @@ import {CONSTRAINT_PRIORITY} from './manipulator.js'
 
 class ObjectKeyframeTracks {
   constructor({
+    id,
     initializer = () => new Object,
+    parseValue = (a) => a,
   }) {
     this.objectTracks = {}
     this.frameIndices = {}
     this.initializer = initializer
+    this.parseValue = parseValue
+    this.id = id
   }
   at(obj, frameIdx) {
     if (!(obj.uuid in this.objectTracks))
@@ -123,6 +127,30 @@ class ObjectKeyframeTracks {
       // Util.applyMatrix(obj.matrix, obj)
     }
   }
+
+  readObjectTracks(obj, tracks, {recurse = true} = {}) {
+    if (tracks)
+    {
+      let map = this.objectTracks[obj.uuid] = new Map();
+      for (let [frameIdx, v] of tracks)
+      {
+        map.set(frameIdx, this.parseValue(v))
+      }
+      this.frameIndices[obj.uuid] = Array.from(map.keys())
+      this.frameIndices[obj.uuid].sort((a, b) => a - b)
+      if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
+    }
+    if (recurse) this.readTracksFromUserData(obj)
+  }
+  readTracksFromUserData(obj) {
+    obj.traverse(o => {
+      if (o.userData.objectTracks && o.userData.objectTracks[this.id])
+      {
+        this.readObjectTracks(o, o.userData.objectTracks[this.id], {recurse: false})
+        delete o.userData.objectTracks[this.id];
+      }
+    })
+  }
 }
 
 Util.registerComponentSystem('animation-3d', {
@@ -141,11 +169,14 @@ Util.registerComponentSystem('animation-3d', {
     this.animations = []
 
     this.visibilityTracks = new ObjectKeyframeTracks({
-      initializer: () => true
+      id: 'visibility',
+      initializer: () => true,
     })
 
     this.matrixTracks = new ObjectKeyframeTracks({
+      id: 'matrix',
       initializer: () => new THREE.Matrix4,
+      parseValue: (a) => new THREE.Matrix4().fromArray(a)
     })
   },
   trackFrameMatrix(obj, frameIdx) {
@@ -220,41 +251,43 @@ Util.registerComponentSystem('animation-3d', {
   },
 
   writeableTracks(obj) {
-    if (!(obj.uuid in this.matrixTracks.objectTracks)) return null;
+    let foundAny = false
+    let writable = {}
+    for (let tracks of [this.visibilityTracks, this.matrixTracks])
+    {
+      if (!(obj.uuid in tracks.objectTracks)) continue
+      writable[tracks.id] = Array.from(tracks.objectTracks[obj.uuid].entries())
+      if (writable[tracks.id].length > 0) foundAny = true
+    }
 
-    return Array.from(this.matrixTracks.objectTracks[obj.uuid].entries())
+    return foundAny ? writable : null
   },
   addTracksToUserData(obj) {
     obj.traverse(o => {
-      if (o.uuid in this.objectMatrixTracks)
+      let tracks = this.writeableTracks(o)
+      if (tracks)
       {
-        o.userData.objectMatrixTracks = this.writeableTracks(o)
+        o.userData.objectTracks = tracks
       }
     })
   },
-  readObjectTracks(obj, tracks, {recurse = true} = {}) {
-    if (tracks)
+  readObjectTracks(obj, trackTypes, {recurse = true} = {}) {
+    if (!trackTypes) return;
+    for (let [type, tracks] of Object.entries(trackTypes))
     {
-      let map = this.objectMatrixTracks[obj.uuid] = new Map();
-      for (let [frameIdx, mat] of tracks)
-      {
-        map.set(frameIdx, new THREE.Matrix4().fromArray(mat.elements))
+      let key = type + 'Tracks'
+      if (!animation3d[key]) {
+        console.warn("No known track for", key)
+        continue
       }
-      this.frameIndices[obj.uuid] = Array.from(map.keys())
-      this.frameIndices[obj.uuid].sort((a, b) => a - b)
-      if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
+      animation3d[key].readObjectTracks(el.object3D, tracks, {recurse})
     }
-    if (recurse) this.readTracksFromUserData(obj)
   },
   readTracksFromUserData(obj) {
-    obj.traverse(o => {
-      if (o.userData.objectMatrixTracks)
-      {
-        this.readObjectTracks(obj, o.userData.objectMatrixTracks, {recurse: false})
-        delete o.userData.objectMatrixTracks;
-      }
-    })
+    this.matrixTracks.readTracksFromUserData(obj)
+    this.visibilityTracks.readTracksFromUserData(obj)
   },
+
   generateTHREETracks(obj) {
     if (!(obj.uuid in this.objectMatrixTracks)) return []
 

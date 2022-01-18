@@ -1306,8 +1306,14 @@ AFRAME.registerComponent('threed-line-tool', {
           this.doneDrawing()
         }
 
-        this.makePrimitives()
-        // this.makeReference()
+        if (this.system.data.animate && Compositor.component.isPlayingAnimation)
+        {
+          this.makeReference()
+        }
+        else
+        {
+          this.makePrimitives()
+        }
       }
     }
   },
@@ -2050,6 +2056,22 @@ AFRAME.registerComponent('threed-line-tool', {
         mesh.el = el
         targetObj.add(mesh)
         Util.positionObject3DAtTarget(mesh, placeholder)
+
+        if (this.system.data.animate) {
+          mesh.el.setAttribute('animation-3d-keyframed', `wrapAnimation: ${Compositor.component.isPlayingAnimation}`)
+
+          if (Compositor.component.isPlayingAnimation)
+          {
+            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
+          }
+          else
+          {
+            let frameIdx = Compositor.component.currentFrame
+            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx - 1, false)
+            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx, true)
+            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx + 1, false)
+          }
+        }
       }
       el.setAttribute('reference-glb', '')
       // el.setAttribute('primitive-construct-placeholder', 'detached: true; manualMesh: true')
