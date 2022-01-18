@@ -3,6 +3,52 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {CONSTRAINT_PRIORITY} from './manipulator.js'
 
+class ObjectKeyframeTracks {
+  constructor({
+    initializer = () => new Object,
+  }) {
+    this.objectTracks = {}
+    this.frameIndices = {}
+    this.initializer = initializer
+  }
+  at(obj, frameIdx) {
+    if (!(obj.uuid in this.objectTracks))
+    {
+      this.objectTracks[obj.uuid] = new Map()
+      this.frameIndices[obj.uuid] = []
+    }
+
+    if (!this.objectTracks[obj.uuid].has(frameIdx))
+    {
+      this.objectTracks[obj.uuid].set(frameIdx, this.initializer(obj, frameIdx))
+      this.frameIndices[obj.uuid].push(frameIdx)
+      this.frameIndices[obj.uuid].sort((a, b) => a - b)
+    }
+
+    return this.objectTracks[obj.uuid].get(frameIdx)
+  },
+  set(obj, frameIdx, value) {
+    // To initialize
+    this.at(obj, frameIdx)
+    this.objectTracks[obj.uuid].set(frameIdx, value)
+  },
+  clear(obj) {
+    delete this.frameIndices[obj.uuid]
+    delete this.objectTracks[obj.uuid]
+  }
+  delete(obj, frameIdx) {
+    if (!(obj.uuid in this.objectTracks)) return;
+    this.objectTracks[obj.uuid].delete(frameIdx)
+    this.frameIndices[obj.uuid].splice(this.frameIndices[obj.uuid].indexOf(frameIdx), 1)
+
+    if (this.frameIndices[obj.uuid].length === 0)
+    {
+      delete this.frameIndices[obj.uuid]
+      delete this.objectTracks[obj.uuid]
+    }
+  }
+}
+
 Util.registerComponentSystem('animation-3d', {
   schema: {
     frameCount: {default: 50},
@@ -19,10 +65,12 @@ Util.registerComponentSystem('animation-3d', {
     this.morphKeyFrames = {}
     this.animations = []
     this.objectMatrixTracks = {}
+    this.objectVisibility = {}
     this.frameIndices = {}
-  },
-  bakeMatrixListToClip(obj, animations) {
-    let clip = new THREE.AnimationClip(shortid.generate(), (this.data.frameCount - 1 / fps), tracks)
+
+    this.objectMatrixTracks = new ObjectKeyframeTracks({
+      initializer: () => new THREE.Matrix4,
+    })
   },
   trackFrameMatrix(obj, frameIdx) {
     if (!(obj.uuid in this.objectMatrixTracks))
