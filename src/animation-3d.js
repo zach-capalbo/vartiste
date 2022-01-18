@@ -40,6 +40,9 @@ class ObjectKeyframeTracks {
     delete this.frameIndices[obj.uuid]
     delete this.objectTracks[obj.uuid]
   }
+  has(obj) {
+    return obj.uuid in this.frameIndices
+  }
   delete(obj, frameIdx) {
     if (!(obj.uuid in this.objectTracks)) return;
     this.objectTracks[obj.uuid].delete(frameIdx)
@@ -150,6 +153,21 @@ class ObjectKeyframeTracks {
         delete o.userData.objectTracks[this.id];
       }
     })
+  }
+  threeTrack(obj, fps, type) {
+    if (!(obj.uuid in this.frameIndices)) return null;
+
+    let times = []
+    let values = []
+    for (let frameIdx of this.frameIndices[obj.uuid])
+    {
+      times.push(frameIdx / fps)
+      values.push(this.at(obj, frameIdx))
+    }
+
+    if (times.length === 0) return null;
+
+    return new type(`${obj.uuid}.${this.id}`, times, values)
   }
 }
 
@@ -289,33 +307,41 @@ Util.registerComponentSystem('animation-3d', {
   },
 
   generateTHREETracks(obj) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return []
-
-    let times = []
-    let positionValues = []
-    let rotationValues = []
-    let scaleValues = []
-    let position = this.pool('position', THREE.Vector3)
-    let rotation = this.pool('rot', THREE.Quaternion)
-    let scale = this.pool('scale', THREE.Vector3)
-    let frames = this.frameIndices[obj.uuid]
+    let tracks = []
     let fps = Compositor.component.data.frameRate
-    for (let frameIdx of frames)
+
+    if (this.matrixTracks.has(obj))
     {
-      times.push(frameIdx / fps)
-      let matrix = this.trackFrameMatrix(obj, frameIdx)
-      matrix.decompose(position, rotation, scale)
-      positionValues.push(...position.toArray())
-      rotationValues.push(...rotation.toArray())
-      scaleValues.push(...scale.toArray())
+      let times = []
+      let positionValues = []
+      let rotationValues = []
+      let scaleValues = []
+      let position = this.pool('position', THREE.Vector3)
+      let rotation = this.pool('rot', THREE.Quaternion)
+      let scale = this.pool('scale', THREE.Vector3)
+      let frames = this.matrixTracks.frameIndices[obj.uuid]
+      for (let frameIdx of frames)
+      {
+        times.push(frameIdx / fps)
+        let matrix = this.trackFrameMatrix(obj, frameIdx)
+        matrix.decompose(position, rotation, scale)
+        positionValues.push(...position.toArray())
+        rotationValues.push(...rotation.toArray())
+        scaleValues.push(...scale.toArray())
+      }
+
+      // if (wrap)
+
+      let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
+      let rotationTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
+      let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
+      tracks.push(positionTrack, rotationTrack, quaternionTrack)
     }
 
-    // if (wrap)
+    let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
+    if (visibilityTracks) tracks.push(visibilityTracks)
 
-    let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
-    let rotationTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
-    let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
-    return [positionTrack, rotationTrack, quaternionTrack]
+    return tracks
   },
   generateAnimation(obj, {name} = {})
   {
@@ -325,11 +351,13 @@ Util.registerComponentSystem('animation-3d', {
       let newTracks = this.generateTHREETracks(o)
       if (newTracks.length <= 0) return;
 
-      maxTime = Math.max(maxTime, newTracks[0].times[newTracks[0].times.length - 1])
+      maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
       tracks.push(...newTracks)
     })
     if (!name) name = `vartiste-${shortid.generate()}`
-    return new THREE.AnimationClip(name, maxTime, tracks)
+    let clip = new THREE.AnimationClip(name, maxTime, tracks)
+    console.log("Animation Clip", clip)
+    return clip
   }
 })
 

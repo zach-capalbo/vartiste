@@ -1443,9 +1443,14 @@ AFRAME.registerComponent('threed-line-tool', {
       }
       else
       {
-        let lastPoint = this.points[this.points.length - 1]
+        let leftoverPoints = []
+        const pointDistance = 4
+        for (let i = Math.min(this.points.length - pointDistance, this.points.length - 1); i < this.points.length; ++i)
+        {
+          leftoverPoints.push(this.points[i])
+        }
         this.doneDrawing()
-        this.points.push(lastPoint)
+        this.points.push(...leftoverPoints)
       }
     }
     this.lastFrameSeen = frameIdx
