@@ -50,6 +50,12 @@ class ObjectKeyframeTracks {
   wrappedFrameIndex(obj, frameIdx) {
     return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
   }
+  currentFrameIdx(obj, wrap = true) {
+    if (!this.frameIndices[obj.uuid]) return Compositor.component.currentFrame
+    if (!wrap) return Compositor.component.currentFrame
+    return this.wrappedFrameIndex(obj, Compositor.component.currentFrame)
+    // return Compositor.component.currentFrame % this.data.frameCount
+  }
   animate(obj, frameIdx, wrapAnimation, useGlobalNumberOfFrames, singleValueCallback, interpCallback) {
     if (!(obj.uuid in this.objectTracks)) return;
 
@@ -107,7 +113,7 @@ class ObjectKeyframeTracks {
           if (track.has(endFrame)) break
         }
       }
-      // console.log("Interp", frameIdx, startFrame, endFrame)
+      // console.log("Interp", frameIdx, startFrame, endFrame, frameCount)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
       interpCallback(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount))
@@ -148,8 +154,8 @@ Util.registerComponentSystem('animation-3d', {
   allFrameIndices() {
     return this.matrixTracks.frameIndices
   },
-  keyframe(obj) {
-    let frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
+  keyframe(obj, frameIdx = undefined) {
+    if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
     let matrix = this.trackFrameMatrix(obj, frameIdx)
     obj.updateMatrix()
     matrix.copy(obj.matrix)
@@ -200,23 +206,23 @@ Util.registerComponentSystem('animation-3d', {
   //   return idx
   // },
   animate(obj, {wrapAnimation = true, useGlobalNumberOfFrames = false} = {}) {
-    this.matrixTracks.animate(obj, this.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
+    this.matrixTracks.animate(obj, this.matrixTracks.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
       (m) => Util.applyMatrix(m, obj),
       (i, a, b) => {
         Util.interpTransformMatrices(i, a, b, {result: obj.matrix})
         Util.applyMatrix(obj.matrix, obj)
       }
     )
-    this.visibilityTracks.animate(obj, this.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
+    this.visibilityTracks.animate(obj, this.visibilityTracks.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
       (v) => obj.visible = v,
       (i, a, b) => obj.visible = a,
     )
   },
-  
-  writeableTracks(obj) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return null;
 
-    return Array.from(this.objectMatrixTracks[obj.uuid].entries())
+  writeableTracks(obj) {
+    if (!(obj.uuid in this.matrixTracks.objectTracks)) return null;
+
+    return Array.from(this.matrixTracks.objectTracks[obj.uuid].entries())
   },
   addTracksToUserData(obj) {
     obj.traverse(o => {

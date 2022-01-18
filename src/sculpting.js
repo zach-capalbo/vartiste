@@ -887,6 +887,7 @@ Util.registerComponentSystem('shape-creation', {
 Util.registerComponentSystem('threed-line-system', {
   schema: {
     usePressure: {default: true},
+    animate: {default: false},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -1251,6 +1252,11 @@ AFRAME.registerComponent('threed-line-tool', {
       if (e.detail === 'grabbed') {
         this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
 
+        if (this.system.data.animate && Compositor.component.isPlayingAnimation)
+        {
+          Compositor.component.jumpToFrame(0)
+        }
+
         if (this.el.grabbingManipulator.el.id === 'mouse')
         {
           this.mouseConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
@@ -1315,6 +1321,8 @@ AFRAME.registerComponent('threed-line-tool', {
 
     this.el.setAttribute('action-tooltips', "trigger: Hold to draw; b: Toggle Point-to-point mode")
 
+    this.onFrameChange = this.onFrameChange.bind(this)
+
     let tip
     if (this.data.shape === 'line')
     {
@@ -1372,6 +1380,8 @@ AFRAME.registerComponent('threed-line-tool', {
 
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
 
+    this.lastFrameSeen = 0;
+
     this.points = []
     this.meshes = []
 
@@ -1406,6 +1416,33 @@ AFRAME.registerComponent('threed-line-tool', {
     })
 
     this.el.scene
+  },
+  play() {
+    Compositor.el.addEventListener('framechanged', this.onFrameChange)
+  },
+  pause() {
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
+  },
+  onFrameChange() {
+    let frameIdx = Compositor.component.currentFrame
+    if (this.system.data.animate && this.points.length > 2 && frameIdx !== this.lastFrameSeen)
+    {
+      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, this.lastFrameSeen, false)
+      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx, true)
+      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx + 1, false)
+
+      if (this.data.pointToPoint)
+      {
+        this.doneDrawing()
+      }
+      else
+      {
+        let lastPoint = this.points[this.points.length - 1]
+        this.doneDrawing()
+        this.points.push(lastPoint)
+      }
+    }
+    this.lastFrameSeen = frameIdx
   },
   calcScale() {
     return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
@@ -1971,6 +2008,21 @@ AFRAME.registerComponent('threed-line-tool', {
 
     for (let mesh of this.meshes) {
       this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+      if (this.system.data.animate) {
+        mesh.el.setAttribute('animation-3d-keyframed', `wrapAnimation: ${Compositor.component.isPlayingAnimation}`)
+
+        if (Compositor.component.isPlayingAnimation)
+        {
+          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
+        }
+        else
+        {
+          let frameIdx = Compositor.component.currentFrame
+          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx - 1, false)
+          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx, true)
+          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx + 1, false)
+        }
+      }
     }
 
     this.meshes = []
