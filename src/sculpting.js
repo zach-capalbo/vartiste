@@ -1431,7 +1431,7 @@ AFRAME.registerComponent('threed-line-tool', {
   },
   onFrameChange() {
     let frameIdx = Compositor.component.currentFrame
-    if (this.system.data.animate && this.points.length > 2 && frameIdx !== this.lastFrameSeen)
+    if (this.mesh && this.system.data.animate && this.points.length > 2 && frameIdx !== this.lastFrameSeen)
     {
       this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, this.lastFrameSeen, false)
       this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx, true)
@@ -1444,13 +1444,25 @@ AFRAME.registerComponent('threed-line-tool', {
       else
       {
         let leftoverPoints = []
-        const pointDistance = 4
-        for (let i = Math.min(this.points.length - pointDistance, this.points.length - 1); i < this.points.length; ++i)
+        const pointDistance = 7
+        for (let i = Math.max(0, this.points.length - pointDistance); i < this.points.length; ++i)
         {
           leftoverPoints.push(this.points[i])
         }
+
         this.doneDrawing()
         this.points.push(...leftoverPoints)
+
+        try {
+          for (let i = 0; i < this.points.length; ++i)
+          {
+            this.points[i].l = this.points[i].l - this.points[0].l
+          }
+        }
+        catch (e) {
+          console.error("POINTS? ", this.points)
+          throw e
+        }
       }
     }
     this.lastFrameSeen = frameIdx
