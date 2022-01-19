@@ -29,10 +29,10 @@
       starting Windows Mixed Reality, click the "Fix it" button then restart the
       browser.
 
-    - *SteamVR*: Under SteamVR settings, in the Developer tab, click "Set
-      SteamVR as OpenXR Runtime", restart the browser, and try again. If there
-      is no Developer tab or OpenXR runtime button, then you may need to enable
-      "Show Advanced Settings"
+    - *SteamVR*: Under SteamVR settings, make sure "Advanced Settings" is set to
+      "Show", then in the Developer tab, click "Set SteamVR as OpenXR Runtime",
+      restart the browser, and try again. If there is no Developer tab or OpenXR
+      runtime button, then you may need to enable "Show Advanced Settings"
 
     - *Oculus*: Oculus devices seem to work best when using SteamVR and
       following the SteamVR instructions above. Nonetheless, if you wish, you

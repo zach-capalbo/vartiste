@@ -30,6 +30,7 @@ class ProjectFile {
     if (!('primitiveConstructs' in obj)) obj.primitiveConstructs = []
     if (!('shapeWands' in obj)) obj.shapeWands = []
     if (!('tracksForElId' in obj)) obj.tracksForElId = {}
+    if (!('trackTypesForElId' in obj)) obj.trackTypesForElId = {}
 
     if (!('showFloor' in obj.environment)) obj.environment.showFloor = false
 
@@ -231,7 +232,14 @@ class ProjectFile {
       await Util.whenLoaded(el)
       Util.positionObject3DAtTarget(el.object3D, positioner)
       el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
-      if (animation3d) animation3d.readObjectTracks(el.object3D, construct.track)
+
+      if (animation3d) {
+        // Old version
+        animation3d.matrixTracks.readObjectTracks(el.object3D, construct.track)
+
+        // New version
+        animation3d.readObjectTracks(el.object3D, construct.trackTypes)
+      }
 
       // console.log("Loaded construct")//, mesh)
     }
@@ -291,6 +299,7 @@ class ProjectFile {
       settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
     }
 
+    // Old Version
     for (let [id, tracks] of Object.entries(obj.tracksForElId))
     {
       console.log("Entries", id, tracks)
@@ -300,7 +309,21 @@ class ProjectFile {
         console.warn("Could not find id for saved tracks", id)
         continue
       }
-      if (animation3d) animation3d.readObjectTracks(el.object3D, tracks)
+      if (animation3d) animation3d.matrixTracks.readObjectTracks(el.object3D, tracks)
+    }
+
+    // New Version
+    for (let [id, types] of Object.entries(obj.trackTypesForElId))
+    {
+      console.log("Entries", id, types)
+
+      let el = document.getElementById(id)
+      if (!el) {
+        console.warn("Could not find id for saved tracks", id)
+        continue
+      }
+
+      if (animation3d) animation3d.readObjectTracks(el.object3D, types)
     }
   }
 
@@ -313,7 +336,7 @@ class ProjectFile {
     obj.exportJPEG = settings.data.exportJPEG
     Object.assign(obj, this.saveCompositor())
 
-    obj.tracksForElId = {}
+    obj.trackTypesForElId = {}
 
     let canvasRoot = document.querySelector('#canvas-root')
     let originalCanvasMatrix
@@ -321,7 +344,7 @@ class ProjectFile {
     {
       // originalCanvasMatrix = new THREE.Matrix4().copy(canvasRoot.object3D.matrix)
       // Util.applyMatrix(canvasRoot.matrix.identity(), canvasRoot.object3D)
-      if (animation3d) obj.tracksForElId['canvas-root'] = animation3d.writeableTracks(canvasRoot.object3D)
+      if (animation3d) obj.trackTypesForElId['canvas-root'] = animation3d.writeableTracks(canvasRoot.object3D)
     }
 
     let compositionView = document.getElementById('composition-view')
@@ -342,7 +365,7 @@ class ProjectFile {
         })
         obj.glb = base64ArrayBuffer(glb)
       }
-      if (animation3d) obj.tracksForElId['composition-view'] = animation3d.writeableTracks(compositionView.object3D)
+      if (animation3d) obj.trackTypesForElId['composition-view'] = animation3d.writeableTracks(compositionView.object3D)
     }
 
 
@@ -417,7 +440,7 @@ class ProjectFile {
         obj.primitiveConstructs.push({
           glb: buffer,
           matrix: mesh.matrixWorld.elements,
-          track: animation3d ? animation3d.writeableTracks(el.object3D) : null
+          trackTypes: animation3d ? animation3d.writeableTracks(el.object3D) : null
         })
       }
       else
@@ -434,7 +457,7 @@ class ProjectFile {
         obj.primitiveConstructs.push({
           uuid: newMesh.uuid,
           matrix: mesh.matrixWorld.elements,
-          track: animation3d ?animation3d.writeableTracks(el.object3D) : null
+          trackTypes: animation3d ? animation3d.writeableTracks(el.object3D) : null
         })
       }
     }

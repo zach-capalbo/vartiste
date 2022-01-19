@@ -3,108 +3,74 @@ import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {CONSTRAINT_PRIORITY} from './manipulator.js'
 
-Util.registerComponentSystem('animation-3d', {
-  schema: {
-    frameCount: {default: 50},
-  },
-  emits: {
-    objectkeyframed: {
-      object: null,
-      frameIdx: 0
-    },
-  },
-  init() {
-    Pool.init(this)
-    Util.emitsEvents(this)
-    this.morphKeyFrames = {}
-    this.animations = []
-    this.objectMatrixTracks = {}
+class ObjectKeyframeTracks {
+  constructor({
+    id,
+    initializer = () => new Object,
+    parseValue = (a) => a,
+  }) {
+    this.objectTracks = {}
     this.frameIndices = {}
-  },
-  bakeMatrixListToClip(obj, animations) {
-    let clip = new THREE.AnimationClip(shortid.generate(), (this.data.frameCount - 1 / fps), tracks)
-  },
-  trackFrameMatrix(obj, frameIdx) {
-    if (!(obj.uuid in this.objectMatrixTracks))
+    this.initializer = initializer
+    this.parseValue = parseValue
+    this.id = id
+  }
+  at(obj, frameIdx) {
+    if (!(obj.uuid in this.objectTracks))
     {
-      this.objectMatrixTracks[obj.uuid] = new Map()
+      this.objectTracks[obj.uuid] = new Map()
       this.frameIndices[obj.uuid] = []
     }
 
-    if (!this.objectMatrixTracks[obj.uuid].has(frameIdx))
+    if (!this.objectTracks[obj.uuid].has(frameIdx))
     {
-      this.objectMatrixTracks[obj.uuid].set(frameIdx, new THREE.Matrix4)
+      this.objectTracks[obj.uuid].set(frameIdx, this.initializer(obj, frameIdx))
       this.frameIndices[obj.uuid].push(frameIdx)
       this.frameIndices[obj.uuid].sort((a, b) => a - b)
-      // Util.callLater(() => this.el.emit('keyframeadded', this.emitDetails.keyframeadded))
     }
 
-    return this.objectMatrixTracks[obj.uuid].get(frameIdx)
-  },
-  keyframe(obj) {
-    let frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
-    let matrix = this.trackFrameMatrix(obj, frameIdx)
-    obj.updateMatrix()
-    matrix.copy(obj.matrix)
-    if (obj.el && !obj.el.hasAttribute('animation-3d-keyframed'))
-    {
-      obj.el.setAttribute('animation-3d-keyframed', '')
-    }
-
-    this.emitDetails.objectkeyframed.object = obj
-    this.emitDetails.objectkeyframed.frameIdx = frameIdx
-    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
-  },
-  clearTrack(obj) {
+    return this.objectTracks[obj.uuid].get(frameIdx)
+  }
+  set(obj, frameIdx, value) {
+    // To initialize
+    this.at(obj, frameIdx)
+    this.objectTracks[obj.uuid].set(frameIdx, value)
+  }
+  clear(obj) {
     delete this.frameIndices[obj.uuid]
-    delete this.objectMatrixTracks[obj.uuid]
-
-    this.emitDetails.objectkeyframed.object = obj
-    this.emitDetails.objectkeyframed.frameIdx = -1
-    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
-  },
-  deleteKeyframe(obj, frameIdx) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return
-    this.objectMatrixTracks[obj.uuid].delete(frameIdx)
+    delete this.objectTracks[obj.uuid]
+  }
+  has(obj) {
+    return obj.uuid in this.frameIndices
+  }
+  delete(obj, frameIdx) {
+    if (!(obj.uuid in this.objectTracks)) return;
+    this.objectTracks[obj.uuid].delete(frameIdx)
     this.frameIndices[obj.uuid].splice(this.frameIndices[obj.uuid].indexOf(frameIdx), 1)
 
     if (this.frameIndices[obj.uuid].length === 0)
     {
       delete this.frameIndices[obj.uuid]
-      delete this.objectMatrixTracks[obj.uuid]
+      delete this.objectTracks[obj.uuid]
     }
-
-    this.emitDetails.objectkeyframed.object = obj
-    this.emitDetails.objectkeyframed.frameIdx = frameIdx
-    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
-  },
+  }
   wrappedFrameIndex(obj, frameIdx) {
     return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
-  },
+  }
   currentFrameIdx(obj, wrap = true) {
     if (!this.frameIndices[obj.uuid]) return Compositor.component.currentFrame
     if (!wrap) return Compositor.component.currentFrame
     return this.wrappedFrameIndex(obj, Compositor.component.currentFrame)
     // return Compositor.component.currentFrame % this.data.frameCount
-  },
-  isWrapping(obj) {
-    if (obj.el) obj = obj.el;
-    if (!obj.hasAttribute('animation-3d-keyframed')) return true
-    return obj.getAttribute('animation-3d-keyframed').wrapAnimation
-  },
-  // frameIdx(idx) {
-  //   idx = idx % this.data.frameCount
-  //   if (idx < 0) idx = this.data.frameCount + idx
-  //   return idx
-  // },
-  animate(obj, {wrapAnimation = true, useGlobalNumberOfFrames = false} = {}) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return;
+  }
+  animate(obj, frameIdx, wrapAnimation, useGlobalNumberOfFrames, singleValueCallback, interpCallback) {
+    if (!(obj.uuid in this.objectTracks)) return;
 
-    let track = this.objectMatrixTracks[obj.uuid];
-    let frameIdx = this.currentFrameIdx(obj, wrapAnimation)
+    let track = this.objectTracks[obj.uuid];
+
     if (track.has(frameIdx))
     {
-      Util.applyMatrix(track.get(frameIdx), obj)
+      singleValueCallback(track.get(frameIdx))
     }
     else if (track.size === 0)
     {
@@ -113,7 +79,7 @@ Util.registerComponentSystem('animation-3d', {
     else if (track.size === 1)
     {
       // console.log("Track", track)
-      Util.applyMatrix(track.values().next().value, obj)
+      singleValueCallback(track.values().next().value)
     }
     else
     {
@@ -127,7 +93,7 @@ Util.registerComponentSystem('animation-3d', {
       {
         if (!wrapAnimation)
         {
-          Util.applyMatrix(track.get(frameIndices[0]), obj)
+          singleValueCallback(track.get(frameIndices[0]))
           return;
         }
         startFrame = frameIndices[l - 1]
@@ -137,7 +103,7 @@ Util.registerComponentSystem('animation-3d', {
       {
         if (!wrapAnimation)
         {
-          Util.applyMatrix(track.get(frameIndices[l - 1]), obj)
+          singleValueCallback(track.get(frameIndices[l - 1]))
           return;
         }
         startFrame = frameIndices[l - 1]
@@ -154,79 +120,240 @@ Util.registerComponentSystem('animation-3d', {
           if (track.has(endFrame)) break
         }
       }
-      // console.log("Interp", frameIdx, startFrame, endFrame)
+      // console.log("Interp", frameIdx, startFrame, endFrame, frameCount)
       let interp = THREE.Math.mapLinear(frameIdx, startFrame, endFrame, 0.0, 1.0)
 
-      Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
-        result: obj.matrix
-      })
-      Util.applyMatrix(obj.matrix, obj)
+      interpCallback(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount))
+      // Util.interpTransformMatrices(interp, track.get(startFrame % frameCount), track.get(endFrame % frameCount), {
+      //   result: obj.matrix
+      // })
+      // Util.applyMatrix(obj.matrix, obj)
     }
-  },
-  writeableTracks(obj) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return null;
+  }
 
-    return Array.from(this.objectMatrixTracks[obj.uuid].entries())
-  },
-  addTracksToUserData(obj) {
-    obj.traverse(o => {
-      if (o.uuid in this.objectMatrixTracks)
-      {
-        o.userData.objectMatrixTracks = this.writeableTracks(o)
-      }
-    })
-  },
   readObjectTracks(obj, tracks, {recurse = true} = {}) {
     if (tracks)
     {
-      let map = this.objectMatrixTracks[obj.uuid] = new Map();
-      for (let [frameIdx, mat] of tracks)
+      let map = this.objectTracks[obj.uuid] = new Map();
+      for (let [frameIdx, v] of tracks)
       {
-        map.set(frameIdx, new THREE.Matrix4().fromArray(mat.elements))
+        map.set(frameIdx, this.parseValue(v))
       }
       this.frameIndices[obj.uuid] = Array.from(map.keys())
       this.frameIndices[obj.uuid].sort((a, b) => a - b)
       if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
     }
     if (recurse) this.readTracksFromUserData(obj)
-  },
+  }
   readTracksFromUserData(obj) {
     obj.traverse(o => {
-      if (o.userData.objectMatrixTracks)
+      if (o.userData.objectTracks && o.userData.objectTracks[this.id])
       {
-        this.readObjectTracks(obj, o.userData.objectMatrixTracks, {recurse: false})
-        delete o.userData.objectMatrixTracks;
+        this.readObjectTracks(o, o.userData.objectTracks[this.id], {recurse: false})
+        delete o.userData.objectTracks[this.id];
+      }
+    })
+  }
+  threeTrack(obj, fps, name, ctor, valueFn = (a) => [a]) {
+    if (!(obj.uuid in this.frameIndices)) return null;
+
+    let times = []
+    let values = []
+    for (let frameIdx of this.frameIndices[obj.uuid])
+    {
+      times.push(frameIdx / fps)
+      values.push(...valueFn(this.at(obj, frameIdx)))
+    }
+
+    if (times.length === 0) return null;
+
+    return ctor(`${obj.uuid}.${name || this.id}`, times, values)
+  }
+}
+
+Util.registerComponentSystem('animation-3d', {
+  schema: {
+    frameCount: {default: 50},
+  },
+  emits: {
+    objectkeyframed: {
+      object: null,
+      frameIdx: 0
+    },
+  },
+  init() {
+    Pool.init(this)
+    Util.emitsEvents(this)
+    this.animations = []
+
+    this.visibilityTracks = new ObjectKeyframeTracks({
+      id: 'visibility',
+      initializer: () => true,
+    })
+
+    this.matrixTracks = new ObjectKeyframeTracks({
+      id: 'matrix',
+      initializer: () => new THREE.Matrix4,
+      parseValue: (a) => new THREE.Matrix4().fromArray(a)
+    })
+  },
+  trackFrameMatrix(obj, frameIdx) {
+    return this.matrixTracks.at(obj, frameIdx)
+  },
+  allFrameIndices() {
+    return this.matrixTracks.frameIndices
+  },
+  keyframe(obj, frameIdx = undefined) {
+    if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
+    let matrix = this.trackFrameMatrix(obj, frameIdx)
+    obj.updateMatrix()
+    matrix.copy(obj.matrix)
+    if (obj.el && !obj.el.hasAttribute('animation-3d-keyframed'))
+    {
+      obj.el.setAttribute('animation-3d-keyframed', '')
+    }
+
+    this.visibilityTracks.set(obj, frameIdx, obj.visible)
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  clearTrack(obj) {
+    this.matrixTracks.clear(obj)
+    this.visibilityTracks.clear(obj)
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = -1
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  deleteKeyframe(obj, frameIdx) {
+    this.matrixTracks.delete(obj, frameIdx)
+    this.visibilityTracks.delete(obj, frameIdx)
+
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  wrappedFrameIndex(obj, frameIdx) {
+    return this.matrixTracks.wrappedFrameIndex(obj, frameIdx)
+  },
+  currentFrameIdx(obj, wrap = true) {
+    if (!this.matrixTracks.frameIndices[obj.uuid]) return Compositor.component.currentFrame
+    if (!wrap) return Compositor.component.currentFrame
+    return this.wrappedFrameIndex(obj, Compositor.component.currentFrame)
+    // return Compositor.component.currentFrame % this.data.frameCount
+  },
+  isWrapping(obj) {
+    if (obj.el) obj = obj.el;
+    if (!obj.hasAttribute('animation-3d-keyframed')) return true
+    return obj.getAttribute('animation-3d-keyframed').wrapAnimation
+  },
+  // frameIdx(idx) {
+  //   idx = idx % this.data.frameCount
+  //   if (idx < 0) idx = this.data.frameCount + idx
+  //   return idx
+  // },
+  animate(obj, {wrapAnimation = true, useGlobalNumberOfFrames = false} = {}) {
+    this.matrixTracks.animate(obj, this.matrixTracks.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
+      (m) => Util.applyMatrix(m, obj),
+      (i, a, b) => {
+        Util.interpTransformMatrices(i, a, b, {result: obj.matrix})
+        Util.applyMatrix(obj.matrix, obj)
+      }
+    )
+    this.visibilityTracks.animate(obj, this.visibilityTracks.currentFrameIdx(obj, wrapAnimation), wrapAnimation, useGlobalNumberOfFrames,
+      (v) => obj.visible = v,
+      (i, a, b) => obj.visible = a,
+    )
+  },
+
+  writeableTracks(obj) {
+    let foundAny = false
+    let writable = {}
+    for (let tracks of [this.visibilityTracks, this.matrixTracks])
+    {
+      if (!(obj.uuid in tracks.objectTracks)) continue
+      writable[tracks.id] = Array.from(tracks.objectTracks[obj.uuid].entries())
+      if (writable[tracks.id].length > 0) foundAny = true
+    }
+
+    return foundAny ? writable : null
+  },
+  addTracksToUserData(obj) {
+    obj.traverse(o => {
+      let tracks = this.writeableTracks(o)
+      if (tracks)
+      {
+        o.userData.objectTracks = tracks
       }
     })
   },
-  generateTHREETracks(obj) {
-    if (!(obj.uuid in this.objectMatrixTracks)) return []
-
-    let times = []
-    let positionValues = []
-    let rotationValues = []
-    let scaleValues = []
-    let position = this.pool('position', THREE.Vector3)
-    let rotation = this.pool('rot', THREE.Quaternion)
-    let scale = this.pool('scale', THREE.Vector3)
-    let frames = this.frameIndices[obj.uuid]
-    let fps = Compositor.component.data.frameRate
-    for (let frameIdx of frames)
+  readObjectTracks(obj, trackTypes, {recurse = true} = {}) {
+    if (!trackTypes) return;
+    for (let [type, tracks] of Object.entries(trackTypes))
     {
-      times.push(frameIdx / fps)
-      let matrix = this.trackFrameMatrix(obj, frameIdx)
-      matrix.decompose(position, rotation, scale)
-      positionValues.push(...position.toArray())
-      rotationValues.push(...rotation.toArray())
-      scaleValues.push(...scale.toArray())
+      let key = type + 'Tracks'
+      if (!animation3d[key]) {
+        console.warn("No known track for", key)
+        continue
+      }
+      animation3d[key].readObjectTracks(el.object3D, tracks, {recurse})
+    }
+  },
+  readTracksFromUserData(obj) {
+    this.matrixTracks.readTracksFromUserData(obj)
+    this.visibilityTracks.readTracksFromUserData(obj)
+  },
+
+  generateTHREETracks(obj) {
+    let tracks = []
+    let fps = Compositor.component.data.frameRate
+    let scaleTrack;
+
+    if (this.matrixTracks.has(obj))
+    {
+      let times = []
+      let positionValues = []
+      let rotationValues = []
+      let scaleValues = []
+      let position = this.pool('position', THREE.Vector3)
+      let rotation = this.pool('rot', THREE.Quaternion)
+      let scale = this.pool('scale', THREE.Vector3)
+      let frames = this.matrixTracks.frameIndices[obj.uuid]
+      for (let frameIdx of frames)
+      {
+        times.push(frameIdx / fps)
+        let matrix = this.trackFrameMatrix(obj, frameIdx)
+        matrix.decompose(position, rotation, scale)
+        positionValues.push(...position.toArray())
+        rotationValues.push(...rotation.toArray())
+        scaleValues.push(...scale.toArray())
+      }
+
+      // if (wrap)
+
+      let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
+      scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
+      let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
+      tracks.push(positionTrack, scaleTrack, quaternionTrack)
     }
 
-    // if (wrap)
+    // Grr... GLTF doesn't support visible target. If only....
+    // let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
+    // if (visibilityTracks) tracks.push(visibilityTracks)
 
-    let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
-    let rotationTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
-    let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
-    return [positionTrack, rotationTrack, quaternionTrack]
+    if (this.visibilityTracks.has(obj))
+    {
+      if (scaleTrack)
+      {
+        tracks.splice(tracks.indexOf(scaleTrack), 1)
+      }
+      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete), (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0])
+      tracks.push(scaleTrack)
+    }
+
+    return tracks
   },
   generateAnimation(obj, {name} = {})
   {
@@ -236,11 +363,13 @@ Util.registerComponentSystem('animation-3d', {
       let newTracks = this.generateTHREETracks(o)
       if (newTracks.length <= 0) return;
 
-      maxTime = Math.max(maxTime, newTracks[0].times[newTracks[0].times.length - 1])
+      maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
       tracks.push(...newTracks)
     })
     if (!name) name = `vartiste-${shortid.generate()}`
-    return new THREE.AnimationClip(name, maxTime, tracks)
+    let clip = new THREE.AnimationClip(name, maxTime, tracks)
+    console.log("Animation Clip", clip)
+    return clip
   }
 })
 
@@ -276,7 +405,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
 
-    this.el.object3D.traverseVisible(o => {
+    this.el.object3D.traverse(o => {
       this.system.animate(o, this.data)
     })
   },
@@ -381,15 +510,16 @@ AFRAME.registerComponent('timeline-tool', {
     let width = this.width
     let numTicks = 10
     let animation3d = this.el.sceneEl.systems['animation-3d']
+    let frameIndices = animation3d.allFrameIndices()
 
-    if (!animation3d.frameIndices) return;
+    if (!frameIndices) return;
 
     if (this.data.target)
     {
       let object = this.data.target.object3D || this.data.target
-      if (object.uuid in animation3d.frameIndices)
+      if (object.uuid in frameIndices)
       {
-        let indices = animation3d.frameIndices[object.uuid]
+        let indices = frameIndices[object.uuid]
         numTicks = Math.min(Math.max(indices[indices.length - 1] + 5, 10), 50)
       }
     }
@@ -422,7 +552,8 @@ AFRAME.registerComponent('timeline-tool', {
     let object = this.object
     let animation3d = this.el.sceneEl.systems['animation-3d']
 
-    if (!(object.uuid in animation3d.frameIndices)) {
+    let frameIndices = animation3d.allFrameIndices();
+    if (!(object.uuid in frameIndices)) {
       for (let [frameIdx, el] of this.keyframes.entries())
       {
         el.remove()
@@ -431,7 +562,7 @@ AFRAME.registerComponent('timeline-tool', {
       return;
     }
 
-    let indices = animation3d.frameIndices[object.uuid]
+    let indices = frameIndices[object.uuid]
 
     let usedKeyframes = new Set()
 
