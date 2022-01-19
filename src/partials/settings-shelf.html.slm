@@ -7,7 +7,7 @@ a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false
   /a-entity.sketchfab-button click-action="exportSketchfab" icon-button="#asset-sketchfab" tooltip="Export to Sketchfab"
   /a-entity icon-button="#asset-arrow-collapse-vertical" toggle-button="target: a-scene; component: settings-system; property: exportJPEG" tooltip="Use JPEG Compression"
   a-entity icon-button="#asset-sketchfab" tooltip="Sketchfab" popup-button="popup: sketchfab-shelf; deferred: true"
-  a-entity icon-button="#asset-translate" tooltip="Lanugage" popup-button="popup: language-shelf; deferred: true"
+  a-entity icon-button="#asset-translate" tooltip="Language" popup-button="popup: language-shelf; deferred: true"
 
 a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false"
   a-entity icon-button="#asset-dice-2" tooltip="Low Quality" click-action="lowQuality" toggle-button=""
