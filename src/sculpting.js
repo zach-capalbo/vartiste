@@ -888,6 +888,7 @@ Util.registerComponentSystem('threed-line-system', {
   schema: {
     usePressure: {default: true},
     animate: {default: false},
+    buildUp: {default: false},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -1445,7 +1446,7 @@ AFRAME.registerComponent('threed-line-tool', {
       else
       {
         let leftoverPoints = []
-        for (let i = Math.max(0, this.points.length - pointDistance); i < this.points.length - 1; ++i)
+        for (let i = Math.max(0, this.system.data.buildUp ? 0 : this.points.length - pointDistance); i < this.points.length - 1; ++i)
         {
           if (this.points[i]) leftoverPoints.push(this.points[i])
         }
