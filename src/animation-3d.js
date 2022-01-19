@@ -154,7 +154,7 @@ class ObjectKeyframeTracks {
       }
     })
   }
-  threeTrack(obj, fps, type) {
+  threeTrack(obj, fps, name, ctor, valueFn = (a) => [a]) {
     if (!(obj.uuid in this.frameIndices)) return null;
 
     let times = []
@@ -162,12 +162,12 @@ class ObjectKeyframeTracks {
     for (let frameIdx of this.frameIndices[obj.uuid])
     {
       times.push(frameIdx / fps)
-      values.push(this.at(obj, frameIdx))
+      values.push(...valueFn(this.at(obj, frameIdx)))
     }
 
     if (times.length === 0) return null;
 
-    return new type(`${obj.uuid}.${this.id}`, times, values)
+    return ctor(`${obj.uuid}.${name || this.id}`, times, values)
   }
 }
 
@@ -309,6 +309,7 @@ Util.registerComponentSystem('animation-3d', {
   generateTHREETracks(obj) {
     let tracks = []
     let fps = Compositor.component.data.frameRate
+    let scaleTrack;
 
     if (this.matrixTracks.has(obj))
     {
@@ -333,13 +334,24 @@ Util.registerComponentSystem('animation-3d', {
       // if (wrap)
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
-      let rotationTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
+      scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
       let quaternionTrack = new THREE.QuaternionKeyframeTrack(`${obj.uuid}.quaternion`, times, rotationValues)
-      tracks.push(positionTrack, rotationTrack, quaternionTrack)
+      tracks.push(positionTrack, scaleTrack, quaternionTrack)
     }
 
-    let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
-    if (visibilityTracks) tracks.push(visibilityTracks)
+    // Grr... GLTF doesn't support visible target. If only....
+    // let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
+    // if (visibilityTracks) tracks.push(visibilityTracks)
+
+    if (this.visibilityTracks.has(obj))
+    {
+      if (scaleTrack)
+      {
+        tracks.splice(tracks.indexOf(scaleTrack), 1)
+      }
+      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete), (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0])
+      tracks.push(scaleTrack)
+    }
 
     return tracks
   },
