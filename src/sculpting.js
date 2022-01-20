@@ -1433,7 +1433,7 @@ AFRAME.registerComponent('threed-line-tool', {
   onFrameChange() {
     let frameIdx = Compositor.component.currentFrame
     const pointDistance = 7
-    if (this.mesh && this.system.data.animate && this.points.length > pointDistance && frameIdx !== this.lastFrameSeen)
+    if (this.mesh && this.system.data.animate && (this.points.length > pointDistance || this.data.pointToPoint) && frameIdx !== this.lastFrameSeen)
     {
       // console.log("Frame", frameIdx, this.mesh.uuid, this.mesh)
       this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx - 1, false)
@@ -1452,7 +1452,10 @@ AFRAME.registerComponent('threed-line-tool', {
 
       if (this.data.pointToPoint)
       {
+        let points = this.points.slice()
         this.finishMesh()
+        this.points.push(...points)
+        this.createMesh(this.points)
       }
       else
       {
@@ -2138,7 +2141,7 @@ AFRAME.registerComponent('threed-line-tool', {
       for (let mesh of meshes)
       {
         if (!mesh.geometry.attributes.position) continue;
-        
+
         Util.positionObject3DAtTarget(placeholder, mesh)
         mesh.el = el
         targetObj.add(mesh)
