@@ -54,6 +54,22 @@ class ObjectKeyframeTracks {
       delete this.objectTracks[obj.uuid]
     }
   }
+  trimTo(obj, frameIdx, interpCallback) {
+    if (!(obj.uuid in this.objectTracks)) return;
+    if (this.frameIndices[obj.uuid].indexOf(frameIdx) < 0)
+    {
+      let val
+      this.animate(obj, frameIdx, false, false, (v) => val = v, (x, a, b) => val = interpCallback(x, a, b))
+      this.set(obj, frameIdx, val)
+    }
+
+    for (let i of this.frameIndices[obj.uuid])
+    {
+      if (i > frameIdx) {
+        this.delete(obj, i)
+      }
+    }
+  }
   wrappedFrameIndex(obj, frameIdx) {
     return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
   }
