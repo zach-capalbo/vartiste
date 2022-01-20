@@ -1307,7 +1307,7 @@ AFRAME.registerComponent('threed-line-tool', {
           this.doneDrawing()
         }
 
-        if (this.system.data.animate && Compositor.component.isPlayingAnimation)
+        if (this.system.data.animate)
         {
           this.makeReference()
         }
@@ -1433,15 +1433,29 @@ AFRAME.registerComponent('threed-line-tool', {
   onFrameChange() {
     let frameIdx = Compositor.component.currentFrame
     const pointDistance = 7
-    if (this.mesh && this.system.data.animate && this.points.length > pointDistance && frameIdx !== this.lastFrameSeen)
+    if (this.mesh && this.system.data.animate && (this.points.length > pointDistance || this.data.pointToPoint) && frameIdx !== this.lastFrameSeen)
     {
-      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, this.lastFrameSeen, false)
+      // console.log("Frame", frameIdx, this.mesh.uuid, this.mesh)
+      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx - 1, false)
       this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx, true)
-      this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx + 1, false)
+      if (!this.system.data.buildUp) this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, frameIdx + 1, false)
+      if (this.meshes && this.meshes.length > 0)
+      {
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.meshes[this.meshes.length - 1], frameIdx, false)
+        this.meshes[this.meshes.length - 1].visible = false
+        // console.log("DeFraming mesh", this.meshes[this.meshes.length - 1], frameIdx, this.lastFrameSeen)
+        // console.log("Meshes", this.meshes.map(m => m.uuid))
+      }
+
+      this.mesh.visible = false
+
 
       if (this.data.pointToPoint)
       {
-        this.doneDrawing()
+        let points = this.points.slice()
+        this.finishMesh()
+        this.points.push(...points)
+        this.createMesh(this.points)
       }
       else
       {
@@ -1451,7 +1465,7 @@ AFRAME.registerComponent('threed-line-tool', {
           if (this.points[i]) leftoverPoints.push(this.points[i])
         }
 
-        this.doneDrawing()
+        this.finishMesh()
         this.points.push(...leftoverPoints)
 
         if (this.points.length > 0)
@@ -1461,9 +1475,18 @@ AFRAME.registerComponent('threed-line-tool', {
             this.points[i].l = this.points[i].l - this.points[0].l
           }
         }
+
+        this.createMesh(this.points)
+      }
+      this.lastFrameSeen = frameIdx
+    }
+    else if (this.system.data.animate && !Compositor.component.isPlayingAnimation)
+    {
+      for (let mesh of this.meshes)
+      {
+        this.el.sceneEl.systems['animation-3d'].animate(mesh, {wrapAnimation: false})
       }
     }
-    this.lastFrameSeen = frameIdx
   },
   calcScale() {
     return Math.pow(0.8 * this.el.object3D.scale.x / this.initialScale, 1.15)
@@ -1988,12 +2011,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.mesh.position.copy(this.startPoint)
     this.data.meshContainer.object3D.add(this.mesh)
   },
-  doneDrawing() {
-    if (this.endDrawingEl)
-    {
-      this.endDrawingEl.removeEventListener('enddrawing', this.doneDrawing)
-      this.endDrawingEl = null
-    }
+  finishMesh() {
     if (this.mesh) {
       this.meshes.push(this.mesh)
     }
@@ -2021,6 +2039,42 @@ AFRAME.registerComponent('threed-line-tool', {
       this.system.material = this.system.material.clone()
     }
   },
+  doneDrawing() {
+    if (this.endDrawingEl)
+    {
+      this.endDrawingEl.removeEventListener('enddrawing', this.doneDrawing)
+      this.endDrawingEl = null
+    }
+    if (this.system.data.animate && Compositor.component.isPlayingAnimation)
+    {
+      if (this.mesh) {
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, 0, false)
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, Compositor.component.currentFrame, true)
+      }
+      if (!this.system.data.buildUp) {
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, Compositor.component.currentFrame + 1, false)
+        this.mesh.visible = false
+      }
+      if (this.meshes.length > 0)
+      {
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.meshes[this.meshes.length - 1], 0, false)
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.meshes[this.meshes.length - 1], Compositor.component.currentFrame, false)
+      }
+    }
+    else if (this.system.data.animate)
+    {
+      if (this.mesh) {
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, 0, false)
+        this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, Compositor.component.currentFrame, true)
+        if (!this.system.data.buildUp) this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(this.mesh, Compositor.component.currentFrame + 1, false)
+      }
+    }
+    this.finishMesh()
+    if (this.system.data.animate && this.system.data.buildUp)
+    {
+      this.meshes.push(new THREE.Mesh())
+    }
+  },
   getMaterial(...args) {
     return this.system.getMaterial(...args);
   },
@@ -2032,16 +2086,21 @@ AFRAME.registerComponent('threed-line-tool', {
       if (this.system.data.animate) {
         mesh.el.setAttribute('animation-3d-keyframed', `wrapAnimation: ${Compositor.component.isPlayingAnimation}`)
 
+        let animation3d = this.el.sceneEl.systems['animation-3d']
         if (Compositor.component.isPlayingAnimation)
         {
-          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
+          // if (this.data.buildUp && mesh === this.meshes[this.meshes.length - 1])
+          // {
+          //
+          // }
+          animation3d.visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
         }
         else
         {
-          let frameIdx = Compositor.component.currentFrame
-          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx - 1, false)
-          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx, true)
-          this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx + 1, false)
+          // let frameIdx = Compositor.component.currentFrame
+          // animation3d.visibilityTracks.set(mesh, frameIdx - 1, false)
+          // animation3d.visibilityTracks.set(mesh, frameIdx, true)
+          // animation3d.visibilityTracks.set(mesh, frameIdx + 1, false)
         }
       }
     }
@@ -2065,26 +2124,36 @@ AFRAME.registerComponent('threed-line-tool', {
 
     Util.whenLoaded(el, () => {
       el.object3D.updateMatrixWorld()
+      let useElEndFrame = Compositor.component.isPlayingAnimation
+      if (!Compositor.component.isPlayingAnimation) {
+        let framesSize = new Set();
+        for (let mesh of meshes)
+        {
+          if (!this.el.sceneEl.systems['animation-3d'].visibilityTracks.frameIndices[mesh.uuid]) continue;
+          for (let i of this.el.sceneEl.systems['animation-3d'].visibilityTracks.frameIndices[mesh.uuid])
+          {
+            framesSize.add(i)
+          }
+        }
+        console.log("FramesSize", framesSize)
+        if (framesSize.size > 3) useElEndFrame = true;
+      }
       for (let mesh of meshes)
       {
+        if (!mesh.geometry.attributes.position) continue;
+
         Util.positionObject3DAtTarget(placeholder, mesh)
         mesh.el = el
         targetObj.add(mesh)
         Util.positionObject3DAtTarget(mesh, placeholder)
 
         if (this.system.data.animate) {
-          mesh.el.setAttribute('animation-3d-keyframed', `wrapAnimation: ${Compositor.component.isPlayingAnimation}`)
+          mesh.el.setAttribute('animation-3d-keyframed', `wrapAnimation: ${useElEndFrame}`)
 
-          if (Compositor.component.isPlayingAnimation)
+          if (useElEndFrame)
           {
-            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
-          }
-          else
-          {
-            let frameIdx = Compositor.component.currentFrame
-            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx - 1, false)
-            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx, true)
-            this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, frameIdx + 1, false)
+              this.el.sceneEl.systems['animation-3d'].visibilityTracks.set(mesh, Compositor.component.currentFrame + 1, false)
+              this.el.sceneEl.systems['animation-3d'].visibilityTracks.trimTo(mesh, Compositor.component.currentFrame, (x, a, b) => a)
           }
         }
       }

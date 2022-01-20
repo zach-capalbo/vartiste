@@ -63,17 +63,22 @@ AFRAME.registerComponent('left-hand-controls', {
   },
 
   leftClick() {
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.previousFrame()
   },
   rightClick() {
+    Sfx.joystick(this.el)
     document.querySelector('#canvas-view').components.compositor.nextFrame()
   },
   upClick() {
     Sfx.joystick(this.el)
-    document.querySelector('#canvas-view').components.compositor.addFrameAfter()
+    Compositor.component.jumpToFrame(0)
+    // document.querySelector('#canvas-view').components.compositor.addFrameAfter()
   },
   downClick() {
     Sfx.joystick(this.el)
-    document.querySelector('#canvas-view').components.compositor.duplicateFrameAfter()
+    Compositor.component.setIsPlayingAnimation(!Compositor.component.isPlayingAnimation)
+
+    // document.querySelector('#canvas-view').components.compositor.duplicateFrameAfter()
   }
 })
