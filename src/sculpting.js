@@ -2137,6 +2137,8 @@ AFRAME.registerComponent('threed-line-tool', {
       }
       for (let mesh of meshes)
       {
+        if (!mesh.geometry.attributes.position) continue;
+        
         Util.positionObject3DAtTarget(placeholder, mesh)
         mesh.el = el
         targetObj.add(mesh)
