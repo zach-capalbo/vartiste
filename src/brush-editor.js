@@ -31,7 +31,7 @@ AFRAME.registerSystem('brush-system', {
   },
   loadDefaultBrushes() {
     BrushList.push.apply(BrushList, [
-      new Brush.ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true}),
+      new Brush.ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true, hqBlending: true}),
       new Brush.ImageBrush('s2', 'silky_textured', {textured: true, width: 64, height:16}),
       new Brush.ProceduralBrush('p1', {width: 20, height: 20, hardness: 0.9, connected: true, hqBlending: true, tooltip: "Hard"}),
       new Brush.ImageBrush('lines1', 'lines_condensed', {width: 20, height: 20, connected: true, dragRotate: true, tooltip: "Paint Brush"}),
