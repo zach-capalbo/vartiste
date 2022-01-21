@@ -21,4 +21,6 @@ a-entity shelf="width: 4.5; height: 7; closeable: true" scale="0.04 0.04 0.04" l
       a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Combine Import Materials" toggle-button="target: a-scene; component: file-upload; property: combineMaterials"
       a-entity icon-button="#asset-oven" tooltip="Post-process Imported Mesh" toggle-button="target: a-scene; component: file-upload; property: postProcessMesh"
     a-entity position="2 0 0" icon-row=""
+      a-entity icon-button="#asset-arrow-left" click-action="projectsNext"
+      a-entity icon-button="#asset-arrow-right" click-action="projectsPrevious"
       a-entity.projects

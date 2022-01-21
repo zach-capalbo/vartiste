@@ -142,6 +142,10 @@ AFRAME.registerComponent('settings-shelf', {
 })
 
 AFRAME.registerComponent('load-shelf', {
+  schema: {
+    projectPage: {default: 0},
+    projectsPerPage: {defualt: 7}
+  },
   events: {
     click: function(e) {
       if (!e.target.hasAttribute('click-action')) return
@@ -173,7 +177,7 @@ AFRAME.registerComponent('load-shelf', {
     }
 
     projects = projects.reverse()
-    for (let i in projects)
+    for (let i = this.data.projectPage * this.data.projectsPerPage; i < (this.data.projectPage + 1) * this.data.projectsPerPage; ++i)
     {
       let project = projects[i]
       let rowEl = document.createElement('a-entity')
