@@ -276,6 +276,7 @@ export class ProceduralBrush extends Brush {
     if (this.hqBlending && Object.keys(this.hqBlender.textures).length > 0)
     {
       this.hqBlender.setCanvasAttribute("u_brush", this.overlayCanvas)
+      this.hqBlender.needsUpdate = true
     }
   }
 
@@ -335,7 +336,8 @@ export class ProceduralBrush extends Brush {
 
     if (this.hqBlending && hqBlending && !eraser)
     {
-      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: false, ...opts, scale})
+      this.hqBlender.drawBrush(this, ctx, x, y, {reupdate: this.hqBlender.needsUpdate, ...opts, scale})
+      this.hqBlender.needsUpdate = false
       return
     }
 

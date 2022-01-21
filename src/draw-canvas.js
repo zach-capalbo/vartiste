@@ -133,7 +133,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     let highQuality = (this.el.sceneEl.systems['settings-system']) ? (this.el.sceneEl.systems['settings-system'].quality > 0.75) : true
 
-    let hqBlending = brush.hqBlending && highQuality && brush.opacity < 0.3
+    let hqBlending = brush.hqBlending && brush.opacity < 0.4
 
     hqBlending = hqBlending || this.brush.hqBlending === 'always'
 
@@ -182,7 +182,7 @@ AFRAME.registerComponent('draw-canvas', {
     try {
       if (firstDraw && brush.startDrawing)
       {
-        let drawOptions = {rotation, pressure, distance, imageData, scale}
+        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending}
         brush.startDrawing(ctx, x, y, drawOptions)
       }
 
@@ -210,7 +210,7 @@ AFRAME.registerComponent('draw-canvas', {
       }
       else
       {
-        let drawOptions = {rotation, pressure, distance, imageData, scale}
+        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending}
         this.wrap(x,y,width,height, this.wrappedDraw, ctx, brush, drawOptions)
       }
     }

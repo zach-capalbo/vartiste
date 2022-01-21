@@ -28,7 +28,9 @@ export class CanvasShaderProcessor {
     this.textureIdx = {}
   }
   getContext() {
-    return this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+    if (this._ctx) return this._ctx
+    this._ctx = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+    return this._ctx
   }
   createShader(gl, type, source) {
     let shader = gl.createShader(type)
@@ -127,6 +129,13 @@ export class CanvasShaderProcessor {
    var location = gl.getUniformLocation(program, name);
    gl.uniform1i(location, idx);
   }
+  updateTexture(gl, name, textureCanvas) {
+    let program = this.getProgram(gl)
+    let texture = this.textures[name]
+    let idx = this.textureIdx[name]
+    gl.activeTexture(gl.TEXTURE0 + idx);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
+  }
   initialUpdate()
   {
     let gl = this.getContext()
@@ -185,11 +194,11 @@ export class CanvasShaderProcessor {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.vertexAttribPointer(attributeLocation, size, type, normalize, stride, offset)
   }
-  update() {
+  update(clear = true) {
     let canvas = this.canvas
     let gl = this.getContext()
 
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (clear) gl.clear(gl.COLOR_BUFFER_BIT);
 
     let program = this.getProgram(gl)
 
@@ -204,10 +213,18 @@ export class CanvasShaderProcessor {
     width = Math.floor(width)
     height = Math.floor(height)
 
-    this.setInputCanvas(ctx.canvas)
 
-    this.initialUpdate()
-    if (!('u_brush' in this.textures)) this.setCanvasAttribute("u_brush", brush.overlayCanvas)
+    if (reupdate)
+    {
+      this.setInputCanvas(ctx.canvas)
+      console.log("Reupdate")
+      this.initialUpdate()
+      if (!('u_brush' in this.textures)) this.setCanvasAttribute("u_brush", brush.overlayCanvas)
+    }
+    else
+    {
+      this.updateTexture(this.getContext(), "u_input", ctx.canvas)
+    }
 
     this.setUniform("u_color", "uniform3fv", brush.color3.toArray())
     this.setUniforms("uniform1f", {
@@ -217,10 +234,10 @@ export class CanvasShaderProcessor {
       u_brush_height: brush.height * scale,
       u_brush_rotation: autoRotate ? 2*Math.PI*Math.random() : rotation,
       u_opacity: brush.opacity * pressure,
-      u_t: document.querySelector('a-scene').time % 1.0
+      u_t: VARTISTE.Util.el.time % 1.0
     })
 
-    this.update()
+    this.update(false)
 
     ctx.globalAlpha = 1
     let oldOp = ctx.globalCompositeOperation

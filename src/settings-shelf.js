@@ -142,6 +142,10 @@ AFRAME.registerComponent('settings-shelf', {
 })
 
 AFRAME.registerComponent('load-shelf', {
+  schema: {
+    projectPage: {default: 0},
+    projectsPerPage: {default: 7}
+  },
   events: {
     click: function(e) {
       if (!e.target.hasAttribute('click-action')) return
@@ -159,6 +163,15 @@ AFRAME.registerComponent('load-shelf', {
     this.inputEl.addEventListener('change', (e) => {this.upload(e)})
     document.body.append(this.inputEl)
   },
+  update() {
+    this.repopulate()
+  },
+  projectsNext() {
+    this.el.setAttribute('load-shelf', 'projectPage', ++this.data.projectPage)
+  },
+  projectsPrevious() {
+    this.el.setAttribute('load-shelf', 'projectPage', --this.data.projectPage)
+  },
   async repopulate() {
     console.log("Repopulating projects")
     let projectsEl = this.el.querySelector('.projects')
@@ -173,9 +186,10 @@ AFRAME.registerComponent('load-shelf', {
     }
 
     projects = projects.reverse()
-    for (let i in projects)
+    for (let i = 0; i < this.data.projectsPerPage; ++i)
     {
-      let project = projects[i]
+      let project = projects[this.data.projectPage * this.data.projectsPerPage + i]
+      if (!project) continue
       let rowEl = document.createElement('a-entity')
       rowEl.innerHTML = require('./partials/load-project-row.html.slm')
       let nameEl = rowEl.querySelector('.name')
