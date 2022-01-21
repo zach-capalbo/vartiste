@@ -34,7 +34,7 @@ AFRAME.registerSystem('brush-system', {
       new Brush.ImageBrush('s1', 'silky_textured', {width: 20, height: 20, autoRotate: true, hqBlending: true}),
       new Brush.ImageBrush('s2', 'silky_textured', {textured: true, width: 64, height:16}),
       new Brush.ProceduralBrush('p1', {width: 20, height: 20, hardness: 0.9, connected: true, hqBlending: true, tooltip: "Hard"}),
-      new Brush.ImageBrush('lines1', 'lines_condensed', {width: 20, height: 20, connected: true, dragRotate: true, tooltip: "Paint Brush"}),
+      new Brush.ImageBrush('lines1', 'lines_condensed', {width: 20, height: 20, connected: true, dragRotate: true, tooltip: "Paint Brush", hqBlending: true}),
       new Brush.ImageBrush('lines2', 'lines_condensed1', {width: 20, height: 20, connected: true, dragRotate: true, textured: true}),
       new Brush.ImageBrush('lines3', 'line_grunge2', {width: 20, height: 20}),
       new Brush.ImageBrush('lines4', 'line_grunge1', {width: 64, height: 16, textured: true}),
