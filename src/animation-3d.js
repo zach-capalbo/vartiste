@@ -170,15 +170,25 @@ class ObjectKeyframeTracks {
       }
     })
   }
-  threeTrack(obj, fps, name, ctor, valueFn = (a) => [a]) {
+  threeTrack(obj, fps, name, wrap, maxFrame, ctor, valueFn = (a) => [a]) {
     if (!(obj.uuid in this.frameIndices)) return null;
 
     let times = []
     let values = []
-    for (let frameIdx of this.frameIndices[obj.uuid])
-    {
-      times.push(frameIdx / fps)
-      values.push(...valueFn(this.at(obj, frameIdx)))
+    let frames = this.frameIndices[obj.uuid]
+    let lastFrame = frames[frames.length - 1] + 1
+    let finalFrameIdx = 0
+    let timesThrough = 0
+    while (finalFrameIdx < maxFrame || !wrap) {
+      for (let frameIdx of frames)
+      {
+        finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+        times.push(finalFrameIdx / fps)
+        values.push(...valueFn(this.at(obj, frameIdx)))
+      }
+      timesThrough++
+
+      if (!wrap) break
     }
 
     if (times.length === 0) return null;
@@ -338,7 +348,7 @@ Util.registerComponentSystem('animation-3d', {
       let rotation = this.pool('rot', THREE.Quaternion)
       let scale = this.pool('scale', THREE.Vector3)
       let frames = this.matrixTracks.frameIndices[obj.uuid]
-      let lastFrame = frames[frames.length - 1]
+      let lastFrame = frames[frames.length - 1] + 1
       let finalFrameIdx = 0
       let timesThrough = 0
       while (finalFrameIdx < maxFrame || !wrap) {
@@ -374,7 +384,10 @@ Util.registerComponentSystem('animation-3d', {
       {
         tracks.splice(tracks.indexOf(scaleTrack), 1)
       }
-      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete), (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0])
+      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
+        (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
+        (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
+      )
       tracks.push(scaleTrack)
     }
 
