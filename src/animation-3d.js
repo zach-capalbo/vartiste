@@ -54,6 +54,12 @@ class ObjectKeyframeTracks {
       delete this.objectTracks[obj.uuid]
     }
   }
+  checkIfNeeded(obj) {
+    if (!(obj.uuid in this.frameIndices)) return false
+    let values = new Set(this.objectTracks[obj.uuid].values())
+    return values.size > 1
+
+  }
   trimTo(obj, frameIdx, interpCallback) {
     if (!(obj.uuid in this.objectTracks)) return;
     if (this.frameIndices[obj.uuid].indexOf(frameIdx) < 0)
@@ -184,7 +190,7 @@ class ObjectKeyframeTracks {
       {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
         times.push(finalFrameIdx / fps)
-        values.push(...valueFn(this.at(obj, frameIdx)))
+        values.push(...valueFn(this.at(obj, frameIdx), frameIdx, finalFrameIdx / fps))
       }
       timesThrough++
 
@@ -378,17 +384,30 @@ Util.registerComponentSystem('animation-3d', {
     // let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
     // if (visibilityTracks) tracks.push(visibilityTracks)
 
-    if (this.visibilityTracks.has(obj))
+    if (this.visibilityTracks.checkIfNeeded(obj))
     {
+      console.log("Scale needed")
       if (scaleTrack)
       {
+        console.log("Interping scale")
         tracks.splice(tracks.indexOf(scaleTrack), 1)
+        let interpolant = scaleTrack.createInterpolant()
+        scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
+          (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
+          (visible, frameIdx, t) => visible ? interpolant.evaluate(t) : [0.0, 0.0, 0.0]
+        )
       }
-      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
-        (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
-        (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
-      )
+      else
+      {
+        scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
+          (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
+          (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
+        )
+      }
       tracks.push(scaleTrack)
+    }
+    else if (scaleTrack) {
+
     }
 
     return tracks

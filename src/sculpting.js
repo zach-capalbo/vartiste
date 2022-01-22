@@ -1156,6 +1156,7 @@ AFRAME.registerComponent('threed-line-tool', {
         {
           this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
         }
+        return;
       }
       this.el.setAttribute('threed-line-tool', 'pointToPoint', !this.data.pointToPoint)
       console.log("Switching p2p mode", this.data.pointToPoint)

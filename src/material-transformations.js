@@ -221,6 +221,9 @@ class MaterialTransformations {
 
         parts.push(hash)
       }
+      parts.push(material.color.getHexString())
+      parts.push(material.type)
+      parts.push(material.opacity)
       return parts.join()
     }
     let meshes = rootOrMeshes
