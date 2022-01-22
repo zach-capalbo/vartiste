@@ -37,7 +37,7 @@
     "js-yaml": "^4.1.0",
     "ls": "git+https://github.com/zach-capalbo/ls.git",
     "markdown-loader": "^5.1.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "npm-license-crawler": "^0.2.1",
     "pug": "^2.0.4",
     "pug-loader": "^2.4.0",
