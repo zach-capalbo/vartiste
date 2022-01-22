@@ -210,14 +210,14 @@ Util.registerComponentSystem('animation-3d', {
     this.matrixTracks = new ObjectKeyframeTracks({
       id: 'matrix',
       initializer: () => new THREE.Matrix4,
-      parseValue: (a) => new THREE.Matrix4().fromArray(a)
+      parseValue: (a) => new THREE.Matrix4().fromArray(a.elements)
     })
   },
   trackFrameMatrix(obj, frameIdx) {
     return this.matrixTracks.at(obj, frameIdx)
   },
-  allFrameIndices() {
-    return this.matrixTracks.frameIndices
+  allFrameIndices(obj) {
+    return [].concat(this.matrixTracks.frameIndices[obj.uuid] || []).concat(this.visibilityTracks.frameIndices[obj.uuid] || [])
   },
   keyframe(obj, frameIdx = undefined) {
     if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
@@ -262,6 +262,7 @@ Util.registerComponentSystem('animation-3d', {
   },
   isWrapping(obj) {
     if (obj.el) obj = obj.el;
+    if (!obj.hasAttribute) return false
     if (!obj.hasAttribute('animation-3d-keyframed')) return true
     return obj.getAttribute('animation-3d-keyframed').wrapAnimation
   },
@@ -310,11 +311,11 @@ Util.registerComponentSystem('animation-3d', {
     for (let [type, tracks] of Object.entries(trackTypes))
     {
       let key = type + 'Tracks'
-      if (!animation3d[key]) {
+      if (!this[key]) {
         console.warn("No known track for", key)
         continue
       }
-      animation3d[key].readObjectTracks(el.object3D, tracks, {recurse})
+      this[key].readObjectTracks(obj, tracks, {recurse})
     }
   },
   readTracksFromUserData(obj) {
@@ -322,7 +323,7 @@ Util.registerComponentSystem('animation-3d', {
     this.visibilityTracks.readTracksFromUserData(obj)
   },
 
-  generateTHREETracks(obj) {
+  generateTHREETracks(obj, {wrap = false, maxFrame} = {}) {
     let tracks = []
     let fps = Compositor.component.data.frameRate
     let scaleTrack;
@@ -337,17 +338,25 @@ Util.registerComponentSystem('animation-3d', {
       let rotation = this.pool('rot', THREE.Quaternion)
       let scale = this.pool('scale', THREE.Vector3)
       let frames = this.matrixTracks.frameIndices[obj.uuid]
-      for (let frameIdx of frames)
-      {
-        times.push(frameIdx / fps)
-        let matrix = this.trackFrameMatrix(obj, frameIdx)
-        matrix.decompose(position, rotation, scale)
-        positionValues.push(...position.toArray())
-        rotationValues.push(...rotation.toArray())
-        scaleValues.push(...scale.toArray())
+      let lastFrame = frames[frames.length - 1]
+      let finalFrameIdx = 0
+      let timesThrough = 0
+      while (finalFrameIdx < maxFrame || !wrap) {
+        for (let frameIdx of frames)
+        {
+          finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+          times.push(finalFrameIdx / fps)
+          let matrix = this.trackFrameMatrix(obj, frameIdx)
+          matrix.decompose(position, rotation, scale)
+          positionValues.push(...position.toArray())
+          rotationValues.push(...rotation.toArray())
+          scaleValues.push(...scale.toArray())
+        }
+        timesThrough++
+
+        if (!wrap) break;
       }
 
-      // if (wrap)
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
       scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, times, scaleValues)
@@ -375,8 +384,13 @@ Util.registerComponentSystem('animation-3d', {
   {
     let tracks = []
     let maxTime = 0.0
+    let maxFrame = 0
     obj.traverse(o => {
-      let newTracks = this.generateTHREETracks(o)
+      maxFrame = Math.max(maxFrame, ...this.allFrameIndices(o))
+    })
+    console.log("Generating animation for max frame", maxFrame)
+    obj.traverse(o => {
+      let newTracks = this.generateTHREETracks(o, {maxFrame, wrap: this.isWrapping(o)})
       if (newTracks.length <= 0) return;
 
       maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
@@ -526,16 +540,14 @@ AFRAME.registerComponent('timeline-tool', {
     let width = this.width
     let numTicks = 10
     let animation3d = this.el.sceneEl.systems['animation-3d']
-    let frameIndices = animation3d.allFrameIndices()
-
-    if (!frameIndices) return;
 
     if (this.data.target)
     {
       let object = this.data.target.object3D || this.data.target
-      if (object.uuid in frameIndices)
+      let frameIndices = animation3d.allFrameIndices(object)
+      if (frameIndices.length > 0)
       {
-        let indices = frameIndices[object.uuid]
+        let indices = frameIndices
         numTicks = Math.min(Math.max(indices[indices.length - 1] + 5, 10), 50)
       }
     }
@@ -568,8 +580,8 @@ AFRAME.registerComponent('timeline-tool', {
     let object = this.object
     let animation3d = this.el.sceneEl.systems['animation-3d']
 
-    let frameIndices = animation3d.allFrameIndices();
-    if (!(object.uuid in frameIndices)) {
+    let frameIndices = animation3d.allFrameIndices(object);
+    if (frameIndices.length === 0) {
       for (let [frameIdx, el] of this.keyframes.entries())
       {
         el.remove()
@@ -578,7 +590,7 @@ AFRAME.registerComponent('timeline-tool', {
       return;
     }
 
-    let indices = frameIndices[object.uuid]
+    let indices = frameIndices
 
     let usedKeyframes = new Set()
 
