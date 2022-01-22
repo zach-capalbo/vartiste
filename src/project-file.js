@@ -170,6 +170,7 @@ class ProjectFile {
         referenceContainer.append(newEl)
         newEl.object3D.copy(objectLoader.parse(refJson))
         newEl.setObject3D('mesh', newEl.object3D.children[0])
+        newEl.object3D.traverse(m => m.el = newEl)
         setupGlbReferenceEntity(newEl)
         if (animation3d) animation3d.readTracksFromUserData(newEl.object3D)
       }
@@ -184,6 +185,7 @@ class ProjectFile {
         referenceContainer.append(newEl)
         newEl.object3D.copy(model.scenes[0].children[0])
         newEl.setObject3D('mesh', model.scenes[0].children[0].children[0])
+        newEl.object3D.traverse(m => m.el = newEl)
         setupGlbReferenceEntity(newEl)
         if (animation3d) animation3d.readTracksFromUserData(newEl.object3D)
       }
