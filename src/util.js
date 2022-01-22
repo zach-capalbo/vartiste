@@ -296,6 +296,16 @@ class VARTISTEUtil {
     }
   }
 
+  traverseClone(obj3d, fn) {
+    let newObj = obj3d.clone(false)
+    for (let i in obj3d.children)
+    {
+      newObj.add(this.traverseClone(obj3d.children[i], fn))
+    }
+    fn(obj3d, newObj)
+    return newObj
+  }
+
   visibleWithAncestors(obj)
   {
     if (!obj.visible) return false
