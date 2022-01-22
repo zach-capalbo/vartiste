@@ -54,6 +54,12 @@ class ObjectKeyframeTracks {
       delete this.objectTracks[obj.uuid]
     }
   }
+  checkIfNeeded(obj) {
+    if (!(obj.uuid in this.frameIndices)) return false
+    let values = new Set(this.objectTracks[obj.uuid].values())
+    return values.size > 1
+
+  }
   trimTo(obj, frameIdx, interpCallback) {
     if (!(obj.uuid in this.objectTracks)) return;
     if (this.frameIndices[obj.uuid].indexOf(frameIdx) < 0)
@@ -184,7 +190,7 @@ class ObjectKeyframeTracks {
       {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
         times.push(finalFrameIdx / fps)
-        values.push(...valueFn(this.at(obj, frameIdx)))
+        values.push(...valueFn(this.at(obj, frameIdx), frameIdx, finalFrameIdx / fps))
       }
       timesThrough++
 
@@ -378,17 +384,28 @@ Util.registerComponentSystem('animation-3d', {
     // let visibilityTracks = this.visibilityTracks.threeTrack(obj, fps, THREE.BooleanKeyframeTrack)
     // if (visibilityTracks) tracks.push(visibilityTracks)
 
-    if (this.visibilityTracks.has(obj))
+    if (this.visibilityTracks.checkIfNeeded(obj))
     {
       if (scaleTrack)
       {
         tracks.splice(tracks.indexOf(scaleTrack), 1)
+        let interpolant = scaleTrack.createInterpolant()
+        scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
+          (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
+          (visible, frameIdx, t) => visible ? interpolant.evaluate(t) : [0.0, 0.0, 0.0]
+        )
       }
-      scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
-        (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
-        (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
-      )
+      else
+      {
+        scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
+          (n, t, v) => new THREE.VectorKeyframeTrack(n,t,v, THREE.InterpolateDiscrete),
+          (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
+        )
+      }
       tracks.push(scaleTrack)
+    }
+    else if (scaleTrack) {
+
     }
 
     return tracks
@@ -413,6 +430,28 @@ Util.registerComponentSystem('animation-3d', {
     let clip = new THREE.AnimationClip(name, maxTime, tracks)
     console.log("Animation Clip", clip)
     return clip
+  },
+
+  loadTHREEClip(obj, clip) {
+    // let binding = new THREE.PropertyBinding(obj, clip.name)
+    let fps = Compositor.component.data.frameRate
+    let maxFrame = Math.round(clip.duration * fps)
+    console.log("Loading", clip.name, maxFrame)
+    let mixer = new THREE.AnimationMixer(obj)
+    let action = mixer.clipAction(clip).play()
+    for (let frameIdx = 0; frameIdx <= maxFrame; ++frameIdx)
+    {
+      Compositor.component.jumpToFrame(frameIdx)
+      mixer.setTime(frameIdx / fps)
+      obj.traverse(o => this.keyframe(o))
+    }
+  },
+  loadModelAnimations(obj, animations) {
+    console.log("Loading animations", animations, obj)
+    for (let clip of animations)
+    {
+      this.loadTHREEClip(obj, clip)
+    }
   }
 })
 

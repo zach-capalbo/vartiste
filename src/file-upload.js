@@ -544,6 +544,8 @@ export async function importModelToMesh(model, {postProcessMesh = true, sceneNam
 
   AFRAME.utils.extendDeep(model.scene.userData, model.userData)
 
+  Compositor.el.sceneEl.systems['animation-3d'].loadModelAnimations((model.scene || model.scenes[0]), model.animations)
+
   document.getElementsByTagName('a-scene')[0].systems['settings-system'].addModelView(model, {replace: replaceMesh})
 
   if (Compositor.el.getAttribute('material').shader === 'flat')
@@ -648,6 +650,8 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
   let entity = document.createElement('a-entity')
   document.querySelector('#reference-spawn').append(entity)
   entity.setObject3D("mesh", model.scene || model.scenes[0])
+
+  Compositor.el.sceneEl.systems['animation-3d'].loadModelAnimations((model.scene || model.scenes[0]), model.animations)
 
   setupGlbReferenceEntity(entity)
 
