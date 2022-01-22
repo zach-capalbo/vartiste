@@ -386,10 +386,8 @@ Util.registerComponentSystem('animation-3d', {
 
     if (this.visibilityTracks.checkIfNeeded(obj))
     {
-      console.log("Scale needed")
       if (scaleTrack)
       {
-        console.log("Interping scale")
         tracks.splice(tracks.indexOf(scaleTrack), 1)
         let interpolant = scaleTrack.createInterpolant()
         scaleTrack = this.visibilityTracks.threeTrack(obj, fps, 'scale', wrap, maxFrame,
@@ -432,6 +430,28 @@ Util.registerComponentSystem('animation-3d', {
     let clip = new THREE.AnimationClip(name, maxTime, tracks)
     console.log("Animation Clip", clip)
     return clip
+  },
+
+  loadTHREEClip(obj, clip) {
+    // let binding = new THREE.PropertyBinding(obj, clip.name)
+    let fps = Compositor.component.data.frameRate
+    let maxFrame = Math.round(clip.duration * fps)
+    console.log("Loading", clip.name, maxFrame)
+    let mixer = new THREE.AnimationMixer(obj)
+    let action = mixer.clipAction(clip).play()
+    for (let frameIdx = 0; frameIdx <= maxFrame; ++frameIdx)
+    {
+      Compositor.component.jumpToFrame(frameIdx)
+      mixer.setTime(frameIdx / fps)
+      obj.traverse(o => this.keyframe(o))
+    }
+  },
+  loadModelAnimations(obj, animations) {
+    console.log("Loading animations", animations, obj)
+    for (let clip of animations)
+    {
+      this.loadTHREEClip(obj, clip)
+    }
   }
 })
 
