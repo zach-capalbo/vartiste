@@ -1155,6 +1155,7 @@ AFRAME.registerComponent('threed-line-tool', {
         if (this.data.pointToPoint)
         {
           this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
+          this.events.triggerdown.call(this)
         }
         return;
       }
