@@ -403,11 +403,16 @@ class ProjectFile {
       }
 
       try {
-        let glb = await settings.getExportableGLB(el.object3D)
+        let glb = await settings.getExportableGLB(el.object3D, {smartCompression: false})
         let buffer = base64ArrayBuffer(glb)
         obj.referenceGLBs.push(buffer)
       } catch (e) {
-        console.warn("Error exporting", el, "as GLB. Saving as JSON")
+        console.warn("Error exporting", el, "as GLB. Saving as JSON", e)
+        el.object3D.traverse(o => {
+          if (o.material && o.material.normalScale && !o.material.normalScale.toArray) {
+            o.material.normalScale = new THREE.Vector2(o.material.normalScale.x, o.material.normalScale.y)
+          }
+        })
         obj.referenceModels.push(el.object3D.toJSON())
       }
     }

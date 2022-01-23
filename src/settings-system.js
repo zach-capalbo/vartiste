@@ -357,7 +357,7 @@ Util.registerComponentSystem('settings-system', {
       }
 
       if (!anyVisible) {
-        undoStack.push(() => o.visible = true)
+        if (undoStack) undoStack.push(() => o.visible = true)
         o.visible = false
       }
 

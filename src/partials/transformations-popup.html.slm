@@ -7,5 +7,6 @@ a-entity shelf="name: Transformations; closeable: true; pinnable: false; height:
     a-entity icon-row="" icon-row-text="Transformation Actions:"
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Apply Transformation" object3d-view-action="applyTransformation"
+      a-entity icon-button="#asset-shape-outline" tooltip="Merge Geometries" object3d-view-action="mergeBufferGeometries"
       /a-entity icon-button="#asset-arrow-all" tooltip="Move Origin"
       /a-entity icon-button="" tooltip="Apply Local Transformation to vertices"

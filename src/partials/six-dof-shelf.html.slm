@@ -112,12 +112,12 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         - let lineToolI = 0
         - let linePos = () => [`-0.35 ${Math.floor((lineToolI) / 3) * -0.6} 0`, `-0.27 ${Math.floor((lineToolI) / 3) * -0.6} -0.1`, `-0.43 ${Math.floor((lineToolI) / 3) * -0.6} -0.1`][lineToolI++ % 3]
         a-entity threed-line-tool="" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
-        a-entity threed-line-tool="pointToPoint: true" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Straight Line Tool"
-        a-entity threed-line-tool="shape: square" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
-        a-entity threed-line-tool="shape: oval" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
-        a-entity threed-line-tool="shape: star" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
-        a-entity threed-line-tool="shape: heart" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
-        a-entity threed-line-tool="shape: circle" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Tool"
+        a-entity threed-line-tool="shape: edges" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Line Edges Tool"
+        a-entity threed-line-tool="shape: square" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
+        a-entity threed-line-tool="shape: oval" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
+        a-entity threed-line-tool="shape: star" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
+        a-entity threed-line-tool="shape: heart" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
+        a-entity threed-line-tool="shape: circle" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
       a-entity scale="0.3 0.3 0.3"
         - let i = 0
         - let primPos = () => `${(i % 3) * 1.25 + 0} ${Math.floor(i / 3) * -1.25} ${i++ * 0}`

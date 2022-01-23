@@ -547,6 +547,9 @@ AFRAME.registerComponent('normal-paint-tool', {
 
         let attr = o.geometry.attributes.normal
 
+        let minIdx = attr.count
+        let maxIdx = 0
+
         let anyAffected = false
         for (let i of Util.meshPointsInContainerMesh(o, container))
         {
@@ -554,8 +557,15 @@ AFRAME.registerComponent('normal-paint-tool', {
           oldNormal.lerp(meshDir, opacity)
           attr.setXYZ(i, oldNormal.x, oldNormal.y, oldNormal.z)
           anyAffected = true
+          minIdx = Math.min(i, minIdx)
+          maxIdx = Math.max(i, maxIdx)
         }
-        if (anyAffected) attr.needsUpdate = true;
+        if (anyAffected) {
+          // attr.updateRange.offset = minIdx - 1
+          // attr.updateRange.count = maxIdx - minIdx + 1
+          // console.log("UpdateRange", attr.updateRange, attr.updateRange.offset, attr.updateRange.count)
+          attr.needsUpdate = true;
+        }
       })
     }
   }

@@ -1048,7 +1048,7 @@ AFRAME.registerComponent('threed-line-tool', {
     pointToPoint: {default: false},
     mesh: {default: '#character-base', type: 'selector'},
     stretchAxis: {default: 'y', oneOf: ['x', 'y']},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh', 'edges']},
   },
   events: {
     activate: function(e) {
@@ -1333,7 +1333,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.onFrameChange = this.onFrameChange.bind(this)
 
     let tip
-    if (this.data.shape === 'line')
+    if (this.data.shape === 'line' || this.data.shape === 'edges')
     {
       tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
       this.el.append(tip)
@@ -1499,6 +1499,10 @@ AFRAME.registerComponent('threed-line-tool', {
     if (this.data.shape === 'mesh')
     {
       return this.stretchMesh(points);
+    }
+    if (this.data.shape === 'edges')
+    {
+      return this.edgesMesh(points);
     }
     if (this.data.shape !== 'line')
     {
@@ -1745,6 +1749,23 @@ AFRAME.registerComponent('threed-line-tool', {
     }
 
     return this.shape;
+  },
+  edgesMesh(points) {
+    this.geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    let material = new THREE.LineBasicMaterial({color: this.el.sceneEl.systems['paint-system'].color3.getHex()});
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
+    }
+
+    this.mesh = new THREE.Line(this.geometry, material)
+    this.mesh.position.copy(this.startPoint)
+    this.data.meshContainer.object3D.add(this.mesh)
+
+    return this.mesh;
   },
   extrudeMesh(points, {maxDistance = 100, useSplineTube = false} = {}) {
 
@@ -2036,7 +2057,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.opacities = []
     this.normals = []
 
-    if (!this.el.sceneEl.systems['primitive-constructs'].data.shareMaterial)
+    if (!this.el.sceneEl.systems['primitive-constructs'].data.shareMaterial && this.system.material)
     {
       this.system.material = this.system.material.clone()
     }
