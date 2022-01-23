@@ -421,10 +421,12 @@ AFRAME.registerComponent('object3d-view', {
       geometries.push(geometry)
     })
     let merged = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, false)
-    merged.center()
-    Util.positionObject3DAtTarget(merged, this.object)
     let mesh = new THREE.Mesh(merged, Util.traverseFind(this.object, o => o.material).material)
-    this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+    merged.computeBoundingBox()
+    merged.boundingBox.getCenter(mesh.position)
+    merged.center()
+    let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+    // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
   },
   resetMatrix() {
     Undo.collect(() => {
