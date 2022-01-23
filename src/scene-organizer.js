@@ -411,6 +411,21 @@ AFRAME.registerComponent('object3d-view', {
     Util.applyMatrix(this.object.matrix.identity(), this.object)
     this.onMoved()
   },
+  mergeBufferGeometries() {
+    let geometries = []
+    Util.traverseCondition(this.object, o => !(o.userData && o.userData.vartisteUI), o => {
+      if (!o.geometry) return;
+      let geometry = o.geometry.clone()
+      o.updateMatrixWorld()
+      geometry.applyMatrix4(o.matrixWorld)
+      geometries.push(geometry)
+    })
+    let merged = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, false)
+    merged.center()
+    Util.positionObject3DAtTarget(merged, this.object)
+    let mesh = new THREE.Mesh(merged, Util.traverseFind(this.object, o => o.material).material)
+    this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+  },
   resetMatrix() {
     Undo.collect(() => {
       Undo.pushObjectMatrix(this.object)
