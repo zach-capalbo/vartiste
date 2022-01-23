@@ -639,6 +639,8 @@ class VARTISTEUtil {
     let tmpBox = this.pool('tmpBox', THREE.Box3)
     let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
 
+    if (!firstModel) return boundingBox.makeEmpty();
+
     rootObj.updateMatrixWorld(true, true)
 
     firstModel.geometry.computeBoundingBox()

@@ -150,6 +150,7 @@ Util.registerComponentSystem('primitive-constructs', {
       }
 
       el.setAttribute('reference-glb', '')
+      el.setAttribute('animation-3d-keyframed')
 
       console.log("Made reference", el)
     })

@@ -477,6 +477,90 @@ AFRAME.registerComponent('mesh-fill-tool', {
   }
 })
 
+AFRAME.registerComponent('normal-paint-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    selector: {type: 'string', default: 'a-entity[composition-viewer], a-entity[primitive-construct-placeholder]'},
+    boxSize: {type: 'vec3', default: {x: 0.2, y: 0.2, z: 0.2}},
+    throttle: {default: 100},
+  },
+  events: {
+    triggerdown: function(e) {
+       this.selectedEls = Array.from(document.querySelectorAll(this.data.selector))
+    },
+    draw: function(e) {
+      if (!this.selectedEls) this.selectedEls =  Array.from(document.querySelectorAll(this.data.selector));
+      this.doPaint(e.detail.pressure)
+    }
+  },
+  init() {
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
+    Pool.init(this)
+
+    this.localDir = new THREE.Vector3(1, 0, 0)
+    let box = document.createElement('a-box')
+    this.box = box
+    box.classList.add('clickable')
+    box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
+    this.el.append(box)
+    Util.whenLoaded(box, () => {
+      this.arrow = new THREE.ArrowHelper(this.localDir)
+      this.arrow.length = this.data.boxSize.y
+      box.object3D.add(this.arrow)
+    })
+  },
+  update(oldData) {
+    this.box.setAttribute('width', this.data.boxSize.x)
+    this.box.setAttribute('height', this.data.boxSize.y)
+    this.box.setAttribute('depth', this.data.boxSize.z)
+    this.box.setAttribute('position', {x: 0, y: this.data.boxSize.y / 2, z: 0})
+    if (this.arrow) this.arrow.length = this.data.boxSize.y
+  },
+  doPaint(pressure = 1.0) {
+    let els = this.selectedEls
+
+    let worldQuat = this.pool('worldQuat', THREE.Quaternion)
+    let container = this.box.getObject3D('mesh')
+    this.box.object3D.updateMatrixWorld()
+    this.box.object3D.getWorldQuaternion(worldQuat)
+    let worldDir = this.pool('worldDir', THREE.Vector3)
+    worldDir.copy(this.localDir)
+    worldDir.applyQuaternion(worldQuat)
+    let meshDir = this.pool('meshDir', THREE.Vector3)
+    let meshQuat = this.pool('meshQuat', THREE.Quaternion)
+    let opacity = Math.pow(this.el.sceneEl.systems['paint-system'].data.opacity, 2.2) * pressure
+    let oldNormal = this.pool('oldNormal', THREE.Vector3)
+
+    for (let el of els)
+    {
+      if (!el.getObject3D('mesh')) continue;
+      el.getObject3D('mesh').traverse(o => {
+        if (!o.geometry) return;
+        if (!o.geometry.attributes.normal) return;
+        o.getWorldQuaternion(meshQuat)
+        meshQuat.invert()
+        meshDir.copy(worldDir)
+        meshDir.applyQuaternion(meshQuat)
+
+        // if (o.material.type === 'MeshStandardMaterial') o.material = new THREE.MeshNormalMaterial()
+
+        let attr = o.geometry.attributes.normal
+
+        let anyAffected = false
+        for (let i of Util.meshPointsInContainerMesh(o, container))
+        {
+          oldNormal.fromBufferAttribute(attr, i)
+          oldNormal.lerp(meshDir, opacity)
+          attr.setXYZ(i, oldNormal.x, oldNormal.y, oldNormal.z)
+          anyAffected = true
+        }
+        if (anyAffected) attr.needsUpdate = true;
+      })
+    }
+  }
+})
+
 AFRAME.registerComponent('normal-meld-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
@@ -485,9 +569,6 @@ AFRAME.registerComponent('normal-meld-tool', {
     throttle: {default: 100},
   },
   events: {
-    draw: function(e) {
-
-    }
   },
   init() {
     this.el.classList.add('grab-root')
@@ -511,10 +592,6 @@ AFRAME.registerComponent('normal-meld-tool', {
     let els = Array.from(document.querySelectorAll(this.data.selector))
 
     let container = this.box.getObject3D('mesh')
-
-    let avg = this.pool('avg', THREE.Vector3)
-    avg.set(0, 0, 0)
-    let vertexCount = 0;
 
     for (let el of els)
     {
