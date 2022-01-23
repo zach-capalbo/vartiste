@@ -54,6 +54,11 @@ class ObjectKeyframeTracks {
       delete this.objectTracks[obj.uuid]
     }
   }
+  clone(obj, to) {
+    if (!(obj.uuid in this.objectTracks)) return;
+    this.frameIndices[to.uuid] = this.frameIndices[obj.uuid].slice()
+    this.objectTracks[to.uuid] = new Map(this.objectTracks[obj.uuid])
+  }
   checkIfNeeded(obj) {
     if (!(obj.uuid in this.frameIndices)) return false
     let values = new Set(this.objectTracks[obj.uuid].values())
@@ -217,6 +222,7 @@ Util.registerComponentSystem('animation-3d', {
     Pool.init(this)
     Util.emitsEvents(this)
     this.animations = []
+    this.cloneTracks = this.cloneTracks.bind(this)
 
     this.visibilityTracks = new ObjectKeyframeTracks({
       id: 'visibility',
@@ -258,6 +264,11 @@ Util.registerComponentSystem('animation-3d', {
     this.emitDetails.objectkeyframed.object = obj
     this.emitDetails.objectkeyframed.frameIdx = -1
     this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  cloneTracks(obj, newObj) {
+    console.log("Cloning Tracks", obj, newObj)
+    this.matrixTracks.clone(obj, newObj)
+    this.visibilityTracks.clone(obj, newObj)
   },
   deleteKeyframe(obj, frameIdx) {
     this.matrixTracks.delete(obj, frameIdx)

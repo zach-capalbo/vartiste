@@ -106,7 +106,20 @@ AFRAME.registerComponent('object3d-view', {
           console.warn("NYI")
         }
       }
-    }
+    },
+    'raycaster-intersected': function(e) {
+      if (e.path.indexOf(this.el) > 4) return;
+      this.intersectionSet.add(e.target)
+      this.toggleBoundsHelper(true)
+    },
+    'raycaster-intersected-cleared': function(e) {
+      if (e.path.indexOf(this.el) > 4) return;
+      this.intersectionSet.delete(e.target)
+      if (this.intersectionSet.size === 0)
+      {
+        this.toggleBoundsHelper(false)
+      }
+    },
   },
   init() {
     Pool.init(this)
@@ -116,6 +129,7 @@ AFRAME.registerComponent('object3d-view', {
     this.el.innerHTML += require('./partials/object3d-view.html.slm').replace(/view-root/g, rootId)
     this.el.setAttribute('shelf', 'name: Object3D; width: 3; height: 3.5; pinnable: false; closeable: true')
     this.el.classList.add('grab-root')
+    this.intersectionSet = new Set();
     this.contents = this.el.querySelector('*[shelf-content]')
     Util.whenLoaded([this.el, this.contents], () => {
       this.localPosition = {
@@ -211,13 +225,16 @@ AFRAME.registerComponent('object3d-view', {
       if (obj.userData.vartisteUI) return false;
       return true;
     })
+    // if (validChildren.length === this.validChildrenLength) return;
+    this.validChildrenLength = validChildren.length
     let existingChildEntities = this.el.getChildEntities()
     for (let i = 0; i < validChildren.length; ++i)
     {
       let obj = validChildren[i]
       if (this.system.childViews.has(obj)) {
         let view = this.system.childViews.get(obj)
-        if (existingChildEntities.indexOf(view) < 0) { this.el.append(view) }
+        console.log("Exiting view", obj, view)
+        // if (existingChildEntities.indexOf(view) < 0) { this.el.append(view) }
         view.setAttribute('visible', true)
         view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
         view.setAttribute('scale', `${scaleDown} ${scaleDown} ${scaleDown}`)
@@ -226,6 +243,7 @@ AFRAME.registerComponent('object3d-view', {
       }
 
       let view = document.createElement('a-entity')
+      console.log("Creating view", obj, view)
       this.el.append(view)
       view.setAttribute('object3d-view', {target: obj, parentView: this.el})
       view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
@@ -346,14 +364,17 @@ AFRAME.registerComponent('object3d-view', {
 
     this.targetEl.setAttribute('animation-3d-keyframed', 'puppeteering', e.target.is('toggled'))
   },
-  toggleBoundsHelper() {
+  toggleBoundsHelper(force = undefined) {
     if (this.boundsHelper)
     {
+      if (force === true) return
       this.boundsHelper.parent.remove(this.boundsHelper)
       Util.recursiveDispose(this.boundsHelper)
       this.boundsHelper = null
       return
     }
+
+    if (force === false) return
     this.boundsHelper = new THREE.Box3Helper(Util.recursiveBoundingBox(this.object, {includeUI: false, world: false}))
     this.boundsHelper.userData.vartisteUI = true
     this.object.add(this.boundsHelper)
@@ -427,13 +448,18 @@ AFRAME.registerComponent('object3d-view', {
     console.log("Reparenting", this.object, "to parent", newParent)
 
     // TODO: Need to reparent view el, too
-    // this.el.parentEl.remove(this.el)
     Util.keepingWorldPosition(this.el.object3D, () => {
-      this.system.childViews.get(newParent).object3D.add(this.el.object3D)
+      // this.el.parentEl.remove(this.el)
+      // this.system.childViews.get(newParent).append(this.el)
+      // this.system.childViews.get(newParent).object3D.add(this.el.object3D)
     })
 
     Util.keepingWorldPosition(this.object, () => {
       newParent.add(this.object)
+      if (!this.isEl)
+      {
+        this.object.el = newParent.el
+      }
     })
   },
   connectNodeTo(childView) {
@@ -454,6 +480,7 @@ AFRAME.registerComponent('object3d-view', {
   },
 
   onDeleted() {
+    this.system.childViews.delete(this.object)
     this.el.remove()
   },
   onMoved() {
@@ -502,6 +529,7 @@ AFRAME.registerComponent('object3d-view', {
     {
       if (!this.targetEl.parentEl)
       {
+        console.log("Lost parent el")
         this.onDeleted()
         return
       }
@@ -510,6 +538,7 @@ AFRAME.registerComponent('object3d-view', {
     {
       if (!this.object.parent)
       {
+        console.log("Lost object parent")
         this.onDeleted()
         return;
       }

@@ -140,15 +140,17 @@ Util.registerComponentSystem('primitive-constructs', {
       el.object3D.updateMatrixWorld()
       for (let shape of shapes)
       {
-        let mesh = shape.getObject3D('mesh').clone();
+        let mesh = Util.traverseClone(shape.getObject3D('mesh'), this.el.sceneEl.systems['animation-3d'].cloneTracks)
         mesh.el = el
         mesh.traverse(o => o.el = el)
         targetObj.add(mesh)
         Util.positionObject3DAtTarget(mesh, shape.getObject3D('mesh'))
         shape.parentEl.removeChild(shape)
+        this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, el.object3D)
       }
 
       el.setAttribute('reference-glb', '')
+      el.setAttribute('animation-3d-keyframed')
 
       console.log("Made reference", el)
     })
@@ -462,6 +464,9 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       {
         newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material
       }
+
+      this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.getObject3D('mesh'), newPlaceHolder.getObject3D('mesh'))
+      this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, newPlaceHolder.object3D)
     })
   },
   makeReal() {

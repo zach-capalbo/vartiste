@@ -296,6 +296,16 @@ class VARTISTEUtil {
     }
   }
 
+  traverseClone(obj3d, fn) {
+    let newObj = obj3d.clone(false)
+    for (let i in obj3d.children)
+    {
+      newObj.add(this.traverseClone(obj3d.children[i], fn))
+    }
+    fn(obj3d, newObj)
+    return newObj
+  }
+
   visibleWithAncestors(obj)
   {
     if (!obj.visible) return false
@@ -628,6 +638,8 @@ class VARTISTEUtil {
     let boundingBox = box || this.pool('boundingBox', THREE.Box3)
     let tmpBox = this.pool('tmpBox', THREE.Box3)
     let firstModel = rootObj.getObjectByProperty('type', 'Mesh') || rootObj.getObjectByProperty('type', 'SkinnedMesh')
+
+    if (!firstModel) return boundingBox.makeEmpty();
 
     rootObj.updateMatrixWorld(true, true)
 

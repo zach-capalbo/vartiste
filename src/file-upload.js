@@ -1141,9 +1141,31 @@ AFRAME.registerComponent('reference-glb', {
     let el = document.createElement('a-entity')
     this.el.parentEl.append(el)
     Util.whenLoaded(el, () => {
-      el.setObject3D('mesh', this.el.getObject3D('mesh').clone())
+      let boneMap = new Map()
+      let clone = Util.traverseClone(this.el.getObject3D('mesh'), (old, newObj) => {
+        if (old.isBone)
+        {
+          boneMap.set(old, newObj)
+        }
+        this.el.sceneEl.systems['animation-3d'].cloneTracks(old, newObj)
+      })
+      clone.traverse(o => {
+        if (o.isSkinnedMesh && o.skeleton)
+        {
+          o.skeleton = new THREE.Skeleton(o.skeleton.bones.map(b => boneMap.get(b)), o.skeleton.boneInverses.slice())
+          console.log("Replaced Bones", o, boneMap)
+        }
+      })
+      el.setObject3D('mesh', clone)
       el.setAttribute('reference-glb', this.data)
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+
+      if (this.el.hasAttribute('animation-3d-keyframed'))
+      {
+        el.setAttribute('animation-3d-keyframed', this.el.getAttribute('animation-3d-keyframed'))
+      }
+
+      this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, el.object3D)
     })
   }
 })
