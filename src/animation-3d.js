@@ -190,7 +190,7 @@ class ObjectKeyframeTracks {
     let lastFrame = frames[frames.length - 1] + 1
     let finalFrameIdx = 0
     let timesThrough = 0
-    while (finalFrameIdx < maxFrame || !wrap) {
+    while (finalFrameIdx <= maxFrame || !wrap) {
       for (let frameIdx of frames)
       {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
@@ -368,7 +368,7 @@ Util.registerComponentSystem('animation-3d', {
       let lastFrame = frames[frames.length - 1] + 1
       let finalFrameIdx = 0
       let timesThrough = 0
-      while (finalFrameIdx < maxFrame || !wrap) {
+      while (finalFrameIdx <= maxFrame || !wrap) {
         for (let frameIdx of frames)
         {
           finalFrameIdx = (frameIdx + lastFrame * timesThrough)
@@ -413,6 +413,16 @@ Util.registerComponentSystem('animation-3d', {
           (visible) => visible ? [1.0, 1.0, 1.0] : [0.0, 0.0, 0.0]
         )
       }
+      tracks.push(scaleTrack)
+    }
+    else if (this.visibilityTracks.has(obj))
+    {
+      console.log("Not needed but has tracks", obj)
+      if (scaleTrack)
+      {
+        tracks.splice(tracks.indexOf(scaleTrack), 1)
+      }
+      scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, [0], [0.0, 0.0, 0.0])
       tracks.push(scaleTrack)
     }
     else if (scaleTrack) {
@@ -588,9 +598,9 @@ AFRAME.registerComponent('timeline-tool', {
       this.targetEl.addEventListener('stateremoved', this.onPlayingChanged)
     }
     this.updateTicks()
+    this.updateKeyframes()
     if (this.data.loadAllKeyframes !== oldData.loadAllKeyframes && this.data.loadAllKeyframes)
     {
-      this.updateKeyframes()
     }
   },
   updateTicks() {
