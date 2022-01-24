@@ -598,9 +598,9 @@ AFRAME.registerComponent('timeline-tool', {
       this.targetEl.addEventListener('stateremoved', this.onPlayingChanged)
     }
     this.updateTicks()
+    this.updateKeyframes()
     if (this.data.loadAllKeyframes !== oldData.loadAllKeyframes && this.data.loadAllKeyframes)
     {
-      this.updateKeyframes()
     }
   },
   updateTicks() {
