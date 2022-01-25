@@ -68,7 +68,7 @@ AFRAME.registerComponent("color-picker", {
 
 // Controls the brightness for a [`color-wheel`](#color-wheel)
 AFRAME.registerComponent("brightness-picker", {
-  
+
   schema: {
     // The element with a `color-wheel` component to set the brightness on
     target: {type: 'selector'}
@@ -164,10 +164,12 @@ AFRAME.registerComponent("opacity-picker", {
 
     this.el.addEventListener("click", (e)=> {
       if (this.layer && !this.wasDrawing) {
-        let oldOpacity = this.layer.oldOpacity
-        Undo.push(() => {
-          this.layer.opacity = oldOpacity
-          this.layer.touch()
+        Undo.pushSymmetric((u, r) => {
+          let oldOpacity = this.layer.oldOpacity
+          u.push(() => {
+            this.layer.opacity = oldOpacity
+            this.layer.touch()
+          }, {redo: r})
         })
       }
       this.handleClick(e)
@@ -176,10 +178,12 @@ AFRAME.registerComponent("opacity-picker", {
       if (this.layer && !this.wasDrawing)
       {
         this.wasDrawing  = true
-        let oldOpacity = this.layer.opacity
-        Undo.push(() => {
-          this.layer.opacity = oldOpacity
-          this.adjustIndicator(oldOpacity)
+        Undo.pushSymmetric((u) => {
+          let oldOpacity = this.layer.opacity
+          u.push(() => {
+            this.layer.opacity = oldOpacity
+            this.adjustIndicator(oldOpacity)
+          })
         })
         e.detail.sourceEl.addEventListener('enddrawing', () => {this.wasDrawing = false}, {once: true})
       }

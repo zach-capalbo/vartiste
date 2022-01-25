@@ -346,11 +346,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
         }
         else
         {
-          let startMatrix = new THREE.Matrix4
-          startMatrix.copy(this.el.object3D.matrix)
-          Undo.push(() => {
-            Util.applyMatrix(startMatrix, this.el.object3D)
-          })
+          Undo.pushObjectMatrix(this.el.object3D)
         }
         if (this.el.grabbingManipulator && this.el.grabbingManipulator.attrName === 'selection-box-tool')
         {

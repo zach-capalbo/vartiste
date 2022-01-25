@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {Sfx} from './sfx.js'
 
 // Eases the creation of undo functionality. You can either use a singleton Undo
 // stack by calling methods of `VARTISTE.Undo`, or create a new `UndoStack` for
@@ -35,8 +36,9 @@ class UndoStack {
   // *Note:* The constructor will create `maxSize` number of canvases to
   // optimize the `pushCanvas` function. If `maxSize` is too big, this can use
   // a lot of memory.
-  constructor({maxSize = 10} = {}) {
+  constructor({maxSize = 10, isRedo = false} = {}) {
     this.stack = []
+    this.isRedo = isRedo
     this.maxSize = maxSize
     this.pushAllowed = true
     this._enabled = true
@@ -109,6 +111,8 @@ class UndoStack {
       undoCtx.drawImage(undoCanvas, 0, 0)
       undoCtx.globalCompositeOperation = operation
       if (canvas.touch) canvas.touch()
+    }, {
+      redo: (r) => r.pushCanvas(canvas)
     })
   }
 
@@ -116,10 +120,18 @@ class UndoStack {
   // of the stack, it will be called. If `f` goes off of the undo stack without
   // being called, (e.g., due to the max undo size), then `whenSafe` will be
   // called if provided.
-  push(f, {whenSafe} = {}) {
+  push(f, {whenSafe, redo} = {}) {
     if (!this.pushAllowed) return
     this.stack.push(f)
     if (whenSafe) f.whenSafe = whenSafe
+
+    if (this.redoStack)
+    {
+      if (!this.isRedo && !this.isRedoing) this.redoStack.clear()
+      if (this.symmetricRedo) f.redo = this.symmetricRedo
+      if (redo) f.redo = redo
+    }
+
     if (this.stack.length > this.maxSize)
     {
       let oldFn = this.stack.splice(0, 1)
@@ -127,6 +139,15 @@ class UndoStack {
       {
         this.block(oldFn[0].whenSafe)
       }
+    }
+  }
+
+  pushSymmetric(f) {
+    try {
+      this.symmetricRedo = (r) => { r.pushSymmetric(f) }
+      f(this)
+    } finally {
+      this.symmetricRedo = null
     }
   }
 
@@ -138,6 +159,8 @@ class UndoStack {
     matrix.copy(object3D.matrix)
     this.push(() => {
       Util.applyMatrix(matrix, object3D)
+    }, {
+      redo: (r) => r.pushObjectMatrix(object3D)
     })
   }
 
@@ -178,7 +201,27 @@ class UndoStack {
   // blocked.
   undo() {
     if (this.stack.length === 0) return
-    this.block(this.stack.pop())
+    let fn = this.stack.pop()
+    try {
+      if (this.isRedo) this.redoStack.isRedoing = true
+      if (this.redoStack) {
+        if (fn.redo)
+        {
+          fn.redo(this.redoStack)
+        }
+        else
+        {
+          this.redoStack.push(this.cantRedo)
+        }
+      }
+      this.block(fn)
+    } finally {
+      if (this.isRedo) this.redoStack.isRedoing = false
+    }
+  }
+
+  cantRedo() {
+    Sfx.cantRedo(Util.el)
   }
 
   // Executes `f`, while blocking any attempts to push anything to the undo
@@ -207,5 +250,7 @@ class UndoStack {
 }
 
 const Undo = new UndoStack
+Undo.redoStack = new UndoStack({isRedo: true})
+Undo.redoStack.redoStack = Undo
 
 export {Undo, UndoStack}
