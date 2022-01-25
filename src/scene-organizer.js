@@ -315,7 +315,7 @@ AFRAME.registerComponent('object3d-view', {
     this.el.sceneEl.systems['material-pack-system'].addPacksFromObjects(this.object)
   },
   createLayers() {
-    Util.traverseCondition(this.object, o => !o.userData || !o.userData.vartisteUI, o => {
+    Util.traverseNonUI(this.object, o => {
       if (!o.material) return;
       for (let map of ['map'].concat(THREED_MODES))
       {
@@ -812,5 +812,71 @@ AFRAME.registerComponent('organizer-set-target', {
   update(oldData) {
     let object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
     this.el.setAttribute(this.data.component, this.data.property, object3dview.data.target)
+  }
+})
+
+AFRAME.registerComponent('organizer-statistics', {
+  events: {
+    click: function(e) {
+      if (e.target.getAttribute('click-action') === 'refresh')
+      {
+        e.stopPropagation()
+        this.refresh()
+      }
+    }
+  },
+  init() {
+    this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    this.stats = {
+      'Vertices': (o) => {
+        let count = 0
+        Util.traverseNonUI(o, c => {
+          if (c.geometry && c.geometry.attributes.position) count += c.geometry.attributes.position.count
+        })
+        return count
+      },
+      'Faces': (o) => {
+        let count = 0
+        Util.traverseNonUI(o, c => {
+          if (c.geometry && c.geometry.index) {
+            count += c.geometry.index.count / 3
+          }
+          else if (c.geometry && c.geometry.attributes.position)
+          {
+            count += c.geometry.attributes.position.count / 3
+          }
+        })
+        return count
+      },
+      'Nodes': (o) => {
+        let count = 0
+        Util.traverseNonUI(o, c => count++)
+        return count
+      },
+      'Materials': (o) => {
+        let s = new Set()
+        Util.traverseNonUI(o, c => {
+          if (c.material) s.add(c.material.uuid)
+        })
+        return s.size
+      }
+    }
+    Util.whenLoaded(this.el, () => this.refresh())
+  },
+  refresh() {
+    let target = this.el.querySelector('.stats-output')
+    for (let el of target.getChildEntities())
+    {
+      target.remove(el)
+    }
+    let container = document.createElement('a-entity')
+    target.append(container)
+    for (let [name, stat] of Object.entries(this.stats))
+    {
+      let row = document.createElement('a-entity')
+      container.append(row)
+      row.setAttribute('icon-row', '')
+      row.setAttribute('icon-row-text', `${name}: ${stat(this.object3dview.object)}`)
+    }
   }
 })
