@@ -1,0 +1,5 @@
+a-entity shelf="name: Statistics; pinnable: false; closable: true" grab-root="" organizer-statistics=""
+  a-entity shelf-content=""
+    a-entity icon-row="mergeButtons: true"
+      a-entity icon-button="#asset-rotate-3d-variant" tooltip="Refresh" click-action="refresh"
+    a-entity.stats-output icon-row=""
