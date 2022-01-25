@@ -296,6 +296,10 @@ class VARTISTEUtil {
     }
   }
 
+  traverseNonUI(obj3D, fn) {
+    return this.traverseCondition(obj3D, o => !o.userData || !o.userData.vartisteUI, fn)
+  }
+
   traverseClone(obj3d, fn) {
     let newObj = obj3d.clone(false)
     for (let i in obj3d.children)
