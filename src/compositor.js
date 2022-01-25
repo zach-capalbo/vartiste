@@ -156,7 +156,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     if (activate) this.activateLayer(layer)
-    Undo.push(e=> this.deleteLayer(layer))
+    Undo.push(e=> this.deleteLayer(layer), () => this.addLayer(position, {layer}))
     return layer;
   },
 
@@ -177,7 +177,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
     this.activateLayer(newLayer)
-    Undo.push(e=> this.deleteLayer(newLayer))
+    Undo.push(e=> this.deleteLayer(newLayer), () => this.duplicateLayer(layer))
     return newLayer;
   },
 
@@ -218,7 +218,7 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx1] = layer2
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
-    Undo.push(e=> this.swapLayers(layer1, layer2))
+    Undo.push(e=> this.swapLayers(layer1, layer2), e=> this.swapLayers(layer2, layer1))
   },
   mergeLayers(fromLayer, ontoLayer) {
     Undo.pushCanvas(ontoLayer.canvas)
@@ -252,7 +252,7 @@ AFRAME.registerComponent('compositor', {
   deleteLayer(layer) {
     let idx = this.layers.indexOf(layer)
 
-    Undo.push(() => this.addLayer(idx, {layer}))
+    Undo.push(() => this.addLayer(idx, {layer}), () => this.deleteLayer(layer))
 
     console.log("Deleting layer", layer.id, idx)
     if (idx < 0) throw new Error("Cannot find layer to delete", layer)

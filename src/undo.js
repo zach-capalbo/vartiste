@@ -120,7 +120,7 @@ class UndoStack {
   // of the stack, it will be called. If `f` goes off of the undo stack without
   // being called, (e.g., due to the max undo size), then `whenSafe` will be
   // called if provided.
-  push(f, {whenSafe, redo} = {}) {
+  pushOpts(f, {whenSafe, redo} = {}) {
     if (!this.pushAllowed) return
     this.stack.push(f)
     if (whenSafe) f.whenSafe = whenSafe
@@ -140,6 +140,11 @@ class UndoStack {
         this.block(oldFn[0].whenSafe)
       }
     }
+  }
+
+  push(f, r = {}) {
+    if (typeof r !== 'function') this.pushOpts(f, r);
+    this.pushOpts(f, {redo: (rr) => rr.push(r)})
   }
 
   pushSymmetric(f) {
@@ -167,7 +172,7 @@ class UndoStack {
   // Executes `f` and collects and `push()` or `pushCanvas` calls while f is
   // running into a single undo operation, such that if `undo()` is called, it
   // will undo all of them at once.
-  collect(f) {
+  collect(f, r) {
     if (!this.pushAllowed) {
       return f();
     }
@@ -193,7 +198,7 @@ class UndoStack {
       {
         ff()
       }
-    })
+    }, r)
   }
 
   // Removes the next item from the undo stack and executes the undo action. Any

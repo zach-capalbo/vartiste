@@ -416,6 +416,11 @@ AFRAME.registerComponent('object3d-view', {
     Util.traverseCondition(this.object, o => !(o.userData && o.userData.vartisteUI), o => {
       if (!o.geometry) return;
       let geometry = o.geometry.clone()
+      for (let attribute in geometry.attributes)
+      {
+        if (attribute === 'position' || attribute === 'normal' || attribute === 'uv') continue;
+        geometry.deleteAttribute(attribute)
+      }
       o.updateMatrixWorld()
       geometry.applyMatrix4(o.matrixWorld)
       geometries.push(geometry)
