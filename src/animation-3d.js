@@ -808,7 +808,7 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
     grabended: function(e) {
       for (let el of this.grabbed)
       {
-        el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+        el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
       }
       this.grabbed.length = 0
     }

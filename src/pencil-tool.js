@@ -1631,7 +1631,7 @@ AFRAME.registerComponent('lathe-selection-tool', {
       if (this.el.is('grabbed')) {
         for (let target of Object.values(this.selectionBoxTool.grabbed))
         {
-          target.emit('click', e.detail)
+          target.emit('draw', e.detail)
         }
         return;
       }
