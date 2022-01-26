@@ -496,6 +496,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   },
   init() {
     this.system = this.el.sceneEl.systems['animation-3d']
+    Pool.init(this, {useSystem: true})
   },
   play() {
     this.animate = this.animate.bind(this)
@@ -510,6 +511,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
 
     this.el.object3D.traverse(o => {
       this.system.animate(o, this.data)
+      this.el.sceneEl.systems.manipulator.runConstraints(o.el, this.pool('localOffset', THREE.Vector3), this.el.sceneEl.time, this.el.sceneEl.delta)
     })
   },
   tick(t, dt) {
@@ -791,5 +793,34 @@ AFRAME.registerComponent('animation-3d-path', {
     let object = this.data.target.object3D || this.data.target
     let points = []
 
+  }
+})
+
+AFRAME.registerComponent('puppeteer-selection-tool', {
+  events: {
+    grabstarted: function(e) {
+      if (Compositor.component.isPlayingAnimation) Compositor.component.jumpToFrame(0)
+      this.grabbed = []
+      for (let el of Object.values(e.detail.grabbed))
+      {
+        el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+        this.grabbed.push(el)
+      }
+    },
+    grabended: function(e) {
+      for (let el of this.grabbed)
+      {
+        el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
+      }
+      this.grabbed.length = 0
+    }
+  },
+  init() {
+    this.grabbed = []
+    this.el.setAttribute('selection-box-tool', '')
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+      this.box = this.selectionBoxTool.box
+    })
   }
 })

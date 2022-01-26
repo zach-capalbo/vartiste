@@ -83,6 +83,33 @@ AFRAME.registerSystem('manipulator', {
       }
     }
   },
+  runConstraints(target, localOffset, t, dt) {
+    if (target.manipulatorConstraint) {
+      console.trace("manipulatorConstraint is deprecated. Please use sceneEl.systems.manipulator.installConstraint instead")
+      target.manipulatorConstraint(t, dt)
+    }
+
+    for (let priority of this.knownPriorities)
+    {
+      let priorityList;
+      if (target.manipulatorConstraints) {
+        priorityList = target.manipulatorConstraints.get(priority)
+        if (priorityList) {
+          for (let c of priorityList)
+          {
+            c(t,dt, localOffset)
+          }
+        }
+      }
+      priorityList = this.postManipulationCallbacks.get(priority)
+      if (priorityList) {
+        for (let c of priorityList)
+        {
+          c(this.target, t,dt, localOffset)
+        }
+      }
+    }
+  },
   tick(t, dt) {
     this.el.emit('refreshobjects')
   }
@@ -600,32 +627,7 @@ AFRAME.registerComponent('manipulator', {
         this.resetZoom = false
       }
 
-      if (this.target.manipulatorConstraint) {
-        console.trace("manipulatorConstraint is deprecated. Please use sceneEl.systems.manipulator.installConstraint instead")
-        this.target.manipulatorConstraint(t, dt)
-      }
-
-
-      for (let priority of this.system.knownPriorities)
-      {
-        let priorityList;
-        if (this.target.manipulatorConstraints) {
-          priorityList = this.target.manipulatorConstraints.get(priority)
-          if (priorityList) {
-            for (let c of priorityList)
-            {
-              c(t,dt, localOffset)
-            }
-          }
-        }
-        priorityList = this.system.postManipulationCallbacks.get(priority)
-        if (priorityList) {
-          for (let c of priorityList)
-          {
-            c(this.target, t,dt, localOffset)
-          }
-        }
-      }
+      this.system.runConstraints(this.target, localOffset, t, dt)
     }
   }
 })

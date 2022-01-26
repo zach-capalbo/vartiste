@@ -143,7 +143,6 @@ class UndoStack {
   }
 
   push(f, r = {}) {
-    console.log("Typeof r", typeof r)
     if (typeof r !== 'function')
     {
       this.pushOpts(f, r);
