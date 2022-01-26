@@ -1290,6 +1290,8 @@ AFRAME.registerComponent('selection-box-tool', {
         Util.positionObject3DAtTarget(this.grabbed[obj.uuid].object3D, obj)
       }
 
+      this.el.sceneEl.systems.manipulator.runConstraints(this.grabbed[obj.uuid], this.pool('localOffset', THREE.Vector3), t, dt)
+
       //?
       // if (this.grabbed[obj.uuid].manipulatorConstraint) this.grabbed[obj.uuid].manipulatorConstraint(t, dt)
 
@@ -1637,7 +1639,7 @@ AFRAME.registerComponent('lathe-selection-tool', {
       }
     },
     click: function(e) {
-      if (this.el.is('grabbed')) {
+      if (this.el.is('grabbed') && this.selectionBoxTool.grabbing) {
         for (let target of Object.values(this.selectionBoxTool.grabbed))
         {
           target.emit('click', e.detail)

@@ -496,6 +496,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   },
   init() {
     this.system = this.el.sceneEl.systems['animation-3d']
+    Pool.init(this, {useSystem: true})
   },
   play() {
     this.animate = this.animate.bind(this)
@@ -510,6 +511,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
 
     this.el.object3D.traverse(o => {
       this.system.animate(o, this.data)
+      this.el.sceneEl.systems.manipulator.runConstraints(o.el, this.pool('localOffset', THREE.Vector3), this.el.sceneEl.time, this.el.sceneEl.delta)
     })
   },
   tick(t, dt) {
