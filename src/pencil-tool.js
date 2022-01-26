@@ -1662,6 +1662,7 @@ AFRAME.registerComponent('lathe-selection-tool', {
   },
   init() {
     this.el.setAttribute('selection-box-tool', 'boxSize: 0.4 0.1 0.4; autoGrab: false')
+    this.el.setAttribute('action-tooltips', 'trigger: Toggle Lathe')
     let lever = document.createElement('a-entity')
     this.el.append(lever)
     lever.setAttribute('position', '0.08 -0.2 0')
