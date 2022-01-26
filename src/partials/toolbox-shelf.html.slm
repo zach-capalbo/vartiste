@@ -5,7 +5,7 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
     a-entity icon-button="#asset-arrow-collapse-vertical" click-action="collapseLayers" tooltip="Collapse All Layers"
     a-entity icon-button="#asset-arrow-collapse-vertical" click-action="collapseLayersPerFrame" tooltip="Collapse All Layers Per Frames"
     a-entity click-action="toggleLathe" icon-button="#asset-axis-z-rotate-clockwise" tooltip="Toggle 3D Lathe"
-    a-entity icon-button="#asset-hand-right" popup-button="popup: manipulator-info-shelf; deferred: true" tooltip="Manipulator Info"
+    a-entity icon-button="#asset-arrow-right" click-action="redo" tooltip="Redo"
   a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
     a-entity icon-button="#asset-account-voice" click-action="recordHeadset" tooltip="Record Headset View"
     a-entity icon-button="#asset-skeletonator" click-action="startSkeletonator" tooltip="Skeletonator Animation Tool"

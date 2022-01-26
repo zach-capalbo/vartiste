@@ -1,7 +1,13 @@
 import {ButtonMaps, Axes, JoystickDirections} from './joystick-directions.js'
+import {Undo} from './undo.js'
 
 AFRAME.registerComponent('right-hand-controls', {
   dependencies: ['raycaster'],
+  events: {
+    'thumbstickdown': function(e) {
+      Undo.redoStack.undo()
+    }
+  },
   init() {
     this.paintSystem = document.querySelector('a-scene').systems['paint-system']
     // this.el.setAttribute('joystick-turn', "target: #artist-root")
@@ -33,7 +39,7 @@ AFRAME.registerComponent('right-hand-controls', {
 
     this.tick = AFRAME.utils.throttleTick(this.tick, 50, this)
 
-    this.el.setAttribute('action-tooltips', 'leftright: Snap Turn')
+    this.el.setAttribute('action-tooltips', 'leftright: Snap Turn; thumbstick: redo')
   },
 
   tick(t, dt) {

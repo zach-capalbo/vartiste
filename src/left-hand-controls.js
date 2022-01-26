@@ -59,7 +59,7 @@ AFRAME.registerComponent('left-hand-controls', {
       }
     })
 
-    this.el.setAttribute('action-tooltips', `trigger: Reset Orientation; leftright: Prev / Next Frame; updown: Play-pause / Jump to start; a: Undo; b: ${this.el.sceneEl.systems['speech'].recognition ? "Voice Commands" : "Toggle UI"}`)
+    this.el.setAttribute('action-tooltips', `thumbstick: Reset Orientation; leftright: Prev / Next Frame; updown: Play-pause / Jump to start; a: Undo; b: ${this.el.sceneEl.systems['speech'].recognition ? "Voice Commands" : "Toggle UI"}`)
   },
 
   leftClick() {

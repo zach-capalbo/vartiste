@@ -143,7 +143,12 @@ class UndoStack {
   }
 
   push(f, r = {}) {
-    if (typeof r !== 'function') this.pushOpts(f, r);
+    console.log("Typeof r", typeof r)
+    if (typeof r !== 'function')
+    {
+      this.pushOpts(f, r);
+      return;
+    }
     this.pushOpts(f, {redo: (rr) => rr.push(r)})
   }
 
@@ -226,7 +231,10 @@ class UndoStack {
   }
 
   cantRedo() {
-    Sfx.cantRedo(Util.el)
+    if (this.isRedo)
+    {
+      Sfx.cantRedo(Util.el)
+    }
   }
 
   // Executes `f`, while blocking any attempts to push anything to the undo
