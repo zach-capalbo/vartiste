@@ -793,3 +793,32 @@ AFRAME.registerComponent('animation-3d-path', {
 
   }
 })
+
+AFRAME.registerComponent('puppeteer-selection-tool', {
+  events: {
+    grabstarted: function(e) {
+      if (Compositor.component.isPlayingAnimation) Compositor.component.jumpToFrame(0)
+      this.grabbed = []
+      for (let el of Object.values(e.detail.grabbed))
+      {
+        el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+        this.grabbed.push(el)
+      }
+    },
+    grabended: function(e) {
+      for (let el of this.grabbed)
+      {
+        el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+      }
+      this.grabbed.length = 0
+    }
+  },
+  init() {
+    this.grabbed = []
+    this.el.setAttribute('selection-box-tool', '')
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+      this.box = this.selectionBoxTool.box
+    })
+  }
+})

@@ -1359,7 +1359,7 @@ AFRAME.registerComponent('eye-drop-tool', {
     if (!this.el.components['camera-tool'].helper) return
     if (!this.el.is("grabbed")) return
     if (!this.el.grabbingManipulator) return
-    if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing) return
+    if (!this.el.grabbingManipulator.el.hasAttribute('mouse-manipulator') && (this.el.grabbingManipulator.el.hasAttribute('hand-draw-tool') && !this.el.grabbingManipulator.el.components['hand-draw-tool'].isDrawing)) return
     this.takePicture()
   }
 })

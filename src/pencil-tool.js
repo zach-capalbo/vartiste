@@ -999,21 +999,25 @@ AFRAME.registerComponent('selection-box-tool', {
     undoable: {default: false},
     duplicateOnGrab: {default: false},
     weight: {default: 0.0},
+    autoGrab: {default: true},
   },
   events: {
     stateadded: function(e) {
+      if (!this.data.autoGrab) return;
       if (e.detail === 'grabbed')
       {
         this.startGrab()
       }
     },
     stateremoved: function(e) {
+      if (!this.data.autoGrab) return;
       if (e.detail === 'grabbed')
       {
         this.stopGrab()
       }
     },
     click: function(e) {
+      if (!this.data.autoGrab) return;
       this.toggleGrabbing(!this.grabbing)
     },
     bbuttondown: forwardable('bbuttondown'),
@@ -1041,6 +1045,7 @@ AFRAME.registerComponent('selection-box-tool', {
     this.box = box
     box.classList.add('clickable')
     box.setAttribute('material', 'color: #333; shader: matcap; wireframe: true')
+    box.setAttribute('axis-handles', '')
     this.el.append(box)
     this.grabbing = false
 
@@ -1096,6 +1101,7 @@ AFRAME.registerComponent('selection-box-tool', {
       let newObjects = []
       for (let el of objects)
       {
+        if (Util.traverseFindAncestor(el, (e) => e === this.el)) continue;
         Util.traverseFindAll(el.object3D, o => o.type === 'Mesh' || o.type === 'SkinnedMesh', {outputArray: newObjects, visibleOnly: true})
       }
       objects = newObjects.map(o => { return {object3D: o}})
@@ -1122,6 +1128,7 @@ AFRAME.registerComponent('selection-box-tool', {
 
       if (target === this.el) continue
       if (target === this.box) continue
+      if (Util.traverseFindAncestor(target, (e) => e === this.el)) continue;
       if (target.object3D.uuid in this.grabbers) continue
 
       if (this.data.grabElements && this.data.selectElGeometry)
@@ -1186,7 +1193,7 @@ AFRAME.registerComponent('selection-box-tool', {
       }
 
       let obj = new THREE.Object3D
-      this.el.object3D.add(obj)
+      this.box.object3D.add(obj)
       if (this.data.weight > 0.0)
       {
         obj.distanceWeight = THREE.Math.clamp(Math.sqrt(this.data.weight * localPos.length() / this.box.getObject3D('mesh').geometry.boundingSphere.radius), 0.0, 1.0)
@@ -1255,7 +1262,7 @@ AFRAME.registerComponent('selection-box-tool', {
   },
   tick(t,dt) {},
   _tick(t, dt) {
-    if (!this.el.is('grabbed')) return
+    if (!this.el.is('grabbed') && !this.el.is('autoRotate')) return
     if (!this.grabbing) return
 
     let interpMat = this.pool('interpMat', THREE.Matrix4)
@@ -1616,7 +1623,56 @@ AFRAME.registerComponent('tool-weight-tool', {
 })
 
 AFRAME.registerComponent('lathe-selection-tool', {
+  schema: {
+    speed: {default: 1.0},
+  },
+  events: {
+    draw: function(e) {
+      if (this.el.is('grabbed')) {
+        for (let target of Object.values(this.selectionBoxTool.grabbed))
+        {
+          target.emit('click', e.detail)
+        }
+        return;
+      }
+    },
+    click: function(e) {
+      if (this.el.is('grabbed')) {
+        for (let target of Object.values(this.selectionBoxTool.grabbed))
+        {
+          target.emit('click', e.detail)
+        }
+        return;
+      }
+      if (!this.el.is('autoRotate'))
+      {
+        this.selectionBoxTool.toggleGrabbing(true)
+        this.selectionBoxTool.startGrab()
+        this.el.addState('autoRotate')
+      }
+      else
+      {
+        this.el.removeState('autoRotate')
+        this.selectionBoxTool.stopGrab()
+        this.selectionBoxTool.toggleGrabbing(false)
+      }
+    }
+  },
   init() {
-    this.el.setAttribute('selection-box-tool', 'boxSize: 0.1 0.4 0.1')
+    this.el.setAttribute('selection-box-tool', 'boxSize: 0.4 0.1 0.4; autoGrab: false')
+    let lever = document.createElement('a-entity')
+    this.el.append(lever)
+    lever.setAttribute('position', '0.08 -0.2 0')
+    lever.setAttribute('scale', '0.6 0.6 0.6')
+    lever.setAttribute('lever', {target: this.el, component: 'lathe-selection-tool', property: 'speed', axis: 'x', gripRadius: 0.07, handleLength: 0.2, valueRange: new THREE.Vector2(20, 0), initialValue: 1.0})
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+      this.box = this.selectionBoxTool.box
+    })
+  },
+  tick(t, dt) {
+    if (!this.box) return;
+    if (!this.selectionBoxTool.grabbing) return;
+    this.box.object3D.rotateY(this.data.speed / 1000.0 * dt)
   }
 })
