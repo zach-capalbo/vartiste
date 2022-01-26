@@ -939,7 +939,7 @@ const Util = new VARTISTEUtil();
 
 Pool.init(Util)
 
-window.VARTISTE = {Util, Color}
+window.VARTISTE = {Util, Color, Undo}
 
 AFRAME.registerSystem('vartiste-util', {
   init() {

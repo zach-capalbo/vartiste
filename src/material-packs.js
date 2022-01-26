@@ -170,11 +170,11 @@ Util.registerComponentSystem('material-pack-system', {
     Compositor.component.data.drawOverlay = false
     Compositor.component.quickDraw()
 
-    this.addPacksFromObjects(Compositor.el.getObject3D('mesh'))
+    this.addPacksFromObjects(Compositor.el.getObject3D('mesh'), {userGenerated: true})
 
     Compositor.component.data.drawOverlay = true
   },
-  addMaterialPack(attr, name, {flipY = false} = {}) {
+  addMaterialPack(attr, name, {flipY = false, userGenerated = false} = {}) {
     if (!name) name = shortid.generate();
     console.log("Adding material pack", name)
 
@@ -190,7 +190,7 @@ Util.registerComponentSystem('material-pack-system', {
     let el = document.createElement('a-entity')
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)
-    el.classList.add("user")
+    if (userGenerated) el.classList.add("user")
     el.setAttribute('material-pack', `flipY: ${flipY}`)
     el.setAttribute('rotation', '-15 0 0')
     el.setAttribute('position', `${this.x * this.xSpacing} -${this.y * this.ySpacing} 0`)
@@ -238,7 +238,7 @@ Util.registerComponentSystem('material-pack-system', {
       })
     })
   },
-  async addPacksFromObjects(obj) {
+  async addPacksFromObjects(obj, {userGenerated = false} = {}) {
     function fakeImgFromImageBitmap(img) {
       if (!('tagName' in img))
       {
@@ -320,7 +320,7 @@ Util.registerComponentSystem('material-pack-system', {
           hasAttr = true
         }
         if (hasAttr) {
-          this.addMaterialPack(attr, o.material.name, {flipY: true})
+          this.addMaterialPack(attr, o.material.name, {flipY: true, userGenerated})
         }
       })());
 

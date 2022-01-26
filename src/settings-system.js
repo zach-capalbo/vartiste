@@ -571,6 +571,9 @@ Util.registerComponentSystem('settings-system', {
   undoAction() {
     Undo.undo()
   },
+  redoAction() {
+    Undo.redoStack.undo()
+  },
   toggleUndoAction() {
     Undo.enabled = !Undo.enabled
   },

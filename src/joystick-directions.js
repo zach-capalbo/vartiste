@@ -219,6 +219,9 @@ AFRAME.registerComponent('action-tooltips', {
     // Tooltip for squeezing the grip or equivalent
     grip: {type: 'string', default: null, parse: (o) => o},
 
+    // Tooltip for pressing the thumbstick or trackpad
+    thumbstick: {type: 'string', default: null, parse: (o) => o},
+
     // Shelf to refer to for more options
     shelf: {type: 'string', default: null, parse: (o) => o},
   }
@@ -255,6 +258,7 @@ AFRAME.registerComponent('hand-action-tooltip', {
       'a',
       'b',
       'grip',
+      'thumbstick'
     ]
 
     this.names = {
@@ -264,7 +268,8 @@ AFRAME.registerComponent('hand-action-tooltip', {
       'a': "A",
       'b': "B",
       'trigger': "Trigger",
-      'grip': "Grip"
+      'grip': "Grip",
+      'thumbstick': "Thumbstick",
     }
 
     this.message = {}

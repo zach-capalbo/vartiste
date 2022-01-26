@@ -298,7 +298,7 @@ class ProjectFile {
         return {name: "NoBitmap"}
       })
       let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
-      settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0])
+      settings.el.systems['material-pack-system'].addPacksFromObjects(model.scenes[0], {userGenerated: true})
     }
 
     // Old Version

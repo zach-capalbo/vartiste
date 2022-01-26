@@ -31,6 +31,7 @@ class SfxMgr {
       recognition: 'navigation_forward-selection',
       listening: 'sfx-click',
       recognitionerror: 'error',
+      cantRedo: 'error',
     }
 
     for (let k in map)

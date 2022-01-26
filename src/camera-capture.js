@@ -308,6 +308,7 @@ AFRAME.registerComponent('camera-tool', {
     aspectAdjust: {default: 1.0},
     captureType: {oneOf: ['overlay', 'newFrame', 'newLayer', 'download', 'spectator'], default: 'overlay'},
     captureMaterial: {default: false},
+    superSample: {default: 2}
   },
   events: {
     click: function(e) {
@@ -485,7 +486,22 @@ AFRAME.registerComponent('camera-tool', {
     }
     this.el.sceneEl.emit("startsnap", {source: this.el})
     this.helper.visible = false
-    this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+
+    if (this.data.superSample === 1.0)
+    {
+      this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, targetCanvas)
+    }
+    else
+    {
+      if (!this.superSampleCanvas)
+      {
+        this.superSampleCanvas = document.createElement('canvas')
+      }
+      Util.ensureSize(this.superSampleCanvas, targetCanvas.width * this.data.superSample, targetCanvas.height * this.data.superSample)
+      this.el.sceneEl.systems['camera-capture'].captureToCanvas(this.camera, this.superSampleCanvas)
+      targetCanvas.getContext('2d').drawImage(this.superSampleCanvas, 0, 0, this.superSampleCanvas.width, this.superSampleCanvas.height,
+                                                                      0, 0, targetCanvas.width, targetCanvas.height)
+    }
     // this.el.sceneEl.systems['camera-capture'].raytraceToCanvas(this.camera, targetCanvas)
     Compositor.component.activeLayer.touch()
     this.helper.visible = true
