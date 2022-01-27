@@ -797,6 +797,9 @@ AFRAME.registerComponent('animation-3d-path', {
 })
 
 AFRAME.registerComponent('puppeteer-selection-tool', {
+  schema: {
+    wrapAnimation: {default: true}
+  },
   events: {
     grabstarted: function(e) {
       if (Compositor.component.isPlayingAnimation) Compositor.component.jumpToFrame(0)
@@ -804,6 +807,7 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
       for (let el of Object.values(e.detail.grabbed))
       {
         el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+        el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
         this.grabbed.push(el)
       }
     },
@@ -813,14 +817,20 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
         el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
       }
       this.grabbed.length = 0
+    },
+    bbuttondown: function(e) {
+      this.el.setAttribute('puppeteer-selection-tool', 'wrapAnimation', !this.data.wrapAnimation)
     }
   },
   init() {
     this.grabbed = []
-    this.el.setAttribute('selection-box-tool', '')
+    this.el.setAttribute('selection-box-tool', 'forwardButtons: false')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
     })
+  },
+  update(oldData) {
+    this.el.setAttribute('action-tooltips', 'label', `Puppeteer Tool (${this.data.wrapAnimation ? "Wrapping" : "Non-wrapping"})`)
   }
 })

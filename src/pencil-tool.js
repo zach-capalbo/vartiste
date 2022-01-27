@@ -979,6 +979,7 @@ AFRAME.registerComponent('movement-tool', {
 function forwardable(evt) {
   return function(e) {
     if (!this.data.grabElements) return;
+    if (!this.data.forwardEvents) return;
 
     for (let target of Object.values(this.grabbed))
     {
@@ -1000,6 +1001,7 @@ AFRAME.registerComponent('selection-box-tool', {
     duplicateOnGrab: {default: false},
     weight: {default: 0.0},
     autoGrab: {default: true},
+    forwardEvents: {default: true},
   },
   events: {
     stateadded: function(e) {
