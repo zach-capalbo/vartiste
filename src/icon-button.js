@@ -815,7 +815,10 @@ AFRAME.registerComponent('radio-button', {
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
 
         Util.whenLoaded([this.el, this.data.target], () => {
-          this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
+          if (this.data.target.hasAttribute(this.data.component))
+          {
+            this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
+          }
         })
       }
     }

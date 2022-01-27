@@ -813,10 +813,11 @@ AFRAME.registerComponent('organizer-set-target', {
   schema: {
     component: {type: 'string'},
     property: {default: 'target'},
+    el: {default: false},
   },
   update(oldData) {
     let object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
-    this.el.setAttribute(this.data.component, this.data.property, object3dview.data.target)
+    this.el.setAttribute(this.data.component, this.data.property, this.data.el ? object3dview.targetEl : object3dview.data.target)
   }
 })
 

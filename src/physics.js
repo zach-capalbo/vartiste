@@ -847,9 +847,13 @@ AFRAME.registerComponent('physx-body', {
     }
 
     let shapes = []
-    this.el.object3D.traverse(o => {
-      if (o.el && o.el.hasAttribute("physx-no-collision")) return;
-      if (o.el && !o.el.object3D.visible && !o.el.hasAttribute("physx-hidden-collision")) return;
+    VARTISTE.Util.traverseCondition(this.el.object3D,
+      o => {
+        if (o.el && o.el.hasAttribute("physx-no-collision")) return false;
+        if (o.el && !o.el.object3D.visible && !o.el.hasAttribute("physx-hidden-collision")) return false;
+        return true
+      },
+      o => {
       if (o.geometry) {
         let geometry;
         if (false && o.el && o.el.hasAttribute('geometry'))

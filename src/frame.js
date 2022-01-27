@@ -3,6 +3,7 @@ import {Pool} from './pool.js'
 
 AFRAME.registerSystem('frame', {
   init() {
+    this.el.setAttribute('physx-no-collision', '')
     this.pinnedTargets = {}
     this.el.addEventListener('startsnap', () => {
       document.querySelectorAll('*[frame]').forEach(el => el.components.frame.hide())
