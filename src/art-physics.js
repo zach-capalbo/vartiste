@@ -8,13 +8,45 @@ function whenVisible(el) {
 }
 
 Util.registerComponentSystem('art-physics', {
+  schema: {
+    artPhysics: {default: false},
+    scenePhysics: {default: false},
+  },
   events: {
     'physx-started': function(e) {
-      this.addPhysics()
+      this.physxStarted = true
+      console.log("Physics started.", this.data)
+      if (this.data.artPhysics)
+      {
+        this.addArtPhysics()
+      }
     }
   },
   init() {},
-  addPhysics() {
+  update(oldData) {
+    if (this.data.artPhysics || this.data.scenePhysics)
+    {
+      if (this.physxStarted && !this.el.sceneEl.systems.physx.running)
+      {
+        this.el.sceneEl.systems.physx.running = true
+      }
+      else if (!this.physxStarted)
+      {
+        this.el.sceneEl.systems.physx.startPhysX()
+      }
+    }
+    else if (this.el.sceneEl.systems.physx.running)
+    {
+      this.el.sceneEl.systems.physx.running = false
+    }
+    // this.sceneEl.systems.physx.running = !this.sceneEl.systems.physx.running
+  },
+  startArtPhysics() {
+    this.el.sceneEl.systems.physx.data.gravity = {x: 0, y: 0, z: 0}
+    this.data.artPhysics = true
+    this.el.sceneEl.systems.physx.startPhysX()
+  },
+  addArtPhysics() {
     this.el.querySelectorAll('*[pencil-tool]').forEach(async el => {
       await whenVisible(el)
       el.setAttribute('pencil-tool', 'extraRayLength', 0.001)

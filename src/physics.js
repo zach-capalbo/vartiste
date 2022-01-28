@@ -679,6 +679,12 @@ AFRAME.registerComponent('physx-body', {
     'bbuttonup': function(e) {
       this.toggleGravity()
     },
+    componentchanged: function(e) {
+      if (e.name === 'physx-material')
+      {
+        this.el.emit('object3dset', {})
+      }
+    },
     object3dset: function(e) {
       if (this.rigidBody) {
         for (let shape of this.shapes)
@@ -740,7 +746,7 @@ AFRAME.registerComponent('physx-body', {
 
     this.physxRegisteredPromise.then(() => this.update())
   },
-  update() {
+  update(oldData) {
     if (!this.rigidBody) return;
 
     if (this.data.type === 'dynamic')
@@ -753,6 +759,8 @@ AFRAME.registerComponent('physx-body', {
         this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_CCD, true)
       }
     }
+
+    if (!oldData || this.data.mass !== oldData.mass) this.el.emit('object3dset', {})
   },
   remove() {
     this.system.removeBody(this)
@@ -847,9 +855,15 @@ AFRAME.registerComponent('physx-body', {
     }
 
     let shapes = []
-    this.el.object3D.traverse(o => {
-      if (o.el && o.el.hasAttribute("physx-no-collision")) return;
-      if (o.el && !o.el.object3D.visible && !o.el.hasAttribute("physx-hidden-collision")) return;
+    VARTISTE.Util.traverseCondition(this.el.object3D,
+      o => {
+        if (o.el && o.el.hasAttribute("physx-no-collision")) return false;
+        if (o.el && !o.el.object3D.visible && !o.el.hasAttribute("physx-hidden-collision")) return false;
+        if (!o.visible && o.el && !o.el.hasAttribute("physx-hidden-collision")) return false;
+        if (o.userData && o.userData.vartisteUI) return false;
+        return true
+      },
+      o => {
       if (o.geometry) {
         let geometry;
         if (false && o.el && o.el.hasAttribute('geometry'))

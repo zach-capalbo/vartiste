@@ -417,13 +417,17 @@ Util.registerComponentSystem('animation-3d', {
     }
     else if (this.visibilityTracks.has(obj))
     {
-      console.log("Not needed but has tracks", obj)
-      if (scaleTrack)
+      console.log("Visibility not needed but has tracks", obj)
+      let visible = this.visibilityTracks.at(obj, this.visibilityTracks.frameIndices[obj.uuid][0])
+      if (!visible)
       {
-        tracks.splice(tracks.indexOf(scaleTrack), 1)
+        if (scaleTrack)
+        {
+          tracks.splice(tracks.indexOf(scaleTrack), 1)
+        }
+        scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, [0], [0.0, 0.0, 0.0])
+        tracks.push(scaleTrack)
       }
-      scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, [0], [0.0, 0.0, 0.0])
-      tracks.push(scaleTrack)
     }
     else if (scaleTrack) {
 
@@ -479,6 +483,7 @@ Util.registerComponentSystem('animation-3d', {
 AFRAME.registerComponent('animation-3d-keyframed', {
   schema: {
     puppeteering: {default: false},
+    recording: {default: false},
     restartAnimationOnGrab: {default: true},
 
     wrapAnimation: {default: true},
@@ -508,6 +513,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   animate() {
     if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
+    if (this.data.recording) return;
 
     this.el.object3D.traverse(o => {
       this.system.animate(o, this.data)
@@ -518,7 +524,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     // this.animate()
   },
   tock (t, dt) {
-    if (this.data.puppeteering && this.el.is('grabbed'))
+    if (this.data.recording || (this.data.puppeteering && this.el.is('grabbed')))
     {
       this.system.keyframe(this.el.object3D)
     }
@@ -797,6 +803,9 @@ AFRAME.registerComponent('animation-3d-path', {
 })
 
 AFRAME.registerComponent('puppeteer-selection-tool', {
+  schema: {
+    wrapAnimation: {default: true}
+  },
   events: {
     grabstarted: function(e) {
       if (Compositor.component.isPlayingAnimation) Compositor.component.jumpToFrame(0)
@@ -804,6 +813,7 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
       for (let el of Object.values(e.detail.grabbed))
       {
         el.setAttribute('animation-3d-keyframed', 'puppeteering', true)
+        el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
         this.grabbed.push(el)
       }
     },
@@ -813,14 +823,20 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
         el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
       }
       this.grabbed.length = 0
+    },
+    bbuttondown: function(e) {
+      this.el.setAttribute('puppeteer-selection-tool', 'wrapAnimation', !this.data.wrapAnimation)
     }
   },
   init() {
     this.grabbed = []
-    this.el.setAttribute('selection-box-tool', '')
+    this.el.setAttribute('selection-box-tool', 'forwardButtons: false')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
     })
+  },
+  update(oldData) {
+    this.el.setAttribute('action-tooltips', 'label', `Puppeteer Tool (${this.data.wrapAnimation ? "Wrapping" : "Non-wrapping"})`)
   }
 })
