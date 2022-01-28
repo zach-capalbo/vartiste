@@ -84,6 +84,7 @@ AFRAME.registerSystem('manipulator', {
     }
   },
   runConstraints(target, localOffset, t, dt) {
+    if (!target) return;
     if (target.manipulatorConstraint) {
       console.trace("manipulatorConstraint is deprecated. Please use sceneEl.systems.manipulator.installConstraint instead")
       target.manipulatorConstraint(t, dt)

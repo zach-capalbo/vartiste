@@ -679,6 +679,12 @@ AFRAME.registerComponent('physx-body', {
     'bbuttonup': function(e) {
       this.toggleGravity()
     },
+    componentchanged: function(e) {
+      if (e.name === 'physx-material')
+      {
+        this.el.emit('object3dset', {})
+      }
+    },
     object3dset: function(e) {
       if (this.rigidBody) {
         for (let shape of this.shapes)
@@ -740,7 +746,7 @@ AFRAME.registerComponent('physx-body', {
 
     this.physxRegisteredPromise.then(() => this.update())
   },
-  update() {
+  update(oldData) {
     if (!this.rigidBody) return;
 
     if (this.data.type === 'dynamic')
@@ -753,6 +759,8 @@ AFRAME.registerComponent('physx-body', {
         this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_CCD, true)
       }
     }
+
+    if (!oldData || this.data.mass !== oldData.mass) this.el.emit('object3dset', {})
   },
   remove() {
     this.system.removeBody(this)

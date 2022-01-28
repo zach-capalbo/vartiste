@@ -16,7 +16,7 @@ a-entity shelf-content=""
     a-entity icon-button="#asset-arrow-all" tooltip="Transformation Actions" popup-button="popup: transformations-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
 
     a-entity icon-button="#asset-video-vintage" tooltip="Animation" popup-button="popup: object-animation-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
-    a-entity icon-button="#asset-rotate-orbit" tooltip="Physics" popup-button="popup: object-physics-popup; deferred: true; autoScale: true, offset: 0 0.1 0.7"
+    a-entity icon-button="#asset-rotate-orbit" tooltip="Physics" popup-button="popup: object-physics-popup; deferred: true; autoScale: true, offset: 0 0.3 1.2"
     a-entity icon-button="#asset-dice-6" tooltip="Statistics" popup-button="popup: object-statistics-popup; deferred: true; autoScale: true; offset: 0 0.1 0.7"
   - let editfieldtext="width: 3; anchor: right; align: right; xOffset: 1.5; wrapCount: 14"
   a-entity icon-row="mergeButtons: true"

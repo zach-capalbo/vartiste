@@ -479,6 +479,7 @@ Util.registerComponentSystem('animation-3d', {
 AFRAME.registerComponent('animation-3d-keyframed', {
   schema: {
     puppeteering: {default: false},
+    recording: {default: false},
     restartAnimationOnGrab: {default: true},
 
     wrapAnimation: {default: true},
@@ -508,6 +509,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   animate() {
     if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
+    if (this.data.recording) return;
 
     this.el.object3D.traverse(o => {
       this.system.animate(o, this.data)
@@ -518,7 +520,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     // this.animate()
   },
   tock (t, dt) {
-    if (this.data.puppeteering && this.el.is('grabbed'))
+    if (this.data.recording || (this.data.puppeteering && this.el.is('grabbed')))
     {
       this.system.keyframe(this.el.object3D)
     }

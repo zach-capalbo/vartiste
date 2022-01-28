@@ -821,6 +821,73 @@ AFRAME.registerComponent('organizer-set-target', {
   }
 })
 
+AFRAME.registerComponent('organizer-physics-property', {
+  schema: {
+    property: {type: 'string'},
+    component: {default: 'physx-material'}
+  },
+  init() {
+    let object3dview = this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    if (!object3dview.targetEl) return;
+
+    if (object3dview.targetEl.hasAttribute(this.data.component))
+    {
+      this.initializeField()
+    }
+    else
+    {
+      object3dview.targetEl.addEventListener('componentinitialized', (e) => {
+        if (e.detail.name === this.data.component)
+        {
+          object3dview.targetEl.setAttribute(this.data.component, this.data.property, this.el.getAttribute('text').value)
+          this.initializeField()
+        }
+      })
+      console.log("Setting default value", AFRAME.components[this.data.component], this.data.property)
+      this.el.setAttribute('text', 'value', AFRAME.components[this.data.component].schema[this.data.property].default.toString())
+    }
+  },
+  initializeField() {
+    console.log("Initializing material", this.object3dview.targetEl.getAttribute(this.data.component))
+    this.el.setAttribute('edit-field', {target: this.object3dview.targetEl, component: this.data.component, property: this.data.property})
+  }
+})
+
+AFRAME.registerComponent('organizer-physics-record-button', {
+  dependencies: ['organizer-toggle-button'],
+  events: {
+    click: function(e) {
+      if (this.el.is("BUTTON_STATE_TOGGLED"))
+      {
+        this.el.sceneEl.setAttribute('art-physics', {scenePhysics: true})
+        Compositor.component.jumpToFrame(0)
+        Compositor.component.setIsPlayingAnimation(true)
+      }
+    }
+  }
+})
+
+AFRAME.registerComponent('organizer-physics-radio-button', {
+  schema: {
+    component: {type: 'string'},
+    property: {type: 'string'},
+    target: {type: 'selector'},
+  },
+  events: {
+    click: function(e) {
+      if (!this.el.sceneEl.systems.physx.physXInitialized)
+      {
+        this.el.sceneEl.setAttribute('art-physics', {scenePhysics: true})
+      }
+    }
+  },
+  init() {
+    let object3dview = this.object3dview = Util.traverseFindAncestor(this.el, (el) => el.hasAttribute('object3d-view')).components['object3d-view']
+    this.data.target = object3dview.targetEl
+    this.el.setAttribute('radio-button', this.data)
+  }
+})
+
 AFRAME.registerComponent('organizer-statistics', {
   events: {
     click: function(e) {
