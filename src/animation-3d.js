@@ -417,13 +417,17 @@ Util.registerComponentSystem('animation-3d', {
     }
     else if (this.visibilityTracks.has(obj))
     {
-      console.log("Not needed but has tracks", obj)
-      if (scaleTrack)
+      console.log("Visibility not needed but has tracks", obj)
+      let visible = this.visibilityTracks.at(obj, this.visibilityTracks.frameIndices[obj.uuid][0])
+      if (!visible)
       {
-        tracks.splice(tracks.indexOf(scaleTrack), 1)
+        if (scaleTrack)
+        {
+          tracks.splice(tracks.indexOf(scaleTrack), 1)
+        }
+        scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, [0], [0.0, 0.0, 0.0])
+        tracks.push(scaleTrack)
       }
-      scaleTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.scale`, [0], [0.0, 0.0, 0.0])
-      tracks.push(scaleTrack)
     }
     else if (scaleTrack) {
 
