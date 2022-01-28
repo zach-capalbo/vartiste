@@ -859,6 +859,8 @@ AFRAME.registerComponent('physx-body', {
       o => {
         if (o.el && o.el.hasAttribute("physx-no-collision")) return false;
         if (o.el && !o.el.object3D.visible && !o.el.hasAttribute("physx-hidden-collision")) return false;
+        if (!o.visible && o.el && !o.el.hasAttribute("physx-hidden-collision")) return false;
+        if (o.userData && o.userData.vartisteUI) return false;
         return true
       },
       o => {
