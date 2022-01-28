@@ -813,6 +813,7 @@ AFRAME.registerComponent('radio-button', {
           }
         }
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
+        this.data.target.addEventListener('componentinitialized', this.componentchangedlistener)
 
         Util.whenLoaded([this.el, this.data.target], () => {
           if (this.data.target.hasAttribute(this.data.component))

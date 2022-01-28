@@ -857,7 +857,7 @@ AFRAME.registerComponent('organizer-physics-record-button', {
   dependencies: ['organizer-toggle-button'],
   events: {
     click: function(e) {
-      if (this.el.is("BUTTON_STATE_TOGGLED"))
+      if (this.el.is(STATE_TOGGLED))
       {
         this.el.sceneEl.setAttribute('art-physics', {scenePhysics: true})
         Compositor.component.jumpToFrame(0)
