@@ -85,6 +85,7 @@ AFRAME.registerSystem('manipulator', {
   },
   runConstraints(target, localOffset, t, dt) {
     if (!target) return;
+    if (!target.object3D) return;
     if (target.manipulatorConstraint) {
       console.trace("manipulatorConstraint is deprecated. Please use sceneEl.systems.manipulator.installConstraint instead")
       target.manipulatorConstraint(t, dt)
@@ -106,7 +107,7 @@ AFRAME.registerSystem('manipulator', {
       if (priorityList) {
         for (let c of priorityList)
         {
-          c(this.target, t,dt, localOffset)
+          c(target, t,dt, localOffset)
         }
       }
     }

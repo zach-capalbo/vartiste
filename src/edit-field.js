@@ -485,15 +485,20 @@ AFRAME.registerComponent('dropdown-button', {
     })
   },
   populatePopup() {
-    console.log("Populating popup", this.data.options)
+    let options = this.data.options
+    if (!options || options.length === 0)
+    {
+      options = AFRAME.components[this.data.component].schema[this.data.property].oneOf;
+    }
+    console.log("Populating popup", options)
 
     let popup = this.el.components['popup-button'].popup
     let shelf = popup.querySelector('*[shelf]')
-    shelf.setAttribute('shelf', 'height', Math.max(4, this.data.options.length * 0.5 + 0.3))
+    shelf.setAttribute('shelf', 'height', Math.max(4, options.length * 0.5 + 0.3))
     let content = popup.querySelector('*[shelf-content]')
     content.getChildEntities().forEach(el => content.removeChild(el))
-    let maxLength = Math.max.apply(Math, this.data.options.map(o => o.length))
-    for (let option of this.data.options)
+    let maxLength = Math.max.apply(Math, options.map(o => o.length))
+    for (let option of options)
     {
       let row = document.createElement('a-entity')
       content.append(row)

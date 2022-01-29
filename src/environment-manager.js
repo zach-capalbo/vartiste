@@ -24,7 +24,8 @@ Util.registerComponentSystem('environment-manager', {
     rendererExposure: {default: 0.724},
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
-    initialState: {default: STATE_PRESET}
+    initialState: {default: STATE_PRESET},
+    toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']}
   },
   events: {
     anglechanged: function (e) {
@@ -62,7 +63,11 @@ Util.registerComponentSystem('environment-manager', {
       }
     })
   },
-  update() {
+  update(oldData) {
+    if (this.data.toneMapping !== oldData.toneMapping)
+    {
+      this.setToneMapping(THREE[this.data.toneMapping])
+    }
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
   },
   switchState(newState, updateSwitched = true) {
@@ -242,6 +247,12 @@ Util.registerComponentSystem('environment-manager', {
     //   m.needsUpdate = true
     // })
     this.el.sceneEl.emit('tonemappingchanged', toneMapping)
+
+    if (THREE[this.data.toneMapping] !== toneMapping)
+    {
+      this.data.toneMapping = this.schema.toneMapping.oneOf.find(o => THREE[o] === toneMapping)
+      this.el.emit('componentchanged', {name: 'environment-manager'})
+    }
   },
   async usePresetHDRI({initial = false} = {}) {
     this.switchState(STATE_HDRI, !initial)
