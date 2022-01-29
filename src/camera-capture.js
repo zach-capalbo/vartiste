@@ -658,7 +658,7 @@ AFRAME.registerComponent('camera-tool', {
       let previewTarget = new THREE.WebGLRenderTarget(256, Math.round(256 * this.camera.aspect))
       this.previewTarget = previewTarget
       this.preview = preview
-      preview.setAttribute('material', {npot: true, side: 'double'})
+      preview.setAttribute('material', {npot: true, side: 'double', shader: 'flat'})
       this.el.append(preview)
     }
 
