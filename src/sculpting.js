@@ -984,7 +984,11 @@ Util.registerComponentSystem('threed-line-system', {
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map: texture,
+      transparent: transparent,
+      depthWrite: !transparent || this.data.shape !== 'line',
+      color, opacity,
+      side: THREE.FrontSide})
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
@@ -1641,6 +1645,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.normals), 3, false))
 
     let material = this.getMaterial(distance)
+    material.side = THREE.DoubleSide
 
     if (this.mesh)
     {
