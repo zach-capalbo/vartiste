@@ -340,6 +340,14 @@ AFRAME.registerComponent('object3d-view', {
   {
     this.el.sceneEl.systems['animation-3d'].clearTrack(this.object)
   },
+  shiftKeyframeLeft()
+  {
+    this.el.sceneEl.systems['animation-3d'].shiftKeyframes(this.object, -1)
+  },
+  shiftKeyframeRight()
+  {
+    this.el.sceneEl.systems['animation-3d'].shiftKeyframes(this.object, 1)
+  },
   autoRigPose(pose) {
     if (!this.targetEl)
     {

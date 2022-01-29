@@ -81,6 +81,21 @@ class ObjectKeyframeTracks {
       }
     }
   }
+  shift(obj, delta) {
+    if (!this.has(obj)) return;
+
+    let oldObjectTracks = this.objectTracks[obj.uuid]
+    let newTracks = new Map()
+    let frameIndices = this.frameIndices[obj.uuid]
+    for (let i = 0; i < frameIndices.length; ++i)
+    {
+      let originalFrameIdx = frameIndices[i]
+      frameIndices[i] += delta
+      newTracks.set(frameIndices[i], oldObjectTracks.get(originalFrameIdx))
+    }
+    // console.log("Shifting tracks", delta, oldObjectTracks, newTracks)
+    this.objectTracks[obj.uuid] = newTracks
+  }
   wrappedFrameIndex(obj, frameIdx) {
     return Math.abs(frameIdx) % (this.frameIndices[obj.uuid][this.frameIndices[obj.uuid].length - 1] + 1)
   }
@@ -276,6 +291,13 @@ Util.registerComponentSystem('animation-3d', {
 
     this.emitDetails.objectkeyframed.object = obj
     this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+  },
+  shiftKeyframes(obj, delta) {
+    this.matrixTracks.shift(obj, delta)
+    this.visibilityTracks.shift(obj, delta)
+    this.emitDetails.objectkeyframed.object = obj
+    this.emitDetails.objectkeyframed.frameIdx = -1
     this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
   },
   wrappedFrameIndex(obj, frameIdx) {
