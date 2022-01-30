@@ -404,6 +404,13 @@ Util.registerComponentSystem('material-pack-system', {
     }
     this.el.emit('materialmaskactivated', {mask})
   },
+  deactivateMask() {
+    if (this.activeMaterialMask)
+    {
+      this.activeMaterialMask.deactivateMask()
+      this.activeMaterialMask = undefined
+    }
+  },
   tmpCanvas() {
     if (!this._tmpCanvas)
     {

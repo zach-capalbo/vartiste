@@ -1,6 +1,6 @@
 import {Util} from './util.js'
 import {Pool} from './pool.js'
-import {VectorBrush, StretchBrush} from './brush.js'
+import {VectorBrush, StretchBrush, FillBrush} from './brush.js'
 import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {ENABLED_MAP, HANDLED_MAPS} from './material-packs.js'
@@ -887,11 +887,16 @@ Util.registerComponentSystem('shape-creation', {
 Util.registerComponentSystem('threed-line-system', {
   schema: {
     usePressure: {default: true},
+    usePaintSystem: {default: false},
     animate: {default: false},
     buildUp: {default: false},
   },
   init() {
     this.materialNeedsUpdate = true
+    this.filledBrush = new FillBrush('treed-line-filled')
+  },
+  update(oldData) {
+    if (this.data.usePaintSystem !== oldData.usePaintSystem) this.markMaterial()
   },
   markMaterial() {
     this.materialNeedsUpdate = true
@@ -902,6 +907,12 @@ Util.registerComponentSystem('threed-line-system', {
     console.log("Regenerating material")
     if (this.material) this.material.dispose()
     let brush = this.el.sceneEl.systems['paint-system'].brush;
+
+    if (!this.data.usePaintSystem)
+    {
+      this.filledBrush.changeColor(brush.color)
+      brush = this.filledBrush
+    }
 
     let canvas, color, opacity;
 
@@ -977,14 +988,18 @@ Util.registerComponentSystem('threed-line-system', {
       // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask || !this.data.usePaintSystem)
     {
       materialType = THREE.MeshStandardMaterial
     }
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map: texture, transparent: transparent, depthWrite: !transparent || this.data.shape !== 'line', color, opacity, side: THREE.DoubleSide})
+    this.material = new materialType({map: texture,
+      transparent: transparent,
+      depthWrite: !transparent || this.data.shape !== 'line',
+      color, opacity,
+      side: THREE.FrontSide})
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
@@ -1641,6 +1656,7 @@ AFRAME.registerComponent('threed-line-tool', {
     this.geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.normals), 3, false))
 
     let material = this.getMaterial(distance)
+    material.side = THREE.DoubleSide
 
     if (this.mesh)
     {
