@@ -435,7 +435,7 @@ Util.registerComponentSystem('settings-system', {
       extension = 'glb'
     }
 
-    this.download("data:application:/x-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.${extension}`, "GLB File")
+    this.download("data:model/gltf-binary;base64," + base64ArrayBuffer(glb), `${this.projectName}-${this.formatFileDate()}.${extension}`, "GLB File")
 
     while (undoStack.stack.length)
     {
