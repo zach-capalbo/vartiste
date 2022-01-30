@@ -961,3 +961,58 @@ AFRAME.registerComponent('organizer-statistics', {
     }
   }
 })
+
+AFRAME.registerComponent('adjustable-origin', {
+  schema: {
+    target: {type: 'selector'},
+  },
+  events: {
+    stateremoved: function (e) {
+      if (e.target !== this.handle) return;
+      if (e.detail !== 'grabbed') return;
+      this.setOrigin()
+    }
+  },
+  init() {
+    let handle = this.handle = document.createElement('a-entity')
+    this.el.append(handle)
+    handle.setAttribute('geometry', 'primitive: box')
+    handle.setAttribute('grabbable', '')
+  },
+  update(oldData) {
+    if (!this.data.target) this.data.target = this.el
+    if (this.data.target !== oldData.target)
+    {
+      if (!this.data.target) return;
+      (this.data.target.object3D || this.data.target).add(this.handle.object3D)
+    }
+  },
+  setOrigin() {
+    if (!this.data.target) return;
+    let obj = this.data.target.object3D || this.data.target
+    obj.updateMatrix()
+    this.handle.object3D.updateMatrix()
+
+    let matrix = this.handle.object3D.matrix
+    matrix.invert()
+
+    if (obj.geometry)
+    {
+      let geometry = obj.geometry
+      geometry.applyMatrix(matrix)
+      if (geometry.boundsTree) geometry.computeBoundsTree()
+      geometry.computeBoundingSphere()
+      geometry.computeBoundingBox()
+    }
+
+    for (let c of obj.children)
+    {
+      if (c.el === this.handle) continue
+      Util.applyMatrix(c.matrix.premultiply(matrix), c)
+    }
+
+    matrix.invert()
+    Util.applyMatrix(obj.matrix.multiply(matrix), obj)
+    Util.applyMatrix(matrix.identity(), this.handle.object3D)
+  }
+})
