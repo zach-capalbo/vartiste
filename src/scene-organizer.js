@@ -69,6 +69,10 @@ AFRAME.registerComponent('object3d-view', {
           break
       }
     },
+    originmoved: function(e) {
+      e.stopPropagation()
+      this.onMoved()
+    },
     click: function(e) {
       e.stopPropagation()
       if (e.target.hasAttribute('object3d-view-action'))
@@ -398,6 +402,14 @@ AFRAME.registerComponent('object3d-view', {
     this.axisHelper = new THREE.AxesHelper()
     this.axisHelper.userData.vartisteUI = true
     this.object.add(this.axisHelper)
+  },
+  adjustOrigin() {
+    if (this.el.hasAttribute('adjustable-origin'))
+    {
+      this.el.removeAttribute('adjustable-origin')
+      return;
+    }
+    this.el.setAttribute('adjustable-origin', {target: this.isEl ? this.targetEl : this.object})
   },
   applyTransformation() {
     this.object.updateMatrix()
@@ -976,15 +988,40 @@ AFRAME.registerComponent('adjustable-origin', {
   init() {
     let handle = this.handle = document.createElement('a-entity')
     this.el.append(handle)
-    handle.setAttribute('geometry', 'primitive: box')
     handle.setAttribute('grabbable', '')
+
+    Util.whenLoaded(handle, () => {
+      handle.object3D.userData.vartisteUI = true
+      let obj = new THREE.Group;
+      let s1 = 2.0;
+      let s2 = 0.05;
+      let x = new THREE.Mesh(new THREE.BoxGeometry(s1, s2, s2), new THREE.MeshBasicMaterial({color: 'red'}))
+      let y = new THREE.Mesh(new THREE.BoxGeometry(s2, s1, s2), new THREE.MeshBasicMaterial({color: 'green'}))
+      let z = new THREE.Mesh(new THREE.BoxGeometry(s2, s2, s1), new THREE.MeshBasicMaterial({color: 'blue'}))
+      obj.add(x)
+      obj.add(y)
+      obj.add(z)
+      obj.el = handle
+      handle.setObject3D('mesh', obj)
+    })
+  },
+  remove() {
+    console.log("Removing origin handle")
+    this.handle.object3D.parent.remove(this.handle.object3D)
+    Util.disposeEl(this.handle)
   },
   update(oldData) {
+    console.log("Updating adjustable-origin", this.data.target, this.oldData)
     if (!this.data.target) this.data.target = this.el
     if (this.data.target !== oldData.target)
     {
-      if (!this.data.target) return;
-      (this.data.target.object3D || this.data.target).add(this.handle.object3D)
+      Util.whenLoaded(this.handle, () => {
+        if (!this.data.target) return;
+        let targetParent = this.data.target.object3D || this.data.target;
+        console.log("Reparenting handle", this.handle.object3D, targetParent);
+        if (this.handle.object3D.parent) this.handle.object3D.parent.remove(this.handle.object3D)
+        targetParent.add(this.handle.object3D)
+      })
     }
   },
   setOrigin() {
@@ -1014,5 +1051,6 @@ AFRAME.registerComponent('adjustable-origin', {
     matrix.invert()
     Util.applyMatrix(obj.matrix.multiply(matrix), obj)
     Util.applyMatrix(matrix.identity(), this.handle.object3D)
+    this.el.emit('originmoved', {})
   }
 })
