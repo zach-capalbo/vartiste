@@ -4,7 +4,10 @@ import {Undo} from './undo.js'
 
 import XAtlas from 'xatlas-web'
 window.xatlasWasm = import('xatlas-web/dist/xatlas-web.wasm')
-window.xatlas = XAtlas
+window.XAtlas = XAtlas
+
+import {UVUnwrapper} from './framework/xatlas-unwrapper.js'
+window.UVUnwrapper = UVUnwrapper
 
 Util.registerComponentSystem('uv-unwrapper', {
   schema: {
