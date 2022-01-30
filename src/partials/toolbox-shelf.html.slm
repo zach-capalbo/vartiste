@@ -6,16 +6,15 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
     a-entity icon-button="#asset-arrow-collapse-vertical" click-action="collapseLayersPerFrame" tooltip="Collapse All Layers Per Frames"
     a-entity icon-button="#asset-arrow-right" click-action="redo" tooltip="Redo"
   a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
-    a-entity icon-button="#asset-account-voice" click-action="recordHeadset" tooltip="Record Headset View"
+    /a-entity icon-button="#asset-account-voice" click-action="recordHeadset" tooltip="Record Headset View"
     a-entity icon-button="#asset-skeletonator" click-action="startSkeletonator" tooltip="Skeletonator Animation Tool"
     a-entity icon-button="#asset-transition" click-action="presentation" tooltip="Set Presentation Mode (fullscreen canvas)"
     a-entity icon-button="#asset-nudge-brush" system-click-action="system: networking; action: autoStartMultiplayer" tooltip="Start Randomized Multiplayer"
   a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
-    a-entity icon-button="#asset-web" system-click-action="system: user-media; action: showDesktop" tooltip="Show Desktop"
-    a-entity icon-button="#asset-video-vintage" system-click-action="system: user-media; action: showCamera" tooltip="Show Webcam"
+
     a-entity icon-button="#asset-hand-right" system-click-action="system: xr-controllers-only; action: enterSession" tooltip="Use VR Controllers with Desktop Display"
-    a-entity icon-button="#asset-camera" click-action="defaultSpectator" tooltip="Quick Spectator Camera Setup"
-    a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Import spectator avatar" toggle-button="target: a-scene; component: avatar; property: importAvatar"
+
+
     /a-entity icon-button="#asset-cube-send" tooltip="Export OBJ" click-action="exportObj"
   a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
 
