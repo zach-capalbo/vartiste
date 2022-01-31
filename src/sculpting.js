@@ -651,7 +651,45 @@ Util.registerComponentSystem('cutout-canvas', {
       	bevelSize: 1,
       	bevelOffset: 0,
       	bevelSegments: 1,
-        curveSegments: 3
+        curveSegments: 3,
+        UVGenerator: {
+          generateSideWallUV: function ( geometry, vertices, indexA, indexB, indexC, indexD ) {
+
+        		const a_x = vertices[ indexA * 3 ];
+        		const a_y = vertices[ indexA * 3 + 1 ];
+        		const b_x = vertices[ indexB * 3 ];
+        		const b_y = vertices[ indexB * 3 + 1 ];
+        		const c_x = vertices[ indexC * 3 ];
+        		const c_y = vertices[ indexC * 3 + 1 ];
+            const d_x = vertices[ indexD * 3 ];
+            const d_y = vertices[ indexD * 3 + 1 ];
+
+
+        		return [
+        			new THREE.Vector2( a_x, a_y ),
+        			new THREE.Vector2( b_x, b_y ),
+        			new THREE.Vector2( c_x, c_y ),
+              new THREE.Vector2( d_x, d_y ),
+        		];
+
+        	},
+          generateTopUV: function ( geometry, vertices, indexA, indexB, indexC ) {
+
+        		const a_x = vertices[ indexA * 3 ];
+        		const a_y = vertices[ indexA * 3 + 1 ];
+        		const b_x = vertices[ indexB * 3 ];
+        		const b_y = vertices[ indexB * 3 + 1 ];
+        		const c_x = vertices[ indexC * 3 ];
+        		const c_y = vertices[ indexC * 3 + 1 ];
+
+        		return [
+        			new THREE.Vector2( a_x, a_y ),
+        			new THREE.Vector2( b_x, b_y ),
+        			new THREE.Vector2( c_x, c_y )
+        		];
+
+        	},
+        }
       };
       geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings)
     }
@@ -1680,15 +1718,15 @@ AFRAME.registerComponent('threed-line-tool', {
     {
       case 'square':
         this.shape = new THREE.Shape()
-          .moveTo( - sqLength, -sqLength )
-          .lineTo( -sqLength, sqLength )
-          .lineTo( -sqLength, sqLength )
-          .lineTo( sqLength, sqLength )
-          .lineTo( sqLength, sqLength )
-          .lineTo( sqLength, - sqLength )
-          .lineTo( sqLength, - sqLength )
-          .lineTo( -sqLength, -sqLength )
-          .lineTo( -sqLength, -sqLength );
+          .moveTo( - sqLength * 3, -sqLength )
+          .lineTo( -sqLength * 3, sqLength )
+          .lineTo( -sqLength * 3, sqLength )
+          .lineTo( sqLength * 3, sqLength )
+          .lineTo( sqLength * 3, sqLength )
+          .lineTo( sqLength * 3, - sqLength )
+          .lineTo( sqLength * 3, - sqLength )
+          .lineTo( -sqLength * 3, -sqLength )
+          .lineTo( -sqLength * 3, -sqLength );
           break;
       case 'oval':
         this.shape = new THREE.Shape()
@@ -1826,7 +1864,7 @@ AFRAME.registerComponent('threed-line-tool', {
               new THREE.Vector2(1, 1)
             ]
           },
-          generateSideWallUV: (g, v, a, b, c, d, s, sl, ci, cl) => {
+          generateSideWallUV: (g, v, a, b, c, d, s, sl, ci, cl, clengths) => {
             // console.log("s1, s2", s1, s2)
 
             // "Stretchable" uvs
@@ -1837,8 +1875,14 @@ AFRAME.registerComponent('threed-line-tool', {
             let mn = s === 0 ? 0.0 : points[s].l / lastLength
             let mx = s === sl - 1 ? 1.0 : points[s + 1].l / lastLength
 
-            let yn = ci / cl;
-            let yx = (ci + 1) / cl;
+            if (ci === 0) ci = cl
+
+            let cll = clengths[cl]
+            // let yn = clengths[cl - ci] / cll;
+            // let yx = clengths[cl - (ci + 1)] / cll;
+            let yn = clengths[ci - 1] / cll;
+            let yx = clengths[(ci)] / cll;
+            // console.log("clengths", ci, cl, cll, yn, yx)
             return [
               new THREE.Vector2(mn, yx),
               new THREE.Vector2(mn, yn),

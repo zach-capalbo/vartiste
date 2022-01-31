@@ -245,19 +245,8 @@ AFRAME.registerComponent('toolbox-shelf', {
     this.el.sceneEl.systems['normal-bump-drawing'].bumpCanvasToNormalCanvasAction()
   },
   defaultSpectatorAction() {
-    // let camera = this.el.sceneEl.querySelector('#perspective-camera')
-    // camera.emit('activate')
-    // camera.setAttribute('camera-tool', 'captureType', 'spectator')
-    // Util.positionObject3DAtTarget(camera.object3D, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.3}})
-
-    let camera = this.el.sceneEl.camera.clone()
-    this.el.sceneEl.object3D.add(camera)
-    Util.positionObject3DAtTarget(camera, this.el.sceneEl.camera, {transformOffset: {x: 0, y: 0, z: 0.0}}) //z: 0.2
-    this.el.sceneEl.setAttribute('spectator-camera', {state: 'SPECTATOR_CAMERA', camera: camera})
-    let helmet = document.getElementById('artist-helmet')
-    if (helmet) {
-      helmet.setAttribute('visible', false)
-    }
+    console.warn("Deprecated call to toolbox defaultSpectatorAction")
+    this.el.sceneEl.systems['camera-capture'].createDefaultSpectatorCamera()
   },
   mergeDownNormalMap() {
     let layer = Compositor.component.activeLayer

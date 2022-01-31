@@ -5,6 +5,8 @@ a-entity#advanced-drawing-shelf grab-root="" shelf="name: Advanced Drawing Shelf
       a-entity tooltip="Copy to new layer" icon-button="#asset-plus-box-multiple" system-click-action="system: cut-copy-system; action: copy" hide-shelf-on-click=""
       a-entity tooltip="Cut to new layer" icon-button="#asset-transition-masked" system-click-action="system: cut-copy-system; action: cut" hide-shelf-on-click=""
       a-entity icon-button="#asset-delete" tooltip="Clear Active Layer" system-click-action="system: cut-copy-system; action: clear"
+      a-entity icon-button="#asset-undo" tooltip="Undo" system-click-action="system: settings-system; action: undoAction"
+      a-entity icon-button="#asset-arrow-right" system-click-action="system: settings-system; action: redoAction" tooltip="Redo"
     a-entity icon-row="": a-entity icon-row-text="Effects / Filters"
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-blur-linear" popup-button="popup: fx-popup; deferred: true; scale: 2 2 2" tooltip="Apply FX"

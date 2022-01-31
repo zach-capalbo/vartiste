@@ -146,7 +146,7 @@ class ExtrudeGeometry extends BufferGeometry {
 			const holes = shapePoints.holes;
       let curveNormals = [];
 
-			const reverse = ! ShapeUtils.isClockWise( vertices );
+      const reverse = ! ShapeUtils.isClockWise( vertices );
 
 			if ( reverse ) {
 
@@ -201,6 +201,19 @@ class ExtrudeGeometry extends BufferGeometry {
 			}
 
 			const vlen = vertices.length, flen = faces.length;
+
+      const shapeLengths = []
+      shapeLengths.length = vlen;
+
+      shapeLengths[0] = 0
+      for (let i = 1; i < vlen; ++i)
+      {
+        shapeLengths[i] = shapeLengths[i - 1] + vertices[i].distanceTo(vertices[i - 1])
+      }
+
+      shapeLengths[vlen] = shape.getLength()
+
+      console.log("Shape", vertices, shapeLengths, shape.getLength())
 
 
 			// Find directions for point movement
@@ -734,7 +747,7 @@ class ExtrudeGeometry extends BufferGeometry {
 
 
 				const nextIndex = verticesArray.length / 3;
-				const uvs = uvgen.generateSideWallUV( scope, verticesArray, nextIndex - 6, nextIndex - 3, nextIndex - 2, nextIndex - 1, s1, s2, c1, c2 );
+				const uvs = uvgen.generateSideWallUV( scope, verticesArray, nextIndex - 6, nextIndex - 3, nextIndex - 2, nextIndex - 1, s1, s2, c1, c2, shapeLengths );
 
 				addUV( uvs[ 0 ] );
 				addUV( uvs[ 1 ] );
