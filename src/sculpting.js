@@ -1717,16 +1717,17 @@ AFRAME.registerComponent('threed-line-tool', {
     switch (this.data.shape)
     {
       case 'square':
+        const aspect = 1
         this.shape = new THREE.Shape()
-          .moveTo( - sqLength * 3, -sqLength )
-          .lineTo( -sqLength * 3, sqLength )
-          .lineTo( -sqLength * 3, sqLength )
-          .lineTo( sqLength * 3, sqLength )
-          .lineTo( sqLength * 3, sqLength )
-          .lineTo( sqLength * 3, - sqLength )
-          .lineTo( sqLength * 3, - sqLength )
-          .lineTo( -sqLength * 3, -sqLength )
-          .lineTo( -sqLength * 3, -sqLength );
+          .moveTo( - sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( -sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, -sqLength );
           break;
       case 'oval':
         this.shape = new THREE.Shape()

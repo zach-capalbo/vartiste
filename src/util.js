@@ -318,6 +318,9 @@ class VARTISTEUtil {
       obj = obj.parent
       if (!obj.visible) return false
     }
+    if (!obj.isScene) {
+      return false
+    }
     return true
   }
 

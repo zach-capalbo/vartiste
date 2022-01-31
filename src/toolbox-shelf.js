@@ -6,6 +6,7 @@ import {Undo} from './undo.js'
 import {VectorBrush} from './brush.js'
 import {Layer} from './layer.js'
 import {bumpCanvasToNormalCanvas} from './material-transformations.js'
+import {STATE_PRESSED} from './icon-button.js'
 
 import './framework/SubdivisionModifier.js'
 import './framework/SimplifyModifier.js'
@@ -481,5 +482,52 @@ Util.registerComponentSystem('cut-copy-system', {
     Undo.pushCanvas(Compositor.component.activeLayer.canvas)
     Compositor.component.activeLayer.canvas.getContext('2d').clearRect(0, 0, Compositor.component.activeLayer.canvas.width, Compositor.component.activeLayer.canvas.height)
     Compositor.component.activeLayer.touch()
+  }
+})
+
+AFRAME.registerComponent('quick-access-row', {
+  schema: {
+    recording: {default: true},
+    autoReset: {default: false},
+  },
+  init() {
+    this.initialAddState = AFRAME.components['icon-button'].Component.prototype.addState;
+    let self = this;
+    this.interceptAddState = function(state) {
+      if (state === STATE_PRESSED)
+      {
+        console.log("Intercepting", this.el)
+        self.addButton(this.el)
+      }
+      self.initialAddState.call(this, state)
+    }
+  },
+  update(oldData) {
+    if (this.data.recording !== oldData.recording)
+    {
+      if (this.data.recording)
+      {
+        AFRAME.components['icon-button'].Component.prototype.addState = this.interceptAddState;
+      }
+      else
+      {
+        AFRAME.components['icon-button'].Component.prototype.addState = this.initialAddState;
+      }
+    }
+  },
+  addButton(el) {
+    if (el.parentEl === this.el) return;
+    if (el.hasAttribute('button-style') && el.getAttribute('button-style').buttonType === 'flat') return;
+    for (let b of this.el.getChildEntities())
+    {
+      if (b.originalEl === el) return;
+    }
+
+    let newButton = document.createElement('a-entity')
+    this.el.append(newButton)
+    newButton.setAttribute('icon-button', el.getAttribute('icon-button'))
+    newButton.setAttribute('tooltip', el.getAttribute('tooltip'))
+    newButton.addEventListener('click', function(e) {el.emit('click', e.detail)})
+    newButton.originalEl = el
   }
 })
