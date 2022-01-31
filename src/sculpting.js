@@ -651,7 +651,45 @@ Util.registerComponentSystem('cutout-canvas', {
       	bevelSize: 1,
       	bevelOffset: 0,
       	bevelSegments: 1,
-        curveSegments: 3
+        curveSegments: 3,
+        UVGenerator: {
+          generateSideWallUV: function ( geometry, vertices, indexA, indexB, indexC, indexD ) {
+
+        		const a_x = vertices[ indexA * 3 ];
+        		const a_y = vertices[ indexA * 3 + 1 ];
+        		const b_x = vertices[ indexB * 3 ];
+        		const b_y = vertices[ indexB * 3 + 1 ];
+        		const c_x = vertices[ indexC * 3 ];
+        		const c_y = vertices[ indexC * 3 + 1 ];
+            const d_x = vertices[ indexD * 3 ];
+            const d_y = vertices[ indexD * 3 + 1 ];
+
+
+        		return [
+        			new THREE.Vector2( a_x, a_y ),
+        			new THREE.Vector2( b_x, b_y ),
+        			new THREE.Vector2( c_x, c_y ),
+              new THREE.Vector2( d_x, d_y ),
+        		];
+
+        	},
+          generateTopUV: function ( geometry, vertices, indexA, indexB, indexC ) {
+
+        		const a_x = vertices[ indexA * 3 ];
+        		const a_y = vertices[ indexA * 3 + 1 ];
+        		const b_x = vertices[ indexB * 3 ];
+        		const b_y = vertices[ indexB * 3 + 1 ];
+        		const c_x = vertices[ indexC * 3 ];
+        		const c_y = vertices[ indexC * 3 + 1 ];
+
+        		return [
+        			new THREE.Vector2( a_x, a_y ),
+        			new THREE.Vector2( b_x, b_y ),
+        			new THREE.Vector2( c_x, c_y )
+        		];
+
+        	},
+        }
       };
       geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings)
     }
