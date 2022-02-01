@@ -26,6 +26,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
       a-entity icon-button="#asset-web" system-click-action="system: user-media; action: showDesktop" tooltip="Show Desktop"
       a-entity icon-button="#asset-video-vintage" system-click-action="system: user-media; action: showCamera" tooltip="Show Webcam"
       a-entity icon-button="#asset-camera" system-click-action="system: camera-capture; action: createDefaultSpectatorCamera" tooltip="Quick Spectator Camera Setup"
+      a-entity icon-button="#asset-transition" system-click-action="system: networking; action: presentationMode" tooltip="Show Canvas as Spectator Window"
 
     a-entity icon-row="autoPosition: false" v-bind="source: #primitive-shapes; sourceComponent: visible; component: visible; setOnLoad: true"
       a-entity icon-row="mergeButtons: true"

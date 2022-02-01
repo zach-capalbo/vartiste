@@ -843,6 +843,7 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
       for (let el of this.grabbed)
       {
         el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
+        this.system.keyframe(el.object3D)
       }
       this.grabbed.length = 0
     },
@@ -851,8 +852,10 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
     }
   },
   init() {
+    this.system = this.el.sceneEl.systems['animation-3d']
     this.grabbed = []
     this.el.setAttribute('selection-box-tool', 'forwardButtons: false')
+    this.el.setAttribute('action-tooltips', 'b', 'Toggle Wrapping')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
@@ -860,5 +863,10 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
   },
   update(oldData) {
     this.el.setAttribute('action-tooltips', 'label', `Puppeteer Tool (${this.data.wrapAnimation ? "Wrapping" : "Non-wrapping"})`)
+    for (let el of Object.values(this.grabbed))
+    {
+      el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
+      this.grabbed.push(el)
+    }
   }
 })

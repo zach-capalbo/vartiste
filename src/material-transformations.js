@@ -294,6 +294,14 @@ class MaterialTransformations {
       // MaterialTransformations.vec2toVec3Attribute(model)
     }
 
+    if (model.geometry && model.geometry.attributes.tangent)
+    {
+      if (model.geometry.attributes.tangent.count !== Math.floor(model.geometry.attributes.tangent.count)) {
+        console.warn("Deleting non-integral tangent attribute from", model, model.geometry.attributes.tangent)
+        model.geometry.deleteAttribute('tangent')
+      }
+    }
+
     if (!material) return;
 
 

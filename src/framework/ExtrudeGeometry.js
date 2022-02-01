@@ -211,9 +211,9 @@ class ExtrudeGeometry extends BufferGeometry {
         shapeLengths[i] = shapeLengths[i - 1] + vertices[i].distanceTo(vertices[i - 1])
       }
 
-      shapeLengths[vlen] = shape.getLength()
+      shapeLengths[vlen] = shapeLengths[vlen - 1] + vertices[0].distanceTo(vertices[vlen - 1])
 
-      console.log("Shape", vertices, shapeLengths, shape.getLength())
+      // console.log("Shape", vertices, shapeLengths, shape.getLength())
 
 
 			// Find directions for point movement
