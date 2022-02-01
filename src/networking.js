@@ -88,6 +88,17 @@ AFRAME.registerSystem('networking', {
   presentationMode() {
     document.body.append(Compositor.component.preOverlayCanvas)
     Compositor.component.preOverlayCanvas.style = 'position: absolute; top: 0; left: 0; z-index: 100000; width: 100%; height: 100%'
+    let escape = (e) => {
+      if (e.key === "escape") {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+
+      Compositor.component.preOverlayCanvas.style = 'display: none'
+
+      document.removeEventListener('keydown', escape)
+    };
+    document.addEventListener('keydown', escape)
   },
 
   createSymmetricLink() {

@@ -518,6 +518,7 @@ AFRAME.registerComponent('quick-access-row', {
   addButton(el) {
     if (el.parentEl === this.el) return;
     if (el.hasAttribute('button-style') && el.getAttribute('button-style').buttonType === 'flat') return;
+    if (!(el.hasAttribute('system-click-action') || el.hasAttribute('click-action'))) return;
     for (let b of this.el.getChildEntities())
     {
       if (b.originalEl === el) return;

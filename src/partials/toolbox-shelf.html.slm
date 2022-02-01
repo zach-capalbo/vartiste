@@ -9,7 +9,7 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
     a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
       /a-entity icon-button="#asset-account-voice" click-action="recordHeadset" tooltip="Record Headset View"
       a-entity icon-button="#asset-skeletonator" click-action="startSkeletonator" tooltip="Skeletonator Animation Tool"
-      a-entity icon-button="#asset-transition" click-action="presentation" tooltip="Set Presentation Mode (fullscreen canvas)"
+      
       a-entity icon-button="#asset-nudge-brush" system-click-action="system: networking; action: autoStartMultiplayer" tooltip="Start Randomized Multiplayer"
     a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
 
