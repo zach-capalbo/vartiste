@@ -173,7 +173,7 @@ class ObjectKeyframeTracks {
     }
   }
 
-  readObjectTracks(obj, tracks, {recurse = true} = {}) {
+  readObjectTracks(obj, tracks, {recurse = true, wrap = true} = {}) {
     if (tracks)
     {
       let map = this.objectTracks[obj.uuid] = new Map();
@@ -183,7 +183,7 @@ class ObjectKeyframeTracks {
       }
       this.frameIndices[obj.uuid] = Array.from(map.keys())
       this.frameIndices[obj.uuid].sort((a, b) => a - b)
-      if (obj.el) obj.el.setAttribute('animation-3d-keyframed', '')
+      if (obj.el) obj.el.setAttribute('animation-3d-keyframed', 'wrapAnimation', wrap)
     }
     if (recurse) this.readTracksFromUserData(obj)
   }
@@ -191,7 +191,7 @@ class ObjectKeyframeTracks {
     obj.traverse(o => {
       if (o.userData.objectTracks && o.userData.objectTracks[this.id])
       {
-        this.readObjectTracks(o, o.userData.objectTracks[this.id], {recurse: false})
+        this.readObjectTracks(o, o.userData.objectTracks[this.id], {recurse: false, wrap: o.userData.wrapAnimation})
         delete o.userData.objectTracks[this.id];
       }
     })
@@ -352,6 +352,7 @@ Util.registerComponentSystem('animation-3d', {
       if (tracks)
       {
         o.userData.objectTracks = tracks
+        o.userData.wrapAnimation = this.isWrapping(obj)
       }
     })
   },

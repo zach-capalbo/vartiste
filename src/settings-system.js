@@ -278,7 +278,7 @@ Util.registerComponentSystem('settings-system', {
 
     let doc = io.readBinary(glb)
     await doc.transform(
-      weld(),
+      // weld(),
       // this.data.dracoCompression ? dedup() : quantize(),
       dedup(),
       resample(),
