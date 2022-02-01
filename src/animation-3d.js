@@ -842,7 +842,6 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
     grabended: function(e) {
       for (let el of this.grabbed)
       {
-        console.log("Grabbed", el)
         el.setAttribute('animation-3d-keyframed', 'puppeteering', false)
         this.system.keyframe(el.object3D)
       }
@@ -856,6 +855,7 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
     this.system = this.el.sceneEl.systems['animation-3d']
     this.grabbed = []
     this.el.setAttribute('selection-box-tool', 'forwardButtons: false')
+    this.el.setAttribute('action-tooltips', 'b', 'Toggle Wrapping')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
