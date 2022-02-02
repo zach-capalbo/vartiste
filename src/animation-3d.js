@@ -346,15 +346,22 @@ Util.registerComponentSystem('animation-3d', {
 
     return foundAny ? writable : null
   },
-  addTracksToUserData(obj) {
-    obj.traverse(o => {
+  addTracksToUserData(obj, {recurse = true} = {}) {
+    let fn = o => {
       let tracks = this.writeableTracks(o)
       if (tracks)
       {
         o.userData.objectTracks = tracks
         o.userData.wrapAnimation = this.isWrapping(obj)
       }
-    })
+    };
+    if (recurse) {
+      obj.traverse(fn)
+    }
+    else
+    {
+      fn(obj)
+    }
   },
   readObjectTracks(obj, trackTypes, {recurse = true} = {}) {
     if (!trackTypes) return;
