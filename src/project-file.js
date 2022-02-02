@@ -6,7 +6,7 @@ import {Util} from './util.js'
 import {BrushList} from './brush-list.js'
 import {UndoStack} from './undo.js'
 import {prepareModelForExport, dedupMaterials} from './material-transformations.js'
-const FILE_VERSION = 2
+const FILE_VERSION = 3
 class ProjectFile {
   static update(obj) {
     if (!('_fileVersion' in obj)) obj._fileVersion = 0
@@ -198,6 +198,7 @@ class ProjectFile {
 
   static async loadv3(obj, {compositor})
   {
+    console.time("loadv3")
     let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
     let animation3d = Compositor.el.sceneEl.systems['animation-3d']
     for (let glbBuffer of obj.referenceGLBs)
@@ -213,7 +214,7 @@ class ProjectFile {
       });
 
       root.traverse(o => {
-        if (animation3d) animation3d.readTracksFromUserData(o)
+        // if (animation3d) animation3d.readTracksFromUserData(o)
 
         let savedUserData = o.userData.vartisteProjectData
         if (!savedUserData) return;
@@ -234,20 +235,68 @@ class ProjectFile {
         }
       })
 
+      let fakeMaterial = new THREE.MeshBasicMaterial;
+      let fakeGeometry = new THREE.BoxGeometry;
       function setupEntities(obj, currentRootEl) {
         let savedUserData = obj.userData.vartisteProjectData;
         let el = currentRootEl
+        let skip = new Set()
         if (savedUserData && savedUserData.isEl)
         {
-          if (savedUserData.elId && document.querySelector(savedUserData.elId))
+          if (savedUserData.elId && document.getElementById(savedUserData.elId))
           {
-            el = document.querySelector(savedUserData.elId)
+            el = document.getElementById(savedUserData.elId)
+            el.object3D.userData.objectTracks = obj.userData.objectTracks
           }
+          else if (savedUserData.isMesh)
+          {
+            el.setObject3D('mesh', obj)
+          }
+          else
+          {
+            el = document.createElement('a-entity')
+            el.object3D = obj
+            obj.el = el
+            if (!currentRootEl) {
+              console.error("No existing root el for", obj, currentRootEl)
+            }
+            // currentRootEl.object3D.add(obj)
+            currentRootEl.append(el)
+            if (savedUserData.elId) el.id = savedUserData.elId
+            if (savedUserData.isPrimitiveConstruct) {
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              // console.log("Creating construct", el, obj, mesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+            }
+            if (savedUserData.isReferenceModel) {
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              setupGlbReferenceEntity(el)
+            }
+          }
+        }
+
+        for (let c of obj.children)
+        {
+          if (skip.has(c)) continue;
+          setupEntities(c, el)
+        }
+
+        if (savedUserData && savedUserData.isEl)
+        {
+          if (animation3d) animation3d.readTracksFromUserData(el.object3D)
         }
       }
 
       setupEntities(root, null);
+
+
+      // if (animation3d) animation3d.readTracksFromUserData(document.getElementById('canvas-root').object3D)
     }
+    console.timeEnd("loadv3")
   }
 
   static async load(obj, {compositor}) {

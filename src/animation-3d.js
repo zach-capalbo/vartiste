@@ -256,6 +256,9 @@ Util.registerComponentSystem('animation-3d', {
   allFrameIndices(obj) {
     return [].concat(this.matrixTracks.frameIndices[obj.uuid] || []).concat(this.visibilityTracks.frameIndices[obj.uuid] || [])
   },
+  hasTracks(obj) {
+    return this.matrixTracks.has(obj.uuid) || this.visibilityTracks.has(obj.uuid)
+  },
   keyframe(obj, frameIdx = undefined) {
     if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
     let matrix = this.trackFrameMatrix(obj, frameIdx)
