@@ -57,15 +57,22 @@ async function addImageLayer(file, {setMapFromFilename = false} = {}) {
   compositor.addLayer(compositor.layers.length - 1, {layer})
 }
 
-export function addImageReferenceViewer(image) {
-  let viewer = document.createElement('a-entity')
-  viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
-  viewer.setAttribute('material', {src: image, shader: 'flat', transparent: true, side: 'double'})
-  viewer.setAttribute('position')
-  viewer.setAttribute('frame', 'closable: true; autoHide: true')
+export function addImageReferenceViewer(image, viewer) {
+  if (!viewer)
+  {
+    viewer = document.createElement('a-entity')
+    document.querySelector('#reference-spawn').append(viewer)
+    viewer.setAttribute('geometry', `primitive: plane; width: 1; height: ${image.height / image.width}`)
+    viewer.setAttribute('material', {src: image, shader: 'flat', transparent: true, side: 'double'})
+    viewer.setAttribute('frame', 'closable: true; autoHide: true')
+  }
+  else
+  {
+    viewer.setAttribute('frame', 'closable: true; autoHide: true; useBounds: true')
+  }
+
   viewer.classList.add("clickable")
   viewer.classList.add("reference-image")
-  document.querySelector('#reference-spawn').append(viewer)
   Util.whenLoaded(viewer, () => {
     let toLayer = viewer.components.frame.addButton('#asset-archive-arrow-down-outline')
     toLayer.setAttribute('tooltip', 'Convert To Layer')

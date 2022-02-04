@@ -279,7 +279,16 @@ class ProjectFile {
               el.setObject3D('mesh', mesh)
               el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
             }
-            if (savedUserData.isReferenceModel) {
+            if (savedUserData.isReferenceImage)
+            {
+              console.log("Setting up reference image")
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              addImageReferenceViewer(mesh.material.map.image, el)
+            }
+            else if (savedUserData.isReferenceModel)
+            {
               let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
               skip.add(mesh)
               el.setObject3D('mesh', mesh)
@@ -639,7 +648,10 @@ class ProjectFile {
           let el = o.el;
           savedUserData.isEl = true
           if (el.id) savedUserData.elId = el.id
-          if (el.class && el.class.includes('reference-image')) savedUserData.isReferenceImage = true;
+          if (el.className && el.className.includes('reference-image')) {
+            // console.log("Saving reference image", el)
+            savedUserData.isReferenceImage = true;
+          }
           if (el.hasAttribute('primitive-construct-placeholder')) savedUserData.isPrimitiveConstruct = true;
           if (el.hasAttribute('reference-glb')) savedUserData.isReferenceModel = true;
         }
