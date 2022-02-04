@@ -382,11 +382,11 @@ class ProjectFile {
 
     if (obj._fileVersion < 3)
     {
-      ProjectFile.loadv2(obj, {compositor})
+      await ProjectFile.loadv2(obj, {compositor})
     }
     else
     {
-      ProjectFile.loadv3(obj, {compositor})
+      await ProjectFile.loadv3(obj, {compositor})
     }
 
     console.log("Loading skeletonator")
