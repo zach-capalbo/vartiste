@@ -199,6 +199,7 @@ class ProjectFile {
   static async loadv3(obj, {compositor})
   {
     console.time("loadv3")
+    Compositor.data.skipDrawing = true
     let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
     let animation3d = Compositor.el.sceneEl.systems['animation-3d']
     for (let glbBuffer of obj.referenceGLBs)
@@ -220,7 +221,11 @@ class ProjectFile {
         if (!savedUserData) return;
 
         // Redup materials
-        if (o.material && savedUserData.originalMaterial && savedUserData.originalMaterial !== o.material.uuid)
+        if (savedUserData.compositorMaterial)
+        {
+          o.material = Compositor.material
+        }
+        else if (o.material && savedUserData.originalMaterial && savedUserData.originalMaterial !== o.material.uuid)
         {
           if (savedUserData.originalMaterial in materials)
           {
@@ -239,17 +244,21 @@ class ProjectFile {
       let fakeGeometry = new THREE.BoxGeometry;
       function setupEntities(obj, currentRootEl) {
         let savedUserData = obj.userData.vartisteProjectData;
+        delete obj.userData.vartisteProjectData
         let el = currentRootEl
         let skip = new Set()
+        // console.log("Setting up", obj)
         if (savedUserData && savedUserData.isEl)
         {
           if (savedUserData.elId && document.getElementById(savedUserData.elId))
           {
             el = document.getElementById(savedUserData.elId)
             el.object3D.userData.objectTracks = obj.userData.objectTracks
+            Util.applyMatrix(obj.matrix, el.object3D)
           }
           else if (savedUserData.isMesh)
           {
+            // console.log("Loading Mesh", obj)
             el.setObject3D('mesh', obj)
           }
           else
@@ -278,6 +287,11 @@ class ProjectFile {
             }
           }
         }
+        else if (savedUserData && savedUserData.isMesh)
+        {
+          // console.log("Loading Mesh", obj)
+          el.setObject3D('mesh', obj)
+        }
 
         for (let c of obj.children)
         {
@@ -293,6 +307,7 @@ class ProjectFile {
 
       setupEntities(root, null);
 
+      Compositor.data.skipDrawing = false
 
       // if (animation3d) animation3d.readTracksFromUserData(document.getElementById('canvas-root').object3D)
     }
@@ -412,7 +427,7 @@ class ProjectFile {
       let buffer = await base64ToBufferAsync(obj.materialPack[0])
       let loader = new THREE.GLTFLoader()
       loader.register((parser) => {
-        console.log("Switching texture loader", parser)
+        // console.log("Switching texture loader", parser)
         parser.textureLoader = new THREE.TextureLoader();
         return {name: "NoBitmap"}
       })
@@ -423,7 +438,7 @@ class ProjectFile {
     // Old Version
     for (let [id, tracks] of Object.entries(obj.tracksForElId))
     {
-      console.log("Entries", id, tracks)
+      // console.log("Entries", id, tracks)
       if (!tracks) continue;
       let el = document.getElementById(id)
       if (!el) {
@@ -436,7 +451,7 @@ class ProjectFile {
     // New Version
     for (let [id, types] of Object.entries(obj.trackTypesForElId))
     {
-      console.log("Entries", id, types)
+      // console.log("Entries", id, types)
 
       let el = document.getElementById(id)
       if (!el) {
@@ -602,12 +617,21 @@ class ProjectFile {
     {
       let undoDedup = new UndoStack({maxSize: -1});
 
+      Compositor.component.data.skipDrawing = true
+      let originalMaterial = Compositor.material
+      let fakeMaterial = new THREE.MeshBasicMaterial()
+
       Util.traverseCondition(canvasRoot.object3D, o => {
         if (o.userData.vartisteUI) return false;
-        if (o.el === Compositor.el) return false;
+        if (o.el === Compositor.el && o !== Compositor.el.object3D) return false;
+        if (o.el && !o.el.attached) return false
         return true;
       }, o => {
         let savedUserData = {}
+        if (o.material && o.material === originalMaterial) {
+          o.material = fakeMaterial
+          savedUserData.compositorMaterial = true
+        }
         if (o.material) savedUserData.originalMaterial = o.material.uuid;
         if (animation3d) animation3d.addTracksToUserData(o, {recurse: false})
         if (o.el && o.el.object3D === o)
@@ -621,6 +645,7 @@ class ProjectFile {
         }
         else if (o.el && o.el.getObject3D('mesh') === o)
         {
+          // console.log("SAving Mesh", o)
           savedUserData.isMesh = true
         }
         o.userData.vartisteProjectData = savedUserData
@@ -646,6 +671,15 @@ class ProjectFile {
       {
         undoDedup.undo()
       }
+
+      canvasRoot.object3D.traverse(o => {
+        if (o.material === fakeMaterial)
+        {
+          o.material = originalMaterial
+        }
+      })
+
+      Compositor.component.data.skipDrawing = false
     }
 
     obj.palette = document.querySelector('#project-palette') ? document.querySelector('#project-palette').getAttribute('palette').colors
