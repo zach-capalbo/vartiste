@@ -17,17 +17,18 @@ async function base64ToBufferAsync(base64) {
 // buffer to base64
 function bufferToBase64Async( buffer ) {
     var blob = new Blob([buffer], {type:'application/octet-binary'});
-    console.log("buffer to blob:" + blob)
+    // console.log("buffer to blob:" + blob)
 
-    var fileReader = new FileReader();
-    fileReader.onload = function() {
-      var dataUrl = fileReader.result;
-      console.log("blob to dataUrl: " + dataUrl);
-
-      var base64 = dataUrl.substr(dataUrl.indexOf(',')+1)
-      console.log("dataUrl to base64: " + base64);
-    };
-    fileReader.readAsDataURL(blob);
+    return new Promise((r, e) => {
+      var fileReader = new FileReader();
+      fileReader.onload = function() {
+        var dataUrl = fileReader.result;
+        var base64 = dataUrl.substr(dataUrl.indexOf(',')+1)
+        r(base64)
+      };
+      fileReader.onerror = e;
+      fileReader.readAsDataURL(blob);
+    });
 }
 
 export {base64ToBufferAsync, bufferToBase64Async}

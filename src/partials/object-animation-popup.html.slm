@@ -10,6 +10,7 @@ a-entity shelf="name: 3D Animation; pinnable: false; closable: true" grab-root="
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-skeletonator" tooltip="IK Rig A-Pose" object3d-view-action="autoRigAPose"
       a-entity icon-button="#asset-skeletonator" tooltip="IK Rig T-Pose" object3d-view-action="autoRigTPose"
+      a-entity icon-button="#asset-archive-arrow-down-outline" tootlip="Apply Wrapping Mode to Object Tree" object3d-view-action="applyWrapping"
 
       /a-entity icon-button="#asset-oven" tooltip="Bake Animation"
     a-entity icon-row="": a-entity icon-row-text="Timeline Controls:"

@@ -102,7 +102,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
         compositor=""
         shadow="receive: true"
       ]
-      a-entity position="0.03 1.0545312767040833 0.11243601320796098"
+      a-entity#composition-view-positioner position="0.03 1.0545312767040833 0.11243601320796098"
         a-entity#composition-view composition-view="compositor: #canvas-view" lathe="enabled: false" raycast-bvh="throttle: 2000"
       a-entity#reference-spawn position="0 1.6 -0.7"
       a-entity#shape-root

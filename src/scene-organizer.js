@@ -376,6 +376,12 @@ AFRAME.registerComponent('object3d-view', {
 
     this.targetEl.setAttribute('animation-3d-keyframed', 'puppeteering', e.target.is('toggled'))
   },
+  applyWrapping() {
+    let wrap = this.el.sceneEl.systems['animation-3d'].isWrapping(this.object)
+    this.object.traverse(o => {
+      if (o.el) o.el.setAttribute('animation-3d-keyframed', 'wrapAnimation', wrap)
+    })
+  },
   toggleBoundsHelper(force = undefined) {
     if (this.boundsHelper)
     {

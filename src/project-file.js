@@ -1,10 +1,12 @@
 import {Layer} from './layer.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
-import {base64ToBufferAsync} from './framework/base64ArrayBufferAsync.js'
+import {base64ToBufferAsync, bufferToBase64Async} from './framework/base64ArrayBufferAsync.js'
 import {addImageReferenceViewer, setupGlbReferenceEntity} from './file-upload.js'
 import {Util} from './util.js'
 import {BrushList} from './brush-list.js'
-const FILE_VERSION = 2
+import {UndoStack} from './undo.js'
+import {prepareModelForExport, dedupMaterials} from './material-transformations.js'
+const FILE_VERSION = 3
 class ProjectFile {
   static update(obj) {
     if (!('_fileVersion' in obj)) obj._fileVersion = 0
@@ -74,63 +76,10 @@ class ProjectFile {
     }
   }
 
-  static async load(obj, {compositor}) {
-    console.log("Loading")
-    ProjectFile.update(obj)
+  static async loadv2(obj, {compositor})
+  {
     let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
-    settings.setProjectName(obj.projectName)
-    settings.el.setAttribute('settings-system', {'exportJPEG': obj.exportJPEG})
     let animation3d = Compositor.el.sceneEl.systems['animation-3d']
-
-    if (document.querySelector('#project-palette')) {
-      document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
-    }
-
-    let environmentManager = compositor.el.sceneEl.systems['environment-manager']
-    if (document.querySelector('a-sky') && environmentManager)
-    {
-      if (obj.environment.state === 'reset') {
-        environmentManager.reset()
-        document.querySelector('a-sky').setAttribute('material', 'color', obj.backgroundColor)
-      }
-      else if (obj.environment.state === 'preset-hdri')
-      {
-        environmentManager.usePresetHDRI()
-      }
-      else if (obj.environment.state == 'STATE_HDRI')
-      {
-        console.log("Reloading HDRI")
-        let hdriTexture = new THREE.DataTexture(
-          await new Uint8Array(await base64ToBufferAsync(obj.environment.image.data)),
-          obj.environment.image.width,
-          obj.environment.image.height,
-          obj.environment.image.format,
-          obj.environment.image.type,
-          obj.environment.image.mapping,
-          false,
-          false,
-          undefined,
-          undefined,
-          false,
-          obj.environment.image.encoding,
-        )
-        hdriTexture.flipY = obj.environment.image.flipY
-        hdriTexture.needsUpdate = true
-        environmentManager.installHDREnvironment(hdriTexture)
-      }
-      else if (obj.environment.state === 'STATE_ENVIROPACK')
-      {
-        environmentManager.useEnviropack(obj.environment.substate)
-      }
-    }
-
-    if (document.querySelector('#environment-place')) {
-      document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
-    }
-
-    await compositor.load(obj)
-    compositor.el.setAttribute('material', {shader: obj.shader})
-
     if (obj.glb)
     {
       let loader = new THREE.GLTFLoader()
@@ -245,6 +194,200 @@ class ProjectFile {
 
       // console.log("Loaded construct")//, mesh)
     }
+  }
+
+  static async loadv3(obj, {compositor})
+  {
+    console.time("loadv3")
+    Compositor.data.skipDrawing = true
+    let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
+    let animation3d = Compositor.el.sceneEl.systems['animation-3d']
+    for (let glbBuffer of obj.referenceGLBs)
+    {
+      let materials = {}
+      let loader = new THREE.GLTFLoader()
+      let buffer = await base64ToBufferAsync(glbBuffer)
+      let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+      let root = model.scene || model.scenes[0]
+      root = Util.traverseFind(root, o => o.userData.vartisteProjectData && o.userData.vartisteProjectData.elId === 'canvas-root')
+      root.traverse(o => {
+        if (o.material) materials[o.material.uuid] = o.material
+      });
+
+      root.traverse(o => {
+        // if (animation3d) animation3d.readTracksFromUserData(o)
+
+        let savedUserData = o.userData.vartisteProjectData
+        if (!savedUserData) return;
+
+        // Redup materials
+        if (savedUserData.compositorMaterial)
+        {
+          o.material = Compositor.material
+        }
+        else if (o.material && savedUserData.originalMaterial && savedUserData.originalMaterial !== o.material.uuid)
+        {
+          if (savedUserData.originalMaterial in materials)
+          {
+            o.material = materials[savedUserData.originalMaterial]
+          }
+          else
+          {
+            o.material = o.material.clone()
+            o.material.uuid = savedUserData.originalMaterial
+            materials[savedUserData.originalMaterial] = o.material
+          }
+        }
+      })
+
+      let fakeMaterial = new THREE.MeshBasicMaterial;
+      let fakeGeometry = new THREE.BoxGeometry;
+      function setupEntities(obj, currentRootEl) {
+        let savedUserData = obj.userData.vartisteProjectData;
+        delete obj.userData.vartisteProjectData
+        let el = currentRootEl
+        let skip = new Set()
+        // console.log("Setting up", obj)
+        if (savedUserData && savedUserData.isEl)
+        {
+          if (savedUserData.elId && document.getElementById(savedUserData.elId))
+          {
+            el = document.getElementById(savedUserData.elId)
+            el.object3D.userData.objectTracks = obj.userData.objectTracks
+            Util.applyMatrix(obj.matrix, el.object3D)
+          }
+          else if (savedUserData.isMesh)
+          {
+            // console.log("Loading Mesh", obj)
+            el.setObject3D('mesh', obj)
+          }
+          else
+          {
+            el = document.createElement('a-entity')
+            el.object3D = obj
+            obj.el = el
+            if (!currentRootEl) {
+              console.error("No existing root el for", obj, currentRootEl)
+            }
+            // currentRootEl.object3D.add(obj)
+            currentRootEl.append(el)
+            if (savedUserData.elId) el.id = savedUserData.elId
+            if (savedUserData.isPrimitiveConstruct) {
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              // console.log("Creating construct", el, obj, mesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              el.setAttribute('primitive-construct-placeholder', 'manualMesh: true; detached: true;')
+            }
+            if (savedUserData.isReferenceImage)
+            {
+              console.log("Setting up reference image")
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              addImageReferenceViewer(mesh.material.map.image, el)
+            }
+            else if (savedUserData.isReferenceModel)
+            {
+              let mesh = obj.children.find(c => c.userData.vartisteProjectData && c.userData.vartisteProjectData.isMesh)
+              skip.add(mesh)
+              el.setObject3D('mesh', mesh)
+              setupGlbReferenceEntity(el)
+            }
+          }
+        }
+        else if (savedUserData && savedUserData.isMesh)
+        {
+          // console.log("Loading Mesh", obj)
+          el.setObject3D('mesh', obj)
+        }
+
+        for (let c of obj.children)
+        {
+          if (skip.has(c)) continue;
+          setupEntities(c, el)
+        }
+
+        if (savedUserData && savedUserData.isEl)
+        {
+          if (animation3d) animation3d.readTracksFromUserData(el.object3D)
+        }
+      }
+
+      setupEntities(root, null);
+
+      Compositor.data.skipDrawing = false
+
+      // if (animation3d) animation3d.readTracksFromUserData(document.getElementById('canvas-root').object3D)
+    }
+    console.timeEnd("loadv3")
+  }
+
+  static async load(obj, {compositor}) {
+    console.log("Loading")
+    ProjectFile.update(obj)
+    let settings = document.getElementsByTagName('a-scene')[0].components['settings-system']
+    settings.setProjectName(obj.projectName)
+    settings.el.setAttribute('settings-system', {'exportJPEG': obj.exportJPEG})
+    let animation3d = Compositor.el.sceneEl.systems['animation-3d']
+
+    if (document.querySelector('#project-palette')) {
+      document.querySelector('#project-palette').setAttribute('palette', {colors: obj.palette})
+    }
+
+    let environmentManager = compositor.el.sceneEl.systems['environment-manager']
+    if (document.querySelector('a-sky') && environmentManager)
+    {
+      if (obj.environment.state === 'reset') {
+        environmentManager.reset()
+        document.querySelector('a-sky').setAttribute('material', 'color', obj.backgroundColor)
+      }
+      else if (obj.environment.state === 'preset-hdri')
+      {
+        environmentManager.usePresetHDRI()
+      }
+      else if (obj.environment.state == 'STATE_HDRI')
+      {
+        console.log("Reloading HDRI")
+        let hdriTexture = new THREE.DataTexture(
+          await new Uint8Array(await base64ToBufferAsync(obj.environment.image.data)),
+          obj.environment.image.width,
+          obj.environment.image.height,
+          obj.environment.image.format,
+          obj.environment.image.type,
+          obj.environment.image.mapping,
+          false,
+          false,
+          undefined,
+          undefined,
+          false,
+          obj.environment.image.encoding,
+        )
+        hdriTexture.flipY = obj.environment.image.flipY
+        hdriTexture.needsUpdate = true
+        environmentManager.installHDREnvironment(hdriTexture)
+      }
+      else if (obj.environment.state === 'STATE_ENVIROPACK')
+      {
+        environmentManager.useEnviropack(obj.environment.substate)
+      }
+    }
+
+    if (document.querySelector('#environment-place')) {
+      document.querySelector('#environment-place').setAttribute('visible', obj.environment.showFloor)
+    }
+
+    await compositor.load(obj)
+    compositor.el.setAttribute('material', {shader: obj.shader})
+
+    if (obj._fileVersion < 3)
+    {
+      await ProjectFile.loadv2(obj, {compositor})
+    }
+    else
+    {
+      await ProjectFile.loadv3(obj, {compositor})
+    }
 
     console.log("Loading skeletonator")
     if ('skeletonator' in obj)
@@ -293,7 +436,7 @@ class ProjectFile {
       let buffer = await base64ToBufferAsync(obj.materialPack[0])
       let loader = new THREE.GLTFLoader()
       loader.register((parser) => {
-        console.log("Switching texture loader", parser)
+        // console.log("Switching texture loader", parser)
         parser.textureLoader = new THREE.TextureLoader();
         return {name: "NoBitmap"}
       })
@@ -304,7 +447,7 @@ class ProjectFile {
     // Old Version
     for (let [id, tracks] of Object.entries(obj.tracksForElId))
     {
-      console.log("Entries", id, tracks)
+      // console.log("Entries", id, tracks)
       if (!tracks) continue;
       let el = document.getElementById(id)
       if (!el) {
@@ -317,7 +460,7 @@ class ProjectFile {
     // New Version
     for (let [id, types] of Object.entries(obj.trackTypesForElId))
     {
-      console.log("Entries", id, types)
+      // console.log("Entries", id, types)
 
       let el = document.getElementById(id)
       if (!el) {
@@ -329,17 +472,7 @@ class ProjectFile {
     }
   }
 
-  async _save() {
-    let obj = {}
-    obj._fileVersion = FILE_VERSION
-    let settings = document.querySelector('a-scene').systems['settings-system']
-    let animation3d = document.querySelector('a-scene').systems['animation-3d']
-    obj.projectName = settings.projectName
-    obj.exportJPEG = settings.data.exportJPEG
-    Object.assign(obj, this.saveCompositor())
-
-    obj.trackTypesForElId = {}
-
+  async _saveV2(obj, {settings, animation3d}) {
     let canvasRoot = document.querySelector('#canvas-root')
     let originalCanvasMatrix
     if (canvasRoot)
@@ -369,11 +502,6 @@ class ProjectFile {
       }
       if (animation3d) obj.trackTypesForElId['composition-view'] = animation3d.writeableTracks(compositionView.object3D)
     }
-
-
-
-    obj.palette = document.querySelector('#project-palette') ? document.querySelector('#project-palette').getAttribute('palette').colors
-                                                             : []
 
     obj.referenceImages = []
     let referenceCanvas = document.createElement('canvas')
@@ -476,6 +604,99 @@ class ProjectFile {
     // })
 
     obj.constructObjRoot = constructObjRoot.toJSON()
+  }
+
+  async _save() {
+    let obj = {}
+    obj._fileVersion = FILE_VERSION
+    let settings = document.querySelector('a-scene').systems['settings-system']
+    let animation3d = document.querySelector('a-scene').systems['animation-3d']
+    obj.projectName = settings.projectName
+    obj.exportJPEG = settings.data.exportJPEG
+    Object.assign(obj, this.saveCompositor())
+
+    obj.trackTypesForElId = {}
+    let canvasRoot = document.querySelector('#canvas-root')
+
+    if (FILE_VERSION === 2)
+    {
+      this._saveV2(obj, {settings, animation3d})
+    }
+    else
+    {
+      let undoDedup = new UndoStack({maxSize: -1});
+
+      Compositor.component.data.skipDrawing = true
+      let originalMaterial = Compositor.material
+      let fakeMaterial = new THREE.MeshBasicMaterial()
+
+      Util.traverseCondition(canvasRoot.object3D, o => {
+        if (o.userData.vartisteUI) return false;
+        if (o.el === Compositor.el && o !== Compositor.el.object3D) return false;
+        if (o.el && !o.el.attached) return false
+        return true;
+      }, o => {
+        let savedUserData = {}
+        if (o.material && o.material === originalMaterial) {
+          o.material = fakeMaterial
+          savedUserData.compositorMaterial = true
+        }
+        if (o.material) savedUserData.originalMaterial = o.material.uuid;
+        if (animation3d) animation3d.addTracksToUserData(o, {recurse: false})
+        if (o.el && o.el.object3D === o)
+        {
+          let el = o.el;
+          savedUserData.isEl = true
+          if (el.id) savedUserData.elId = el.id
+          if (el.className && el.className.includes('reference-image')) {
+            // console.log("Saving reference image", el)
+            savedUserData.isReferenceImage = true;
+          }
+          if (el.hasAttribute('primitive-construct-placeholder')) savedUserData.isPrimitiveConstruct = true;
+          if (el.hasAttribute('reference-glb')) savedUserData.isReferenceModel = true;
+        }
+        else if (o.el && o.el.getObject3D('mesh') === o)
+        {
+          // console.log("SAving Mesh", o)
+          savedUserData.isMesh = true
+        }
+        o.userData.vartisteProjectData = savedUserData
+        prepareModelForExport(o, o.material, {undoStack: undoDedup})
+      })
+
+      dedupMaterials(canvasRoot.object3D, {undoStack: undoDedup})
+
+      obj.referenceGLBs = []
+      obj.referenceModels = []
+      try {
+        let exporter = new THREE.GLTFExporter()
+        let glb = await new Promise((r, e) => {
+          exporter.parse(canvasRoot.object3D, r, {binary: true, onlyVisible: false})
+        })
+        obj.referenceGLBs.push(await bufferToBase64Async(glb))
+      } catch (e) {
+        console.error("Could not encode glb", e)
+        obj.referenceModels.push(canvasRoot.object3D.toJSON())
+      }
+
+      while (undoDedup.stack.length > 0)
+      {
+        undoDedup.undo()
+      }
+
+      canvasRoot.object3D.traverse(o => {
+        if (o.material === fakeMaterial)
+        {
+          o.material = originalMaterial
+        }
+      })
+
+      Compositor.component.data.skipDrawing = false
+    }
+
+    obj.palette = document.querySelector('#project-palette') ? document.querySelector('#project-palette').getAttribute('palette').colors
+                                                             : []
+
 
     // console.log("Saved JSON constructs", obj.constructObjRoot)
 

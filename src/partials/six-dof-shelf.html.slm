@@ -63,6 +63,8 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         a-entity icon-button="#asset-blur-linear" toggle-button="target:a-scene; component: volumetrics; property: noisy" tooltip="Noisy"
         a-entity icon-button="#asset-brush" toggle-button="target:a-scene; component: volumetrics; property: bristles" tooltip="Bristles"
         a-entity icon-button="#asset-nudge-brush" toggle-button="target:a-scene; component: volumetrics; property: autoDilate" tooltip="Close seams"
+    a-entity icon-row="autoPosition: false; mergeButtons: true" v-bind="source: #misc-six-dof-tools; sourceComponent: visible; component: visible; setOnLoad: true"
+      a-entity icon-button="#asset-lead-pencil" tooltip="Tool Inspector" system-click-action="system: scene-organizer; action: launchToolsNode"
 
 
 
