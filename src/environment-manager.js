@@ -382,16 +382,19 @@ AFRAME.registerComponent('light-tool', {
       intensity.setAttribute('position', '0.265 0 0.5')
       intensity.setAttribute('rotation', '0 90 0')
 
+      let buttonColor = 'white'
       if (this.el.hasAttribute('light-tool-light'))
       {
-        light.setAttribute('light', AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light')))
+        let attr = AFRAME.utils.styleParser.parse(this.el.getAttribute('light-tool-light'))
+        light.setAttribute('light', attr)
+        if (attr.color) buttonColor = attr.color;
       }
 
       let colorButton = document.createElement('a-entity')
       this.el.append(colorButton)
       colorButton.setAttribute('scale', '0.3 0.3 0.3')
       colorButton.setAttribute('position', '0 0 0.58')
-      colorButton.setAttribute('button-style', `color: white`)
+      colorButton.setAttribute('button-style', 'color', buttonColor)
       colorButton.setAttribute('icon-button', '')
       colorButton.setAttribute('tooltip', 'Set Color')
 
@@ -404,11 +407,14 @@ AFRAME.registerComponent('light-tool', {
 
         return true;
       })
-
       this.el.sceneEl.emit('refreshobjects')
+
     },
     click: function() {
       this.light.setAttribute('visible', !this.light.getAttribute('visible'))
+    },
+    bbuttondown: function() {
+      this.clone()
     }
   },
   init() {
@@ -420,6 +426,23 @@ AFRAME.registerComponent('light-tool', {
     handle.setAttribute('apply-material-to-mesh', '')
     handle.classList.add('clickable')
     handle['redirect-grab'] = this.el
+  },
+  clone() {
+    if (!this.light) return;
+    let clone = document.createElement('a-entity')
+    this.el.parentEl.append(clone)
+    clone.setAttribute('light-tool', '')
+    Util.whenLoaded(clone, () => {
+      clone.setAttribute('light-tool-light', AFRAME.utils.styleParser.stringify(this.light.getAttribute('light')))
+      Util.positionObject3DAtTarget(clone.object3D, this.el.object3D)
+      Util.whenComponentInitialized(clone, 'light-tool', () => {
+        if (this.light.getAttribute('visible')) {
+          console.log("Autoactivating clone", clone)
+          clone.emit('activate')
+          clone.addState('grab-activated')
+        }
+      })
+    })
   }
 })
 
