@@ -396,8 +396,12 @@ AFRAME.registerComponent('compositor', {
       o.geometry.attributes.uv.needsUpdate = true
     }
   },
-  frozenMaterial() {
-    if (this.layers.some(l => l.updateTime >= this.frozenTime))
+  frozenMaterial(force = false) {
+    if (force)
+    {
+      this._frozenMaterial = null;
+    }
+    if (this.currentFrame !== this.frozenFrame || this.layers.some(l => l.updateTime >= this.frozenTime))
     {
       this._frozenMaterial = null;
     }
@@ -433,6 +437,7 @@ AFRAME.registerComponent('compositor', {
     // material.skinning = Compositor.nonCanvasMeshes.some(m => m.skeleton)
     material.needsUpdate = true;
     this.frozenTime = this.el.sceneEl.time
+    this.frozenFrame = this.currentFrame
     this._frozenMaterial = material
     return material
   },
