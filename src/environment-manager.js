@@ -25,7 +25,8 @@ Util.registerComponentSystem('environment-manager', {
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
     initialState: {default: STATE_PRESET},
-    toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']}
+    toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']},
+    transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']}
   },
   events: {
     anglechanged: function (e) {
@@ -53,6 +54,7 @@ Util.registerComponentSystem('environment-manager', {
     this.state = STATE_COLOR
     this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
+    this.canvasRoot = this.el.querySelector('#canvas-root')
     this.hasSwitched = false
     Util.whenLoaded(this.el, () => {
       this.usePresetHDRI({initial: true})

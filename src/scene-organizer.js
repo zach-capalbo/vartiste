@@ -315,6 +315,24 @@ AFRAME.registerComponent('object3d-view', {
       if (o.material) o.material = material
     })
   },
+  toggleDoubleSided(e) {
+    let doubleSided = e.target.is(STATE_TOGGLED)
+    Util.traverseNonUI(this.object, o => {
+      if (o.material)
+      {
+        o.material.side = doubleSided ? THREE.DoubleSide : THREE.FrontSide
+      }
+    })
+  },
+  toggleTransparent(e) {
+    let transparent = e.target.is(STATE_TOGGLED)
+    Util.traverseNonUI(this.object, o => {
+      if (o.material)
+      {
+        o.material.transparent = transparent
+      }
+    })
+  },
   createMaterialPack() {
     this.el.sceneEl.systems['material-pack-system'].addPacksFromObjects(this.object)
   },
@@ -436,6 +454,17 @@ AFRAME.registerComponent('object3d-view', {
 
     Util.applyMatrix(this.object.matrix.identity(), this.object)
     this.onMoved()
+  },
+  flipNormals() {
+    let m = new THREE.Matrix4
+    m[5] = -1
+    Util.traverseNonUI(this.object, o => {
+      if (o.geometry && o.geometry.attributes.normal)
+      {
+        o.geometry.attributes.normal.applyMatrix4(m)
+        o.geometry.attributes.normal.needsUpdate = true
+      }
+    })
   },
   mergeBufferGeometries() {
     let geometries = []
