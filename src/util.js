@@ -300,13 +300,15 @@ class VARTISTEUtil {
     return this.traverseCondition(obj3D, o => !o.userData || !o.userData.vartisteUI, fn)
   }
 
-  traverseClone(obj3d, fn) {
+  traverseClone(obj3d, fn, cnd = undefined) {
+    if (cnd && !cnd(obj3d)) return;
     let newObj = obj3d.clone(false)
     for (let i in obj3d.children)
     {
-      newObj.add(this.traverseClone(obj3d.children[i], fn))
+      let c = this.traverseClone(obj3d.children[i], fn, cnd)
+      if (c) newObj.add(c)
     }
-    fn(obj3d, newObj)
+    if (fn) { fn(obj3d, newObj) }
     return newObj
   }
 

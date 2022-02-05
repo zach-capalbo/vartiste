@@ -195,6 +195,64 @@ Util.registerComponentSystem('timeline-system', {
       }
     }
   },
+  makeReference() {
+    let numberOfFrames = this.data.endFrameNumber
+    let compositor = Compositor.component
+
+    compositor.setIsPlayingAnimation(false)
+    compositor.jumpToFrame(0)
+
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+
+    for (let root of [Compositor.nonCanvasMeshes.length ? Compositor.meshRoot : compositor.el.object3D])
+    {
+      // if (root === Compositor.meshRoot && root.el === compositor.el) continue;
+
+      let clone = Util.traverseClone(root, null, (o) => !o.userData.vartisteUI)
+
+      for (let i = 0; i < numberOfFrames; ++i)
+      {
+        compositor.jumpToFrame(i)
+        compositor.quickDraw()
+        let material = compositor.frozenMaterial(true)
+        clone.traverse(o => {
+          if ('compositorFrame' in o.userData) return;
+          if (o.material) {
+            let c = o.clone()
+
+            if (!o.parent) {
+              console.error("No Parent for", o)
+            }
+
+            o.parent.add(c)
+            c.material = material
+            c.userData.compositorFrame = i
+
+              animation3d.visibilityTracks.set(c, numberOfFrames - 1, false)
+              animation3d.visibilityTracks.set(c, 0, false)
+              animation3d.visibilityTracks.set(c, i, true)
+              if (i > 0) animation3d.visibilityTracks.set(c, i - 1, false)
+              if (i < numberOfFrames - 1) animation3d.visibilityTracks.set(c, i + 1, false)
+          }
+        })
+      }
+
+      for (let o of Util.traverseFindAll(clone, o => (o.material && !('compositorFrame' in o.userData))))
+      {
+        o.parent.remove(o)
+      }
+
+      let el = document.createElement('a-entity')
+      this.el.sceneEl.querySelector('#reference-spawn').append(el)
+      Util.whenLoaded(el, () => {
+        el.setObject3D('mesh', clone)
+        Util.applyMatrix(clone.matrix.identity(), clone)
+        Util.positionObject3DAtTarget(el.object3D, root)
+        el.setAttribute('reference-glb', '')
+        el.setAttribute('animation-3d-keyframed', '')
+      })
+    }
+  },
   async recordFrames() {
     let numberOfFrames = this.data.endFrameNumber
     let compositor = Compositor.component
