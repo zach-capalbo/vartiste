@@ -28,3 +28,4 @@ a-entity.grab-root shelf="name: Export; closeable: true; height: 4.3" scale="0.0
       a-entity icon-button="#asset-skeletonator" tooltip="Create Reference Mesh" system-click-action="system: export-3d-helper-system; action: cloneAsReference"
       /a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Convert Reference Models to Drawable Mesh" system-click-action="system: mesh-tools; action: makeReferencesDrawable"
       a-entity icon-button="#asset-sketchfab" tooltip="Sketchfab" popup-button="popup: sketchfab-shelf; deferred: true"
+      a-entity icon-button="#asset-web" tooltip="Push to URL" edit-field="type: string" text="width: 0" troika-text="fillOpacity: 0; depthOffset: 0.2" push-to-url-button="mode: 3d"
