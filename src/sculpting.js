@@ -2247,3 +2247,309 @@ AFRAME.registerComponent('threed-line-tool', {
     })
   }
 })
+
+AFRAME.registerComponent('threed-hull-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    meshContainer: {type: 'selector', default: '#world-root'},
+    moveThreshold: {default: 0.001},
+  },
+  events: {
+    activate: function(e) {
+      Util.callLater(() => {
+        this.initialScale = this.el.object3D.scale.x
+      })
+    },
+    triggerdown: function(e) {
+      this.startLine()
+    },
+    triggerup: function(e) {
+      this.endLine()
+    },
+    stateadded: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        if (this.el.grabbingManipulator.el.id === 'mouse')
+        {
+          this.grabbedByMouse = true
+          this.startLine()
+        }
+      }
+    },
+    stateremoved: function(e) {
+      if (e.detail === 'grabbed')
+      {
+        if (this.grabbedByMouse)
+        {
+          this.grabbedByMouse = false
+          this.endLine()
+        }
+        else
+        {
+          this.finishShape()
+        }
+      }
+    }
+  },
+  init() {
+    this.system = this.el.sceneEl.systems['threed-line-system']
+    this.shapes = []
+    Pool.init(this, {useSystem: true})
+    this.el.classList.add('grab-root')
+    this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
+    let tipHeight = 0.3
+
+    this.el.setAttribute('action-tooltips', "trigger: Hold to draw; b: Toggle Point-to-point mode")
+
+    let tip
+    tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
+    this.el.append(tip)
+    tip.setAttribute('radius-top', 0)
+    tip.setAttribute('radius-bottom',  0.05)
+    tip.setAttribute('radius',  0.05)
+    tip.setAttribute('segments-height', this.data.pointToPoint ? 6 : 2)
+    tip.setAttribute('segments-radial', 8)
+    tip.setAttribute('height', tipHeight)
+    tip.setAttribute('position', `0 ${tipHeight / 2.0} 0`)
+    tip.setAttribute('material', 'shader: matcap; src: #asset-shelf')
+
+    let tipPoint = this.tipPoint = new THREE.Object3D();
+    tip.object3D.add(tipPoint);
+    tipPoint.position.set(0, this.data.pointToPoint ? 0 : tipHeight / 2.0, 0);
+    tipPoint.rotation.set(- Math.PI / 2, 0, 0);
+    if (this.data.shape === 'mesh' && this.data.stretchAxis === 'y') {
+      tipPoint.rotation.set(0, 0, 0);
+    }
+    this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
+
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
+  },
+  startLine() {
+    this.points = []
+    this.constraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
+      let tipWorld = new THREE.Vector3
+      this.tipPoint.getWorldPosition(tipWorld)
+      this.points.push(tipWorld)
+
+      this.createEdgesMesh()
+    }, POST_MANIPULATION_PRIORITY)
+  },
+  endLine() {
+    if (!this.constraint) return;
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constraint)
+    this.constraint = null;
+
+    let shape = new THREE.CatmullRomCurve3(this.points, true);
+    let centroid = new THREE.Vector3;
+    centroid.set(0,0,0)
+    let points = shape.getPoints(13)
+    for (let i = 0; i < 12; ++i)
+    {
+      centroid.add(points[i])
+    }
+    centroid.multiplyScalar(1.0 / 12)
+    shape.centroid = centroid
+    this.shapes.push(shape)
+
+    Undo.push(() => {
+      let idx = this.shapes.indexOf(shape)
+      if (idx < 0) return;
+      this.shapes.splice(idx, 1)
+      this.createCylinderMesh()
+    })
+
+    // console.log("Shapes", this.shapes)
+    this.createCylinderMesh()
+  },
+  finishShape() {
+    if (!this.mesh) return;
+
+    let center = this.pool('center', THREE.Vector3)
+    this.geometry.computeBoundingBox()
+    this.geometry.boundingBox.getCenter(this.mesh.position)
+    this.geometry.center()
+
+    let mesh = this.mesh
+    Undo.push(() => {
+      if (mesh.el)
+      {
+        mesh.el.remove()
+      }
+      else
+      {
+        mesh.parent.remove(mesh)
+      }
+    })
+
+    this.el.sceneEl.systems['primitive-constructs'].decompose(this.mesh)
+    this.mesh = null
+    this.shapes = []
+
+    if (this.lineMesh)
+    {
+      this.lineMesh.parent.remove(this.lineMesh)
+      this.lineMesh.geometry.dispose()
+      this.lineMesh = null
+    }
+  },
+  createEdgesMesh() {
+    this.geometry = new THREE.BufferGeometry().setFromPoints([this.points[this.points.length - 1]].concat(this.points));
+    let material = new THREE.LineBasicMaterial({color: this.el.sceneEl.systems['paint-system'].color3.getHex()});
+    if (this.lineMesh)
+    {
+      this.lineMesh.parent.remove(this.lineMesh)
+      this.lineMesh.geometry.dispose()
+    }
+
+    this.lineMesh = new THREE.Line(this.geometry, material)
+    // this.mesh.position.copy(this.startPoint)
+    this.data.meshContainer.object3D.add(this.lineMesh)
+  },
+  createCylinderMesh() {
+    let shapes = this.shapes;
+    if (shapes.length < 1) return;
+    const n = this.shapes.length - 1
+
+    shapes = [new THREE.CatmullRomCurve3([this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid], true)].concat(this.shapes)
+    shapes.push(new THREE.CatmullRomCurve3([this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid], true))
+    const heightSegments = shapes.length - 1;
+    const radialSegments = 24
+
+    this.geometry = new THREE.BufferGeometry;
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
+    const radiusTop = 1.0;
+    const radiusBottom = 1.0;
+    const thetaLength = 2 * Math.PI;
+    const thetaStart = 0;
+    const height = 1.0;
+
+		let index = 0;
+		const indexArray = [];
+		const halfHeight = height / 2;
+		let groupStart = 0;
+
+		// generate geometry
+		generateTorso.call(this);
+
+		// build geometry
+		this.geometry.setIndex( indices );
+		this.geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+		this.geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( normals, 3 ) );
+		this.geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
+    this.geometry.computeVertexNormals()
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
+    }
+
+    let material = this.system.getMaterial(1.0)
+    // material.side = THREE.DoubleSide
+    this.mesh = new THREE.Mesh(this.geometry, material)
+    this.data.meshContainer.object3D.add(this.mesh)
+    // this.mesh.position.copy(this.startPoint)
+
+    console.log("Generated", this.mesh)
+
+		function generateTorso()  {
+			const normal = this.pool('normal', THREE.Vector3);
+			const vertex = this.pool('vertext', THREE.Vector3);
+
+			let groupCount = 0;
+
+			// this will be used to calculate the normal
+			const slope = 0.0 //( radiusBottom - radiusTop ) / height;
+
+			// generate vertices, normals and uvs
+
+			for ( let y = 0; y <= heightSegments; y ++ ) {
+
+				const indexRow = [];
+
+				const v = y / heightSegments;
+
+				// calculate the radius of the current row
+
+				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
+
+        const points = shapes[y].getPoints(radialSegments)
+
+				for ( let x = 0; x <= radialSegments; x ++ ) {
+
+					const u = x / radialSegments;
+
+					const theta = u * thetaLength + thetaStart;
+
+					const sinTheta = Math.sin( theta );
+					const cosTheta = Math.cos( theta );
+
+					// vertex
+
+          vertex.copy(points[x])
+					// vertex.x = radius * sinTheta;
+					// vertex.y = - v * height + halfHeight;
+					// vertex.z = radius * cosTheta;
+					vertices.push( vertex.x, vertex.y, vertex.z );
+
+					// normal
+
+					normal.set( sinTheta, slope, cosTheta ).normalize();
+					normals.push( normal.x, normal.y, normal.z );
+
+					// uv
+
+					uvs.push( u, 1 - v );
+
+					// save index of vertex in respective row
+
+					indexRow.push( index ++ );
+
+				}
+
+				// now save vertices of the row in our index array
+
+				indexArray.push( indexRow );
+
+			}
+
+			// generate indices
+
+			for ( let x = 0; x < radialSegments; x ++ ) {
+
+				for ( let y = 0; y < heightSegments; y ++ ) {
+
+					// we use the index array to access the correct indices
+
+					const a = indexArray[ y ][ x ];
+					const b = indexArray[ y + 1 ][ x ];
+					const c = indexArray[ y + 1 ][ x + 1 ];
+					const d = indexArray[ y ][ x + 1 ];
+
+					// faces
+
+					indices.push( a, b, d );
+					indices.push( b, c, d );
+
+					// update group counter
+
+					groupCount += 6;
+
+				}
+
+			}
+
+			// calculate new start value for groups
+
+			groupStart += groupCount;
+
+		};
+  }
+})
