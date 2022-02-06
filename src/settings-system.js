@@ -761,7 +761,11 @@ AFRAME.registerComponent('push-to-url-button', {
   events: {
     editfinished: function(e) {
       let url = e.detail.value
+      localStorage.lastURL = url
       this.el.sceneEl.systems['export-3d-helper-system'].push3dUrlAction(url)
     }
+  },
+  init() {
+    this.el.setAttribute('text', 'value', localStorage.lastURL)
   }
 })
