@@ -611,6 +611,14 @@ Util.registerComponentSystem('export-3d-helper-system', {
       }
     }
 
+    let foundAny = objects.map(o => Util.traverseFindAll(o.object3D, oo => (!oo.userData.vartisteUI) && oo.material).length).some(l => l > 0)
+
+    if (!foundAny)
+    {
+      console.log("Could not found any meshes to export", objects)
+      objects = [Compositor.el]
+    }
+
     // if (objects.length === 1)
     // {
     //   await fn(objects[0].object3D)
@@ -626,7 +634,7 @@ Util.registerComponentSystem('export-3d-helper-system', {
         visible: el.object3D.visible
       })
 
-      if (this.data[prop])
+      if (this.data[prop] || (!foundAny && prop === 'exportCanvas'))
       {
         el.object3D.visible = true
       }
@@ -688,6 +696,26 @@ Util.registerComponentSystem('export-3d-helper-system', {
     })
     // this.el.sceneEl.systems['settings-system'].export3dAction()
   },
+  push3dUrlAction(url) {
+    let busy = this.el.sceneEl.systems['busy-indicator'].busy({title: `POST to ${url}` })
+    this.runExportFn(async rootObj => {
+      let undoStack = new UndoStack(-1);
+      let glb = await this.el.sceneEl.systems['settings-system'].getExportableGLB(rootObj, {undoStack})
+
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          body: new Blob([glb], {type: 'model/gltf-binary'}),
+        })
+      } catch (e) {
+        busy.error(e)
+      }
+
+      busy.done()
+    })
+  },
   cloneAsReference() {
     this.runExportFn(async rootObj => {
       let el = document.createElement('a-entity')
@@ -723,5 +751,17 @@ Util.registerComponentSystem('export-3d-helper-system', {
 AFRAME.registerComponent('export-origin-helper', {
   init() {
 
+  }
+})
+
+AFRAME.registerComponent('push-to-url-button', {
+  schema: {
+    mode: {oneOf: ['2d', '3d']},
+  },
+  events: {
+    editfinished: function(e) {
+      let url = e.detail.value
+      this.el.sceneEl.systems['export-3d-helper-system'].push3dUrlAction(url)
+    }
   }
 })
