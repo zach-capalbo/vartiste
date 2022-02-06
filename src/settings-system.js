@@ -703,12 +703,17 @@ Util.registerComponentSystem('export-3d-helper-system', {
       let glb = await this.el.sceneEl.systems['settings-system'].getExportableGLB(rootObj, {undoStack})
 
       try {
-        await fetch(url, {
+        let response = await fetch(url, {
           method: 'POST',
           mode: 'cors',
           redirect: 'follow',
           body: new Blob([glb], {type: 'model/gltf-binary'}),
         })
+        if (!response.ok)
+        {
+          console.error(response)
+          busy.error(`${response.status}: ${response.statusText}`)
+        }
       } catch (e) {
         busy.error(e)
       }
