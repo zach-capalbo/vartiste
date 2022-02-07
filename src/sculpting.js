@@ -2522,6 +2522,26 @@ AFRAME.registerComponent('threed-hull-tool', {
 			const slope = 0.0 //( radiusBottom - radiusTop ) / height;
 
 			// generate vertices, normals and uvs
+      let totalHeightLengths = []
+      for ( let y = 0; y <= heightSegments; y ++ ) {
+        if (!shapes[y].segmentedPoints)
+        {
+          shapes[y].segmentedPoints = shapes[y].getPoints(radialSegments);
+        }
+
+        for ( let x = 0; x <= radialSegments; x ++ ) {
+          if (y === 0) {
+            totalHeightLengths[x] = 0
+            continue;
+          }
+
+          totalHeightLengths[x] += shapes[y].segmentedPoints[x].distanceTo(shapes[y - 1].segmentedPoints[x])
+        }
+      }
+
+      console.log("totalHeightLengths", totalHeightLengths)
+
+      let currentHeightLengths = []
 
 			for ( let y = 0; y <= heightSegments; y ++ ) {
 				const indexRow = [];
@@ -2529,7 +2549,7 @@ AFRAME.registerComponent('threed-hull-tool', {
 
 				// calculate the radius of the current row
 				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
-        const points = shapes[y].getPoints(radialSegments)
+        const points = shapes[y].segmentedPoints
         const lengths = shapes[y].getLengths(radialSegments)
         const shapeLength = shapes[y].getLength()
 
@@ -2547,8 +2567,18 @@ AFRAME.registerComponent('threed-hull-tool', {
 					normal.set( sinTheta, slope, cosTheta ).normalize();
 					normals.push( normal.x, normal.y, normal.z );
 
+          if ( y === 0)
+          {
+            currentHeightLengths[x] = 0
+          }
+          else
+          {
+            currentHeightLengths[x] += shapes[y].segmentedPoints[x].distanceTo(shapes[y - 1].segmentedPoints[x])
+          }
+          let heightT = totalHeightLengths[x] < 0.0001 ? 1 - v : currentHeightLengths[x] / totalHeightLengths[x]
+
 					// uv
-					uvs.push( shapeLength < 0.0001 ? u : lengths[x] / shapeLength, 1 - v );
+					uvs.push( heightT, shapeLength < 0.0001 ? u : lengths[x] / shapeLength );
 					// save index of vertex in respective row
 					indexRow.push( index ++ );
 				}
