@@ -2499,6 +2499,22 @@ AFRAME.registerComponent('threed-hull-tool', {
 		this.geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
     this.geometry.computeVertexNormals()
 
+    let normal = this.pool('normal', THREE.Vector3)
+    let normal2 = this.pool('normal', THREE.Vector3)
+    let normalAttr = this.geometry.attributes.normal
+    for (let y = 0; y < heightSegments; ++y)
+    {
+      let i = y * (radialSegments + 1)
+      let ii = (y + 1) * (radialSegments + 1) - 1
+      normal.fromBufferAttribute(normalAttr, i)
+      normal2.fromBufferAttribute(normalAttr, ii)
+      normal.lerp(normal2, 0.5)
+      // normal.set(0,0,0)
+      normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
+      normalAttr.setXYZ(ii, normal.x, normal.y, normal.z)
+    }
+    normalAttr.needsUpdate = true
+
     if (this.mesh)
     {
       this.mesh.parent.remove(this.mesh)
@@ -2538,8 +2554,6 @@ AFRAME.registerComponent('threed-hull-tool', {
           totalHeightLengths[x] += shapes[y].segmentedPoints[x].distanceTo(shapes[y - 1].segmentedPoints[x])
         }
       }
-
-      console.log("totalHeightLengths", totalHeightLengths)
 
       let currentHeightLengths = []
 
