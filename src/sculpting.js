@@ -2530,6 +2530,8 @@ AFRAME.registerComponent('threed-hull-tool', {
 				// calculate the radius of the current row
 				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
         const points = shapes[y].getPoints(radialSegments)
+        const lengths = shapes[y].getLengths(radialSegments)
+        const shapeLength = shapes[y].getLength()
 
 				for ( let x = 0; x <= radialSegments; x ++ ) {
 					const u = x / radialSegments;
@@ -2546,7 +2548,7 @@ AFRAME.registerComponent('threed-hull-tool', {
 					normals.push( normal.x, normal.y, normal.z );
 
 					// uv
-					uvs.push( u, 1 - v );
+					uvs.push( shapeLength < 0.0001 ? u : lengths[x] / shapeLength, 1 - v );
 					// save index of vertex in respective row
 					indexRow.push( index ++ );
 				}
