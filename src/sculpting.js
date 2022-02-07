@@ -2253,6 +2253,7 @@ AFRAME.registerComponent('threed-hull-tool', {
   schema: {
     meshContainer: {type: 'selector', default: '#world-root'},
     moveThreshold: {default: 0.001},
+    shapeSegments: {default: 24},
   },
   events: {
     activate: function(e) {
@@ -2269,6 +2270,8 @@ AFRAME.registerComponent('threed-hull-tool', {
     stateadded: function(e) {
       if (e.detail === 'grabbed')
       {
+        this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.onMoved, POST_MANIPULATION_PRIORITY)
+
         if (this.el.grabbingManipulator.el.id === 'mouse')
         {
           this.grabbedByMouse = true
@@ -2279,6 +2282,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     stateremoved: function(e) {
       if (e.detail === 'grabbed')
       {
+        this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.onMoved)
         if (this.grabbedByMouse)
         {
           this.grabbedByMouse = false
@@ -2299,7 +2303,8 @@ AFRAME.registerComponent('threed-hull-tool', {
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
 
-    this.el.setAttribute('action-tooltips', "trigger: Hold to draw; b: Toggle Point-to-point mode")
+    this.el.setAttribute('action-tooltips', "trigger: Hold to draw;")
+    this.onMoved = this.onMoved.bind(this)
 
     let tip
     tip = this.tip = this.data.pointToPoint ? document.createElement('a-sphere') : document.createElement('a-cone')
@@ -2324,20 +2329,49 @@ AFRAME.registerComponent('threed-hull-tool', {
 
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
   },
-  startLine() {
-    this.points = []
-    this.constraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
-      let tipWorld = new THREE.Vector3
-      this.tipPoint.getWorldPosition(tipWorld)
+  update(oldData) {
+    if (this.data.shapeSegments !== oldData.shapeSegments)
+    {
+      // let lineColors = []
+      // let shapeSegments = this.data.shapeSegments
+      // let start = new THREE.Color('green')
+      // let end = new THREE.Color('red')
+      // let c = new THREE.Color;
+      // for (let i = 0; i < shapeSegments; ++i)
+      // {
+      //   c.lerpColors(start, end, i / shapeSegments)
+      //   lineColors.push(c.r, c.g, c.b)
+      // }
+      // this.colorAttr = new THREE.Float32BufferAttribute(lineColors, 3)
+      // this.colorAttr.needsUpdate = true
+    }
+  },
+  onMoved() {
+    let tipWorld = new THREE.Vector3
+    this.tipPoint.getWorldPosition(tipWorld)
+    if (this.isDrawing)
+    {
       this.points.push(tipWorld)
-
-      this.createEdgesMesh()
-    }, POST_MANIPULATION_PRIORITY)
+    }
+    else if (this.lastPoint && this.shapes.length > 0)
+    {
+      this.points = []
+      this.points[0] = this.lastPoint
+      this.points[1] = tipWorld
+    }
+    this.createEdgesMesh()
+  },
+  startLine() {
+    this.isDrawing = true
+    this.points = []
   },
   endLine() {
-    if (!this.constraint) return;
+    if (!this.isDrawing) return
+    this.isDrawing = false
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constraint)
     this.constraint = null;
+
+    this.lastPoint = this.points[0]
 
     let shape = new THREE.CatmullRomCurve3(this.points, true);
     let centroid = new THREE.Vector3;
@@ -2391,17 +2425,37 @@ AFRAME.registerComponent('threed-hull-tool', {
       this.lineMesh.geometry.dispose()
       this.lineMesh = null
     }
+
+    this.lastPoint = null
+    this.points = []
   },
   createEdgesMesh() {
-    this.geometry = new THREE.BufferGeometry().setFromPoints([this.points[this.points.length - 1]].concat(this.points));
-    let material = new THREE.LineBasicMaterial({color: this.el.sceneEl.systems['paint-system'].color3.getHex()});
+    if (!this.points || this.points.length < 2) return
+    let geometry = new THREE.BufferGeometry().setFromPoints([this.points[this.points.length - 1]].concat(this.points));
+
+    let lineColors = []
+    let start = this.pool('start', THREE.Color)
+    start.setRGB(0, 1, 0)
+    let end = this.pool('end', THREE.Color)
+    end.setRGB(1, 0, 0)
+    let c = this.pool('c', THREE.Color);
+    for (let i = 0; i <= this.points.length; ++i)
+    {
+      c.lerpColors(start, end, i / this.points.length)
+      lineColors.push(c.r, c.g, c.b)
+    }
+    let colorAttr = new THREE.Float32BufferAttribute(lineColors, 3)
+
+    geometry.setAttribute('color', colorAttr)
+    let material = new THREE.LineBasicMaterial({color: 'white', vertexColors: THREE.VertexColors});
+    // let material = new THREE.LineBasicMaterial({color: this.el.sceneEl.systems['paint-system'].color3.getHex()});
     if (this.lineMesh)
     {
       this.lineMesh.parent.remove(this.lineMesh)
       this.lineMesh.geometry.dispose()
     }
 
-    this.lineMesh = new THREE.Line(this.geometry, material)
+    this.lineMesh = new THREE.Line(geometry, material)
     // this.mesh.position.copy(this.startPoint)
     this.data.meshContainer.object3D.add(this.lineMesh)
   },
@@ -2413,7 +2467,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     shapes = [new THREE.CatmullRomCurve3([this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid], true)].concat(this.shapes)
     shapes.push(new THREE.CatmullRomCurve3([this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid], true))
     const heightSegments = shapes.length - 1;
-    const radialSegments = 24
+    const radialSegments = this.data.shapeSegments
 
     this.geometry = new THREE.BufferGeometry;
 
@@ -2452,10 +2506,9 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
 
     let material = this.system.getMaterial(1.0)
-    // material.side = THREE.DoubleSide
+    material.side = THREE.DoubleSide
     this.mesh = new THREE.Mesh(this.geometry, material)
     this.data.meshContainer.object3D.add(this.mesh)
-    // this.mesh.position.copy(this.startPoint)
 
     console.log("Generated", this.mesh)
 
@@ -2471,83 +2524,55 @@ AFRAME.registerComponent('threed-hull-tool', {
 			// generate vertices, normals and uvs
 
 			for ( let y = 0; y <= heightSegments; y ++ ) {
-
 				const indexRow = [];
-
 				const v = y / heightSegments;
 
 				// calculate the radius of the current row
-
 				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
-
         const points = shapes[y].getPoints(radialSegments)
 
 				for ( let x = 0; x <= radialSegments; x ++ ) {
-
 					const u = x / radialSegments;
-
 					const theta = u * thetaLength + thetaStart;
 
 					const sinTheta = Math.sin( theta );
 					const cosTheta = Math.cos( theta );
 
 					// vertex
-
           vertex.copy(points[x])
-					// vertex.x = radius * sinTheta;
-					// vertex.y = - v * height + halfHeight;
-					// vertex.z = radius * cosTheta;
 					vertices.push( vertex.x, vertex.y, vertex.z );
-
 					// normal
-
 					normal.set( sinTheta, slope, cosTheta ).normalize();
 					normals.push( normal.x, normal.y, normal.z );
 
 					// uv
-
 					uvs.push( u, 1 - v );
-
 					// save index of vertex in respective row
-
 					indexRow.push( index ++ );
-
 				}
 
 				// now save vertices of the row in our index array
-
 				indexArray.push( indexRow );
-
 			}
 
 			// generate indices
-
 			for ( let x = 0; x < radialSegments; x ++ ) {
-
 				for ( let y = 0; y < heightSegments; y ++ ) {
-
 					// we use the index array to access the correct indices
-
 					const a = indexArray[ y ][ x ];
 					const b = indexArray[ y + 1 ][ x ];
 					const c = indexArray[ y + 1 ][ x + 1 ];
 					const d = indexArray[ y ][ x + 1 ];
 
 					// faces
-
 					indices.push( a, b, d );
 					indices.push( b, c, d );
 
 					// update group counter
-
 					groupCount += 6;
-
 				}
-
 			}
-
 			// calculate new start value for groups
-
 			groupStart += groupCount;
 
 		};
