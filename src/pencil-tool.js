@@ -1640,6 +1640,24 @@ AFRAME.registerComponent('lathe-selection-tool', {
         return;
       }
     },
+    triggerdown: function(e) {
+      if (this.el.is('grabbed')) {
+        for (let target of Object.values(this.selectionBoxTool.grabbed))
+        {
+          target.emit('triggerdown', e.detail)
+        }
+        return;
+      }
+    },
+    triggerup: function(e) {
+      if (this.el.is('grabbed')) {
+        for (let target of Object.values(this.selectionBoxTool.grabbed))
+        {
+          target.emit('triggerup', e.detail)
+        }
+        return;
+      }
+    },
     click: function(e) {
       if (this.el.is('grabbed') && this.selectionBoxTool.grabbing) {
         for (let target of Object.values(this.selectionBoxTool.grabbed))
