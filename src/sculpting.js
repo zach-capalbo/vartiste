@@ -10,6 +10,8 @@ import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
+window.simplify3d = simplify3d;
+
 AFRAME.registerComponent('sculpt-move-tool', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
@@ -2270,6 +2272,8 @@ AFRAME.registerComponent('threed-hull-tool', {
     stateadded: function(e) {
       if (e.detail === 'grabbed')
       {
+        this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
+
         this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.onMoved, POST_MANIPULATION_PRIORITY)
 
         if (this.el.grabbingManipulator.el.id === 'mouse')
@@ -2298,6 +2302,7 @@ AFRAME.registerComponent('threed-hull-tool', {
   init() {
     this.system = this.el.sceneEl.systems['threed-line-system']
     this.shapes = []
+    this.edgeLines = []
     Pool.init(this, {useSystem: true})
     this.el.classList.add('grab-root')
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
@@ -2327,31 +2332,23 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
     this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
 
-    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 0, -1))
   },
   update(oldData) {
-    if (this.data.shapeSegments !== oldData.shapeSegments)
-    {
-      // let lineColors = []
-      // let shapeSegments = this.data.shapeSegments
-      // let start = new THREE.Color('green')
-      // let end = new THREE.Color('red')
-      // let c = new THREE.Color;
-      // for (let i = 0; i < shapeSegments; ++i)
-      // {
-      //   c.lerpColors(start, end, i / shapeSegments)
-      //   lineColors.push(c.r, c.g, c.b)
-      // }
-      // this.colorAttr = new THREE.Float32BufferAttribute(lineColors, 3)
-      // this.colorAttr.needsUpdate = true
-    }
   },
   onMoved() {
     let tipWorld = new THREE.Vector3
     this.tipPoint.getWorldPosition(tipWorld)
+
+    if (this.points && this.points.length > 0 && tipWorld.distanceTo(this.points[this.points.length - 1]) < this.data.moveThreshold)
+    {
+      return;
+    }
+
     if (this.isDrawing)
     {
       this.points.push(tipWorld)
+      // console.log("Points", this.points)
     }
     else if (this.lastPoint && this.shapes.length > 0)
     {
@@ -2364,6 +2361,12 @@ AFRAME.registerComponent('threed-hull-tool', {
   startLine() {
     this.isDrawing = true
     this.points = []
+
+    if (this.lineMesh)
+    {
+      this.edgeLines.push(this.lineMesh)
+      this.lineMesh = null
+    }
   },
   endLine() {
     if (!this.isDrawing) return
@@ -2383,6 +2386,10 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
     centroid.multiplyScalar(1.0 / 12)
     shape.centroid = centroid
+
+    const simplificationFactor = 1e-3;
+    shape.simplified = simplify2d(this.points, simplificationFactor)
+
     this.shapes.push(shape)
 
     Undo.push(() => {
@@ -2392,7 +2399,10 @@ AFRAME.registerComponent('threed-hull-tool', {
       this.createCylinderMesh()
     })
 
-    // console.log("Shapes", this.shapes)
+    this.edgeLines.push(this.lineMesh)
+    this.lineMesh = null
+
+    console.log("Shapes", this.shapes)
     this.createCylinderMesh()
   },
   finishShape() {
@@ -2426,6 +2436,13 @@ AFRAME.registerComponent('threed-hull-tool', {
       this.lineMesh = null
     }
 
+    for (let mesh of this.edgeLines)
+    {
+      mesh.parent.remove(mesh)
+      mesh.geometry.dispose()
+    }
+    this.edgeLines = []
+
     this.lastPoint = null
     this.points = []
   },
@@ -2439,7 +2456,8 @@ AFRAME.registerComponent('threed-hull-tool', {
     let end = this.pool('end', THREE.Color)
     end.setRGB(1, 0, 0)
     let c = this.pool('c', THREE.Color);
-    for (let i = 0; i <= this.points.length; ++i)
+    lineColors.push(end.r, end.g, end.b);
+    for (let i = 0; i < this.points.length; ++i)
     {
       c.lerpColors(start, end, i / this.points.length)
       lineColors.push(c.r, c.g, c.b)
@@ -2467,7 +2485,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     shapes = [new THREE.CatmullRomCurve3([this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid], true)].concat(this.shapes)
     shapes.push(new THREE.CatmullRomCurve3([this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid], true))
     const heightSegments = shapes.length - 1;
-    const radialSegments = this.data.shapeSegments
+    const radialSegments = THREE.Math.clamp(Math.max.apply(null, this.shapes.map(s => s.simplified.length)), this.data.shapeSegments, this.data.shapeSegments * 10)
 
     this.geometry = new THREE.BufferGeometry;
 
@@ -2540,9 +2558,9 @@ AFRAME.registerComponent('threed-hull-tool', {
 			// generate vertices, normals and uvs
       let totalHeightLengths = []
       for ( let y = 0; y <= heightSegments; y ++ ) {
-        if (!shapes[y].segmentedPoints)
+        if (true || !shapes[y].segmentedPoints)
         {
-          shapes[y].segmentedPoints = shapes[y].getPoints(radialSegments);
+          shapes[y].segmentedPoints = shapes[y].getSpacedPoints(radialSegments);
         }
 
         for ( let x = 0; x <= radialSegments; x ++ ) {

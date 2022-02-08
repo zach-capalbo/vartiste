@@ -1386,13 +1386,13 @@ AFRAME.registerComponent('manipulator-lock', {
     }
   },
   setLocks() {
+    console.log("Setting constraint locks")
     let obj = this.el.object3D
     this.lockedPosition.copy(obj.position)
     this.lockedRotation.copy(obj.rotation)
     this.lockedScale.copy(obj.scale)
   },
   update(oldData) {
-    if (!this.data.target) return;
     this.setLocks()
   },
 })
