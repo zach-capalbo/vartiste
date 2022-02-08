@@ -1502,6 +1502,9 @@ AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
     selector: {type: 'string', default: 'a-entity[six-dof-tool]'},
+    reparent: {default: true},
+    icon: {type: 'string'},
+    color: {type: 'color', default: '#b6c5f2'},
   },
   emits: {
     startobjectconstraint: {
@@ -1562,7 +1565,7 @@ AFRAME.registerComponent('object-constraint-flag', {
     })
   },
   update(oldData) {
-
+    this.label.setAttribute('material', 'color', this.data.color)
   },
   attachToTool() {
     if (this.attachedTo) return;
@@ -1574,13 +1577,17 @@ AFRAME.registerComponent('object-constraint-flag', {
       if (el.hasAttribute('object-constraint-flag')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
 
-      console.log("Intersecting tool", el)
-      let placeholder = this.placeholder
-      el.object3D.add(placeholder)
-      Util.positionObject3DAtTarget(placeholder, this.el.object3D)
-      el.object3D.add(this.el.object3D)
-      Util.positionObject3DAtTarget(this.el.object3D, placeholder)
-      el.object3D.remove(placeholder)
+      // console.log("Intersecting tool", el)
+      if (this.data.reparent)
+      {
+        let placeholder = this.placeholder
+        el.object3D.add(placeholder)
+        Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+        el.object3D.add(this.el.object3D)
+        Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+        el.object3D.remove(placeholder)
+      }
+
       this.attachedTo = el
 
       this.emitDetails.startobjectconstraint.el = el
@@ -1688,22 +1695,50 @@ AFRAME.registerComponent('weight-constraint-flag', {
   },
 })
 
-AFRAME.registerComponent('lock-position-flag', {
-  dependencies: ['object-constraint-flag'],
-  events: {
-    startobjectconstraint: function(e) {
-      let el = e.detail.el
-      el.setAttribute('manipulator-lock', 'lockedPositionAxes: x, y, z')
+function registerSimpleConstraintFlagComponent(
+  name,
+  {
+    icon,
+    color = "#b6c5f2",
+    component,
+    valueOn,
+    valueOff = null,
+    reparent = true,
+  }) {
+  AFRAME.registerComponent(name, {
+    dependencies: ['object-constraint-flag'],
+    events: {
+      startobjectconstraint: function(e) {
+        let el = e.detail.el
+        el.setAttribute(component, valueOn)
+      },
+      endobjectconstraint: function(e) {
+        let el = e.detail.el
+        if (valueOff === null || valueOff === undefined)
+        {
+          el.removeAttribute(component)
+        }
+        else
+        {
+          el.setAttribute(component, valueOff)
+        }
+      },
+      cloneloaded: function(e) {
+        e.stopPropagation()
+        e.detail.el.setAttribute(name, this.el.getAttribute(name))
+      }
     },
-    endobjectconstraint: function(e) {
-      e.detail.el.removeAttribute('manipulator-lock')
-    },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('lock-position-flag', this.el.getAttribute('lock-position-flag'))
+    init() {
+      this.el.setAttribute('object-constraint-flag', {color, icon, reparent})
     }
-  },
-})
+  });
+}
+
+registerSimpleConstraintFlagComponent('lock-position-flag', {component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-y-flag', {component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-rotation-flag', {component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('puppeteering-flag', {color: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('hidden-flag', {component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 
 AFRAME.registerComponent('lathe-selection-tool', {
   schema: {

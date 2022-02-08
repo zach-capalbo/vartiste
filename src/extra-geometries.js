@@ -80,7 +80,6 @@ AFRAME.registerGeometry('flag', {
     };
 
     this.geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
-    console.log("FLAG GEOMETRY", this.geometry)
   }
 })
 
