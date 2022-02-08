@@ -2273,7 +2273,7 @@ AFRAME.registerComponent('threed-hull-tool', {
       if (e.detail === 'grabbed')
       {
         this.el.sceneEl.systems['pencil-tool'].lastGrabbed = this
-        
+
         this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.onMoved, POST_MANIPULATION_PRIORITY)
 
         if (this.el.grabbingManipulator.el.id === 'mouse')
@@ -2332,7 +2332,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
     this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
 
-    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 1, 0))
+    this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 0, -1))
   },
   update(oldData) {
   },

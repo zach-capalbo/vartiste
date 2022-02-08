@@ -219,7 +219,7 @@ AFRAME.registerComponent('object3d-view', {
     return vectorReturn;
   },
   loadChildren() {
-    console.log('loading children', this.object.children)
+    // console.log('loading children', this.object.children)
     this.loadedChildren = true
     this.loadedChildrenLength = this.object.children.length
     const zOffset = -0.1
@@ -237,7 +237,7 @@ AFRAME.registerComponent('object3d-view', {
       let obj = validChildren[i]
       if (this.system.childViews.has(obj)) {
         let view = this.system.childViews.get(obj)
-        console.log("Exiting view", obj, view)
+        // console.log("Exiting view", obj, view)
         // if (existingChildEntities.indexOf(view) < 0) { this.el.append(view) }
         view.setAttribute('visible', true)
         view.setAttribute('position', `3.3 ${(i - validChildren.length / 2 + 0.5) * heightOffset } ${(i - validChildren.length / 2) * -0.1}`)
@@ -799,7 +799,7 @@ AFRAME.registerComponent('organizer-lock-button', {
       let axes = []
       if (viewTargetEl(this.object3dview).hasAttribute('manipulator-lock'))
       {
-        axes = viewTargetEl(this.object3dview).components['manipulator-lock'].data[this.data.prop]
+        axes = viewTargetEl(this.object3dview).components['manipulator-lock'].data[this.data.prop].slice()
       }
       if (axes.indexOf(this.data.axis) < 0)
       {
