@@ -1542,15 +1542,27 @@ AFRAME.registerComponent('object-constraint-flag', {
     this.el.append(this.handle)
     this.handle.classList.add("clickable")
     this.handle.setAttribute('propogate-grab','')
-    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
-    this.handle.setAttribute('material', 'shader: matcap; src: #asset-shelf')
-    this.handle.setAttribute('rotation', '90 0 0')
+    // this.handle.setAttribute('geometry', 'primitive: cone; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    let needleLength = 0.3;
+    this.handle.setAttribute('geometry', `primitive: cone; radiusBottom: 0.02; radiusTop: 0.001; segmentsRadial: 4; segmentsHeight: 1; height: ${needleLength}`)
+    this.handle.setAttribute('material', 'shader: matcap; color: #96A2B0')
+    this.handle.setAttribute('rotation', '-90 0 0')
+    this.label = document.createElement('a-entity')
+    this.el.append(this.label)
+    this.label.setAttribute('geometry', 'primitive: flag; width: 0.1; height: 0.1; depth: 0.001')
+    this.label.setAttribute('material', 'shader: matcap; color: #b6c5f2')
+    this.label.setAttribute('position', `0 0 ${needleLength / 2}`)
+    this.label.classList.add("clickable")
+    this.label.setAttribute('propogate-grab','')
     this.el.setAttribute('action-tooltips', "b: Clone")
     this.placeholder = new THREE.Object3D;
 
     Util.whenLoaded(this.el, () => {
       this.el.object3D.userData.vartisteUI = true
     })
+  },
+  update(oldData) {
+
   },
   attachToTool() {
     if (this.attachedTo) return;
