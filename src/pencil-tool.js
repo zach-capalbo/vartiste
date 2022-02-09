@@ -1501,7 +1501,7 @@ Util.registerComponentSystem('object-constraint-flag-system', {
 AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    selector: {type: 'string', default: 'a-entity[six-dof-tool]'},
+    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]'},
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
@@ -1560,12 +1560,28 @@ AFRAME.registerComponent('object-constraint-flag', {
     this.el.setAttribute('action-tooltips', "b: Clone")
     this.placeholder = new THREE.Object3D;
 
+    // this.icon = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), new THREE.MeshBasicMaterial({transparent: true}))
+    let icon = this.icon = document.createElement('a-entity')
+    this.el.append(icon)
+    icon.setAttribute('geometry', 'primitive: plane; width: 0.09; height: 0.09')
+    icon.setAttribute('material', 'shader: flat; transparent: true')
+    icon.setAttribute('position', `0 0 ${needleLength / 2 + 0.005}`)
+
     Util.whenLoaded(this.el, () => {
       this.el.object3D.userData.vartisteUI = true
     })
   },
   update(oldData) {
     this.label.setAttribute('material', 'color', this.data.color)
+    if (this.data.icon)
+    {
+      this.icon.setAttribute('visible', true)
+      this.icon.setAttribute('material', 'src', this.data.icon)
+    }
+    else
+    {
+      this.icon.setAttribute('visible', false)
+    }
   },
   attachToTool() {
     if (this.attachedTo) return;
@@ -1683,7 +1699,7 @@ AFRAME.registerComponent('weight-constraint-flag', {
     }
   },
   init() {
-
+    this.el.setAttribute('object-constraint-flag', {icon: '#asset-hand-two-lines', color: '#867555'})
   },
   calcWeight(count) {
     let c = 0
@@ -1734,11 +1750,11 @@ function registerSimpleConstraintFlagComponent(
   });
 }
 
-registerSimpleConstraintFlagComponent('lock-position-flag', {component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('lock-y-flag', {component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y', valueOff: null})
-registerSimpleConstraintFlagComponent('lock-rotation-flag', {component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('puppeteering-flag', {color: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
-registerSimpleConstraintFlagComponent('hidden-flag', {component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
+registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', color: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 
 AFRAME.registerComponent('lathe-selection-tool', {
   schema: {
