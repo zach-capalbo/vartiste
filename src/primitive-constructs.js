@@ -149,6 +149,19 @@ Util.registerComponentSystem('primitive-constructs', {
         this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, el.object3D)
       }
 
+      let root = el.object3D
+      let box = Util.recursiveBoundingBox(root, {onlyVisible: true, includeUI: false, world: false, debug: false})
+      box.getCenter(root.position)
+      root.updateMatrix()
+
+      let inv = this.pool('inv', THREE.Matrix4)
+      inv.copy(root.matrix).invert()
+
+      for (let c of root.children)
+      {
+        Util.applyMatrix(c.matrix.premultiply(inv), c)
+      }
+
       el.setAttribute('reference-glb', '')
       el.setAttribute('animation-3d-keyframed')
 

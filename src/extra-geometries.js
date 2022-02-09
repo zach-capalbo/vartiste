@@ -53,6 +53,36 @@ AFRAME.registerGeometry('unwrapped-dodecahedron', {
   }
 });
 
+AFRAME.registerGeometry('flag', {
+  schema: {
+    depth: {default: 0.1},
+    width: {default: 1.0},
+    height: {default: 1.0},
+    tailPercent: {default: 0.5},
+  },
+  init: function(data) {
+    const shape = new THREE.Shape();
+    let hw = data.width / 2;
+    let hh = data.height / 2;
+    let th = hh + hh * data.tailPercent
+    shape.moveTo( -hw,hh );
+    shape.lineTo( hw, hh );
+    shape.lineTo( hw, -th );
+    shape.lineTo( 0, -hh );
+    shape.lineTo( -hw, -th );
+    shape.lineTo( -hw, hh );
+
+    const extrudeSettings = {
+    	steps: 1,
+    	depth: data.depth,
+      bevelEnabled: false,
+      curveSegments: 3,
+    };
+
+    this.geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+  }
+})
+
 const GLB_GEOMETRIES = [
   "head-base",
   "character-base",

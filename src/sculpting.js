@@ -2256,6 +2256,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     meshContainer: {type: 'selector', default: '#world-root'},
     moveThreshold: {default: 0.001},
     shapeSegments: {default: 24},
+    closed: {default: true},
   },
   events: {
     activate: function(e) {
@@ -2268,6 +2269,20 @@ AFRAME.registerComponent('threed-hull-tool', {
     },
     triggerup: function(e) {
       this.endLine()
+    },
+    bbuttondown: function(e) {
+      if (this.isDrawing) {
+        if (!this.pointToPoint)
+        {
+          this.points = [this.points[0]]
+          this.pointToPoint = true
+        }
+        this.readyForPoint = true
+      }
+      else
+      {
+        this.el.setAttribute('threed-hull-tool', 'closed', !this.data.closed)
+      }
     },
     stateadded: function(e) {
       if (e.detail === 'grabbed')
@@ -2308,7 +2323,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.05, height: 0.5, segments: 8, parentEl: this.el})
     let tipHeight = 0.3
 
-    this.el.setAttribute('action-tooltips', "trigger: Hold to draw;")
+    this.el.setAttribute('action-tooltips', "trigger: Hold to draw; b: Toggle closed")
     this.onMoved = this.onMoved.bind(this)
 
     let tip
@@ -2347,7 +2362,11 @@ AFRAME.registerComponent('threed-hull-tool', {
 
     if (this.isDrawing)
     {
-      this.points.push(tipWorld)
+      if (!this.pointToPoint || this.readyForPoint)
+      {
+        this.points.push(tipWorld)
+        this.readyForPoint = false
+      }
       // console.log("Points", this.points)
     }
     else if (this.lastPoint && this.shapes.length > 0)
@@ -2373,10 +2392,11 @@ AFRAME.registerComponent('threed-hull-tool', {
     this.isDrawing = false
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constraint)
     this.constraint = null;
+    this.pointToPoint = false
 
     this.lastPoint = this.points[0]
 
-    let shape = new THREE.CatmullRomCurve3(this.points, true);
+    let shape = new THREE.CatmullRomCurve3(this.points, this.data.closed);
     let centroid = new THREE.Vector3;
     centroid.set(0,0,0)
     let points = shape.getPoints(13)
@@ -2448,7 +2468,7 @@ AFRAME.registerComponent('threed-hull-tool', {
   },
   createEdgesMesh() {
     if (!this.points || this.points.length < 2) return
-    let geometry = new THREE.BufferGeometry().setFromPoints([this.points[this.points.length - 1]].concat(this.points));
+    let geometry = new THREE.BufferGeometry().setFromPoints(this.data.closed ? [this.points[this.points.length - 1]].concat(this.points) : this.points);
 
     let lineColors = []
     let start = this.pool('start', THREE.Color)
@@ -2456,7 +2476,7 @@ AFRAME.registerComponent('threed-hull-tool', {
     let end = this.pool('end', THREE.Color)
     end.setRGB(1, 0, 0)
     let c = this.pool('c', THREE.Color);
-    lineColors.push(end.r, end.g, end.b);
+    if (this.data.closed) { lineColors.push(end.r, end.g, end.b); }
     for (let i = 0; i < this.points.length; ++i)
     {
       c.lerpColors(start, end, i / this.points.length)
@@ -2482,8 +2502,15 @@ AFRAME.registerComponent('threed-hull-tool', {
     if (shapes.length < 1) return;
     const n = this.shapes.length - 1
 
-    shapes = [new THREE.CatmullRomCurve3([this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid], true)].concat(this.shapes)
-    shapes.push(new THREE.CatmullRomCurve3([this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid], true))
+    if (this.data.closed)
+    {
+      shapes = [new THREE.CatmullRomCurve3([this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid,this.shapes[0].centroid], true)].concat(this.shapes)
+      shapes.push(new THREE.CatmullRomCurve3([this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid,this.shapes[n].centroid], true))
+    }
+    else
+    {
+      shapes = this.shapes
+    }
     const heightSegments = shapes.length - 1;
     const radialSegments = THREE.Math.clamp(Math.max.apply(null, this.shapes.map(s => s.simplified.length)), this.data.shapeSegments, this.data.shapeSegments * 10)
 
@@ -2517,21 +2544,24 @@ AFRAME.registerComponent('threed-hull-tool', {
 		this.geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
     this.geometry.computeVertexNormals()
 
-    let normal = this.pool('normal', THREE.Vector3)
-    let normal2 = this.pool('normal', THREE.Vector3)
-    let normalAttr = this.geometry.attributes.normal
-    for (let y = 0; y < heightSegments; ++y)
+    if (this.data.closed)
     {
-      let i = y * (radialSegments + 1)
-      let ii = (y + 1) * (radialSegments + 1) - 1
-      normal.fromBufferAttribute(normalAttr, i)
-      normal2.fromBufferAttribute(normalAttr, ii)
-      normal.lerp(normal2, 0.5)
-      // normal.set(0,0,0)
-      normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
-      normalAttr.setXYZ(ii, normal.x, normal.y, normal.z)
+      let normal = this.pool('normal', THREE.Vector3)
+      let normal2 = this.pool('normal', THREE.Vector3)
+      let normalAttr = this.geometry.attributes.normal
+      for (let y = 0; y < heightSegments; ++y)
+      {
+        let i = y * (radialSegments + 1)
+        let ii = (y + 1) * (radialSegments + 1) - 1
+        normal.fromBufferAttribute(normalAttr, i)
+        normal2.fromBufferAttribute(normalAttr, ii)
+        normal.lerp(normal2, 0.5)
+        // normal.set(0,0,0)
+        normalAttr.setXYZ(i, normal.x, normal.y, normal.z)
+        normalAttr.setXYZ(ii, normal.x, normal.y, normal.z)
+      }
+      normalAttr.needsUpdate = true
     }
-    normalAttr.needsUpdate = true
 
     if (this.mesh)
     {

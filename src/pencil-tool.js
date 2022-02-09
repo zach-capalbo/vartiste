@@ -1492,12 +1492,30 @@ AFRAME.registerComponent('straight-edge-tool', {
   }
 })
 
-AFRAME.registerComponent('protractor-tool', {})
 
-AFRAME.registerComponent('tool-weight-tool', {
+
+Util.registerComponentSystem('object-constraint-flag-system', {
+
+})
+
+AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    weight: {default: 0.9}
+    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]'},
+    reparent: {default: true},
+    icon: {type: 'string'},
+    color: {type: 'color', default: '#b6c5f2'},
+  },
+  emits: {
+    startobjectconstraint: {
+      el: null
+    },
+    endobjectconstraint: {
+      el: null
+    },
+    cloneloaded: {
+      el: null
+    }
   },
   events: {
     stateremoved: function(e) {
@@ -1518,56 +1536,79 @@ AFRAME.registerComponent('tool-weight-tool', {
     }
   },
   init() {
+    this.system = this.el.sceneEl.systems['object-constraint-flag-system']
+    Pool.init(this, {useSystem: true})
+    Util.emitsEvents(this)
+
     this.el.classList.add('grab-root')
     this.handle = document.createElement('a-entity')
     this.el.append(this.handle)
     this.handle.classList.add("clickable")
     this.handle.setAttribute('propogate-grab','')
-    this.handle.setAttribute('geometry', 'primitive: torus; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
-    this.handle.setAttribute('material', 'shader: matcap; src: #asset-shelf')
-    this.handle.setAttribute('rotation', '90 0 0')
+    // this.handle.setAttribute('geometry', 'primitive: cone; radius: 0.05; radiusTubular: 0.01; segmentsRadial: 8; segmentsTubular: 16')
+    let needleLength = 0.3;
+    this.handle.setAttribute('geometry', `primitive: cone; radiusBottom: 0.02; radiusTop: 0.001; segmentsRadial: 4; segmentsHeight: 1; height: ${needleLength}`)
+    this.handle.setAttribute('material', 'shader: matcap; color: #96A2B0')
+    this.handle.setAttribute('rotation', '-90 0 0')
+    this.label = document.createElement('a-entity')
+    this.el.append(this.label)
+    this.label.setAttribute('geometry', 'primitive: flag; width: 0.1; height: 0.1; depth: 0.001')
+    this.label.setAttribute('material', 'shader: matcap; color: #b6c5f2')
+    this.label.setAttribute('position', `0 0 ${needleLength / 2}`)
+    this.label.classList.add("clickable")
+    this.label.setAttribute('propogate-grab','')
     this.el.setAttribute('action-tooltips', "b: Clone")
     this.placeholder = new THREE.Object3D;
+
+    // this.icon = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.1), new THREE.MeshBasicMaterial({transparent: true}))
+    let icon = this.icon = document.createElement('a-entity')
+    this.el.append(icon)
+    icon.setAttribute('geometry', 'primitive: plane; width: 0.09; height: 0.09')
+    icon.setAttribute('material', 'shader: flat; transparent: true')
+    icon.setAttribute('position', `0 0 ${needleLength / 2 + 0.005}`)
+
+    Util.whenLoaded(this.el, () => {
+      this.el.object3D.userData.vartisteUI = true
+    })
+  },
+  update(oldData) {
+    this.label.setAttribute('material', 'color', this.data.color)
+    if (this.data.icon)
+    {
+      this.icon.setAttribute('visible', true)
+      this.icon.setAttribute('material', 'src', this.data.icon)
+    }
+    else
+    {
+      this.icon.setAttribute('visible', false)
+    }
   },
   attachToTool() {
     if (this.attachedTo) return;
 
-    document.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
+    document.querySelectorAll(this.data.selector).forEach(el => {
       if (this.attachedTo) return;
       if (el === this.el) return;
       if (!Util.visibleWithAncestors(el.object3D)) return;
-      if (el.hasAttribute('tool-weight-tool')) return;
+      if (el.hasAttribute('object-constraint-flag')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
 
-      console.log("Intersecting tool", el)
-      let placeholder = this.placeholder
-      el.object3D.add(placeholder)
-      Util.positionObject3DAtTarget(placeholder, this.el.object3D)
-      el.object3D.add(this.el.object3D)
-      Util.positionObject3DAtTarget(this.el.object3D, placeholder)
-      el.object3D.remove(placeholder)
-
-      if (!el['tool-weight-tool-data'])
+      // console.log("Intersecting tool", el)
+      if (this.data.reparent)
       {
-        el['tool-weight-tool-data'] = {
-          originalWeight: el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null,
-          weightCount: 0,
-        }
+        let placeholder = this.placeholder
+        el.object3D.add(placeholder)
+        Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+        el.object3D.add(this.el.object3D)
+        Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+        el.object3D.remove(placeholder)
       }
 
-      el['tool-weight-tool-data'].weightCount++;
-
-      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
       this.attachedTo = el
+
+      this.emitDetails.startobjectconstraint.el = el
+      this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
     })
-  },
-  calcWeight(count) {
-    let c = 0
-    for (let i = 1; i <= count; i++)
-    {
-      c += 1 / Math.pow(2, i)
-    }
-    return c;
   },
   detachTool() {
     if (!this.attachedTo) return;
@@ -1578,26 +1619,8 @@ AFRAME.registerComponent('tool-weight-tool', {
     ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
     Util.positionObject3DAtTarget(this.el.object3D, placeholder)
 
-    let el = this.attachedTo;
-
-    el['tool-weight-tool-data'].weightCount--;
-
-    if (el['tool-weight-tool-data'].weightCount === 0)
-    {
-      if (el['tool-weight-tool-data'].originalWeight)
-      {
-        this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
-      }
-      else
-      {
-        this.attachedTo.removeAttribute('manipulator-weight')
-      }
-      delete el['tool-weight-tool-data'];
-    }
-    else
-    {
-      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
-    }
+    this.emitDetails.endobjectconstraint.el = this.attachedTo
+    this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
 
     this.attachedTo = undefined
   },
@@ -1612,19 +1635,134 @@ AFRAME.registerComponent('tool-weight-tool', {
       this.el.sceneEl.append(el)
     }
     Util.whenLoaded(el, () => {
-      el.setAttribute('tool-weight-tool', this.el.getAttribute('tool-weight-tool'))
+      this.emitDetails.cloneloaded.el = el
+      this.el.emit('cloneloaded', this.emitDetails.cloneloaded)
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
-      Util.whenComponentInitialized(el, 'tool-weight-tool', () => {
-        Util.whenLoaded(el.components['tool-weight-tool'].handle, () => {
-          Util.callLater(() => {
-            console.log("tool weight initialized")
-            el.components['tool-weight-tool'].attachToTool()
+      Util.whenComponentInitialized(el, 'object-constraint-flag', () => {
+        Util.whenLoaded(el.components['object-constraint-flag'].handle, () => {
+          Util.delay(100).then(() => {
+            console.log("Constraint Clone initialized")
+            el.components['object-constraint-flag'].attachToTool()
           })
         })
       })
     })
   }
 })
+
+AFRAME.registerComponent('weight-constraint-flag', {
+  dependencies: ['object-constraint-flag'],
+  schema: {
+    weight: {default: 0.9}
+  },
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      if (!el['tool-weight-tool-data'])
+      {
+        el['tool-weight-tool-data'] = {
+          originalWeight: el.hasAttribute('manipulator-weight') ? AFRAME.utils.clone(el.getAttribute('manipulator-weight')) : null,
+          weightCount: 0,
+        }
+      }
+
+      el['tool-weight-tool-data'].weightCount++;
+
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
+      this.attachedTo = el
+    },
+    endobjectconstraint: function(e) {
+      let el = this.attachedTo;
+
+      el['tool-weight-tool-data'].weightCount--;
+
+      if (el['tool-weight-tool-data'].weightCount === 0)
+      {
+        if (el['tool-weight-tool-data'].originalWeight)
+        {
+          this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
+        }
+        else
+        {
+          this.attachedTo.removeAttribute('manipulator-weight')
+        }
+        delete el['tool-weight-tool-data'];
+      }
+      else
+      {
+        el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
+      }
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('weight-constraint-flag', this.el.getAttribute('weight-constraint-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', {icon: '#asset-hand-two-lines', color: '#867555'})
+  },
+  calcWeight(count) {
+    let c = 0
+    for (let i = 1; i <= count; i++)
+    {
+      c += 1 / Math.pow(2, i)
+    }
+    return c;
+  },
+})
+
+function registerSimpleConstraintFlagComponent(
+  name,
+  {
+    icon,
+    color = "#b6c5f2",
+    onColor,
+    component,
+    valueOn,
+    valueOff = null,
+    reparent = true,
+  }) {
+  AFRAME.registerComponent(name, {
+    dependencies: ['object-constraint-flag'],
+    events: {
+      startobjectconstraint: function(e) {
+        let el = e.detail.el
+        el.setAttribute(component, valueOn)
+
+        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', onColor)}
+      },
+      endobjectconstraint: function(e) {
+        let el = e.detail.el
+        if (valueOff === null || valueOff === undefined)
+        {
+          el.removeAttribute(component)
+        }
+        else
+        {
+          el.setAttribute(component, valueOff)
+        }
+
+        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', color)}
+      },
+      cloneloaded: function(e) {
+        e.stopPropagation()
+        e.detail.el.setAttribute(name, this.el.getAttribute(name))
+      }
+    },
+    init() {
+      this.el.setAttribute('object-constraint-flag', {color, icon, reparent})
+    }
+  });
+}
+
+registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'penabled: true', valueOff: null})
+registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 
 AFRAME.registerComponent('lathe-selection-tool', {
   schema: {
