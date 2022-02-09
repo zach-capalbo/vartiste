@@ -150,7 +150,7 @@ Util.registerComponentSystem('primitive-constructs', {
       }
 
       let root = el.object3D
-      let box = Util.recursiveBoundingBox(root, {onlyVisible: true, includeUI: false, world: false, debug: true})
+      let box = Util.recursiveBoundingBox(root, {onlyVisible: true, includeUI: false, world: false, debug: false})
       box.getCenter(root.position)
       root.updateMatrix()
 

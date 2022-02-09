@@ -1640,7 +1640,7 @@ AFRAME.registerComponent('object-constraint-flag', {
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
       Util.whenComponentInitialized(el, 'object-constraint-flag', () => {
         Util.whenLoaded(el.components['object-constraint-flag'].handle, () => {
-          Util.callLater(() => {
+          Util.delay(100).then(() => {
             console.log("Constraint Clone initialized")
             el.components['object-constraint-flag'].attachToTool()
           })
@@ -1716,6 +1716,7 @@ function registerSimpleConstraintFlagComponent(
   {
     icon,
     color = "#b6c5f2",
+    onColor,
     component,
     valueOn,
     valueOff = null,
@@ -1727,6 +1728,8 @@ function registerSimpleConstraintFlagComponent(
       startobjectconstraint: function(e) {
         let el = e.detail.el
         el.setAttribute(component, valueOn)
+
+        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', onColor)}
       },
       endobjectconstraint: function(e) {
         let el = e.detail.el
@@ -1738,6 +1741,8 @@ function registerSimpleConstraintFlagComponent(
         {
           el.setAttribute(component, valueOff)
         }
+
+        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', color)}
       },
       cloneloaded: function(e) {
         e.stopPropagation()
@@ -1751,10 +1756,12 @@ function registerSimpleConstraintFlagComponent(
 }
 
 registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', color: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
-registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
+registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 
 AFRAME.registerComponent('lathe-selection-tool', {
   schema: {
