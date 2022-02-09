@@ -642,7 +642,7 @@ class VARTISTEUtil {
     })
   }
 
-  recursiveBoundingBox(rootObj, {box = undefined, onlyVisible = true, includeUI = true, world = true} = {})
+  recursiveBoundingBox(rootObj, {box = undefined, onlyVisible = true, includeUI = true, world = true, debug = false} = {})
   {
     let boundingBox = box || this.pool('boundingBox', THREE.Box3)
     let tmpBox = this.pool('tmpBox', THREE.Box3)
@@ -652,10 +652,11 @@ class VARTISTEUtil {
 
     rootObj.updateMatrixWorld(true, true)
 
-    firstModel.geometry.computeBoundingBox()
-    boundingBox.copy(firstModel.geometry.boundingBox)
-    firstModel.updateMatrixWorld()
-    boundingBox.applyMatrix4(firstModel.matrixWorld)
+    // firstModel.geometry.computeBoundingBox()
+    // boundingBox.copy(firstModel.geometry.boundingBox)
+    // firstModel.updateMatrixWorld()
+    // boundingBox.applyMatrix4(firstModel.matrixWorld)
+    boundingBox.makeEmpty()
 
     let skipSet = new Set()
     rootObj.traverse(m => {
@@ -666,8 +667,8 @@ class VARTISTEUtil {
 
         if (m.userData && m.userData.vartisteUI) {
           m.traverse(mm => skipSet.add(mm))
+          return
         }
-        return
       }
 
       if (!m.geometry) return
@@ -679,7 +680,13 @@ class VARTISTEUtil {
       // Hidden Icon buttons
       if (tmpBox.min.y < -9999) return;
 
+      if (debug) this.el.object3D.add(new THREE.Box3Helper(tmpBox.clone(), 'red'))
+
       boundingBox.union(tmpBox)
+
+      if (debug) this.el.object3D.add(new THREE.Box3Helper(boundingBox.clone(), 'green'))
+
+      if (debug) console.log("box", boundingBox.min.toArray(), boundingBox.max.toArray())
     })
 
     if (!world)

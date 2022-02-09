@@ -170,7 +170,7 @@ AFRAME.registerComponent("frame", {
       //   width = (box.max.x - box.min.x) * target.getObject3D('mesh').scale.x
       //   height = (box.max.y - box.min.y) * target.getObject3D('mesh').scale.y
       // }
-      console.log("Bounds", box, width, height)
+      // console.log("Bounds", box, width, height)
     }
     else
     {
