@@ -1763,6 +1763,11 @@ registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outli
 registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'penabled: true', valueOff: null})
 registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
+// Show Normals
+// Show UV
+// Move Origin
+// Show Edges
+// Edit Vertices
 
 AFRAME.registerComponent('lathe-selection-tool', {
   schema: {
@@ -1796,6 +1801,12 @@ AFRAME.registerComponent('lathe-selection-tool', {
         return;
       }
     },
+    bbuttondown: function(e) {
+      if (!this.selectionBoxTool.grabbing)
+      {
+        this.clone()
+      }
+    },
     click: function(e) {
       if (this.el.is('grabbed') && this.selectionBoxTool.grabbing) {
         for (let target of Object.values(this.selectionBoxTool.grabbed))
@@ -1820,7 +1831,7 @@ AFRAME.registerComponent('lathe-selection-tool', {
   },
   init() {
     this.el.setAttribute('selection-box-tool', 'boxSize: 0.4 0.1 0.4; autoGrab: false')
-    this.el.setAttribute('action-tooltips', 'trigger: Toggle Lathe')
+    this.el.setAttribute('action-tooltips', 'trigger: Toggle Lathe; b: Clone')
     let lever = document.createElement('a-entity')
     this.el.append(lever)
     lever.setAttribute('position', '0.08 -0.2 0')
@@ -1829,6 +1840,14 @@ AFRAME.registerComponent('lathe-selection-tool', {
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
+    })
+  },
+  clone() {
+    let el = document.createElement('a-entity')
+    this.el.parentEl.append(el)
+    Util.whenLoaded(el, () => {
+      Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
+      el.setAttribute('lathe-selection-tool', this.el.getAttribute('lathe-selection-tool'))
     })
   },
   tick(t, dt) {
