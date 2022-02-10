@@ -511,6 +511,9 @@ AFRAME.registerComponent('object3d-view', {
     let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
     // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
   },
+  mergeBufferGeometriesAndMaterials() {
+    
+  },
   resetMatrix() {
     Undo.collect(() => {
       Undo.pushObjectMatrix(this.object)

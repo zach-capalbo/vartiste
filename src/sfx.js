@@ -32,6 +32,8 @@ class SfxMgr {
       listening: 'sfx-click',
       recognitionerror: 'error',
       cantRedo: 'error',
+      stickOn: 'switch9',
+      stickOff: 'switch10',
     }
 
     for (let k in map)

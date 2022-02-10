@@ -84,10 +84,26 @@ AFRAME.registerComponent('drawable', {
     // If true, will turn meshes without pre-existing textures drawable. Set
     // this to false if you're drawing on a model with some un-textured
     // components.
-    includeTexturelessMeshes: {default: true}
+    includeTexturelessMeshes: {default: true},
+
+    // If true, this will attempt to use existing image resolutions, or canvases
+    // from canvas textures
+    useExisting: {default: false},
   },
   init() {
+    this.hadCanvas = this.el.classList && this.el.classList.contains('canvas')
     this.el.classList.add('canvas')
+  },
+  remove() {
+    if (!this.hadCanvas)
+    {
+      this.el.classList.remove('canvas')
+    }
+
+    if (!this.hadDrawCanvas)
+    {
+      this.el.removeAttribute('draw-canvas')
+    }
   },
   update(oldData) {
     if (this.data.canvas)
@@ -112,6 +128,7 @@ AFRAME.registerComponent('drawable', {
     this.tex.encoding = this.el.sceneEl.getAttribute('renderer').colorManagement ? THREE.GammaEncoding : THREE.LinearEncoding
     this.canvas.touch = () => this.tex.needsUpdate = true
 
+    if (this.hadDrawCanvas === undefined) this.hadDrawCanvas = this.el.hasAttribute('draw-canvas')
     this.el.setAttribute('draw-canvas', {canvas: this.canvas})
   },
   tick(t,dt) {
@@ -139,6 +156,16 @@ AFRAME.registerComponent('drawable', {
         }
 
         originalImage = o.material.map.image
+
+        if (this.data.useExisting)
+        {
+          this.canvas.width = originalImage.width
+          this.canvas.height = originalImage.height
+          this.tex = new THREE.CanvasTexture(this.canvas)
+          this.tex.encoding = this.el.sceneEl.getAttribute('renderer').colorManagement ? THREE.GammaEncoding : THREE.LinearEncoding
+          this.canvas.touch = () => this.tex.needsUpdate = true
+          this.el.setAttribute('draw-canvas', {canvas: this.canvas})
+        }
 
         o.material = o.material.clone()
 

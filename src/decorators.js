@@ -204,6 +204,7 @@ AFRAME.registerComponent('object-constraint-flag', {
 
       this.emitDetails.startobjectconstraint.el = el
       this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
+      Sfx.stickOn(this.el, {volume: 0.1})
     })
   },
   detachTool() {
@@ -219,6 +220,7 @@ AFRAME.registerComponent('object-constraint-flag', {
     this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
 
     this.attachedTo = undefined
+    Sfx.stickOff(this.el, {volume: 0.05})
   },
   makeClone() {
     let el = document.createElement('a-entity')
@@ -399,6 +401,66 @@ AFRAME.registerComponent('show-uv-flag', {
   }
 })
 
+AFRAME.registerComponent('wireframe-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.classList.remove('clickable')
+      Util.traverseNonUI(el.object3D, (o) => {
+        if (!o.material) return;
+
+        this.meshMap.set(o, o.material.wireframe)
+        o.material.wireframe = true
+        o.material.needsUpdate = true
+      })
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.classList.add('clickable')
+      Util.traverseNonUI(el.object3D, (o) => {
+        if (!o.material) return;
+
+        let m = this.meshMap.get(o)
+        if (this.meshMap.has(o)) {
+          o.material.wireframe = m
+          o.material.needsUpdate = true
+          this.meshMap.delete(o)
+        }
+      })
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('wireframe-flag', this.el.getAttribute('wireframe-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', {color: '#b435ba', icon: '#asset-web'})
+    this.meshMap = new Map();
+  }
+})
+
+AFRAME.registerComponent('unclickable-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.classList.remove('clickable')
+      this.el.setAttribute('object-constraint-flag', 'color', '#ff5555')
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.classList.add('clickable')
+      this.el.setAttribute('object-constraint-flag', 'color', '#867555')
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('unclickable-flag', this.el.getAttribute('unclickable-flag'))
+    }
+  },
+  init() { this.el.setAttribute('object-constraint-flag', {color: '#867555', icon: '#asset-hand-no-lines'}) }
+})
+
 function registerSimpleConstraintFlagComponent(
   name,
   {
@@ -409,6 +471,7 @@ function registerSimpleConstraintFlagComponent(
     valueOn,
     valueOff = null,
     reparent = true,
+    selector,
   }) {
   AFRAME.registerComponent(name, {
     dependencies: ['object-constraint-flag'],
@@ -439,6 +502,7 @@ function registerSimpleConstraintFlagComponent(
     },
     init() {
       this.el.setAttribute('object-constraint-flag', {color, icon, reparent})
+      if (selector) this.el.setAttribute('object-constraint-flag', 'selector', selector)
     }
   });
 }
@@ -452,6 +516,8 @@ registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', 
 registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
 // Show UV
 // Show Edges
 // Edit Vertices

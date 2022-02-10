@@ -408,6 +408,68 @@ class MaterialTransformations {
       }
     }
   }
+
+  static combineMaterials(object)
+  {
+    let materialCache = {}
+    let materialId = (material) => material.map ? material.map.uuid : material.uuid;
+    // materialCache[materialId(o.material)] = o.material
+
+    let materialList = Object.values(materialCache)
+
+    if (materialList.length === 1) return materialList[0]
+    if (materialList.length === 0) return new THREE.MeshBasicMaterial();
+
+    let boxes = Util.divideCanvasRegions(materialList.length)
+
+    let currentBoxId = 0
+    let currentBox = new THREE.Box2(new THREE.Vector2(0, 0), new THREE.Vector2(1, 1))
+    let materialBoxes = {}
+    let shouldUse3D = Compositor.el.getAttribute('material').shader === 'standard'
+    let doubleSided = Compositor.component.data.doubleSided
+
+    let modeCanvases = {}
+
+    materialParams = {}
+
+    for (let material of materialList)
+    {
+      currentBox = boxes[currentBoxId++]
+      materialBoxes[materialId(material)] = currentBox
+
+      if (material.side === THREE.DoubleSide || material.side === THREE.BackSide)
+      {
+        doubleSided = true
+      }
+
+      for (let mode of ["map"].concat(THREED_MODES))
+      {
+        if (material[mode] || mode === 'map')
+        {
+          let image = material[mode] ? material[mode].image : undefined
+          let {width, height} = Compositor.component
+          let canvas = modeCanvases[mode]
+          if (!canvas)
+          {
+            canvas = document.createElement('canvas')
+            Util.ensureSize(canvas, width, height)
+            modeCanvases[mode] = canvas
+            materialParams[mode] = new THREE.Texture(canvas)
+            Util.fillDefaultCanvasForMap(canvas, mode, {replace: true});
+          }
+          let ctx = canvas.getContext('2d')
+
+          if (image)
+          {
+            ctx.drawImage(image, 0, 0, image.width, image.height,
+                                 box.min.x, box.min.y, box.max.x, box.max.y)
+          }
+        }
+      }
+    }
+
+    return new THREE.MeshStandardMaterial(materialParams)
+  }
 }
 
 const {prepareModelForExport, bumpCanvasToNormalCanvas, checkTransparency, dedupMaterials} = MaterialTransformations

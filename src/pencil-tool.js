@@ -1560,9 +1560,9 @@ AFRAME.registerComponent('lathe-selection-tool', {
     this.el.setAttribute('action-tooltips', 'trigger: Toggle Lathe; b: Clone')
     let lever = document.createElement('a-entity')
     this.el.append(lever)
-    lever.setAttribute('position', '0.08 -0.2 0')
+    lever.setAttribute('position', '0.02 -0.2 0')
     lever.setAttribute('scale', '0.6 0.6 0.6')
-    lever.setAttribute('lever', {target: this.el, component: 'lathe-selection-tool', property: 'speed', axis: 'x', gripRadius: 0.07, handleLength: 0.2, valueRange: new THREE.Vector2(20, 0), initialValue: 1.0})
+    lever.setAttribute('lever', {target: this.el, component: 'lathe-selection-tool', property: 'speed', axis: 'x', gripRadius: 0.07, handleLength: 0.3, valueRange: new THREE.Vector2(20, -20), initialValue: 1.0})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
       this.box = this.selectionBoxTool.box
@@ -1570,7 +1570,7 @@ AFRAME.registerComponent('lathe-selection-tool', {
   },
   clone() {
     let el = document.createElement('a-entity')
-    this.el.parentEl.append(el)
+    this.el.object3D.parent.el.append(el)
     Util.whenLoaded(el, () => {
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
       el.setAttribute('lathe-selection-tool', this.el.getAttribute('lathe-selection-tool'))
