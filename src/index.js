@@ -98,6 +98,7 @@ require('./text')
 require('./scene-organizer')
 require('./controller-proxy')
 require('./extras')
+require('./decorators')
 
 require('./hubs-connector-shim.js')
 

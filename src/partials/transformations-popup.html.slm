@@ -8,6 +8,7 @@ a-entity shelf="name: Transformations; closeable: true; pinnable: false; height:
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Apply Transformation" object3d-view-action="applyTransformation"
       a-entity icon-button="#asset-shape-outline" tooltip="Merge Geometries" object3d-view-action="mergeBufferGeometries"
+      /a-entity icon-button="#asset-shape-outline" tooltip="Merge Geometries And Materials" object3d-view-action="mergeBufferGeometriesAndMaterials"
       a-entity icon-button="#asset-arrow-all" tooltip="Move Origin" object3d-view-action="adjustOrigin"
       a-entity icon-button="#asset-swap-vertical-variant" tooltip="Flip Faces" object3d-view-action="flipNormals"
       /a-entity icon-button="#asset-arrow-all" tooltip="Move Origin"

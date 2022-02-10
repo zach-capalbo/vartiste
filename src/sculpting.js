@@ -375,10 +375,18 @@ AFRAME.registerComponent('vertex-handles', {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
     this.meshLines = new Map();
 
-    for (let mesh of Util.traverseFindAll(this.el.getObject3D('mesh'), o => o.type === 'Mesh' || o.type === 'SkinnedMesh'))
+    let settingUpPromises = []
+    let meshes = []
+
+    Util.traverseNonUI(this.el.getObject3D('mesh'), o => {
+      if (o.type === 'Mesh' || o.type === 'SkinnedMesh') meshes.push(o)
+    })
+
+    for (let mesh of meshes)
     {
-      this.setupMesh(mesh)
+      settingUpPromises.push(this.setupMesh(mesh))
     }
+    this.allSetUp = Promise.all(settingUpPromises)
   },
   async setupMesh(mesh) {
     if (!mesh)
@@ -573,9 +581,11 @@ AFRAME.registerComponent('vertex-handles', {
       this.meshes.push(mesh)
     }
   },
-  remove() {
+  async remove() {
+    await this.allSetUp;
     for (let el of this.handles)
     {
+      el.object3D.parent.remove(el.object3D)
       Util.disposeEl(el)
       // this.el.removeChild(el)
     }
@@ -2591,6 +2601,11 @@ AFRAME.registerComponent('threed-hull-tool', {
         if (true || !shapes[y].segmentedPoints)
         {
           shapes[y].segmentedPoints = shapes[y].getSpacedPoints(radialSegments);
+          shapes[y].segmentedLengths = [0]
+          for (let i = 1; i <= radialSegments; ++i)
+          {
+            shapes[y].segmentedLengths.push(shapes[y].segmentedLengths[i - 1] + shapes[y].segmentedPoints[i].distanceTo(shapes[y].segmentedPoints[i - 1]))
+          }
         }
 
         for ( let x = 0; x <= radialSegments; x ++ ) {
@@ -2612,8 +2627,9 @@ AFRAME.registerComponent('threed-hull-tool', {
 				// calculate the radius of the current row
 				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
         const points = shapes[y].segmentedPoints
-        const lengths = shapes[y].getLengths(radialSegments)
+        // const lengths = shapes[y].getLengths(radialSegments)
         const shapeLength = shapes[y].getLength()
+        const lengths = shapes[y].segmentedLengths
 
 				for ( let x = 0; x <= radialSegments; x ++ ) {
 					const u = x / radialSegments;
