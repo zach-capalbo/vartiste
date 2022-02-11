@@ -6,6 +6,10 @@ import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 
+const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
+const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
+
+AFRAME.registerComponent('flaggable-control', {})
 
 AFRAME.registerComponent('adjustable-origin', {
   schema: {
@@ -96,7 +100,7 @@ Util.registerComponentSystem('object-constraint-flag-system', {
 AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator]'},
+    selector: {type: 'string', default: DEFAULT_SELECTOR},
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
@@ -480,7 +484,8 @@ AFRAME.registerComponent('wireframe-flag', {
       Util.traverseNonUI(el.object3D, (o) => {
         if (!o.material) return;
 
-        this.meshMap.set(o, o.material.wireframe)
+        if (this.meshMap.has(o.material)) return;
+        this.meshMap.set(o.material, o.material.wireframe)
         o.material.wireframe = true
         o.material.needsUpdate = true
       })
@@ -491,11 +496,14 @@ AFRAME.registerComponent('wireframe-flag', {
       Util.traverseNonUI(el.object3D, (o) => {
         if (!o.material) return;
 
-        let m = this.meshMap.get(o)
-        if (this.meshMap.has(o)) {
+        let m = this.meshMap.get(o.material)
+        if (this.meshMap.has(o.material)) {
           o.material.wireframe = m
           o.material.needsUpdate = true
-          this.meshMap.delete(o)
+          this.meshMap.delete(o.material)
+          if (m) {
+            console.log("Leaving as wireframe", o, m)
+          }
         }
       })
     },
@@ -539,6 +547,34 @@ AFRAME.registerComponent('unclickable-flag', {
   init() {
     this.el.setAttribute('object-constraint-flag', {color: '#867555', icon: '#asset-hand-no-lines'})
     this.elMap = new Map();
+  }
+})
+
+AFRAME.registerComponent('trigger-down-flag', {
+  dependencies: ['object-constraint-flag'],
+  schema: {
+    throttle: {default: 50},
+  },
+  startobjectconstraint: function(e) {
+    let el = e.detail.el
+    el.addState('grabbed')
+    this.attachedTo = el
+    el.emit('triggerdown', {})
+  },
+  endobjectconstraint: function(e) {
+    let el = e.detail.el
+    el.emit('triggerup', {})
+    delete this.attachedTo
+    el.removeState('grabbed')
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.params = {pressure: 1.0, rotation: 0.0, sourceEl: this.el, distance: 0, scale: 1.0}
+  },
+  tick(t, dt)
+  {
+    if (!this.attachedTo) return;
+    this.attachedTo.emit('draw', this.params)
   }
 })
 
@@ -614,4 +650,8 @@ registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skele
 
 registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#b6c5f2'})
 // hide from spectator
-// Skeleton
+// Trigger down
+// Stay grabbed
+// Undeletable
+// Remember position
+// Axes Scale

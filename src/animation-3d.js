@@ -882,15 +882,22 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
   }
 })
 
+AFRAME.registerSystem('skeleton-editor', {})
+
 AFRAME.registerComponent('skeleton-editor', {
   schema: {
     traverse: {default: false}
   },
+  events: {
+    // TODO: Extrude bone
+    bbuttondown: function(e) {}
+  },
   init() {
+    Pool.init(this, {useSystem: true})
+    this.handles = []
     Util.whenLoaded(this.el, () => {
       this.refreshSkeleton()
     })
-    this.handles = []
   },
   remove() {
     if (this.helper)
@@ -901,6 +908,7 @@ AFRAME.registerComponent('skeleton-editor', {
 
     for (let h of this.handles)
     {
+      h.object3D.parent.remove(h.object3D)
       Util.disposeEl(h)
     }
     this.handles = []
@@ -909,7 +917,9 @@ AFRAME.registerComponent('skeleton-editor', {
     let root = this.el.object3D
     this.helper = new THREE.SkeletonHelper(root)
     this.el.sceneEl.object3D.add(this.helper)
-    let targetScale = new THREE.Vector3(0.02,0.02,0.02)
+    let targetScale = this.pool('targetScale', THREE.Vector3)
+    let thisWorld = this.pool('thisWorld', THREE.Vector3)
+    let parentWorld = this.pool('parentWorld', THREE.Vector3)
     Util.traverseNonUI(root, (o) => {
       if (!o.isBone) return;
       let handle = document.createElement('a-entity')
@@ -921,8 +931,11 @@ AFRAME.registerComponent('skeleton-editor', {
         let dist = 0.05
         if (o.parent && o.parent.isBone)
         {
-          dist = THREE.Math.clamp(o.position.length(), 0.01, 0.05)
+          o.getWorldPosition(thisWorld)
+          o.parent.getWorldPosition(parentWorld)
+          dist = THREE.Math.clamp(thisWorld.distanceTo(parentWorld) * 0.9, 0.005, 0.02)
         }
+        targetScale.set(dist, dist, dist)
 
         Util.positionObject3DAtTarget(handle.object3D, o, {scale: targetScale})
         handle.setAttribute('grab-redirector-material', 'wireframe: false; shader: matcap; color: #c9f0f2')

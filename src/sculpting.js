@@ -202,6 +202,7 @@ AFRAME.registerSystem('vertex-handle', {
 })
 
 AFRAME.registerComponent('vertex-handle', {
+  dependencies: ['flaggable-control'],
   schema: {
     vertex: {type: 'int'},
     vertices: {type: 'array'},

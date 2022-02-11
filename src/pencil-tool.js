@@ -761,6 +761,7 @@ AFRAME.registerComponent('six-dof-tool', {
     lockedComponent: {type: 'string'},
     lockedComponentDependencies: {type: 'array', default: []},
     reparentOnActivate: {default: true},
+    resettable: {default: true},
     summonable: {default: false},
     orientation: {default: {x: 0, y: -1, z: 0}, type: 'vec3'},
   },
@@ -770,6 +771,14 @@ AFRAME.registerComponent('six-dof-tool', {
       // accidentally hidden when the UI is hidden
       if (this.data.reparentOnActivate)
       {
+        if (this.data.resettable)
+        {
+          this.resetInfo = {
+            parentEl: this.el.parentEl,
+            parentObject: this.el.object3D.parent,
+            matrix: new THREE.Matrix4().copy(this.el.object3D.matrix)
+          }
+        }
         console.log("Reparenting", this.data)
         let wm = new THREE.Matrix4
         this.el.object3D.updateMatrixWorld()
@@ -778,12 +787,20 @@ AFRAME.registerComponent('six-dof-tool', {
         (document.querySelector('#activated-tool-root') || this.el.sceneEl).object3D.add(this.el.object3D)
         Util.applyMatrix(wm, this.el.object3D)
       }
-    }
+    },
   },
   init() {
     if (this.data.summonable && !this.el.hasAttribute('summonable')) {
       this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
     }
+  },
+  resetPosition() {
+    if (!this.resetInfo) return;
+    if (this.el.is('grabbed')) return;
+    this.resetInfo.parentObject.add(this.el.object3D)
+    Util.applyMatrix(this.resetInfo.matrix, this.el.object3D)
+    this.el.removeState('grab-activated')
+    delete this.resetInfo
   }
 })
 

@@ -724,6 +724,7 @@ AFRAME.registerComponent('grab-redirector', {
         {
           let fakeTarget = this.fakeTarget = document.createElement('a-entity')
           this.el.sceneEl.append(fakeTarget)
+          fakeTarget.setAttribute('flaggable-control', '')
           this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
             Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
           }, POST_MANIPULATION_PRIORITY)
