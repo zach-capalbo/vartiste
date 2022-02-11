@@ -104,7 +104,8 @@ AFRAME.registerComponent('object-constraint-flag', {
   },
   emits: {
     startobjectconstraint: {
-      el: null
+      el: null,
+      intersectionInfo: null
     },
     endobjectconstraint: {
       el: null
@@ -181,13 +182,14 @@ AFRAME.registerComponent('object-constraint-flag', {
   },
   attachToTool() {
     if (this.attachedTo) return;
+    let intersectionInfo = this.pool('intersectionInfo', Object)
 
     document.querySelectorAll(this.data.selector).forEach(el => {
       if (this.attachedTo) return;
       if (el === this.el) return;
       if (!Util.visibleWithAncestors(el.object3D)) return;
       if (el.hasAttribute('object-constraint-flag')) return;
-      if (!Util.objectsIntersect(this.handle.object3D, el.object3D)) return;
+      if (!Util.objectsIntersect(this.handle.object3D, el.object3D, {intersectionInfo})) return;
 
       // console.log("Intersecting tool", el)
       if (this.data.reparent)
@@ -203,6 +205,7 @@ AFRAME.registerComponent('object-constraint-flag', {
       this.attachedTo = el
 
       this.emitDetails.startobjectconstraint.el = el
+      this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
       this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
       Sfx.stickOn(this.el, {volume: 0.1})
     })
@@ -444,13 +447,21 @@ AFRAME.registerComponent('unclickable-flag', {
   dependencies: ['object-constraint-flag'],
   events: {
     startobjectconstraint: function(e) {
-      let el = e.detail.el
-      el.classList.remove('clickable')
+      Util.traverseEl(e.detail.el, (el) => {
+        this.elMap.set(el, el.classList.contains('clickable'))
+        el.classList.remove('clickable')
+      })
       this.el.setAttribute('object-constraint-flag', 'color', '#ff5555')
     },
     endobjectconstraint: function(e) {
-      let el = e.detail.el
-      el.classList.add('clickable')
+      Util.traverseEl(e.detail.el, (el) => {
+        if (this.elMap.get(el))
+        {
+          el.classList.add('clickable')
+        }
+        this.elMap.delete(el)
+      })
+
       this.el.setAttribute('object-constraint-flag', 'color', '#867555')
     },
     cloneloaded: function(e) {
@@ -458,7 +469,10 @@ AFRAME.registerComponent('unclickable-flag', {
       e.detail.el.setAttribute('unclickable-flag', this.el.getAttribute('unclickable-flag'))
     }
   },
-  init() { this.el.setAttribute('object-constraint-flag', {color: '#867555', icon: '#asset-hand-no-lines'}) }
+  init() {
+    this.el.setAttribute('object-constraint-flag', {color: '#867555', icon: '#asset-hand-no-lines'})
+    this.elMap = new Map();
+  }
 })
 
 function registerSimpleConstraintFlagComponent(
