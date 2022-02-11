@@ -351,6 +351,7 @@ Util.registerComponentSystem('settings-system', {
       let anyVisible = false
 
       if (o.material) return true
+      if (o.isBone) return true
 
       for (let c of o.children) {
         if (pruneEmptyNodes(c, undoStack)) anyVisible = true
