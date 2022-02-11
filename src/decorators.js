@@ -542,6 +542,17 @@ AFRAME.registerComponent('unclickable-flag', {
   }
 })
 
+function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
+{
+  AFRAME.registerComponent(name, {
+    dependencies: ['object-constraint-flag'].concat(flags),
+    init() {
+      this.el.setAttribute('object-constraint-flag', {color, icon})
+      if (selector) this.el.setAttribute('object-constraint-flag', 'selector', selector)
+    }
+  })
+}
+
 function registerSimpleConstraintFlagComponent(
   name,
   {
@@ -593,13 +604,14 @@ registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizon
 registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'penabled: true', valueOff: null})
+registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'enabled: true', valueOff: null})
 registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
-// Show UV
-// Show Edges
-// Edit Vertices
+registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null, allowTools: false})
+
+registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#b6c5f2'})
 // hide from spectator
+// Skeleton

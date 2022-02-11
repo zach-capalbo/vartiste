@@ -512,7 +512,7 @@ AFRAME.registerComponent('object3d-view', {
     // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
   },
   mergeBufferGeometriesAndMaterials() {
-    
+
   },
   resetMatrix() {
     Undo.collect(() => {
@@ -693,7 +693,14 @@ AFRAME.registerComponent('grab-redirector', {
     let globe = this.globe = document.createElement('a-entity')
     this.el.append(globe)
     globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
-    globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    if (this.el.hasAttribute('grab-redirector-material'))
+    {
+      globe.setAttribute('material', this.el.getAttribute('grab-redirector-material'))
+    }
+    else
+    {
+      globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    }
     if (this.el.hasAttribute('globe-material'))
     {
       Util.whenLoaded(globe, () => globe.setAttribute('material', this.el.getAttribute('globe-material')))

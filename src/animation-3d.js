@@ -881,3 +881,54 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
     }
   }
 })
+
+AFRAME.registerComponent('skeleton-editor', {
+  schema: {
+    traverse: {default: false}
+  },
+  init() {
+    Util.whenLoaded(this.el, () => {
+      this.refreshSkeleton()
+    })
+    this.handles = []
+  },
+  remove() {
+    if (this.helper)
+    {
+      if (this.helper.parent) this.helper.parent.remove(this.helper)
+      Util.recursiveDispose(this.helper)
+    }
+
+    for (let h of this.handles)
+    {
+      Util.disposeEl(h)
+    }
+    this.handles = []
+  },
+  refreshSkeleton() {
+    let root = this.el.object3D
+    this.helper = new THREE.SkeletonHelper(root)
+    this.el.sceneEl.object3D.add(this.helper)
+    let targetScale = new THREE.Vector3(0.02,0.02,0.02)
+    Util.traverseNonUI(root, (o) => {
+      if (!o.isBone) return;
+      let handle = document.createElement('a-entity')
+      this.el.append(handle)
+      this.handles.push(handle)
+      Util.whenLoaded(handle, () => {
+        o.add(handle.object3D)
+
+        let dist = 0.05
+        if (o.parent && o.parent.isBone)
+        {
+          dist = THREE.Math.clamp(o.position.length(), 0.01, 0.05)
+        }
+
+        Util.positionObject3DAtTarget(handle.object3D, o, {scale: targetScale})
+        handle.setAttribute('grab-redirector-material', 'wireframe: false; shader: matcap; color: #c9f0f2')
+        handle.setAttribute('grab-redirector', {target: o, handle: false})
+        handle.setAttribute('tooltip', o.name)
+      })
+    })
+  }
+})
