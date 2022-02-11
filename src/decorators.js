@@ -91,13 +91,12 @@ AFRAME.registerComponent('adjustable-origin', {
 
 
 Util.registerComponentSystem('object-constraint-flag-system', {
-
 })
 
 AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]'},
+    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator]'},
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
@@ -122,10 +121,17 @@ AFRAME.registerComponent('object-constraint-flag', {
     },
     stateadded: function(e) {
       if (e.detail === 'grabbed') {
+        this.grabbedBy = this.el.grabbingManipulator ? this.el.grabbingManipulator.el : null
         this.detachTool()
       }
     },
     bbuttondown: function(e) {
+      if (this.el.is('grabbed'))
+      {
+        this.makeClone()
+      }
+    },
+    ybuttondown: function(e) {
       if (this.el.is('grabbed'))
       {
         this.makeClone()
@@ -164,6 +170,9 @@ AFRAME.registerComponent('object-constraint-flag', {
     icon.setAttribute('material', 'shader: flat; transparent: true')
     icon.setAttribute('position', `0 0 ${needleLength / 2 + 0.005}`)
 
+    this.manipulatorGrabStart = this.manipulatorGrabStart.bind(this)
+    this.manipulatorGrabEnd = this.manipulatorGrabEnd.bind(this)
+
     Util.whenLoaded(this.el, () => {
       this.el.object3D.userData.vartisteUI = true
     })
@@ -190,8 +199,9 @@ AFRAME.registerComponent('object-constraint-flag', {
       if (!Util.visibleWithAncestors(el.object3D)) return;
       if (el.hasAttribute('object-constraint-flag')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D, {intersectionInfo})) return;
+      if (el === this.grabbedBy) return;
 
-      // console.log("Intersecting tool", el)
+      console.log("Intersecting tool", el, this.grabbedBy)
       if (this.data.reparent)
       {
         let placeholder = this.placeholder
@@ -202,28 +212,34 @@ AFRAME.registerComponent('object-constraint-flag', {
         el.object3D.remove(placeholder)
       }
 
-      this.attachedTo = el
+      if (el.hasAttribute('flaggable-manipulator'))
+      {
+        this.attachManipulator(el);
+        return;
+      }
 
-      this.emitDetails.startobjectconstraint.el = el
-      this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
-      this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
-      Sfx.stickOn(this.el, {volume: 0.1})
+      this.attachTo(el, intersectionInfo)
     })
   },
   detachTool() {
-    if (!this.attachedTo) return;
+    if (this.attachedTo || this.attachedManipulator)
+    {
+      if (this.attachedManipulator)
+      {
+        this.detachManipulator();
+      }
 
-    let placeholder = this.placeholder
-    this.el.sceneEl.object3D.add(placeholder)
-    Util.positionObject3DAtTarget(placeholder, this.el.object3D)
-    ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
-    Util.positionObject3DAtTarget(this.el.object3D, placeholder)
+      let placeholder = this.placeholder
+      this.el.sceneEl.object3D.add(placeholder)
+      Util.positionObject3DAtTarget(placeholder, this.el.object3D)
+      ;(document.querySelector('#world-root') || this.el.sceneEl).object3D.add(this.el.object3D);
+      Util.positionObject3DAtTarget(this.el.object3D, placeholder)
 
-    this.emitDetails.endobjectconstraint.el = this.attachedTo
-    this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
-
-    this.attachedTo = undefined
-    Sfx.stickOff(this.el, {volume: 0.05})
+      if (this.attachedTo)
+      {
+        this.detachFrom()
+      }
+    }
   },
   makeClone() {
     let el = document.createElement('a-entity')
@@ -248,7 +264,58 @@ AFRAME.registerComponent('object-constraint-flag', {
         })
       })
     })
+  },
+  attachTo(el, intersectionInfo) {
+    this.attachedTo = el
+    this.emitDetails.startobjectconstraint.el = el
+    this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
+    this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
+    Sfx.stickOn(this.el, {volume: 0.1})
+  },
+  detachFrom() {
+    this.emitDetails.endobjectconstraint.el = this.attachedTo
+    this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
+
+    this.attachedTo = undefined
+    Sfx.stickOff(this.el, {volume: 0.05})
+  },
+  canTransferGrab(el) {
+    if (el.hasAttribute('object-constraint-flag')) return false;
+    return el.matches(this.data.selector);
+  },
+  manipulatorGrabStart(e) {
+    if (e.detail !== 'grabbing') return;
+    if (this.canTransferGrab(this.attachedManipulator.components.manipulator.target))
+    {
+      this.attachTo(this.attachedManipulator.components.manipulator.target)
+    }
+  },
+  manipulatorGrabEnd(e) {
+    if (e.detail !== 'grabbing') return;
+    this.detachFrom()
+  },
+  attachManipulator(el) {
+    if (this.attachedManipulator) return;
+    el.addEventListener('stateadded', this.manipulatorGrabStart)
+    el.addEventListener('stateremoved', this.manipulatorGrabEnd)
+    this.attachedManipulator = el;
+
+    if (this.attachedManipulator.components.manipulator.target && this.canTransferGrab(this.attachedManipulator.components.manipulator.target))
+    {
+      this.attachTo(this.attachedManipulator.components.manipulator.target)
+    }
+
+    Sfx.stickOn(this.el, {volume: 0.1})
+  },
+  detachManipulator() {
+    this.attachedManipulator.removeEventListener('stateadded', this.manipulatorGrabStart)
+    this.attachedManipulator.removeEventListener('stateremoved', this.manipulatorGrabEnd)
+    this.attachedManipulator = null
   }
+})
+
+AFRAME.registerComponent('flaggable-manipulator', {
+  init() {}
 })
 
 AFRAME.registerComponent('weight-constraint-flag', {

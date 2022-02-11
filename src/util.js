@@ -875,6 +875,8 @@ class VARTISTEUtil {
 
     if (meshA.geometry.attributes.position.itemSize !== 3) return;
     if (meshB.geometry.attributes.position.itemSize !== 3) return;
+    if (meshA.geometry.attributes.aTroikaGlyphBounds) return;
+    if (meshB.geometry.attributes.aTroikaGlyphBounds) return;
 
     bvh = meshA.geometry.computeBoundsTree()
     meshB.geometry.computeBoundsTree()
