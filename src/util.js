@@ -230,6 +230,15 @@ class VARTISTEUtil {
     })
   }
 
+  traverseEl(el, fn) {
+    fn(el)
+
+    for (let c of el.getChildEntities())
+    {
+      this.traverseEl(c, fn)
+    }
+  }
+
   // Executes `fn` on all ancestors of `el`
   traverseAncestors(el, fn)
   {
@@ -866,6 +875,8 @@ class VARTISTEUtil {
 
     if (meshA.geometry.attributes.position.itemSize !== 3) return;
     if (meshB.geometry.attributes.position.itemSize !== 3) return;
+    if (meshA.geometry.attributes.aTroikaGlyphBounds) return;
+    if (meshB.geometry.attributes.aTroikaGlyphBounds) return;
 
     bvh = meshA.geometry.computeBoundsTree()
     meshB.geometry.computeBoundsTree()
