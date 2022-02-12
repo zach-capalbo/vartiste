@@ -75,6 +75,13 @@ AFRAME.registerSystem('pencil-tool', {
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
     return cylinder
+  },
+  resetAllTools() {
+    this.el.sceneEl.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
+      if (el.components['six-dof-tool'].data.resettable) {
+        el.components['six-dof-tool'].resetPosition()
+      }
+    })
   }
 })
 
@@ -123,11 +130,13 @@ AFRAME.registerComponent('pencil-tool', {
         }
       }
     },
-    activate: function() { this.activatePencil() }
+    activate: function() { this.activatePencil() },
+    resetposition: function() { this.deactivatePencil() }
   },
   async init() {
     this.el.classList.add('grab-root')
     this.el.setAttribute('shadow', 'cast: true; receive: false')
+    this.activatePencil = this._activatePencil;
 
     if (this.el.hasAttribute('set-brush'))
     {
@@ -320,33 +329,51 @@ AFRAME.registerComponent('pencil-tool', {
       this.el.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.2 0")
     }
   },
-  activatePencil({subPencil = false} = {}) {
+  _activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
     this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
     if (this.raycasterTick) this.el.components.raycaster.tock = this.raycasterTick
-    this.el.addEventListener('raycaster-intersection', e => {
+    this.raycasterIntersection = e => {
       if (!this.data.enabled) return
       this.updateDrawTool()
       this.el.components['hand-draw-tool'].isDrawing = true
       this.el.components['hand-draw-tool'].startDraw()
-    })
+    };
 
-    this.el.addEventListener('raycaster-intersection-cleared', e => {
+    this.el.addEventListener('raycaster-intersection', this.raycasterIntersection)
+
+    this.raycasterIntersectionCleared = e => {
       if (!this.data.enabled) return
       this.el.components['hand-draw-tool'].endDraw()
       this.el.components['hand-draw-tool'].isDrawing = false
-    })
+    };
 
-    this.el.addEventListener('click', e => {
+    this.el.addEventListener('raycaster-intersection-cleared', this.raycasterIntersectionCleared)
+
+    this.clickHandler = e => {
       if (this.el.is('grabbed'))
       {
         this.data.enabled = !this.data.enabled
         this.updateEnabled()
       }
-    })
+    };
+    this.el.addEventListener('click', this.clickHandler)
 
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
+  },
+  deactivatePencil() {
+    if (this.el.components['hand-draw-tool'].isDrawing)
+    {
+      this.el.components['hand-draw-tool'].endDraw()
+    }
+
+    this.el.removeEventListener('raycaster-intersection', this.raycasterIntersection)
+    this.el.removeEventListener('raycaster-intersection-cleared', this.raycasterIntersectionCleared)
+    this.el.removeEventListener('click', this.clickHandler)
+    this.tick = function() {}
+    if (this.raycasterTick) this.el.components.raycaster.tock = function () {}
+    this.activatePencil = this._activatePencil;
   },
   calcFar() {
     return this.tipHeight * this.el.object3D.scale.x + this.data.extraRayLength
@@ -789,7 +816,11 @@ AFRAME.registerComponent('six-dof-tool', {
       }
     },
   },
+  emits: {
+    resetposition: {}
+  },
   init() {
+    Util.emitsEvents(this)
     if (this.data.summonable && !this.el.hasAttribute('summonable')) {
       this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
     }
@@ -801,6 +832,7 @@ AFRAME.registerComponent('six-dof-tool', {
     Util.applyMatrix(this.resetInfo.matrix, this.el.object3D)
     this.el.removeState('grab-activated')
     delete this.resetInfo
+    this.el.emit('resetposition', this.emitDetails.resetposition)
   }
 })
 
