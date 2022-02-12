@@ -709,23 +709,26 @@ AFRAME.registerComponent('grab-redirector', {
     globe.classList.add('clickable')
 
     this.initialMatrix = new THREE.Matrix4
+
+    this.onObjectKeyframed = this.onObjectKeyframed.bind(this)
   },
   remove()
   {
-    let animation3d = this.el.sceneEl.systems['animation-3d']
-    if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
-    {
-      animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
-      animation3d.clearTrack(this.fakeTarget.object3D)
-      let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
-      animation3d.applyMatrix(m, this.object)
-    }
+    // let animation3d = this.el.sceneEl.systems['animation-3d']
+    // if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+    // {
+    //   animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
+    //   animation3d.clearTrack(this.fakeTarget.object3D)
+    //   let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+    //   animation3d.applyMatrix(m, this.object)
+    // }
 
     if (this.fakeTarget)
     {
       this.el.sceneEl.systems['manipulator'].removeConstraint(this.fakeTarget, this.fakeConstraint)
       Util.disposeEl(this.fakeTarget)
     }
+    this.el.sceneEl.removeEventListener('objectkeyframed', this.onObjectKeyframed)
   },
   update(oldData) {
     if (this.data.target !== oldData.target)
@@ -748,15 +751,6 @@ AFRAME.registerComponent('grab-redirector', {
           }, POST_MANIPULATION_PRIORITY)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
-
-            let animation3d = this.el.sceneEl.systems['animation-3d']
-            if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
-            {
-              animation3d.clearTrack(this.fakeTarget.object3D)
-              animation3d.cloneTracks(this.object, this.fakeTarget.object3D)
-              let m = Util.matrixFromOneObjectSpaceToAnother(this.object.parent, this.fakeTarget.object3D.parent)
-              animation3d.applyMatrix(m, this.fakeTarget.object3D)
-            }
           })
           fakeTarget.addEventListener('stateadded', (e) => {
             if (e.detail === 'grabbed') {
@@ -768,6 +762,31 @@ AFRAME.registerComponent('grab-redirector', {
       }
       this.initialMatrix.copy(this.object.matrix)
     }
+
+    if (this.data.transferAnimations !== oldData.transferAnimations)
+    {
+      if (this.data.transferAnimations)
+      {
+        this.el.sceneEl.addEventListener('objectkeyframed', this.onObjectKeyframed)
+      }
+      else
+      {
+        this.el.sceneEl.removeEventListener('objectkeyframed', this.onObjectKeyframed)
+      }
+    }
+  },
+  onObjectKeyframed(e){
+    if (!this.fakeTarget) return;
+    if (e.detail.object !== this.fakeTarget.object3D) return;
+    if (!this.data.transferAnimations) return
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    if (!animation3d) return
+    // if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+
+    //   animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
+    //   animation3d.clearTrack(this.fakeTarget.object3D)
+    //   let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+    //   animation3d.applyMatrix(m, this.object)
   }
 })
 
