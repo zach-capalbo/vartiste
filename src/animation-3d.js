@@ -301,7 +301,9 @@ Util.registerComponentSystem('animation-3d', {
 
     this.emitDetails.objectkeyframed.object = obj
     this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.emitDetails.objectkeyframed.deleted = true
     this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+    this.emitDetails.objectkeyframed.deleted = false
   },
   shiftKeyframes(obj, delta) {
     this.matrixTracks.shift(obj, delta)
@@ -539,6 +541,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     useGlobalNumberOfFrames: {default: false},
 
     enabled: {default: true},
+    proxyObject: {default: null},
   },
   events: {
     stateadded: function(e) {
@@ -559,12 +562,17 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   pause() {
     Compositor.el.removeEventListener('framechanged', this.animate)
   },
+  update() {
+    if (this.data.proxyObject && this.data.proxyObject.object3D) { this.object = this.data.proxyObject.object3D }
+    else if (this.data.proxyObject) { this.object = this.data.proxyObject }
+    else { this.object = this.el.object3D }
+  },
   animate() {
     if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
     if (this.data.recording) return;
 
-    this.el.object3D.traverse(o => {
+    this.object.traverse(o => {
       this.system.animate(o, this.data)
       this.el.sceneEl.systems.manipulator.runConstraints(o.el, this.pool('localOffset', THREE.Vector3), this.el.sceneEl.time, this.el.sceneEl.delta)
     })
@@ -575,7 +583,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   tock (t, dt) {
     if (this.data.recording || (this.data.puppeteering && this.el.is('grabbed')))
     {
-      this.system.keyframe(this.el.object3D)
+      this.system.keyframe(this.object)
     }
   }
 })
@@ -921,11 +929,6 @@ AFRAME.registerComponent('skeleton-editor', {
       if (this.helper.parent) this.helper.parent.remove(this.helper)
       Util.recursiveDispose(this.helper)
     }
-
-    Util.traverseNonUI(this.el.object3D, o => {
-      if (!this.boneToHandle.has(o)) return;
-      h.removeAttribute('grab-redirector')
-    })
 
     for (let h of this.handles)
     {

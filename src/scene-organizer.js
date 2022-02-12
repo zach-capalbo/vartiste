@@ -751,10 +751,28 @@ AFRAME.registerComponent('grab-redirector', {
           }, POST_MANIPULATION_PRIORITY)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+            if (this.data.transferAnimations) {
+              this.fakeTarget.setAttribute('animation-3d-keyframed', 'proxyObject', this.object)
+              this.fakeTarget.setAttribute('animation-3d-keyframed', 'enabled', false)
+            }
           })
           fakeTarget.addEventListener('stateadded', (e) => {
             if (e.detail === 'grabbed') {
               Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+
+              if (this.data.transferAnimations && this.object.el) {
+                this.object.el.setAttribute('animation-3d-keyframed', 'enabled', false)
+              }
+            }
+          })
+          fakeTarget.addEventListener('stateremoved', e  => {
+            if (e.detail === 'grabbed') {
+              console.log("Ungrabbed")
+              if (this.data.transferAnimations && this.object.el && this.object.el.hasAttribute('animation-3d-keyframed')) {
+                console.log("Re-enabling animations")
+                this.fakeTarget.setAttribute('animation-3d-keyframed', 'enabled', false)
+                this.object.el.setAttribute('animation-3d-keyframed', 'enabled', true)
+              }
             }
           })
         }
@@ -776,17 +794,22 @@ AFRAME.registerComponent('grab-redirector', {
     }
   },
   onObjectKeyframed(e){
+    if (!this.data.transferAnimations) return
     if (!this.fakeTarget) return;
     if (e.detail.object !== this.fakeTarget.object3D) return;
-    if (!this.data.transferAnimations) return
+    if (e.detail.deleted) return;
     let animation3d = this.el.sceneEl.systems['animation-3d']
     if (!animation3d) return
-    // if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+    let frameIdx = e.detail.frameIdx
+    console.log("Transferring Keyframe")
+    // let keyframe = animation3d.matrixTracks.at(this.fakeTarget.object3D, frameIdx)
+    // let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+    // keyframe.premultiply(m)
+    animation3d.keyframe(this.object)
+    animation3d.deleteKeyframe(this.fakeTarget.object3D, frameIdx)
+  },
+  onFrameChange(e) {
 
-    //   animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
-    //   animation3d.clearTrack(this.fakeTarget.object3D)
-    //   let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
-    //   animation3d.applyMatrix(m, this.object)
   }
 })
 
