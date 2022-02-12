@@ -1631,3 +1631,54 @@ AFRAME.registerComponent('lathe-selection-tool', {
     this.box.object3D.rotateY(this.data.speed / 1000.0 * dt)
   }
 })
+
+AFRAME.registerComponent('delete-box-tool', {
+  dependencies: ['selection-box-tool'],
+  schema: {},
+  events: {
+    grabstarted: function(e){
+      this.selectionBoxTool.toggleGrabbing(false)
+
+      let grabbed = Object.values(e.detail.grabbed)
+      Undo.collect(() => {
+        for (let el of Object.values(grabbed))
+        {
+          let originalMesh = el.getObject3D('mesh')
+          let originalParent = el.object3D.parent.el
+          let type = ['primitive-construct-placeholder', 'reference-glb'].find(c => el.hasAttribute(c))
+          let m = new THREE.Matrix4().copy(el.object3D.matrix)
+          Undo.push(() => {
+            let newEl = document.createElement('a-entity')
+            originalParent.append(newEl)
+            console.log("Restoring", newEl)
+
+            Util.whenLoaded(newEl, () => {
+              originalMesh.el = newEl
+              newEl.setObject3D('mesh', originalMesh)
+              newEl.setAttribute(type, type === 'reference-glb' ? '' : 'detached: true; manualMesh: true')
+              Util.applyMatrix(m, newEl.object3D)
+            })
+          })
+        }
+      })
+      for (let el of Object.values(e.detail.grabbed))
+      {
+        el.setObject3D('mesh', new THREE.Object3D)
+        el.parentEl.removeChild(el)
+        // Util.disposeEl(el)
+      }
+    }
+  },
+  init() {
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.el.setAttribute('selection-box-tool', 'selector', 'a-entity[primitive-construct-placeholder], a-entity[reference-glb]')
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+      this.box = this.selectionBoxTool.box
+
+      let handle = this.selectionBoxTool.handle
+      handle.setAttribute('material', 'color', 'red')
+      handle.setAttribute('material', 'src', '')
+      this.box.setAttribute('material', 'color', 'red')
+    })
+  },
+})

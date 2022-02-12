@@ -288,6 +288,15 @@ Util.registerComponentSystem('primitive-constructs', {
     {
       shape.parentEl.removeChild(shape)
     }
+  },
+  clearAll() {
+    this.grabConstruct(null);
+    let shapes = Array.from(document.querySelectorAll('*[primitive-construct-placeholder]')).filter(el => el.getAttribute('primitive-construct-placeholder').detached)
+    for (let el of shapes)
+    {
+      el.object3D.parent.remove(el.object3D)
+      Util.disposeEl(el)
+    }
   }
 })
 

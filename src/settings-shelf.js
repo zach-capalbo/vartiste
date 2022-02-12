@@ -139,6 +139,14 @@ AFRAME.registerComponent('settings-shelf', {
       compositor.el.setAttribute('material', {shader: 'flat'})
     }
   },
+  startFreshAction(e) {
+    console.log("Starting Fresh")
+    this.newCompositionAction(e)
+    this.el.sceneEl.systems['pencil-tool'].resetAllTools()
+    this.el.sceneEl.systems['settings-system'].clearModels()
+    this.el.sceneEl.systems['remember-position'].restoreAll()
+    this.el.sceneEl.systems['artist-root'].resetCameraLocation()
+  }
 })
 
 AFRAME.registerComponent('load-shelf', {

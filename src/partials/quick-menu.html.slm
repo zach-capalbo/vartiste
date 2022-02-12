@@ -1,4 +1,4 @@
-a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summoner-position="el: #quick-menu-positioner" quick-menu=""  position="0.02791199948583377 -0.31382646103619727 0.7253849781877566" rotation="-25 0 0" scale="0.1 0.1 0.1"
+a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summoner-position="el: #quick-menu-positioner" quick-menu=""  position="0.02791199948583377 -0.31382646103619727 0.7253849781877566" rotation="-25 0 0" scale="0.1 0.1 0.1" remember-position=""
   /position="-0.1015100278061937 0.01607652838662 0.5712405990779791" rotation="-1.561763404097467 12.818291933949444 -0.4118625930815029" scale="0.1 0.1 0.1"
   /
   a-entity#quick-menu-positioner scale="0.065 0.065 0.065" _shelf="" position="-0.06572192790324391 1.6687909101322174 0.3699357575623226" rotation="27.343851198452143 0 0.0"
@@ -6,7 +6,7 @@ a-entity#quick-menu.grab-root shelf="name: Quick Menu; width: 3; height: 1" summ
     a-entity icon-button="#asset-floppy" tooltip="Save" quick-menu-action="quickSave"
       a-entity#quick-menu-project-name-edit edit-field="type: string; autoClear: true" _popup-button="scale: 0.3 0.3 0.3" visible="false"
     a-entity icon-button="#asset-undo" tooltip="Undo" system-click-action="system: settings-system; action: undoAction"
-    /a-entity icon-button="#asset-undo" tooltip="Redo" system-click-action="system: settings-system; action: redoAction" 
+    /a-entity icon-button="#asset-undo" tooltip="Redo" system-click-action="system: settings-system; action: redoAction"
     a-entity icon-button="#asset-folder-open-outline" tooltip="Project / Settings" shelf-summoner="name: Settings Shelf"
     a-entity icon-button="#asset-brush" tooltip="Tools" shelf-summoner="name: 6DoF Tool Shelf"
     a-entity icon-button="#asset-help-circle-outline" tooltip="Help" shelf-summoner="name: Help Shelf"
