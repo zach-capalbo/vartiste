@@ -202,6 +202,7 @@ AFRAME.registerSystem('vertex-handle', {
 })
 
 AFRAME.registerComponent('vertex-handle', {
+  dependencies: ['flaggable-control'],
   schema: {
     vertex: {type: 'int'},
     vertices: {type: 'array'},
@@ -2404,6 +2405,8 @@ AFRAME.registerComponent('threed-hull-tool', {
     this.constraint = null;
     this.pointToPoint = false
 
+    let oldLastPoint = this.lastPoint
+
     this.lastPoint = this.points[0]
 
     let shape = new THREE.CatmullRomCurve3(this.points, this.data.closed);
@@ -2422,11 +2425,30 @@ AFRAME.registerComponent('threed-hull-tool', {
 
     this.shapes.push(shape)
 
+    let lastLineMesh = this.lineMesh
+    console.log("Pushing undo", lastLineMesh, this.edgeLines)
+
     Undo.push(() => {
       let idx = this.shapes.indexOf(shape)
       if (idx < 0) return;
       this.shapes.splice(idx, 1)
       this.createCylinderMesh()
+      this.lastPoint = oldLastPoint
+      idx = this.edgeLines.indexOf(lastLineMesh)
+      if (idx >= 0) {
+        this.edgeLines[idx].parent.remove(this.edgeLines[idx])
+        Util.recursiveDispose(this.edgeLines[idx])
+        if (idx > 0)
+        {
+          this.edgeLines[idx - 1].parent.remove(this.edgeLines[idx - 1])
+          Util.recursiveDispose(this.edgeLines[idx - 1])
+          this.edgeLines.splice(idx - 1, 2)
+        }
+        else
+        {
+          this.edgeLines.splice(idx , 1)
+        }
+      }
     })
 
     this.edgeLines.push(this.lineMesh)

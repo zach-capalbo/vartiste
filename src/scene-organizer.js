@@ -512,7 +512,7 @@ AFRAME.registerComponent('object3d-view', {
     // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
   },
   mergeBufferGeometriesAndMaterials() {
-    
+
   },
   resetMatrix() {
     Undo.collect(() => {
@@ -673,6 +673,7 @@ AFRAME.registerComponent('grab-redirector', {
     handle: {default: true},
     radius: {default: 0.3},
     resetOnClick: {default: false},
+    transferAnimations: {default: true},
   },
   events: {
     click: function(e) {
@@ -693,7 +694,14 @@ AFRAME.registerComponent('grab-redirector', {
     let globe = this.globe = document.createElement('a-entity')
     this.el.append(globe)
     globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
-    globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    if (this.el.hasAttribute('grab-redirector-material'))
+    {
+      globe.setAttribute('material', this.el.getAttribute('grab-redirector-material'))
+    }
+    else
+    {
+      globe.setAttribute('material', 'wireframe: true; shader: matcap')
+    }
     if (this.el.hasAttribute('globe-material'))
     {
       Util.whenLoaded(globe, () => globe.setAttribute('material', this.el.getAttribute('globe-material')))
@@ -701,6 +709,27 @@ AFRAME.registerComponent('grab-redirector', {
     globe.classList.add('clickable')
 
     this.initialMatrix = new THREE.Matrix4
+
+    this.onObjectKeyframed = this.onObjectKeyframed.bind(this)
+  },
+  remove()
+  {
+    // let animation3d = this.el.sceneEl.systems['animation-3d']
+    // if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+    // {
+    //   animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
+    //   animation3d.clearTrack(this.fakeTarget.object3D)
+    //   let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+    //   animation3d.applyMatrix(m, this.object)
+    // }
+
+    if (this.fakeTarget)
+    {
+      this.el.sceneEl.systems['manipulator'].removeConstraint(this.fakeTarget, this.fakeConstraint)
+      Util.disposeEl(this.fakeTarget)
+    }
+    this.el.sceneEl.removeEventListener('objectkeyframed', this.onObjectKeyframed)
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
   },
   update(oldData) {
     if (this.data.target !== oldData.target)
@@ -717,15 +746,35 @@ AFRAME.registerComponent('grab-redirector', {
         {
           let fakeTarget = this.fakeTarget = document.createElement('a-entity')
           this.el.sceneEl.append(fakeTarget)
-          this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
+          fakeTarget.setAttribute('flaggable-control', '')
+          this.fakeConstraint = this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
             Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
           }, POST_MANIPULATION_PRIORITY)
+          Compositor.el.addEventListener('framechanged', this.onFrameChange)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+            if (this.data.transferAnimations) {
+              this.fakeTarget.setAttribute('animation-3d-keyframed', 'proxyObject', this.object)
+              this.fakeTarget.setAttribute('animation-3d-keyframed', 'enabled', false)
+            }
           })
           fakeTarget.addEventListener('stateadded', (e) => {
             if (e.detail === 'grabbed') {
               Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+
+              if (this.data.transferAnimations && this.object.el) {
+                this.object.el.setAttribute('animation-3d-keyframed', 'enabled', false)
+              }
+            }
+          })
+          fakeTarget.addEventListener('stateremoved', e  => {
+            if (e.detail === 'grabbed') {
+              console.log("Ungrabbed")
+              if (this.data.transferAnimations && this.object.el && this.object.el.hasAttribute('animation-3d-keyframed')) {
+                console.log("Re-enabling animations")
+                this.fakeTarget.setAttribute('animation-3d-keyframed', 'enabled', false)
+                this.object.el.setAttribute('animation-3d-keyframed', 'enabled', true)
+              }
             }
           })
         }
@@ -733,6 +782,38 @@ AFRAME.registerComponent('grab-redirector', {
       }
       this.initialMatrix.copy(this.object.matrix)
     }
+
+    if (this.data.transferAnimations !== oldData.transferAnimations)
+    {
+      if (this.data.transferAnimations)
+      {
+        this.el.sceneEl.addEventListener('objectkeyframed', this.onObjectKeyframed)
+      }
+      else
+      {
+        this.el.sceneEl.removeEventListener('objectkeyframed', this.onObjectKeyframed)
+      }
+    }
+  },
+  onObjectKeyframed(e){
+    if (!this.data.transferAnimations) return
+    if (!this.fakeTarget) return;
+    if (e.detail.object !== this.fakeTarget.object3D) return;
+    if (e.detail.deleted) return;
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    if (!animation3d) return
+    let frameIdx = e.detail.frameIdx
+    console.log("Transferring Keyframe")
+    // let keyframe = animation3d.matrixTracks.at(this.fakeTarget.object3D, frameIdx)
+    // let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+    // keyframe.premultiply(m)
+    animation3d.keyframe(this.object)
+    animation3d.deleteKeyframe(this.fakeTarget.object3D, frameIdx)
+  },
+  onFrameChange(e) {
+    if (!this.fakeTarget) return;
+    if (this.fakeTarget.is('grabbed')) return;
+    Util.positionObject3DAtTarget(this.fakeTarget.object3D, this.object)
   }
 })
 

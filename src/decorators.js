@@ -6,6 +6,10 @@ import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 
+const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
+const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
+
+AFRAME.registerComponent('flaggable-control', {})
 
 AFRAME.registerComponent('adjustable-origin', {
   schema: {
@@ -96,7 +100,7 @@ Util.registerComponentSystem('object-constraint-flag-system', {
 AFRAME.registerComponent('object-constraint-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
-    selector: {type: 'string', default: 'a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator]'},
+    selector: {type: 'string', default: DEFAULT_SELECTOR},
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
@@ -480,7 +484,8 @@ AFRAME.registerComponent('wireframe-flag', {
       Util.traverseNonUI(el.object3D, (o) => {
         if (!o.material) return;
 
-        this.meshMap.set(o, o.material.wireframe)
+        if (this.meshMap.has(o.material)) return;
+        this.meshMap.set(o.material, o.material.wireframe)
         o.material.wireframe = true
         o.material.needsUpdate = true
       })
@@ -491,11 +496,14 @@ AFRAME.registerComponent('wireframe-flag', {
       Util.traverseNonUI(el.object3D, (o) => {
         if (!o.material) return;
 
-        let m = this.meshMap.get(o)
-        if (this.meshMap.has(o)) {
+        let m = this.meshMap.get(o.material)
+        if (this.meshMap.has(o.material)) {
           o.material.wireframe = m
           o.material.needsUpdate = true
-          this.meshMap.delete(o)
+          this.meshMap.delete(o.material)
+          if (m) {
+            console.log("Leaving as wireframe", o, m)
+          }
         }
       })
     },
@@ -542,6 +550,78 @@ AFRAME.registerComponent('unclickable-flag', {
   }
 })
 
+AFRAME.registerComponent('trigger-down-flag', {
+  dependencies: ['object-constraint-flag'],
+  schema: {
+    throttle: {default: 50},
+  },
+  startobjectconstraint: function(e) {
+    let el = e.detail.el
+    el.addState('grabbed')
+    this.attachedTo = el
+    el.emit('triggerdown', {})
+  },
+  endobjectconstraint: function(e) {
+    let el = e.detail.el
+    el.emit('triggerup', {})
+    delete this.attachedTo
+    el.removeState('grabbed')
+  },
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
+    this.params = {pressure: 1.0, rotation: 0.0, sourceEl: this.el, distance: 0, scale: 1.0}
+  },
+  tick(t, dt)
+  {
+    if (!this.attachedTo) return;
+    this.attachedTo.emit('draw', this.params)
+  }
+})
+
+AFRAME.registerComponent('log-to-console-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      console.info("Flagged:", e.detail.el, e.detail.intersectionInfo.objectB)
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+  }
+})
+
+AFRAME.registerComponent('restart-animation-on-grab-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      if (Compositor.component.isPlayingAnimation)
+      {
+        Compositor.component.jumpToFrame(0)
+      }
+    },
+    endobjectconstraint: function(e) {
+      if (Compositor.component.isPlayingAnimation)
+      {
+        Compositor.component.jumpToFrame(0)
+      }
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+  }
+})
+
+function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
+{
+  AFRAME.registerComponent(name, {
+    dependencies: ['object-constraint-flag'].concat(flags),
+    init() {
+      this.el.setAttribute('object-constraint-flag', {color, icon})
+      if (selector) this.el.setAttribute('object-constraint-flag', 'selector', selector)
+    }
+  })
+}
+
 function registerSimpleConstraintFlagComponent(
   name,
   {
@@ -553,9 +633,10 @@ function registerSimpleConstraintFlagComponent(
     valueOff = null,
     reparent = true,
     selector,
+    dependencies = []
   }) {
   AFRAME.registerComponent(name, {
-    dependencies: ['object-constraint-flag'],
+    dependencies: ['object-constraint-flag'].concat(dependencies),
     events: {
       startobjectconstraint: function(e) {
         let el = e.detail.el
@@ -571,6 +652,7 @@ function registerSimpleConstraintFlagComponent(
         }
         else
         {
+          if (!el) console.warn("No el for", name)
           el.setAttribute(component, valueOff)
         }
 
@@ -588,18 +670,24 @@ function registerSimpleConstraintFlagComponent(
   });
 }
 
-registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
-registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'penabled: true', valueOff: null})
-registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'enabled: true', valueOff: null})
+registerSimpleConstraintFlagComponent('wrap-puppeteering-flag', {icon: '#asset-rotate-3d-variant', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: true', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
+registerSimpleConstraintFlagComponent('no-wrap-puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: false', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
-// Show UV
-// Show Edges
-// Edit Vertices
+registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null, allowTools: false})
+
+registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#b6c5f2'})
 // hide from spectator
+// Trigger down
+// Stay grabbed
+// Undeletable
+// Remember position
+// Axes Scale

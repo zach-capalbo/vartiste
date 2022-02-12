@@ -260,6 +260,7 @@ Util.registerComponentSystem('animation-3d', {
     return this.matrixTracks.has(obj.uuid) || this.visibilityTracks.has(obj.uuid)
   },
   keyframe(obj, frameIdx = undefined) {
+
     if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
     let matrix = this.trackFrameMatrix(obj, frameIdx)
     obj.updateMatrix()
@@ -287,6 +288,12 @@ Util.registerComponentSystem('animation-3d', {
     console.log("Cloning Tracks", obj, newObj)
     this.matrixTracks.clone(obj, newObj)
     this.visibilityTracks.clone(obj, newObj)
+    if (obj.el && obj.el.hasAttribute('animation-3d-keyframed') && newObj.el)
+    {
+      if (!newObj.el.hasAttribute('animation-3d-keyframed') || newObj === newObj.el.object3D) {
+        newObj.el.setAttribute('animation-3d-keyframed', obj.el.getAttribute('animation-3d-keyframed'))
+      }
+    }
   },
   deleteKeyframe(obj, frameIdx) {
     this.matrixTracks.delete(obj, frameIdx)
@@ -294,7 +301,9 @@ Util.registerComponentSystem('animation-3d', {
 
     this.emitDetails.objectkeyframed.object = obj
     this.emitDetails.objectkeyframed.frameIdx = frameIdx
+    this.emitDetails.objectkeyframed.deleted = true
     this.el.emit('objectkeyframed', this.emitDetails.objectkeyframed)
+    this.emitDetails.objectkeyframed.deleted = false
   },
   shiftKeyframes(obj, delta) {
     this.matrixTracks.shift(obj, delta)
@@ -337,6 +346,15 @@ Util.registerComponentSystem('animation-3d', {
     )
   },
 
+  applyMatrix(matrix, obj)
+  {
+    if (!this.matrixTracks.has(obj)) return;
+
+    for (let m of this.matrixTracks.objectTracks[obj.uuid].values())
+    {
+      m.premultiply(matrix)
+    }
+  },
   writeableTracks(obj) {
     let foundAny = false
     let writable = {}
@@ -523,6 +541,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     useGlobalNumberOfFrames: {default: false},
 
     enabled: {default: true},
+    proxyObject: {default: null},
   },
   events: {
     stateadded: function(e) {
@@ -543,12 +562,21 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   pause() {
     Compositor.el.removeEventListener('framechanged', this.animate)
   },
+  update() {
+    if (this.data.proxyObject && this.data.proxyObject.object3D) { this.object = this.data.proxyObject.object3D }
+    else if (this.data.proxyObject) { this.object = this.data.proxyObject }
+    else { this.object = this.el.object3D }
+
+    if (this.data.proxyObject && this.object.el) {
+      this.object.el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
+    }
+  },
   animate() {
     if (!this.data.enabled) return;
     if (this.el.is("grabbed")) return;
     if (this.data.recording) return;
 
-    this.el.object3D.traverse(o => {
+    this.object.traverse(o => {
       this.system.animate(o, this.data)
       this.el.sceneEl.systems.manipulator.runConstraints(o.el, this.pool('localOffset', THREE.Vector3), this.el.sceneEl.time, this.el.sceneEl.delta)
     })
@@ -559,7 +587,7 @@ AFRAME.registerComponent('animation-3d-keyframed', {
   tock (t, dt) {
     if (this.data.recording || (this.data.puppeteering && this.el.is('grabbed')))
     {
-      this.system.keyframe(this.el.object3D)
+      this.system.keyframe(this.object)
     }
   }
 })
@@ -879,5 +907,72 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
       el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
       this.grabbed.push(el)
     }
+  }
+})
+
+AFRAME.registerSystem('skeleton-editor', {})
+
+AFRAME.registerComponent('skeleton-editor', {
+  schema: {
+    traverse: {default: false}
+  },
+  events: {
+    // TODO: Extrude bone
+    bbuttondown: function(e) {}
+  },
+  init() {
+    Pool.init(this, {useSystem: true})
+    this.handles = []
+    Util.whenLoaded(this.el, () => {
+      this.refreshSkeleton()
+    })
+  },
+  remove() {
+    if (this.helper)
+    {
+      if (this.helper.parent) this.helper.parent.remove(this.helper)
+      Util.recursiveDispose(this.helper)
+    }
+
+    for (let h of this.handles)
+    {
+      h.removeAttribute('grab-redirector')
+      h.object3D.parent.remove(h.object3D)
+      Util.disposeEl(h)
+    }
+    this.handles = []
+  },
+  refreshSkeleton() {
+    let root = this.el.object3D
+    this.helper = new THREE.SkeletonHelper(root)
+    this.el.sceneEl.object3D.add(this.helper)
+    let targetScale = this.pool('targetScale', THREE.Vector3)
+    let thisWorld = this.pool('thisWorld', THREE.Vector3)
+    let parentWorld = this.pool('parentWorld', THREE.Vector3)
+    this.boneToHandle = new Map()
+    Util.traverseNonUI(root, (o) => {
+      if (!o.isBone) return;
+      let handle = document.createElement('a-entity')
+      this.el.append(handle)
+      this.boneToHandle.set(o, handle)
+      this.handles.push(handle)
+      Util.whenLoaded(handle, () => {
+        o.add(handle.object3D)
+
+        let dist = 0.05
+        if (o.parent && o.parent.isBone)
+        {
+          o.getWorldPosition(thisWorld)
+          o.parent.getWorldPosition(parentWorld)
+          dist = THREE.Math.clamp(thisWorld.distanceTo(parentWorld) * 0.9, 0.005, 0.02)
+        }
+        targetScale.set(dist, dist, dist)
+
+        Util.positionObject3DAtTarget(handle.object3D, o, {scale: targetScale})
+        handle.setAttribute('grab-redirector-material', 'wireframe: false; shader: matcap; color: #c9f0f2')
+        handle.setAttribute('grab-redirector', {target: o, handle: false})
+        handle.setAttribute('tooltip', o.name)
+      })
+    })
   }
 })
