@@ -260,6 +260,7 @@ Util.registerComponentSystem('animation-3d', {
     return this.matrixTracks.has(obj.uuid) || this.visibilityTracks.has(obj.uuid)
   },
   keyframe(obj, frameIdx = undefined) {
+
     if (frameIdx === undefined) frameIdx = Compositor.component.currentFrame//this.currentFrameIdx(obj)
     let matrix = this.trackFrameMatrix(obj, frameIdx)
     obj.updateMatrix()
@@ -287,6 +288,12 @@ Util.registerComponentSystem('animation-3d', {
     console.log("Cloning Tracks", obj, newObj)
     this.matrixTracks.clone(obj, newObj)
     this.visibilityTracks.clone(obj, newObj)
+    if (obj.el && obj.el.hasAttribute('animation-3d-keyframed') && newObj.el)
+    {
+      if (!newObj.el.hasAttribute('animation-3d-keyframed') || newObj === newObj.el.object3D) {
+        newObj.el.setAttribute('animation-3d-keyframed', obj.el.getAttribute('animation-3d-keyframed'))
+      }
+    }
   },
   deleteKeyframe(obj, frameIdx) {
     this.matrixTracks.delete(obj, frameIdx)
@@ -337,6 +344,15 @@ Util.registerComponentSystem('animation-3d', {
     )
   },
 
+  applyMatrix(matrix, obj)
+  {
+    if (!this.matrixTracks.has(obj)) return;
+
+    for (let m of this.matrixTracks.objectTracks[obj.uuid].values())
+    {
+      m.premultiply(matrix)
+    }
+  },
   writeableTracks(obj) {
     let foundAny = false
     let writable = {}
@@ -906,8 +922,14 @@ AFRAME.registerComponent('skeleton-editor', {
       Util.recursiveDispose(this.helper)
     }
 
+    Util.traverseNonUI(this.el.object3D, o => {
+      if (!this.boneToHandle.has(o)) return;
+      h.removeAttribute('grab-redirector')
+    })
+
     for (let h of this.handles)
     {
+      h.removeAttribute('grab-redirector')
       h.object3D.parent.remove(h.object3D)
       Util.disposeEl(h)
     }
@@ -920,10 +942,12 @@ AFRAME.registerComponent('skeleton-editor', {
     let targetScale = this.pool('targetScale', THREE.Vector3)
     let thisWorld = this.pool('thisWorld', THREE.Vector3)
     let parentWorld = this.pool('parentWorld', THREE.Vector3)
+    this.boneToHandle = new Map()
     Util.traverseNonUI(root, (o) => {
       if (!o.isBone) return;
       let handle = document.createElement('a-entity')
       this.el.append(handle)
+      this.boneToHandle.set(o, handle)
       this.handles.push(handle)
       Util.whenLoaded(handle, () => {
         o.add(handle.object3D)

@@ -578,6 +578,18 @@ AFRAME.registerComponent('trigger-down-flag', {
   }
 })
 
+AFRAME.registerComponent('log-to-console-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      console.info("Flagged:", e.detail.el, e.detail.intersectionInfo.objectB)
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+  }
+})
+
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
   AFRAME.registerComponent(name, {
@@ -618,6 +630,7 @@ function registerSimpleConstraintFlagComponent(
         }
         else
         {
+          if (!el) console.warn("No el for", name)
           el.setAttribute(component, valueOff)
         }
 

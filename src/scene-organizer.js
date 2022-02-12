@@ -673,6 +673,7 @@ AFRAME.registerComponent('grab-redirector', {
     handle: {default: true},
     radius: {default: 0.3},
     resetOnClick: {default: false},
+    transferAnimations: {default: true},
   },
   events: {
     click: function(e) {
@@ -709,6 +710,23 @@ AFRAME.registerComponent('grab-redirector', {
 
     this.initialMatrix = new THREE.Matrix4
   },
+  remove()
+  {
+    let animation3d = this.el.sceneEl.systems['animation-3d']
+    if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+    {
+      animation3d.cloneTracks(this.fakeTarget.object3D, this.object)
+      animation3d.clearTrack(this.fakeTarget.object3D)
+      let m = Util.matrixFromOneObjectSpaceToAnother(this.fakeTarget.object3D.parent, this.object.parent)
+      animation3d.applyMatrix(m, this.object)
+    }
+
+    if (this.fakeTarget)
+    {
+      this.el.sceneEl.systems['manipulator'].removeConstraint(this.fakeTarget, this.fakeConstraint)
+      Util.disposeEl(this.fakeTarget)
+    }
+  },
   update(oldData) {
     if (this.data.target !== oldData.target)
     {
@@ -725,11 +743,20 @@ AFRAME.registerComponent('grab-redirector', {
           let fakeTarget = this.fakeTarget = document.createElement('a-entity')
           this.el.sceneEl.append(fakeTarget)
           fakeTarget.setAttribute('flaggable-control', '')
-          this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
+          this.fakeConstraint = this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
             Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
           }, POST_MANIPULATION_PRIORITY)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
+
+            let animation3d = this.el.sceneEl.systems['animation-3d']
+            if (this.data.transferAnimations && animation3d && this.object && this.fakeTarget)
+            {
+              animation3d.clearTrack(this.fakeTarget.object3D)
+              animation3d.cloneTracks(this.object, this.fakeTarget.object3D)
+              let m = Util.matrixFromOneObjectSpaceToAnother(this.object.parent, this.fakeTarget.object3D.parent)
+              animation3d.applyMatrix(m, this.fakeTarget.object3D)
+            }
           })
           fakeTarget.addEventListener('stateadded', (e) => {
             if (e.detail === 'grabbed') {

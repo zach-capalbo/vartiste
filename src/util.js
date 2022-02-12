@@ -109,6 +109,19 @@ class VARTISTEUtil {
     }
   }
 
+  matrixFromOneObjectSpaceToAnother(sourceSpaceObject, targetSpaceObject)
+  {
+    sourceSpaceObject.updateMatrixWorld()
+    let destMat = this.pool('dest', THREE.Matrix4)
+    destMat.copy(sourceSpaceObject.matrixWorld)
+
+    let invMat = this.pool('inv', THREE.Matrix4)
+    targetSpaceObject.updateMatrixWorld()
+    invMat.copy(targetSpaceObject.matrixWorld).invert()
+    destMat.premultiply(invMat)
+    return destMat
+  }
+
   // Moves `obj` (`THREE.Object3D`) to the same spot as `target` (`THREE.Object3D`), accounting for the various matrix
   // transformations and parentages to get it there.
   positionObject3DAtTarget(obj, target, {scale, transformOffset, transformRoot} = {}) {
