@@ -566,6 +566,10 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     if (this.data.proxyObject && this.data.proxyObject.object3D) { this.object = this.data.proxyObject.object3D }
     else if (this.data.proxyObject) { this.object = this.data.proxyObject }
     else { this.object = this.el.object3D }
+
+    if (this.data.proxyObject && this.object.el) {
+      this.object.el.setAttribute('animation-3d-keyframed', 'wrapAnimation', this.data.wrapAnimation)
+    }
   },
   animate() {
     if (!this.data.enabled) return;

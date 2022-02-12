@@ -590,6 +590,27 @@ AFRAME.registerComponent('log-to-console-flag', {
   }
 })
 
+AFRAME.registerComponent('restart-animation-on-grab-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      if (Compositor.component.isPlayingAnimation)
+      {
+        Compositor.component.jumpToFrame(0)
+      }
+    },
+    endobjectconstraint: function(e) {
+      if (Compositor.component.isPlayingAnimation)
+      {
+        Compositor.component.jumpToFrame(0)
+      }
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+  }
+})
+
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
   AFRAME.registerComponent(name, {
@@ -612,9 +633,10 @@ function registerSimpleConstraintFlagComponent(
     valueOff = null,
     reparent = true,
     selector,
+    dependencies = []
   }) {
   AFRAME.registerComponent(name, {
-    dependencies: ['object-constraint-flag'],
+    dependencies: ['object-constraint-flag'].concat(dependencies),
     events: {
       startobjectconstraint: function(e) {
         let el = e.detail.el
@@ -654,7 +676,8 @@ registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertic
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'enabled: true', valueOff: null})
-registerSimpleConstraintFlagComponent('puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true', valueOff: 'puppeteering: false'})
+registerSimpleConstraintFlagComponent('wrap-puppeteering-flag', {icon: '#asset-rotate-3d-variant', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: true', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
+registerSimpleConstraintFlagComponent('no-wrap-puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: false', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})

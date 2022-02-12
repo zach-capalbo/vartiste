@@ -729,6 +729,7 @@ AFRAME.registerComponent('grab-redirector', {
       Util.disposeEl(this.fakeTarget)
     }
     this.el.sceneEl.removeEventListener('objectkeyframed', this.onObjectKeyframed)
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
   },
   update(oldData) {
     if (this.data.target !== oldData.target)
@@ -749,6 +750,7 @@ AFRAME.registerComponent('grab-redirector', {
           this.fakeConstraint = this.el.sceneEl.systems['manipulator'].installConstraint(fakeTarget, () => {
             Util.positionObject3DAtTarget(this.object, fakeTarget.object3D)
           }, POST_MANIPULATION_PRIORITY)
+          Compositor.el.addEventListener('framechanged', this.onFrameChange)
           Util.whenLoaded(fakeTarget, () => {
             Util.positionObject3DAtTarget(fakeTarget.object3D, this.object)
             if (this.data.transferAnimations) {
@@ -809,7 +811,9 @@ AFRAME.registerComponent('grab-redirector', {
     animation3d.deleteKeyframe(this.fakeTarget.object3D, frameIdx)
   },
   onFrameChange(e) {
-
+    if (!this.fakeTarget) return;
+    if (this.fakeTarget.is('grabbed')) return;
+    Util.positionObject3DAtTarget(this.fakeTarget.object3D, this.object)
   }
 })
 
