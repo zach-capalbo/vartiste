@@ -1695,10 +1695,11 @@ AFRAME.registerComponent('reparent-tool', {
       this.selectionBoxTool.toggleGrabbing(false)
 
       let grabbed = Object.values(e.detail.grabbed)
+      this.reparent(grabbed)
     },
     startobjectconstraint: function(e) {
       console.log("Selected parent", e.detail.el)
-      this.selectedParent = el.detail.el
+      this.selectedParent = e.detail.el
     },
     endobjectconstraint: function(e) {
       this.selectedParent = null
@@ -1707,11 +1708,47 @@ AFRAME.registerComponent('reparent-tool', {
   init() {
     let flag = this.flag = document.createElement('a-entity')
     this.el.append(flag)
-    flag.setAttribute('decorator-flag', '')
-    flag.setAttribute('position', '1 0 0')
+    flag.setAttribute('decorator-flag', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
+    this.el.setAttribute('selection-box-tool', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
+    flag.setAttribute('position', '0.1 0 0')
     this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.005})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
     })
+  },
+  reparent(grabbed)
+  {
+    let newParent
+    let toolRoot = this.el.sceneEl.querySelector('#activated-tool-root')
+    let shapeRoot = this.el.sceneEl.querySelectorAll('#shape-root')
+    let referenceRoot = this.el.sceneEl.querySelectorAll('#reference-spawn')
+    for (let el of grabbed)
+    {
+      if (this.selectedParent)
+      {
+        newParent = this.selectedParent.object3D
+      }
+      else if (el.hasAttribute('six-dof-tool'))
+      {
+        newParent = toolRoot.object3D
+      }
+      else if (el.hasAttribute('primitive-construct-placeholder'))
+      {
+        newParent = shapeRoot.object3D
+      }
+      else if (el.hasAttribute('reference-glb'))
+      {
+        newParent = referenceRoot.object3D
+      }
+      else
+      {
+        console.warn("Don't know where to put", el)
+        continue;
+      }
+
+      Util.keepingWorldPosition(el.object3D, () => {
+        newParent.add(el.object3D)
+      })
+    }
   }
 })

@@ -8,6 +8,7 @@ import {Undo} from './undo.js'
 
 const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
 const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
+const SHAPES_AND_REFERENCED = "a-entity[reference-glb], a-entity[primitive-construct-placeholder]"
 
 AFRAME.registerComponent('flaggable-control', {})
 
