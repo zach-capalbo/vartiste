@@ -37,6 +37,6 @@ a-entity position="-1.6 -1.2 0" icon-row="mergeButtons: true; autoPosition: fals
   a-entity click-action="resizeCanvas" icon-button="#asset-arrow-all" tooltip="Resize Canvas Only"
   a-entity click-action="resizeCanvasToCurrentLayer" icon-button="#asset-drag-and-drop"  tooltip="Resize Canvas to Current Layer"
   a-entity icon-button="#asset-archive-arrow-down-outline" tooltip="Standard Sizes" popup-button="popup: standard-sizes; autoScale: true; offset: 0 1 0.5"
-  a-entity icon-button="#asset-delete" tooltip="Start Fresh (ERASES EVERYTHING!)" click-action="startFresh"
+  a-entity icon-button="#asset-delete" tooltip="Start Fresh" popup-button="popup: start-fresh-popup; autoScale: true; offset: 1 1 0.5"
 a-entity position="0.1 -1.2 0"
   /a-entity.message text="width: 3.8; wrapCount: 48; align: left"
