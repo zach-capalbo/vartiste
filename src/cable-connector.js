@@ -13,6 +13,16 @@ AFRAME.registerComponent('cable-connector', {
     // this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
     this.catenary = this.catenary.bind(this)
     Util.whenLoaded([this.el, this.data.target], () => {this.tryInitialize()})
+    // this.el.setAttribute('material', 'shader: matcap; matcap: #asset-matcap')
+  },
+  update(oldData) {
+    let width = this.data.lineWidth
+    const shape = this.shape = new THREE.Shape();
+    shape.moveTo( 0,0 );
+    shape.lineTo( 0, width );
+    shape.lineTo( width, width );
+    shape.lineTo( width, 0 );
+    shape.lineTo( 0, 0 );
   },
   tryInitialize() {
     let targetEl = this.data.target
@@ -41,8 +51,10 @@ AFRAME.registerComponent('cable-connector', {
     this.cableLine.setGeometry(geometry)
 
     this.cableLineObject = new THREE.Mesh(this.cableLine.geometry, material)
-    this.el.object3D.add(this.cableLineObject)
+    // this.el.object3D.add(this.cableLineObject)
     this.cableLineObject.frustumCulled = false
+
+    this.meshMaterial = new THREE.MeshBasicMaterial({color: '#030303'})//this.el.components.material.material
 
     console.log("Initialized cable")
     this.isInitialized = true
@@ -153,5 +165,19 @@ AFRAME.registerComponent('cable-connector', {
     this.innerGeometry.verticesNeedUpdate = true
     this.cableLine.setGeometry(this.innerGeometry)
     this.cableLineObject.geometry.verticesNeedUpdate = true
+
+    if (this.mesh)
+    {
+      this.mesh.parent.remove(this.mesh)
+      this.mesh.geometry.dispose()
+    }
+
+    let geometry = new THREE.ExtrudeGeometry(this.shape, {
+      bevelEnabled: false,
+      steps: numLinks * 2,
+      extrudePath: new THREE.CatmullRomCurve3(this.links.map(l => l.position))
+    })
+    this.mesh = new THREE.Mesh(geometry, this.meshMaterial)
+    this.el.object3D.add(this.mesh)
   }
 })
