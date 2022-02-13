@@ -571,7 +571,7 @@ AFRAME.registerComponent('axis-handles-flag', {
     }
   },
   init() {
-    this.el.setAttribute('decorator-flag', {icon: '#asset-resize'})
+    this.el.setAttribute('decorator-flag', {icon: '#asset-resize', color: '#313baa'})
   }
 })
 
@@ -735,15 +735,16 @@ registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertic
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-all-flag', {icon: '#asset-lock-outline', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z; lockedPositionAxes: x, y, z; lockedScaleAxes: x, y, z', valueOff: null})
 registerSimpleConstraintFlagComponent('grid-flag', {icon: '#asset-dots-square', color: '#867555', component: 'manipulator-snap-grid', valueOn: 'enabled: true', valueOff: null})
-registerSimpleConstraintFlagComponent('wrap-puppeteering-flag', {icon: '#asset-rotate-3d-variant', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: true', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
-registerSimpleConstraintFlagComponent('no-wrap-puppeteering-flag', {icon: '#asset-record', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: false', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
+registerSimpleConstraintFlagComponent('wrap-puppeteering-flag', {icon: '#asset-rotate-3d-variant', color: '#308a5f', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: true', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
+registerSimpleConstraintFlagComponent('no-wrap-puppeteering-flag', {icon: '#asset-record', color: '#308a5f', onColor: '#bea', component: 'animation-3d-keyframed', valueOn: 'puppeteering: true; wrapAnimation: false', valueOff: 'puppeteering: false', dependencies: ['restart-animation-on-grab-flag']})
+registerSimpleConstraintFlagComponent('pause-animation-flag', {icon: '#asset-play-pause', color: '#308a5f', onColor: '#eaa', component: 'animation-3d-keyframed', valueOn: 'enabled: false', valueOff: 'enabled: true'})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
-registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
-registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", color: '#313baa', onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", color: '#313baa', omponent: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
 registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null, allowTools: false})
 
-registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#b6c5f2'})
+registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#308a5f'})
 // hide from spectator
 // Trigger down
 // Stay grabbed
