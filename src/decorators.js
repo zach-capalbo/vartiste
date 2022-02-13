@@ -740,7 +740,7 @@ registerSimpleConstraintFlagComponent('no-wrap-puppeteering-flag', {icon: '#asse
 registerSimpleConstraintFlagComponent('pause-animation-flag', {icon: '#asset-play-pause', color: '#308a5f', onColor: '#eaa', component: 'animation-3d-keyframed', valueOn: 'enabled: false', valueOff: 'enabled: true'})
 registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", onColor: '#bea', component: 'visible', valueOn: 'false', valueOff: 'true', reparent: false})
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", color: '#313baa', onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
-registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", color: '#313baa', omponent: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", color: '#313baa', component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
 registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null, allowTools: false})
 
