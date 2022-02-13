@@ -1,6 +1,5 @@
 import {Util} from './util.js'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
-const MeshLine = require('./framework/meshline.js')
 
 AFRAME.registerComponent('cable-connector', {
   schema: {
@@ -8,6 +7,8 @@ AFRAME.registerComponent('cable-connector', {
     numLinks: {default: 24},
     color: {type: 'color', default: '#333333'},
     lineWidth: {default: 0.01},
+    sourceOffset: {default: new THREE.Vector3(0, 0, 0)},
+    targetOffset: {default: new THREE.Vector3(0, 0, 0)},
   },
   init() {
     // this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
@@ -36,23 +37,11 @@ AFRAME.registerComponent('cable-connector', {
     this.sourceConnection = this.el.object3D
     this.targetConnection = this.data.target.object3D
 
-    let geometry = new THREE.Geometry();
-    let material = new MeshLine.MeshLineMaterial( {color: this.data.color, lineWidth: this.data.lineWidth} );
-
 
     for (let i = 0; i < this.numLinks; ++i)
     {
-      geometry.vertices.push(new THREE.Vector3())
-      this.links[i] = {position: geometry.vertices[i]}
+      this.links[i] = new THREE.Vector3
     }
-
-    this.innerGeometry = geometry
-    this.cableLine = new MeshLine.MeshLine()
-    this.cableLine.setGeometry(geometry)
-
-    this.cableLineObject = new THREE.Mesh(this.cableLine.geometry, material)
-    // this.el.object3D.add(this.cableLineObject)
-    this.cableLineObject.frustumCulled = false
 
     this.meshMaterial = new THREE.MeshBasicMaterial({color: '#030303'})//this.el.components.material.material
 
@@ -79,9 +68,8 @@ AFRAME.registerComponent('cable-connector', {
     this.inverseMatrix.getInverse(this.el.object3D.matrixWorld)
 
     this.destinationMatrix.premultiply(this.inverseMatrix)
-    // this.destinationMatrix.decompose(this.links[0].position, this.links[0].quaternion, this.scaleVector)
-    this.links[0].position.setFromMatrixPosition(this.destinationMatrix)
-    // this.links[0].updateMatrixWorld()
+    this.links[0].setFromMatrixPosition(this.destinationMatrix)
+    this.links[0].add(this.data.sourceOffset)
 
     this.sourceForward = this.sourceForward || new THREE.Vector3()
     this.sourceConnection.getWorldDirection(this.sourceForward)
@@ -102,9 +90,8 @@ AFRAME.registerComponent('cable-connector', {
     this.inverseMatrix.getInverse(this.el.object3D.matrixWorld)
 
     this.destinationMatrix.premultiply(this.inverseMatrix)
-    // this.destinationMatrix.decompose(this.links[numLinks-1].position, this.links[numLinks-1].quaternion, this.scaleVector)
-    this.links[numLinks - 1].position.setFromMatrixPosition(this.destinationMatrix)
-    // this.links[numLinks-1].updateMatrixWorld()
+    this.links[numLinks - 1].setFromMatrixPosition(this.destinationMatrix)
+    this.links[numLinks - 1].add(this.data.targetOffset)
 
     this.targetForward = this.targetForward || new THREE.Vector3()
     this.targetConnection.getWorldDirection(this.targetForward)
@@ -112,15 +99,15 @@ AFRAME.registerComponent('cable-connector', {
     this.targetForward.normalize()
     this.targetForwardTemp = this.targetForwardTemp || new THREE.Vector3()
 
-    let xRange = (this.links[numLinks - 1].position.x - this.links[0].position.x)
-    let yRange = (this.links[numLinks - 1].position.y - this.links[0].position.y)
-    let zRange = (this.links[numLinks - 1].position.z - this.links[0].position.z)
+    let xRange = (this.links[numLinks - 1].x - this.links[0].x)
+    let yRange = (this.links[numLinks - 1].y - this.links[0].y)
+    let zRange = (this.links[numLinks - 1].z - this.links[0].z)
 
     var cableLength = 3
     var stretchFactor = 2
 
-    let p1 = this.links[0].position
-    let p2 = this.links[numLinks - 1].position
+    let p1 = this.links[0]
+    let p2 = this.links[numLinks - 1]
 
     let sourceDirectionInfluenceFalloff = 3;
     let targetDirectionInfluenceFalloff = 1.3
@@ -130,7 +117,7 @@ AFRAME.registerComponent('cable-connector', {
 
     for (let i = 1; i < numLinks - 1; ++i)
     {
-      this.links[i].position.lerpVectors(this.links[0].position, this.links[numLinks - 1].position, i / (numLinks - 1))
+      this.links[i].lerpVectors(this.links[0], this.links[numLinks - 1], i / (numLinks - 1))
 
       let stretchLength = Math.min(Math.sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)), length)
       let leftOver = cableLength - stretchLength
@@ -143,28 +130,21 @@ AFRAME.registerComponent('cable-connector', {
       let x1 = alpha * Math.acosh((p2.y + fudge) / alpha) +  x0
       let x = i / (numLinks - 1)
 
-      this.links[i].position.y = alpha * Math.cosh((x1 * x - x0) / alpha) - fudge
+      this.links[i].y = alpha * Math.cosh((x1 * x - x0) / alpha) - fudge
 
-      if (isNaN(this.links[i].position.y))
+      if (isNaN(this.links[i].y))
       {
         console.warn("NAN", alpha, p1.y, p2.y, x, leftOver, stretchFactor)
       }
 
-      // this.links[i].position.addScaledVector(this.sourceForward, - (1.0 - i / (numLinks - 1)) / 6)
-      // this.links[i].position.addScaledVector(this.targetForward, (i / (numLinks - 1.0)) / 3.0 )
-
-      this.sourceForwardTemp.copy(this.links[0].position)
+      this.sourceForwardTemp.copy(this.links[0])
       this.sourceForwardTemp.addScaledVector(this.sourceForward, - stiffnessAtsource * ( i / (numLinks - 1.0)))
-      this.links[i].position.lerp(this.sourceForwardTemp, Math.pow(1.0 - i / (numLinks - 1.0), sourceDirectionInfluenceFalloff))
+      this.links[i].lerp(this.sourceForwardTemp, Math.pow(1.0 - i / (numLinks - 1.0), sourceDirectionInfluenceFalloff))
 
-      this.targetForwardTemp.copy(this.links[numLinks - 1].position)
+      this.targetForwardTemp.copy(this.links[numLinks - 1])
       this.targetForwardTemp.addScaledVector(this.targetForward, stiffnessAttarget * (1.0 - i / (numLinks - 1.0)))
-      this.links[i].position.lerp(this.targetForwardTemp, Math.pow(i / (numLinks - 1.0), targetDirectionInfluenceFalloff))
+      this.links[i].lerp(this.targetForwardTemp, Math.pow(i / (numLinks - 1.0), targetDirectionInfluenceFalloff))
     }
-
-    this.innerGeometry.verticesNeedUpdate = true
-    this.cableLine.setGeometry(this.innerGeometry)
-    this.cableLineObject.geometry.verticesNeedUpdate = true
 
     if (this.mesh)
     {
@@ -175,7 +155,7 @@ AFRAME.registerComponent('cable-connector', {
     let geometry = new THREE.ExtrudeGeometry(this.shape, {
       bevelEnabled: false,
       steps: numLinks * 2,
-      extrudePath: new THREE.CatmullRomCurve3(this.links.map(l => l.position))
+      extrudePath: new THREE.CatmullRomCurve3(this.links)
     })
     this.mesh = new THREE.Mesh(geometry, this.meshMaterial)
     this.el.object3D.add(this.mesh)

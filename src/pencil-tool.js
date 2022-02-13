@@ -1711,7 +1711,7 @@ AFRAME.registerComponent('reparent-tool', {
     flag.setAttribute('decorator-flag', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
     this.el.setAttribute('selection-box-tool', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
-    this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01})
+    this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
     })

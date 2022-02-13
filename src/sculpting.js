@@ -965,6 +965,11 @@ Util.registerComponentSystem('threed-line-system', {
       brush = this.filledBrush
     }
 
+    let recentColors = document.getElementById('recent-colors')
+    if (recentColors) {
+      recentColors.components['palette'].addToPalette()
+    }
+
     let canvas, color, opacity;
 
     let transparent = true;
