@@ -1696,6 +1696,10 @@ AFRAME.registerComponent('reparent-tool', {
 
       let grabbed = Object.values(e.detail.grabbed)
       this.reparent(grabbed)
+      if (grabbed.length > 0)
+      {
+        Sfx.recognition(this.el)
+      }
     },
     startobjectconstraint: function(e) {
       console.log("Selected parent", e.detail.el)
@@ -1720,11 +1724,11 @@ AFRAME.registerComponent('reparent-tool', {
   {
     let newParent
     let toolRoot = this.el.sceneEl.querySelector('#activated-tool-root')
-    let shapeRoot = this.el.sceneEl.querySelectorAll('#shape-root')
-    let referenceRoot = this.el.sceneEl.querySelectorAll('#reference-spawn')
+    let shapeRoot = this.el.sceneEl.querySelector('#shape-root')
+    let referenceRoot = this.el.sceneEl.querySelector('#reference-spawn')
     for (let el of grabbed)
     {
-      if (this.selectedParent)
+      if (this.selectedParent && !Util.traverseFindAncestor(this.selectedParent.object3D, o => o === el.object3D))
       {
         newParent = this.selectedParent.object3D
       }

@@ -208,6 +208,7 @@ AFRAME.registerComponent('decorator-flag', {
       if (el.hasAttribute('decorator-flag')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D, {intersectionInfo})) return;
       if (el === this.grabbedBy) return;
+      if (intersectionInfo.objectB.el && intersectionInfo.objectB.el !== el && intersectionInfo.objectB.el.matches(this.data.selector)) return;
 
       console.log("Intersecting tool", el, this.grabbedBy)
       if (this.data.reparent)
