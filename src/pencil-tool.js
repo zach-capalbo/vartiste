@@ -1638,7 +1638,7 @@ AFRAME.registerComponent('delete-box-tool', {
   events: {
     grabstarted: function(e){
       if (!this.el.components['selection-box-tool'].grabbing) return;
-      
+
       this.selectionBoxTool.toggleGrabbing(false)
 
       let grabbed = Object.values(e.detail.grabbed)
@@ -1683,4 +1683,35 @@ AFRAME.registerComponent('delete-box-tool', {
       this.box.setAttribute('material', 'color', 'red')
     })
   },
+})
+
+AFRAME.registerComponent('reparent-tool', {
+  dependencies: ['selection-box-tool'],
+  schema: {},
+  events: {
+    grabstarted: function(e){
+      if (!this.el.components['selection-box-tool'].grabbing) return;
+
+      this.selectionBoxTool.toggleGrabbing(false)
+
+      let grabbed = Object.values(e.detail.grabbed)
+    },
+    startobjectconstraint: function(e) {
+      console.log("Selected parent", e.detail.el)
+      this.selectedParent = el.detail.el
+    },
+    endobjectconstraint: function(e) {
+      this.selectedParent = null
+    }
+  },
+  init() {
+    let flag = this.flag = document.createElement('a-entity')
+    this.el.append(flag)
+    flag.setAttribute('decorator-flag', '')
+    flag.setAttribute('position', '1 0 0')
+    this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.005})
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+    })
+  }
 })

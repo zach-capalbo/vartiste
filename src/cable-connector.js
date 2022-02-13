@@ -1,4 +1,5 @@
 import {Util} from './util.js'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 const MeshLine = require('./framework/meshline.js')
 
 AFRAME.registerComponent('cable-connector', {
@@ -9,11 +10,15 @@ AFRAME.registerComponent('cable-connector', {
     lineWidth: {default: 0.01},
   },
   init() {
-    this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    // this.tick = AFRAME.utils.throttleTick(this.tick, 100, this)
+    this.catenary = this.catenary.bind(this)
     Util.whenLoaded([this.el, this.data.target], () => {this.tryInitialize()})
   },
   tryInitialize() {
     let targetEl = this.data.target
+
+    this.el.sceneEl.systems.manipulator.installConstraint(targetEl, this.catenary, POST_MANIPULATION_PRIORITY)
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.catenary, POST_MANIPULATION_PRIORITY)
 
     this.numLinks = 24
     this.links = []
@@ -23,6 +28,7 @@ AFRAME.registerComponent('cable-connector', {
 
     let geometry = new THREE.Geometry();
     let material = new MeshLine.MeshLineMaterial( {color: this.data.color, lineWidth: this.data.lineWidth} );
+
 
     for (let i = 0; i < this.numLinks; ++i)
     {
@@ -40,12 +46,13 @@ AFRAME.registerComponent('cable-connector', {
 
     console.log("Initialized cable")
     this.isInitialized = true
+    Util.callLater(this.catenary)
   },
-  tick(t,dt) {
-    if (!this.isInitialized) return
-
-    this.catenary()
-  },
+  // tick(t,dt) {
+  //   if (!this.isInitialized) return
+  //
+  //   this.catenary()
+  // },
   catenary() {
     let numLinks = this.links.length;
 
