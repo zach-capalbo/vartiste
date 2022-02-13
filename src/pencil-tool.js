@@ -1637,6 +1637,8 @@ AFRAME.registerComponent('delete-box-tool', {
   schema: {},
   events: {
     grabstarted: function(e){
+      if (!this.el.components['selection-box-tool'].grabbing) return;
+      
       this.selectionBoxTool.toggleGrabbing(false)
 
       let grabbed = Object.values(e.detail.grabbed)
