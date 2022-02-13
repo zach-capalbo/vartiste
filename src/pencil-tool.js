@@ -75,6 +75,13 @@ AFRAME.registerSystem('pencil-tool', {
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
     return cylinder
+  },
+  resetAllTools() {
+    this.el.sceneEl.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
+      if (el.components['six-dof-tool'].data.resettable) {
+        el.components['six-dof-tool'].resetPosition()
+      }
+    })
   }
 })
 
@@ -123,11 +130,13 @@ AFRAME.registerComponent('pencil-tool', {
         }
       }
     },
-    activate: function() { this.activatePencil() }
+    activate: function() { this.activatePencil() },
+    resetposition: function() { this.deactivatePencil() }
   },
   async init() {
     this.el.classList.add('grab-root')
     this.el.setAttribute('shadow', 'cast: true; receive: false')
+    this.activatePencil = this._activatePencil;
 
     if (this.el.hasAttribute('set-brush'))
     {
@@ -320,33 +329,51 @@ AFRAME.registerComponent('pencil-tool', {
       this.el.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.2 0")
     }
   },
-  activatePencil({subPencil = false} = {}) {
+  _activatePencil({subPencil = false} = {}) {
     console.log("Activating pencil")
     this.el.setAttribute('action-tooltips', {trigger: 'Toggle Pencil', b: 'Clone Pencil', shelf: '6DoF Tool Shelf'})
     if (this.raycasterTick) this.el.components.raycaster.tock = this.raycasterTick
-    this.el.addEventListener('raycaster-intersection', e => {
+    this.raycasterIntersection = e => {
       if (!this.data.enabled) return
       this.updateDrawTool()
       this.el.components['hand-draw-tool'].isDrawing = true
       this.el.components['hand-draw-tool'].startDraw()
-    })
+    };
 
-    this.el.addEventListener('raycaster-intersection-cleared', e => {
+    this.el.addEventListener('raycaster-intersection', this.raycasterIntersection)
+
+    this.raycasterIntersectionCleared = e => {
       if (!this.data.enabled) return
       this.el.components['hand-draw-tool'].endDraw()
       this.el.components['hand-draw-tool'].isDrawing = false
-    })
+    };
 
-    this.el.addEventListener('click', e => {
+    this.el.addEventListener('raycaster-intersection-cleared', this.raycasterIntersectionCleared)
+
+    this.clickHandler = e => {
       if (this.el.is('grabbed'))
       {
         this.data.enabled = !this.data.enabled
         this.updateEnabled()
       }
-    })
+    };
+    this.el.addEventListener('click', this.clickHandler)
 
     this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
     this.activatePencil = function() { throw new Error("Tried to activate already activated pencil") }
+  },
+  deactivatePencil() {
+    if (this.el.components['hand-draw-tool'].isDrawing)
+    {
+      this.el.components['hand-draw-tool'].endDraw()
+    }
+
+    this.el.removeEventListener('raycaster-intersection', this.raycasterIntersection)
+    this.el.removeEventListener('raycaster-intersection-cleared', this.raycasterIntersectionCleared)
+    this.el.removeEventListener('click', this.clickHandler)
+    this.tick = function() {}
+    if (this.raycasterTick) this.el.components.raycaster.tock = function () {}
+    this.activatePencil = this._activatePencil;
   },
   calcFar() {
     return this.tipHeight * this.el.object3D.scale.x + this.data.extraRayLength
@@ -789,7 +816,11 @@ AFRAME.registerComponent('six-dof-tool', {
       }
     },
   },
+  emits: {
+    resetposition: {}
+  },
   init() {
+    Util.emitsEvents(this)
     if (this.data.summonable && !this.el.hasAttribute('summonable')) {
       this.el.setAttribute('summonable', 'once: true; activateOnSummon: true')
     }
@@ -801,6 +832,7 @@ AFRAME.registerComponent('six-dof-tool', {
     Util.applyMatrix(this.resetInfo.matrix, this.el.object3D)
     this.el.removeState('grab-activated')
     delete this.resetInfo
+    this.el.emit('resetposition', this.emitDetails.resetposition)
   }
 })
 
@@ -1598,4 +1630,57 @@ AFRAME.registerComponent('lathe-selection-tool', {
     if (!this.selectionBoxTool.grabbing) return;
     this.box.object3D.rotateY(this.data.speed / 1000.0 * dt)
   }
+})
+
+AFRAME.registerComponent('delete-box-tool', {
+  dependencies: ['selection-box-tool'],
+  schema: {},
+  events: {
+    grabstarted: function(e){
+      if (!this.el.components['selection-box-tool'].grabbing) return;
+      
+      this.selectionBoxTool.toggleGrabbing(false)
+
+      let grabbed = Object.values(e.detail.grabbed)
+      Undo.collect(() => {
+        for (let el of Object.values(grabbed))
+        {
+          let originalMesh = el.getObject3D('mesh')
+          let originalParent = el.object3D.parent.el
+          let type = ['primitive-construct-placeholder', 'reference-glb'].find(c => el.hasAttribute(c))
+          let m = new THREE.Matrix4().copy(el.object3D.matrix)
+          Undo.push(() => {
+            let newEl = document.createElement('a-entity')
+            originalParent.append(newEl)
+            console.log("Restoring", newEl)
+
+            Util.whenLoaded(newEl, () => {
+              originalMesh.el = newEl
+              newEl.setObject3D('mesh', originalMesh)
+              newEl.setAttribute(type, type === 'reference-glb' ? '' : 'detached: true; manualMesh: true')
+              Util.applyMatrix(m, newEl.object3D)
+            })
+          })
+        }
+      })
+      for (let el of Object.values(e.detail.grabbed))
+      {
+        el.setObject3D('mesh', new THREE.Object3D)
+        el.parentEl.removeChild(el)
+        // Util.disposeEl(el)
+      }
+    }
+  },
+  init() {
+    Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
+      this.el.setAttribute('selection-box-tool', 'selector', 'a-entity[primitive-construct-placeholder], a-entity[reference-glb]')
+      this.selectionBoxTool = this.el.components['selection-box-tool']
+      this.box = this.selectionBoxTool.box
+
+      let handle = this.selectionBoxTool.handle
+      handle.setAttribute('material', 'color', 'red')
+      handle.setAttribute('material', 'src', '')
+      this.box.setAttribute('material', 'color', 'red')
+    })
+  },
 })

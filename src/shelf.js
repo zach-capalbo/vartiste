@@ -223,3 +223,28 @@ AFRAME.registerComponent('hide-shelf-on-click', {
     }
   }
 })
+
+AFRAME.registerSystem('remember-position', {
+  restoreAll() {
+    this.el.sceneEl.querySelectorAll('a-entity[remember-position]').forEach(el => {
+      el.components['remember-position'].restore()
+    })
+  }
+})
+AFRAME.registerComponent('remember-position', {
+  init() {
+  },
+  play() {
+    Util.whenLoaded(this.el, () => {
+      Util.callLater(() => this.remember())
+    })
+  },
+  remember() {
+    this.initialMatrix = new THREE.Matrix4().copy(this.el.object3D.matrix)
+    this.wasVisible = this.el.object3D.visible
+  },
+  restore() {
+    Util.applyMatrix(this.initialMatrix, this.el.object3D)
+    this.el.object3D.visible = this.wasVisible
+  }
+})

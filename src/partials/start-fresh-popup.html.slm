@@ -1,0 +1,5 @@
+a-entity shelf="width: 2; height: 1; frame: false"
+  a-entity position="0 0.288 0" text="width: 1.9; wrapCount: 30; value: Warning: This will clear everything from the scene!"
+  a-entity icon-row="" position="0.25 -0.25 0" scale="0.7 0.7 0.7"
+    a-entity icon-button="#asset-close-circle-outline" tooltip="Cancel" popup-action="close"
+    a-entity icon-button="#asset-delete" tooltip="Delete Everything" click-action="startFresh" button-style="color: red" popup-action="close"

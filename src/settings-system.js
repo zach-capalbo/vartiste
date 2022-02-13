@@ -592,6 +592,13 @@ Util.registerComponentSystem('settings-system', {
     {
       el.components.raycaster.refreshObjects()
     }
+  },
+  clearModels() {
+    this.el.sceneEl.systems['primitive-constructs'].clearAll()
+    this.el.querySelectorAll('a-entity[reference-glb]').forEach(el => {
+      Util.disposeEl(el)
+    })
+    this.el.querySelector('#composition-view').removeObject3D('mesh')
   }
 })
 

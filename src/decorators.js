@@ -140,7 +140,10 @@ AFRAME.registerComponent('object-constraint-flag', {
       {
         this.makeClone()
       }
-    }
+    },
+    resetposition: function(e) {
+      this.detachTool()
+    },
   },
   init() {
     this.system = this.el.sceneEl.systems['object-constraint-flag-system']
