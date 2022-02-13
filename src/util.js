@@ -263,9 +263,25 @@ class VARTISTEUtil {
     }
   }
 
+  traverseFindAncestorObj(obj, fn)
+  {
+    obj = obj.parent
+    while (obj)
+    {
+      if (fn(obj))
+      {
+        return obj;
+      }
+
+      obj = obj.parent
+    }
+  }
+
   // Executes `fn` on all ancestors of `el`, stopping and returning the ancestor if `fn` returns `true`
   traverseFindAncestor(el, fn)
   {
+    if (!el.object3D) return this.traverseFindAncestorObj(el, fn);
+
     el = el.parentEl
     while (el)
     {

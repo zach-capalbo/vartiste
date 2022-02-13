@@ -965,6 +965,11 @@ Util.registerComponentSystem('threed-line-system', {
       brush = this.filledBrush
     }
 
+    let recentColors = document.getElementById('recent-colors')
+    if (recentColors) {
+      recentColors.components['palette'].addToPalette()
+    }
+
     let canvas, color, opacity;
 
     let transparent = true;
@@ -1049,6 +1054,7 @@ Util.registerComponentSystem('threed-line-system', {
     this.material = new materialType({map: texture,
       transparent: transparent,
       depthWrite: !transparent || this.data.shape !== 'line',
+      alphaTest: 0.01,
       color, opacity,
       side: THREE.FrontSide})
 
