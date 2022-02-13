@@ -1054,6 +1054,7 @@ Util.registerComponentSystem('threed-line-system', {
     this.material = new materialType({map: texture,
       transparent: transparent,
       depthWrite: !transparent || this.data.shape !== 'line',
+      alphaTest: 0.01,
       color, opacity,
       side: THREE.FrontSide})
 

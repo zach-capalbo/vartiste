@@ -26,7 +26,8 @@ Util.registerComponentSystem('environment-manager', {
     envMapIntensity: {default: 1.0},
     initialState: {default: STATE_PRESET},
     toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']},
-    transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']}
+    transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']},
+    alphaTest: {default: 0.01},
   },
   events: {
     anglechanged: function (e) {
@@ -339,11 +340,19 @@ Util.registerComponentSystem('environment-manager', {
       for (let r of this.elementsToCheck)
       {
         r.object3D.traverseVisible(o => {
-          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)) && (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity))
+          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)))
           {
-            o.material.envMap = this.envMap
+            if (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity)
+            {
+              o.material.envMap = this.envMap
+              o.material.needsUpdate = true
+              o.material.envMapIntensity = this.data.envMapIntensity
+            }
+          }
+          if (o.visible && o.material && o.material.transparent && o.material.alphaTest !== this.data.alphaTest)
+          {
+            o.material.alphaTest = this.data.alphaTest
             o.material.needsUpdate = true
-            o.material.envMapIntensity = this.data.envMapIntensity
           }
         })
       }
