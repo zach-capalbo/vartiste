@@ -48,6 +48,8 @@ Util.registerComponentSystem('scene-organizer', {
       this.positioner.scale.set(0.05, 0.05, 0.05)
       Util.positionObject3DAtTarget(view.object3D, this.positioner)
     })
+
+    return view
   }
 })
 

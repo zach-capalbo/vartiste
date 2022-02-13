@@ -94,10 +94,10 @@ AFRAME.registerComponent('adjustable-origin', {
 
 
 
-Util.registerComponentSystem('object-constraint-flag-system', {
+Util.registerComponentSystem('decorator-flag-system', {
 })
 
-AFRAME.registerComponent('object-constraint-flag', {
+AFRAME.registerComponent('decorator-flag', {
   dependencies: ['six-dof-tool', 'grab-activate'],
   schema: {
     selector: {type: 'string', default: DEFAULT_SELECTOR},
@@ -146,7 +146,7 @@ AFRAME.registerComponent('object-constraint-flag', {
     },
   },
   init() {
-    this.system = this.el.sceneEl.systems['object-constraint-flag-system']
+    this.system = this.el.sceneEl.systems['decorator-flag-system']
     Pool.init(this, {useSystem: true})
     Util.emitsEvents(this)
 
@@ -204,7 +204,7 @@ AFRAME.registerComponent('object-constraint-flag', {
       if (this.attachedTo) return;
       if (el === this.el) return;
       if (!Util.visibleWithAncestors(el.object3D)) return;
-      if (el.hasAttribute('object-constraint-flag')) return;
+      if (el.hasAttribute('decorator-flag')) return;
       if (!Util.objectsIntersect(this.handle.object3D, el.object3D, {intersectionInfo})) return;
       if (el === this.grabbedBy) return;
 
@@ -262,11 +262,11 @@ AFRAME.registerComponent('object-constraint-flag', {
       this.emitDetails.cloneloaded.el = el
       this.el.emit('cloneloaded', this.emitDetails.cloneloaded)
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
-      Util.whenComponentInitialized(el, 'object-constraint-flag', () => {
-        Util.whenLoaded(el.components['object-constraint-flag'].handle, () => {
+      Util.whenComponentInitialized(el, 'decorator-flag', () => {
+        Util.whenLoaded(el.components['decorator-flag'].handle, () => {
           Util.delay(100).then(() => {
             console.log("Constraint Clone initialized")
-            el.components['object-constraint-flag'].attachToTool()
+            el.components['decorator-flag'].attachToTool()
           })
         })
       })
@@ -287,7 +287,7 @@ AFRAME.registerComponent('object-constraint-flag', {
     Sfx.stickOff(this.el, {volume: 0.05})
   },
   canTransferGrab(el) {
-    if (el.hasAttribute('object-constraint-flag')) return false;
+    if (el.hasAttribute('decorator-flag')) return false;
     return el.matches(this.data.selector);
   },
   manipulatorGrabStart(e) {
@@ -326,7 +326,7 @@ AFRAME.registerComponent('flaggable-manipulator', {
 })
 
 AFRAME.registerComponent('weight-constraint-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   schema: {
     weight: {default: 0.9}
   },
@@ -374,7 +374,7 @@ AFRAME.registerComponent('weight-constraint-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {icon: '#asset-hand-two-lines', color: '#867555'})
+    this.el.setAttribute('decorator-flag', {icon: '#asset-hand-two-lines', color: '#867555'})
   },
   calcWeight(count) {
     let c = 0
@@ -387,7 +387,7 @@ AFRAME.registerComponent('weight-constraint-flag', {
 })
 
 AFRAME.registerComponent('show-normals-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
@@ -418,14 +418,14 @@ AFRAME.registerComponent('show-normals-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {color: '#b435ba', icon: '#asset-brightness-4'})
+    this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-brightness-4'})
     this.meshMap = new Map();
     this.normalMaterial = new THREE.MeshNormalMaterial()
   }
 })
 
 AFRAME.registerComponent('show-uv-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: async function(e) {
       let el = e.detail.el
@@ -457,7 +457,7 @@ AFRAME.registerComponent('show-uv-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {color: '#b435ba', icon: '#asset-brush'})
+    this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-brush'})
     this.meshMap = new Map();
   },
   async getMaterial() {
@@ -479,7 +479,7 @@ AFRAME.registerComponent('show-uv-flag', {
 })
 
 AFRAME.registerComponent('wireframe-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
@@ -516,20 +516,20 @@ AFRAME.registerComponent('wireframe-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {color: '#b435ba', icon: '#asset-web'})
+    this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-web'})
     this.meshMap = new Map();
   }
 })
 
 AFRAME.registerComponent('unclickable-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       Util.traverseEl(e.detail.el, (el) => {
         this.elMap.set(el, el.classList.contains('clickable'))
         el.classList.remove('clickable')
       })
-      this.el.setAttribute('object-constraint-flag', 'color', '#ff5555')
+      this.el.setAttribute('decorator-flag', 'color', '#ff5555')
     },
     endobjectconstraint: function(e) {
       Util.traverseEl(e.detail.el, (el) => {
@@ -540,7 +540,7 @@ AFRAME.registerComponent('unclickable-flag', {
         this.elMap.delete(el)
       })
 
-      this.el.setAttribute('object-constraint-flag', 'color', '#867555')
+      this.el.setAttribute('decorator-flag', 'color', '#867555')
     },
     cloneloaded: function(e) {
       e.stopPropagation()
@@ -548,13 +548,13 @@ AFRAME.registerComponent('unclickable-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {color: '#867555', icon: '#asset-hand-no-lines'})
+    this.el.setAttribute('decorator-flag', {color: '#867555', icon: '#asset-hand-no-lines'})
     this.elMap = new Map();
   }
 })
 
 AFRAME.registerComponent('axis-handles-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
@@ -569,12 +569,12 @@ AFRAME.registerComponent('axis-handles-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', {icon: '#asset-resize'})
+    this.el.setAttribute('decorator-flag', {icon: '#asset-resize'})
   }
 })
 
 AFRAME.registerComponent('trigger-down-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   schema: {
     throttle: {default: 50},
   },
@@ -602,19 +602,53 @@ AFRAME.registerComponent('trigger-down-flag', {
 })
 
 AFRAME.registerComponent('log-to-console-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       console.info("Flagged:", e.detail.el, e.detail.intersectionInfo.objectB)
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+    this.el.setAttribute('decorator-flag', 'color: #282828; icon: #asset-translate')
   }
 })
 
+AFRAME.registerComponent('inspector-flag', {
+  schema: {
+    subObject: {default: false},
+  },
+  dependencies: ['decorator-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let view = this.el.sceneEl.systems['scene-organizer'].inspect(e.detail.el)
+      view['redirect-grab'] = this.el
+      Util.whenLoaded(view, () => {
+        Util.positionObject3DAtTarget(view.object3D, this.positioner)
+      })
+      console.info("Inpsecting", e.detail.el)
+    },
+    endobjectconstraint: function(e) {
+      let view = this.el.sceneEl.systems['scene-organizer'].viewFor(e.detail.el)
+      if (!view) return;
+      delete view['redirect-grab'];
+      view.components['frame'].closeFrame()
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('inspector-flag', this.el.getAttribute('inspector-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline')
+    let positioner = this.positioner = new THREE.Object3D;
+    this.el.object3D.add(positioner)
+    positioner.position.set(0, 0.1, 0.16)
+    positioner.scale.set(0.1, 0.1, 0.1)
+  },
+})
+
 AFRAME.registerComponent('restart-animation-on-grab-flag', {
-  dependencies: ['object-constraint-flag'],
+  dependencies: ['decorator-flag'],
   events: {
     startobjectconstraint: function(e) {
       if (Compositor.component.isPlayingAnimation)
@@ -630,17 +664,17 @@ AFRAME.registerComponent('restart-animation-on-grab-flag', {
     }
   },
   init() {
-    this.el.setAttribute('object-constraint-flag', 'color: #282828; icon: #asset-translate')
+    this.el.setAttribute('decorator-flag', 'color: #282828; icon: #asset-translate')
   }
 })
 
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
   AFRAME.registerComponent(name, {
-    dependencies: ['object-constraint-flag'].concat(flags),
+    dependencies: ['decorator-flag'].concat(flags),
     init() {
-      this.el.setAttribute('object-constraint-flag', {color, icon})
-      if (selector) this.el.setAttribute('object-constraint-flag', 'selector', selector)
+      this.el.setAttribute('decorator-flag', {color, icon})
+      if (selector) this.el.setAttribute('decorator-flag', 'selector', selector)
     }
   })
 }
@@ -659,13 +693,13 @@ function registerSimpleConstraintFlagComponent(
     dependencies = []
   }) {
   AFRAME.registerComponent(name, {
-    dependencies: ['object-constraint-flag'].concat(dependencies),
+    dependencies: ['decorator-flag'].concat(dependencies),
     events: {
       startobjectconstraint: function(e) {
         let el = e.detail.el
         el.setAttribute(component, valueOn)
 
-        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', onColor)}
+        if (onColor) { this.el.setAttribute('decorator-flag', 'color', onColor)}
       },
       endobjectconstraint: function(e) {
         let el = e.detail.el
@@ -679,7 +713,7 @@ function registerSimpleConstraintFlagComponent(
           el.setAttribute(component, valueOff)
         }
 
-        if (onColor) { this.el.setAttribute('object-constraint-flag', 'color', color)}
+        if (onColor) { this.el.setAttribute('decorator-flag', 'color', color)}
       },
       cloneloaded: function(e) {
         e.stopPropagation()
@@ -687,8 +721,8 @@ function registerSimpleConstraintFlagComponent(
       }
     },
     init() {
-      this.el.setAttribute('object-constraint-flag', {color, icon, reparent})
-      if (selector) this.el.setAttribute('object-constraint-flag', 'selector', selector)
+      this.el.setAttribute('decorator-flag', {color, icon, reparent})
+      if (selector) this.el.setAttribute('decorator-flag', 'selector', selector)
     }
   });
 }
