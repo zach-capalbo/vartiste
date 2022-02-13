@@ -553,6 +553,26 @@ AFRAME.registerComponent('unclickable-flag', {
   }
 })
 
+AFRAME.registerComponent('axis-handles-flag', {
+  dependencies: ['object-constraint-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.setAttribute('axis-handles', el.hasAttribute('primitive-shape-construct') ? 'apply: true' : '')
+    },
+    endobjectconstraint: function(e) {
+      e.detail.el.removeAttribute('axis-handles')
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('axis-handles-flag', this.el.getAttribute('axis-handles-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('object-constraint-flag', {icon: '#asset-resize'})
+  }
+})
+
 AFRAME.registerComponent('trigger-down-flag', {
   dependencies: ['object-constraint-flag'],
   schema: {

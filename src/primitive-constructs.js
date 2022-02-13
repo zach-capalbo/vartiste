@@ -22,7 +22,6 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (this.lastGrabbed)
     {
-      this.lastGrabbed.removeAttribute('axis-handles')
       if (this.lastGrabbed.hasAttribute('vertex-handles'))
       {
         this.lastGrabbed.getObject3D('mesh').geometry.computeBoundsTree()
@@ -34,7 +33,6 @@ Util.registerComponentSystem('primitive-constructs', {
 
     if (!el) return;
 
-    el.setAttribute('axis-handles', 'apply: true')
     el.setAttribute('frame', 'pinnable: false; outline: false; useBounds: true')
     Util.whenComponentInitialized(el, 'frame', () => {
       let button = el.components.frame.addButton('#asset-dots-square')

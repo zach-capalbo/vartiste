@@ -656,15 +656,15 @@ AFRAME.registerComponent('axis-handle-control', {
     this.startPosition.copy(this.el.object3D.position)
   },
   stopGrab() {
-    this.target.geometry.computeBoundingBox()
-    let box = this.target.geometry.boundingBox
     let axis = this.data.axis
     let endPosition = this.el.object3D.position
-    // let newScale = box.max[axis] / (this.startPosition[axis] - this.offset) * (endPosition[axis] - this.offset)
-    let newScale = (endPosition[axis] - this.offset) / box.max[axis]
+
 
     if (this.data.apply)
     {
+      this.target.geometry.computeBoundingBox()
+      let box = this.target.geometry.boundingBox
+      let newScale = (endPosition[axis] - this.offset) / box.max[axis]
       let m = new THREE.Matrix4()
       let v = new THREE.Vector3()
       v.set(1, 1, 1)
@@ -679,6 +679,8 @@ AFRAME.registerComponent('axis-handle-control', {
     }
     else
     {
+      let box = Util.recursiveBoundingBox(this.target.parent, {includeUI: false, onlyVisible: true, world: false})
+      let newScale = (endPosition[axis] - this.offset) / box.max[axis]
       this.target.scale[axis] = newScale
     }
 
@@ -689,8 +691,11 @@ AFRAME.registerComponent('axis-handle-control', {
   },
   resetPosition() {
     this.target = this.el.parentEl.getObject3D('mesh')
-    this.target.geometry.computeBoundingBox()
-    let box = this.target.geometry.boundingBox
+    if (this.data.apply)
+    {
+      this.target.geometry.computeBoundingBox()
+    }
+    let box = this.data.apply ? this.target.geometry.boundingBox : Util.recursiveBoundingBox(this.target.parent, {includeUI: false, onlyVisible: true, world: false})
     this.offset = 0.08 * 0
     switch (this.data.axis)
     {
