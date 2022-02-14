@@ -954,6 +954,11 @@ Util.registerComponentSystem('threed-line-system', {
   },
   getMaterial(distance) {
     // return new THREE.MeshNormalMaterial()
+    let recentColors = document.getElementById('recent-colors')
+    if (recentColors && distance > 0) {
+      recentColors.components['palette'].addToPalette()
+    }
+
     if (this.material && !this.materialNeedsUpdate) return this.material;
     console.log("Regenerating material")
     if (this.material) {
@@ -979,11 +984,6 @@ Util.registerComponentSystem('threed-line-system', {
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
       return this.material
-    }
-
-    let recentColors = document.getElementById('recent-colors')
-    if (recentColors && distance > 0) {
-      recentColors.components['palette'].addToPalette()
     }
 
     let canvas, color, opacity;
