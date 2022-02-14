@@ -1159,6 +1159,8 @@ AFRAME.registerComponent('manipulator-weight', {
   },
   play() {
     this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    this.lastPos.copy(this.el.object3D.position)
+    this.lastRot.copy(this.el.object3D.quaternion)
   },
   pause() {
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)

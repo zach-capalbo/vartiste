@@ -345,11 +345,9 @@ AFRAME.registerComponent('weight-constraint-flag', {
 
       el['tool-weight-tool-data'].weightCount++;
 
-      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
-      this.attachedTo = el
-    },
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)    },
     endobjectconstraint: function(e) {
-      let el = this.attachedTo;
+      let el = e.detail.el;
 
       el['tool-weight-tool-data'].weightCount--;
 
@@ -357,11 +355,11 @@ AFRAME.registerComponent('weight-constraint-flag', {
       {
         if (el['tool-weight-tool-data'].originalWeight)
         {
-          this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
+          el.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
         }
         else
         {
-          this.attachedTo.removeAttribute('manipulator-weight')
+          el.removeAttribute('manipulator-weight')
         }
         delete el['tool-weight-tool-data'];
       }
