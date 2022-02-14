@@ -979,7 +979,8 @@ Util.registerComponentSystem('threed-line-system', {
       this.material = new THREE.MeshStandardMaterial({
         color: brush.color,
         envMap: this.el.sceneEl.systems['environment-manager'].envMap,
-        envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity
+        envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity,
+        roughness: 0.5,
       })
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
@@ -1109,6 +1110,10 @@ Util.registerComponentSystem('threed-line-system', {
         if (map === 'metalnessMap')
         {
           this.material.metalness = 1
+        }
+        else if (map === 'roughnessMap')
+        {
+          this.material.roughness = 1
         }
         texture = new THREE.Texture;
         texture.image = maps[map]

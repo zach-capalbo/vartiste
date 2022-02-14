@@ -35,7 +35,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         /a-entity system-click-action="system: shape-creation; action: setSolidDrawing" icon-button="#asset-collage" tooltip="Solidify Shape Wands"
         a-entity icon-button="#asset-brush" tooltip="Use Brush Settings for Wands" toggle-button="target: a-scene; component: threed-line-system; property: usePaintSystem"
         a-entity icon-button="#asset-palette-swatch-outline" tooltip="Share Materials Across Shapes" toggle-button="target: a-scene; component: primitive-constructs; property: shareMaterial"
-        
+
         a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Scale wands with pressure"  toggle-button="target: a-scene; component: threed-line-system; property: usePressure"
         a-entity icon-button="#asset-video-vintage" tooltip="Animate Wands" toggle-button="target: a-scene; component: threed-line-system; property: animate"
         a-entity icon-button="#asset-plus-box-multiple" tooltip="Build-up Wand Animation" toggle-button="target: a-scene; component: threed-line-system; property: buildUp"
@@ -123,6 +123,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
     a-entity preactivate-tooltip="Skeleton Flag" skeleton-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"
 
     a-entity preactivate-tooltip="Lock Position Flag" lock-position-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"
+    /a-entity preactivate-tooltip="Look At flag" look-at-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"
     a-entity preactivate-tooltip="Lock Rotation Flag" lock-rotation-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"
     a-entity preactivate-tooltip="Lock Y Axis Flag" lock-y-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"
     a-entity preactivate-tooltip="Lock XZ Axis Flag" lock-xz-flag="" position="${flagPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 -1.3"

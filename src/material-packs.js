@@ -312,6 +312,10 @@ Util.registerComponentSystem('material-pack-system', {
           {
             attr["metalness"] = 1
           }
+          else if (m === 'roughnessMap')
+          {
+            attr["roughness"] = 1
+          }
 
           hasAttr = true
         }
@@ -599,6 +603,10 @@ AFRAME.registerComponent('material-pack', {
       if (map === 'metalnessMap')
       {
         attr["metalness"] = 1
+      }
+      else if (map === 'roughnessMap')
+      {
+        attr["roughness"] = 1
       }
     }
 

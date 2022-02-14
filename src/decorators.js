@@ -730,6 +730,7 @@ function registerSimpleConstraintFlagComponent(
 }
 
 registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('look-at-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-look-at-constraint', valueOn: '', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
