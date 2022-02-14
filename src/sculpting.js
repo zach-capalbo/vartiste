@@ -956,17 +956,33 @@ Util.registerComponentSystem('threed-line-system', {
     // return new THREE.MeshNormalMaterial()
     if (this.material && !this.materialNeedsUpdate) return this.material;
     console.log("Regenerating material")
-    if (this.material) this.material.dispose()
+    if (this.material) {
+      let oldMaterial = this.material
+      Util.callLater(() => oldMaterial.dispose())
+    }
     let brush = this.el.sceneEl.systems['paint-system'].brush;
 
-    if (!this.data.usePaintSystem)
+    if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
-      this.filledBrush.changeColor(brush.color)
-      brush = this.filledBrush
+      this.material = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack).clone()
+      this.materialNeedsUpdate = false
+      this.el.emit('shapematerialupdated', this.material)
+      return this.material
+    }
+    else if (!this.data.usePaintSystem)
+    {
+      this.material = new THREE.MeshStandardMaterial({
+        color: brush.color,
+        envMap: this.el.sceneEl.systems['environment-manager'].envMap,
+        envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity
+      })
+      this.materialNeedsUpdate = false
+      this.el.emit('shapematerialupdated', this.material)
+      return this.material
     }
 
     let recentColors = document.getElementById('recent-colors')
-    if (recentColors) {
+    if (recentColors && distance > 0) {
       recentColors.components['palette'].addToPalette()
     }
 
@@ -1041,7 +1057,7 @@ Util.registerComponentSystem('threed-line-system', {
     switch (Compositor.el.getAttribute('material').shader)
     {
       case 'standard': materialType = THREE.MeshStandardMaterial; break;
-      // case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+      case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
     }
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask || !this.data.usePaintSystem)
@@ -1051,12 +1067,25 @@ Util.registerComponentSystem('threed-line-system', {
 
     // materialType = THREE.MeshNormalMaterial;
 
-    this.material = new materialType({map: texture,
+    this.material = new materialType({
+      map: texture,
       transparent: transparent,
       depthWrite: !transparent || this.data.shape !== 'line',
       alphaTest: 0.01,
-      color, opacity,
-      side: THREE.FrontSide})
+      color: color || "white",
+      opacity: opacity === undefined ? 1.0 : opacity,
+      side: transparent ? THREE.DoubleSide : THREE.FrontSide,
+    })
+
+    if (materialType === THREE.MeshStandardMaterial)
+    {
+      this.material.envMap = this.el.sceneEl.systems['environment-manager'].envMap,
+      this.material.envMapIntensity = this.el.sceneEl.systems['environment-manager'].data.envMapIntensity
+    }
+    else if (materialType === THREE.MeshMatcapMaterial)
+    {
+      this.material.matcap = Compositor.material.matcap
+    }
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
@@ -1096,6 +1125,7 @@ Util.registerComponentSystem('threed-line-system', {
 
     this.materialNeedsUpdate = false
 
+    this.el.emit('shapematerialupdated', this.material)
     return this.material;
   },
   shapeToBrush(shapeEl, axis="y") {

@@ -210,7 +210,7 @@ AFRAME.registerComponent('decorator-flag', {
       if (el === this.grabbedBy) return;
       if (intersectionInfo.objectB.el && intersectionInfo.objectB.el !== el && intersectionInfo.objectB.el.matches(this.data.selector)) return;
 
-      console.log("Intersecting tool", el, this.grabbedBy)
+      console.log("Intersecting tool", el, intersectionInfo)
       if (this.data.reparent)
       {
         let placeholder = this.placeholder
@@ -750,4 +750,4 @@ registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe
 // Stay grabbed
 // Undeletable
 // Remember position
-// Axes Scale
+// Look Towards (lever / fake-ik rotation)

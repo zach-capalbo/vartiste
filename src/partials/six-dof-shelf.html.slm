@@ -35,7 +35,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         /a-entity system-click-action="system: shape-creation; action: setSolidDrawing" icon-button="#asset-collage" tooltip="Solidify Shape Wands"
         a-entity icon-button="#asset-brush" tooltip="Use Brush Settings for Wands" toggle-button="target: a-scene; component: threed-line-system; property: usePaintSystem"
         a-entity icon-button="#asset-palette-swatch-outline" tooltip="Share Materials Across Shapes" toggle-button="target: a-scene; component: primitive-constructs; property: shareMaterial"
-        a-entity icon-button="#asset-record" tooltip="Allow Flat Shaded Shapes" toggle-button="target: a-scene; component: primitive-constructs; property: allowFlat"
+        
         a-entity icon-button="#asset-arrow-collapse-vertical" tooltip="Scale wands with pressure"  toggle-button="target: a-scene; component: threed-line-system; property: usePressure"
         a-entity icon-button="#asset-video-vintage" tooltip="Animate Wands" toggle-button="target: a-scene; component: threed-line-system; property: animate"
         a-entity icon-button="#asset-plus-box-multiple" tooltip="Build-up Wand Animation" toggle-button="target: a-scene; component: threed-line-system; property: buildUp"
@@ -169,6 +169,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         a-entity threed-line-tool="shape: heart" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
         a-entity threed-line-tool="shape: circle" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
       a-entity scale="0.3 0.3 0.3"
+        a-entity refresh-material-when-visible=""
         - let i = 0
         - let primPos = () => `${(i % 3) * 1.25 + 0} ${Math.floor(i / 3) * -1.25} ${i++ * 0}`
         a-entity position="${primPos()}" primitive-construct-placeholder="" geometry="primitive: unwrapped-box"

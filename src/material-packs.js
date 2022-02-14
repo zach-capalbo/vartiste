@@ -377,10 +377,10 @@ Util.registerComponentSystem('material-pack-system', {
         }
     })
   },
-  previewMaterial(mask) {
-    if (mask in this.loadedPacks)
+  previewMaterial(packName) {
+    if (packName in this.loadedPacks)
     {
-      return this.loadedPacks[mask].components["material-pack"].view.components.material.material
+      return this.loadedPacks[packName].components["material-pack"].view.components.material.material
     }
   },
   activateMaterialMask(mask) {

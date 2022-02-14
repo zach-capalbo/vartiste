@@ -9,8 +9,6 @@ Util.registerComponentSystem('primitive-constructs', {
   schema: {
     container: {type: 'selector', default: '#shape-root'},
     shareMaterial: {default: false},
-    allowFlat: {default: false},
-
   },
   init() {
     Pool.init(this)
@@ -299,48 +297,39 @@ Util.registerComponentSystem('primitive-constructs', {
 })
 
 AFRAME.registerComponent("show-current-color-or-material", {
+  events: {
+    object3dset: function(e) { this.onMaterialUpdated() }
+  },
   init() {
-    this.system = this.el.sceneEl.systems['paint-system']
-    if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-    {
-      this.applyMaps(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.maps)
-    }
-    else
-    {
-      this.el.setAttribute('material', {shader: 'flat', color: this.system.data.color})
-    }
-    this.onColorChanged = (e) => {
-      if (!this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
-      {
-        this.applyMaps({metalnessMap: null, metalness: null, roughnessMap: null, ambientOcclusionMap: null, normalMap: null})
-        this.el.setAttribute('material', {color: e.detail.color, shader: this.el.sceneEl.systems['primitive-constructs'].data.allowFlat ? Compositor.el.getAttribute('material').shader : 'standard'})
-      }
-    }
-    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
+    this.onMaterialUpdated = this.onMaterialUpdated.bind(this)
+  },
+  play() {
+    this.el.sceneEl.addEventListener('shapematerialupdated', this.onMaterialUpdated)
+    this.onMaterialUpdated()
+  },
+  pause() {
+    this.el.sceneEl.removeEventListener('shapematerialupdated', this.onMaterialUpdated)
+  },
+  onMaterialUpdated() {
+    let mesh = this.el.getObject3D('mesh')
+    if (!mesh) return;
 
-    this.onMaterialMaskChanged = (e) => {
-      console.log("mask",e.detail.mask)
-      // console.trace()
-      let maps = e.detail.mask.maps
-      this.applyMaps(maps)
-    }
-    this.el.sceneEl.addEventListener('materialmaskactivated', this.onMaterialMaskChanged)
+    mesh.material = this.el.sceneEl.systems['threed-line-system'].getMaterial()
   },
-  remove() {
-    this.el.sceneEl.removeEventListener('colorchanged', this.onColorChanged)
-    this.el.sceneEl.removeEventListener('materialmaskactivated', this.onMaterialMaskChanged)
+})
+
+AFRAME.registerComponent('refresh-material-when-visible', {
+  schema: {
+    throttle: {default: 10},
   },
-  applyMaps(maps) {
-    if (maps && Object.values(maps).some(m => m))
-    {
-      this.el.setAttribute('material', {color: '#FFFFFF', src: maps.src, shader: 'standard', metalnessMap: maps.metalnessMap, metalness: maps.metalness, roughnessMap: maps.roughnessMap, ambientOcclusionMap: maps.aoMap, normalMap: maps.normalMap})
-    }
-    else if (this.el.getAttribute('material').src)
-    {
-      console.log("Removing material")
-      this.el.removeAttribute('material')
-    }
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
   },
+  tick(t, dt) {
+    if (Util.visibleWithAncestors(this.el.object3D)) {
+      this.el.sceneEl.systems['threed-line-system'].getMaterial()
+    }
+  }
 })
 
 AFRAME.registerComponent('primitive-construct-placeholder', {
@@ -413,14 +402,6 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     if (!this.data.detached)
     {
       this.el.setAttribute('show-current-color-or-material', '')
-      if (this.system.data.allowFlat)
-      {
-        this.el.setAttribute('material', `shader: ${Compositor.el.getAttribute('material').shader}`)
-      }
-      else
-      {
-        this.el.setAttribute('material', `shader: standard`)
-      }
     }
     this.el.classList.add('clickable')
     this.el.setAttribute('action-tooltips', 'b: Clone shape (Grabbed)')
