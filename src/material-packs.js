@@ -312,6 +312,10 @@ Util.registerComponentSystem('material-pack-system', {
           {
             attr["metalness"] = 1
           }
+          else if (m === 'roughnessMap')
+          {
+            attr["roughness"] = 1
+          }
 
           hasAttr = true
         }
@@ -377,10 +381,10 @@ Util.registerComponentSystem('material-pack-system', {
         }
     })
   },
-  previewMaterial(mask) {
-    if (mask in this.loadedPacks)
+  previewMaterial(packName) {
+    if (packName in this.loadedPacks)
     {
-      return this.loadedPacks[mask].components["material-pack"].view.components.material.material
+      return this.loadedPacks[packName].components["material-pack"].view.components.material.material
     }
   },
   activateMaterialMask(mask) {
@@ -599,6 +603,10 @@ AFRAME.registerComponent('material-pack', {
       if (map === 'metalnessMap')
       {
         attr["metalness"] = 1
+      }
+      else if (map === 'roughnessMap')
+      {
+        attr["roughness"] = 1
       }
     }
 

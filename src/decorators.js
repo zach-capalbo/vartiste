@@ -210,7 +210,7 @@ AFRAME.registerComponent('decorator-flag', {
       if (el === this.grabbedBy) return;
       if (intersectionInfo.objectB.el && intersectionInfo.objectB.el !== el && intersectionInfo.objectB.el.matches(this.data.selector)) return;
 
-      console.log("Intersecting tool", el, this.grabbedBy)
+      console.log("Intersecting tool", el, intersectionInfo)
       if (this.data.reparent)
       {
         let placeholder = this.placeholder
@@ -345,11 +345,9 @@ AFRAME.registerComponent('weight-constraint-flag', {
 
       el['tool-weight-tool-data'].weightCount++;
 
-      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
-      this.attachedTo = el
-    },
+      el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)    },
     endobjectconstraint: function(e) {
-      let el = this.attachedTo;
+      let el = e.detail.el;
 
       el['tool-weight-tool-data'].weightCount--;
 
@@ -357,11 +355,11 @@ AFRAME.registerComponent('weight-constraint-flag', {
       {
         if (el['tool-weight-tool-data'].originalWeight)
         {
-          this.attachedTo.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
+          el.setAttribute('manipulator-weight', el['tool-weight-tool-data'].originalWeight)
         }
         else
         {
-          this.attachedTo.removeAttribute('manipulator-weight')
+          el.removeAttribute('manipulator-weight')
         }
         delete el['tool-weight-tool-data'];
       }
@@ -730,6 +728,7 @@ function registerSimpleConstraintFlagComponent(
 }
 
 registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
+registerSimpleConstraintFlagComponent('look-at-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-look-at-constraint', valueOn: '', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})
@@ -750,4 +749,4 @@ registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe
 // Stay grabbed
 // Undeletable
 // Remember position
-// Axes Scale
+// Look Towards (lever / fake-ik rotation)

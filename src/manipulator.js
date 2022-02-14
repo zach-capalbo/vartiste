@@ -871,6 +871,25 @@ AFRAME.registerComponent('constrain-to-sphere', {
   }
 })
 
+AFRAME.registerComponent('manipulator-look-at-constraint', {
+  init() {
+    this.constrainObject = this.constrainObject.bind(this)
+    this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    this.origin = new THREE.Vector3(0, 0, 0)
+    this.forward = new THREE.Vector3(0, 0, 1)
+    this.matrix = new THREE.Matrix4
+  },
+  remove() {
+    this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
+  },
+  constrainObject(t, dt, localOffset) {
+    console.log("Constraining look at", localOffset)
+    this.el.object3D.matrix.lookAt(this.el.object3D.position, this.origin, this.forward)
+    // this.el.object3D.matrix.premultiply(this.matrix)
+    Util.applyMatrix(this.el.object3D.matrix, this.el.object3D)
+  }
+})
+
 // Creates a grabable lever that can be moved up and down to change a value
 AFRAME.registerComponent('lever', {
   schema: {
@@ -1140,6 +1159,8 @@ AFRAME.registerComponent('manipulator-weight', {
   },
   play() {
     this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
+    this.lastPos.copy(this.el.object3D.position)
+    this.lastRot.copy(this.el.object3D.quaternion)
   },
   pause() {
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
