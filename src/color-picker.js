@@ -239,12 +239,15 @@ AFRAME.registerComponent("show-current-color", {
 // Provides a little display for the current brush in the [`paint-system`](#paint-system)
 AFRAME.registerComponent("show-current-brush", {
   init() {
+    this.el.object3D.userData.vartisteUI = true
     this.system = this.el.sceneEl.systems['paint-system']
     this.baseWidth = this.el.getAttribute('width')
     this.el.setAttribute('material', {shader: 'flat', transparent: true, color: '#fff'})
     let brushChanged = (brush) => {
       this.el.setAttribute('material', {src: brush.previewSrc})
-      this.el.setAttribute('height', this.baseWidth / brush.width * brush.height)
+
+      let newHeight = this.baseWidth / brush.width * brush.height
+      this.el.setAttribute('height', (newHeight > 0 && newHeight < 100) ? newHeight : 0.01)
     }
     this.el.sceneEl.addEventListener('brushchanged', e => brushChanged(e.detail.brush))
     brushChanged(this.system.brush)

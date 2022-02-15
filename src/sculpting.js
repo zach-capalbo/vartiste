@@ -1186,13 +1186,41 @@ AFRAME.registerComponent('threed-line-tool', {
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
         this.tipPoint.getWorldPosition(tipWorld)
         this.tipPoint.getWorldDirection(this.worldForward)
-
         let scale = this.calcScale()
         let last = this.points.length - 1
+
         this.points[last].x = tipWorld.x
         this.points[last].y = tipWorld.y
         this.points[last].z = tipWorld.z
         this.points[last].scale = scale
+
+        if (this.pointToPointToPoint)
+        {
+          this.points[last - 1].x = tipWorld.x
+          this.points[last - 1].y = tipWorld.y
+          this.points[last - 1].z = tipWorld.z
+          this.points[last - 1].scale = scale
+          this.points[last - 1].fx = this.worldForward.x
+          this.points[last - 1].fy = this.worldForward.y
+          this.points[last - 1].fz = this.worldForward.z
+
+          this.points[last].fx = this.worldForward.x
+          this.points[last].fy = this.worldForward.y
+          this.points[last].fz = this.worldForward.z
+
+          for (let i = 1; i < this.points.length; ++i)
+          {
+            this.points[i].l = this.points[i - 1].l + Math.sqrt( (this.points[i].x - this.points[i - 1].x) * (this.points[i].x - this.points[i - 1].x) +
+                                                                 (this.points[i].y - this.points[i - 1].y) * (this.points[i].y - this.points[i - 1].y) +
+                                                                 (this.points[i].z - this.points[i - 1].z) * (this.points[i].z - this.points[i - 1].z))
+
+          }
+
+          this.points[last].l += 0.1
+
+          this.createMesh(this.points)
+          return;
+        }
 
         if (this.data.shape === 'mesh')
         {
@@ -1258,11 +1286,25 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     bbuttondown: function(e) {
       if (this.mesh) {
-        this.doneDrawing()
         if (this.data.pointToPoint)
         {
-          this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
-          this.events.triggerdown.call(this)
+          this.pointToPointToPoint = true
+          this.points.push({
+            x: 0,
+            y: 0,
+            z: 0,
+            fx: 0,
+            fy: 0,
+            fz: 1,
+            scale: this.calcScale(),
+            l: 0,
+          })
+          // this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
+          // this.events.triggerdown.call(this)
+        }
+        else
+        {
+          this.doneDrawing()
         }
         return;
       }
@@ -2178,6 +2220,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
   },
   doneDrawing() {
+    this.pointToPointToPoint = false
     if (this.endDrawingEl)
     {
       this.endDrawingEl.removeEventListener('enddrawing', this.doneDrawing)

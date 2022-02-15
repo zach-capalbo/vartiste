@@ -96,6 +96,9 @@ AFRAME.registerComponent('adjustable-origin', {
 
 
 Util.registerComponentSystem('decorator-flag-system', {
+  init() {
+    this.el.sceneEl.systems['button-caster'].install(['ybutton'])
+  }
 })
 
 AFRAME.registerComponent('decorator-flag', {
@@ -384,6 +387,35 @@ AFRAME.registerComponent('weight-constraint-flag', {
     }
     return c;
   },
+})
+
+AFRAME.registerComponent('remember-position-flag', {
+  dependencies: ['decorator-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el;
+      let positioner = new THREE.Object3D;
+      this.el.sceneEl.object3D.add(positioner)
+      Util.positionObject3DAtTarget(positioner, el.object3D)
+      this.positionerMap.set(el, positioner)
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el;
+      let positioner = this.positionerMap.get(el)
+      if (!positioner) return;
+      Util.positionObject3DAtTarget(el.object3D, positioner)
+      positioner.parent.remove(positioner)
+      this.positionerMap.delete(el)
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('decorator-flag', this.el.getAttribute('decorator-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('decorator-flag', {icon: '#asset-ear-hearing'})
+    this.positionerMap = new Map;
+  }
 })
 
 AFRAME.registerComponent('show-normals-flag', {
@@ -728,7 +760,7 @@ function registerSimpleConstraintFlagComponent(
 }
 
 registerSimpleConstraintFlagComponent('lock-position-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, y, z', valueOff: null})
-registerSimpleConstraintFlagComponent('look-at-flag', {icon: '#asset-rotate-orbit', color: '#c14d30', component: 'manipulator-look-at-constraint', valueOn: '', valueOff: null})
+registerSimpleConstraintFlagComponent('look-at-flag', {icon: '#asset-eye', color: '#c14d30', component: 'manipulator-look-at-constraint', valueOn: '', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-y-flag', {icon: '#asset-swap-horizontal-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: y; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-xz-flag', {icon: '#asset-swap-vertical-variant', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedPositionAxes: x, z; lockedRotationAxes: x, z', valueOff: null})
 registerSimpleConstraintFlagComponent('lock-rotation-flag', {icon: '#asset-arrow-all', color: '#c14d30', component: 'manipulator-lock', valueOn: 'lockedRotationAxes: x, y, z', valueOff: null})

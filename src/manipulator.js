@@ -875,18 +875,26 @@ AFRAME.registerComponent('manipulator-look-at-constraint', {
   init() {
     this.constrainObject = this.constrainObject.bind(this)
     this.el.sceneEl.systems.manipulator.installConstraint(this.el, this.constrainObject)
-    this.origin = new THREE.Vector3(0, 0, 0)
-    this.forward = new THREE.Vector3(0, 0, 1)
-    this.matrix = new THREE.Matrix4
+    this.worldPos = new THREE.Vector3
+  },
+  play() {
+    this.originalPosition = new THREE.Vector3().copy(this.el.object3D.position)
   },
   remove() {
     this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.constrainObject)
   },
   constrainObject(t, dt, localOffset) {
-    console.log("Constraining look at", localOffset)
-    this.el.object3D.matrix.lookAt(this.el.object3D.position, this.origin, this.forward)
-    // this.el.object3D.matrix.premultiply(this.matrix)
-    Util.applyMatrix(this.el.object3D.matrix, this.el.object3D)
+    this.el.object3D.updateMatrix()
+    // console.log("Constraining look at", this.el.object3D.position, localOffset)
+
+    this.el.object3D.getWorldPosition(this.worldPos)
+    this.worldPos.add(localOffset)
+
+    // let dist = this.originalPosition.distanceTo(this.el.object3D.position)
+    this.el.object3D.position.copy(this.originalPosition)
+
+    // if (dist < 0.01) return;
+    this.el.object3D.lookAt(this.worldPos)
   }
 })
 
