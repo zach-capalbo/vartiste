@@ -970,6 +970,7 @@ Util.registerComponentSystem('threed-line-system', {
     if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
       this.material = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack).clone()
+      this.material.side = THREE.FrontSide
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
       return this.material
@@ -1077,6 +1078,8 @@ Util.registerComponentSystem('threed-line-system', {
       opacity: opacity === undefined ? 1.0 : opacity,
       side: transparent ? THREE.DoubleSide : THREE.FrontSide,
     })
+
+    // console.log("Getting material", transparent, this.material.side === THREE.DoubleSide)
 
     if (materialType === THREE.MeshStandardMaterial)
     {
@@ -1790,7 +1793,10 @@ AFRAME.registerComponent('threed-line-tool', {
     this.geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.normals), 3, false))
 
     let material = this.getMaterial(distance)
-    material.side = THREE.DoubleSide
+    if (material.side !== THREE.DoubleSide) {
+      material = material.clone()
+      material.side = THREE.DoubleSide
+    }
 
     if (this.mesh)
     {
@@ -2686,7 +2692,10 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
 
     let material = this.system.getMaterial(1.0)
-    material.side = THREE.DoubleSide
+    if (material.side !== THREE.DoubleSide) {
+      material = material.clone()
+      material.side = THREE.DoubleSide
+    }
     this.mesh = new THREE.Mesh(this.geometry, material)
     this.data.meshContainer.object3D.add(this.mesh)
 
