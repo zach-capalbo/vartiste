@@ -970,6 +970,7 @@ Util.registerComponentSystem('threed-line-system', {
     if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
       this.material = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack).clone()
+      this.material.side = THREE.FrontSide
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
       return this.material
@@ -1077,6 +1078,8 @@ Util.registerComponentSystem('threed-line-system', {
       opacity: opacity === undefined ? 1.0 : opacity,
       side: transparent ? THREE.DoubleSide : THREE.FrontSide,
     })
+
+    // console.log("Getting material", transparent, this.material.side === THREE.DoubleSide)
 
     if (materialType === THREE.MeshStandardMaterial)
     {
@@ -1186,13 +1189,41 @@ AFRAME.registerComponent('threed-line-tool', {
       this.tiggerConstraint = this.el.sceneEl.systems.manipulator.installConstraint(this.el, () => {
         this.tipPoint.getWorldPosition(tipWorld)
         this.tipPoint.getWorldDirection(this.worldForward)
-
         let scale = this.calcScale()
         let last = this.points.length - 1
+
         this.points[last].x = tipWorld.x
         this.points[last].y = tipWorld.y
         this.points[last].z = tipWorld.z
         this.points[last].scale = scale
+
+        if (this.pointToPointToPoint)
+        {
+          this.points[last - 1].x = THREE.Math.lerp(tipWorld.x, this.points[last - 2].x, 0.01)
+          this.points[last - 1].y = THREE.Math.lerp(tipWorld.y, this.points[last - 2].y, 0.01)
+          this.points[last - 1].z = THREE.Math.lerp(tipWorld.z, this.points[last - 2].z, 0.01)
+          this.points[last - 1].scale = scale
+          this.points[last - 1].fx = this.worldForward.x
+          this.points[last - 1].fy = this.worldForward.y
+          this.points[last - 1].fz = this.worldForward.z
+
+          this.points[last].fx = this.worldForward.x
+          this.points[last].fy = this.worldForward.y
+          this.points[last].fz = this.worldForward.z
+
+          for (let i = 1; i < this.points.length; ++i)
+          {
+            this.points[i].l = this.points[i - 1].l + Math.sqrt( (this.points[i].x - this.points[i - 1].x) * (this.points[i].x - this.points[i - 1].x) +
+                                                                 (this.points[i].y - this.points[i - 1].y) * (this.points[i].y - this.points[i - 1].y) +
+                                                                 (this.points[i].z - this.points[i - 1].z) * (this.points[i].z - this.points[i - 1].z))
+
+          }
+
+          this.points[last].l += 0.1
+
+          this.createMesh(this.points)
+          return;
+        }
 
         if (this.data.shape === 'mesh')
         {
@@ -1258,11 +1289,25 @@ AFRAME.registerComponent('threed-line-tool', {
     },
     bbuttondown: function(e) {
       if (this.mesh) {
-        this.doneDrawing()
         if (this.data.pointToPoint)
         {
-          this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
-          this.events.triggerdown.call(this)
+          this.pointToPointToPoint = true
+          this.points.push({
+            x: 0,
+            y: 0,
+            z: 0,
+            fx: 0,
+            fy: 0,
+            fz: 1,
+            scale: this.calcScale(),
+            l: 0,
+          })
+          // this.el.sceneEl.systems.manipulator.removeConstraint(this.el, this.tiggerConstraint)
+          // this.events.triggerdown.call(this)
+        }
+        else
+        {
+          this.doneDrawing()
         }
         return;
       }
@@ -1748,7 +1793,10 @@ AFRAME.registerComponent('threed-line-tool', {
     this.geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.normals), 3, false))
 
     let material = this.getMaterial(distance)
-    material.side = THREE.DoubleSide
+    if (material.side !== THREE.DoubleSide) {
+      material = material.clone()
+      material.side = THREE.DoubleSide
+    }
 
     if (this.mesh)
     {
@@ -2178,6 +2226,7 @@ AFRAME.registerComponent('threed-line-tool', {
     }
   },
   doneDrawing() {
+    this.pointToPointToPoint = false
     if (this.endDrawingEl)
     {
       this.endDrawingEl.removeEventListener('enddrawing', this.doneDrawing)
@@ -2643,7 +2692,10 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
 
     let material = this.system.getMaterial(1.0)
-    material.side = THREE.DoubleSide
+    if (material.side !== THREE.DoubleSide) {
+      material = material.clone()
+      material.side = THREE.DoubleSide
+    }
     this.mesh = new THREE.Mesh(this.geometry, material)
     this.data.meshContainer.object3D.add(this.mesh)
 
