@@ -483,6 +483,37 @@ class VARTISTEUtil {
     return geometry;
   }
 
+  flipFaceDirection(geometry) {
+    let temp = 0
+    let n = this.pool('n', THREE.Vector3)
+    if (!geometry.index)
+    {
+      console.warn("Cannot flip. No index for", o)
+      return;
+    }
+
+    for ( let i = 0; i < geometry.index.array.length; i += 3 ) {
+      // swap the first and third values
+      temp = geometry.index.array[ i ];
+      geometry.index.array[ i ] = geometry.index.array[ i + 2 ];
+      geometry.index.array[ i + 2 ] = temp;
+    }
+
+    geometry.index.needsUpdate = true
+
+    if (geometry.attributes.normal)
+    {
+      let attr = geometry.attributes.normal
+      for (let i = 0; i < attr.count; ++i)
+      {
+        n.fromBufferAttribute(attr, i)
+        // n.multiplyScalar(-1)
+        attr.setXYZ(i, -n.x, -n.y, -n.z)
+      }
+      attr.needsUpdate = true
+    }
+  }
+
   // Resolves all the manipulator grap redirections on `targetEl` and returns
   // the final element that should actually be grabbed when `targetEl` is
   // grabbed.

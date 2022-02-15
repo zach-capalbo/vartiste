@@ -9,6 +9,7 @@ import {MarchingSquaresOpt} from './framework/marching-squares.js'
 import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
+import {MeshBVH} from './framework/three-mesh-bvh.js';
 
 window.simplify3d = simplify3d;
 
@@ -2659,12 +2660,15 @@ AFRAME.registerComponent('threed-hull-tool', {
 		// generate geometry
 		generateTorso.call(this);
 
+    let geometry = this.geometry;
+
 		// build geometry
 		this.geometry.setIndex( indices );
 		this.geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 		this.geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( normals, 3 ) );
 		this.geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
     this.geometry.computeVertexNormals()
+
 
     if (this.data.closed)
     {
@@ -2692,10 +2696,23 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
 
     let material = this.system.getMaterial(1.0)
-    if (material.side !== THREE.DoubleSide) {
-      material = material.clone()
-      material.side = THREE.DoubleSide
+    // if (material.side !== THREE.DoubleSide) {
+    //   material = material.clone()
+    //   material.side = THREE.DoubleSide
+    // }
+
+    // const bvh = geometry.computeBoundsTree();
+    let raycaster = this.pool('raycaster', THREE.Raycaster)
+    raycaster.ray.direction.set(0, 0, 1);
+    raycaster.ray.origin.copy(this.shapes[Math.floor(this.shapes.length / 2)].centroid)
+    const hit = raycaster.intersectObject(new THREE.Mesh(geometry))
+    if (hit.length % 2 === 1)
+    {
+      console.log("Got odd hits. Flipping face direction")
+      Util.flipFaceDirection(geometry)
     }
+    console.log("Hull hit", raycaster, hit)
+
     this.mesh = new THREE.Mesh(this.geometry, material)
     this.data.meshContainer.object3D.add(this.mesh)
 

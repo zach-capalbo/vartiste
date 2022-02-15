@@ -458,37 +458,10 @@ AFRAME.registerComponent('object3d-view', {
     this.onMoved()
   },
   flipNormals() {
-    let n = new THREE.Vector3
-    let temp = 0
     Util.traverseNonUI(this.object, o => {
       if (!o.geometry) return;
       let geometry = o.geometry;
-      if (!geometry.index)
-      {
-        console.warn("Cannot flip. No index for", o)
-        return;
-      }
-
-      for ( let i = 0; i < geometry.index.array.length; i += 3 ) {
-        // swap the first and third values
-        temp = geometry.index.array[ i ];
-        geometry.index.array[ i ] = geometry.index.array[ i + 2 ];
-        geometry.index.array[ i + 2 ] = temp;
-      }
-
-      geometry.index.needsUpdate = true
-
-      if (o.geometry && o.geometry.attributes.normal)
-      {
-        let attr = o.geometry.attributes.normal
-        for (let i = 0; i < attr.count; ++i)
-        {
-          n.fromBufferAttribute(attr, i)
-          // n.multiplyScalar(-1)
-          attr.setXYZ(i, -n.x, -n.y, -n.z)
-        }
-        attr.needsUpdate = true
-      }
+      Util.flipFaceDirection(geometry)
     })
   },
   mergeBufferGeometries() {

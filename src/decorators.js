@@ -780,5 +780,3 @@ registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe
 // Trigger down
 // Stay grabbed
 // Undeletable
-// Remember position
-// Look Towards (lever / fake-ik rotation)
