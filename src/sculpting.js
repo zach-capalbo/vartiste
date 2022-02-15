@@ -1196,9 +1196,9 @@ AFRAME.registerComponent('threed-line-tool', {
 
         if (this.pointToPointToPoint)
         {
-          this.points[last - 1].x = tipWorld.x
-          this.points[last - 1].y = tipWorld.y
-          this.points[last - 1].z = tipWorld.z
+          this.points[last - 1].x = THREE.Math.lerp(tipWorld.x, this.points[last - 2].x, 0.01)
+          this.points[last - 1].y = THREE.Math.lerp(tipWorld.y, this.points[last - 2].y, 0.01)
+          this.points[last - 1].z = THREE.Math.lerp(tipWorld.z, this.points[last - 2].z, 0.01)
           this.points[last - 1].scale = scale
           this.points[last - 1].fx = this.worldForward.x
           this.points[last - 1].fy = this.worldForward.y
