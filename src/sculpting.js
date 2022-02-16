@@ -2696,10 +2696,10 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
 
     let material = this.system.getMaterial(1.0)
-    // if (material.side !== THREE.DoubleSide) {
-    //   material = material.clone()
-    //   material.side = THREE.DoubleSide
-    // }
+    if (!this.data.closed && material.side !== THREE.DoubleSide) {
+      material = material.clone()
+      material.side = THREE.DoubleSide
+    }
 
     // const bvh = geometry.computeBoundsTree();
     let raycaster = this.pool('raycaster', THREE.Raycaster)
