@@ -289,8 +289,11 @@ AFRAME.registerComponent('decorator-flag', {
     }
   },
   detachFrom() {
-    this.emitDetails.endobjectconstraint.el = this.attachedTo
-    this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
+    if (this.attachedTo)
+    {
+      this.emitDetails.endobjectconstraint.el = this.attachedTo
+      this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
+    }
 
     this.attachedTo = undefined
 
@@ -417,7 +420,7 @@ AFRAME.registerComponent('remember-position-flag', {
     },
     cloneloaded: function(e) {
       e.stopPropagation()
-      e.detail.el.setAttribute('decorator-flag', this.el.getAttribute('decorator-flag'))
+      e.detail.el.setAttribute('remember-position-flag', this.el.getAttribute('remember-position-flag'))
     }
   },
   init() {
