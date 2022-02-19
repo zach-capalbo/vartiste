@@ -282,14 +282,25 @@ AFRAME.registerComponent('decorator-flag', {
     this.emitDetails.startobjectconstraint.el = el
     this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
     this.el.emit('startobjectconstraint', this.emitDetails.startobjectconstraint)
-    Sfx.stickOn(this.el, {volume: 0.1})
+
+    if (!this.attachedManipulator)
+    {
+      Sfx.stickOn(this.el, {volume: 0.1})
+    }
   },
   detachFrom() {
-    this.emitDetails.endobjectconstraint.el = this.attachedTo
-    this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
+    if (this.attachedTo)
+    {
+      this.emitDetails.endobjectconstraint.el = this.attachedTo
+      this.el.emit('endobjectconstraint', this.emitDetails.endobjectconstraint)
+    }
 
     this.attachedTo = undefined
-    Sfx.stickOff(this.el, {volume: 0.05})
+
+    if (!this.attachedManipulator)
+    {
+      Sfx.stickOff(this.el, {volume: 0.05})
+    }
   },
   canTransferGrab(el) {
     if (el.hasAttribute('decorator-flag')) return false;
@@ -409,7 +420,7 @@ AFRAME.registerComponent('remember-position-flag', {
     },
     cloneloaded: function(e) {
       e.stopPropagation()
-      e.detail.el.setAttribute('decorator-flag', this.el.getAttribute('decorator-flag'))
+      e.detail.el.setAttribute('remember-position-flag', this.el.getAttribute('remember-position-flag'))
     }
   },
   init() {

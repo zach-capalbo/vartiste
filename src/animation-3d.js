@@ -576,7 +576,10 @@ AFRAME.registerComponent('animation-3d-keyframed', {
     if (this.el.is("grabbed")) return;
     if (this.data.recording) return;
 
-    this.object.traverse(o => {
+    Util.traverseCondition(this.object, o => {
+      if (o.el && o.el !== this.el && o.el.hasAttribute('animation-3d-keyframed')) return false
+      return true
+    }, o => {
       this.system.animate(o, this.data)
       this.el.sceneEl.systems.manipulator.runConstraints(o.el, this.pool('localOffset', THREE.Vector3), this.el.sceneEl.time, this.el.sceneEl.delta)
     })
