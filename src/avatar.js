@@ -431,3 +431,15 @@ AFRAME.registerComponent('spectator-avatar', {
     }
   }
 })
+
+AFRAME.registerComponent('avatar-mirror', {
+  dependencies: ['remote-avatar'],
+  init() {
+    this.tick = AFRAME.utils.throttleTick(this.tick, 20, this)
+  },
+  tick(t, dt) {
+    this.el.sceneEl.systems['avatar-pose-export-provider'].needsUpdate = true
+    let updateData = this.el.sceneEl.systems['avatar-pose-export-provider'].updatePose()
+    this.el.components['remote-avatar'].updatePose(updateData)
+  }
+})

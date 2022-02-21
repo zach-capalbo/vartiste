@@ -1159,7 +1159,7 @@ AFRAME.registerComponent('threed-line-tool', {
     pointToPoint: {default: false},
     mesh: {default: '#character-base', type: 'selector'},
     stretchAxis: {default: 'y', oneOf: ['x', 'y']},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh', 'edges']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'plank', 'custom', 'mesh', 'edges']},
   },
   events: {
     activate: function(e) {
@@ -1811,7 +1811,7 @@ AFRAME.registerComponent('threed-line-tool', {
   getExtrudeShape(initial = false) {
     if (this.shape && this.cachedScale === this.el.object3D.scale.x) return this.shape;
 
-    const sqLength = 0.05 * this.el.object3D.scale.x / 0.7;
+    let sqLength = 0.05 * this.el.object3D.scale.x / 0.7;
 
     this.cachedScale = this.el.object3D.scale.x;
 
@@ -1820,6 +1820,7 @@ AFRAME.registerComponent('threed-line-tool', {
     switch (this.data.shape)
     {
       case 'square':
+      {
         const aspect = 1
         this.shape = new THREE.Shape()
           .moveTo( - sqLength * aspect, -sqLength )
@@ -1832,6 +1833,7 @@ AFRAME.registerComponent('threed-line-tool', {
           .lineTo( -sqLength * aspect, -sqLength )
           .lineTo( -sqLength * aspect, -sqLength );
           break;
+        }
       case 'oval':
         this.shape = new THREE.Shape()
           .moveTo( 0, 0 )
@@ -1868,6 +1870,21 @@ AFRAME.registerComponent('threed-line-tool', {
           .bezierCurveTo( -sqLength * 0.1, -sqLength * 0.7, -sqLength, 0, - sqLength, sqLength * h)
           .bezierCurveTo( -sqLength, sqLength, -sqLength * 0.5, sqLength * 1.3, 0, sqLength * h)
         break;
+      }
+      case 'plank': {
+        const aspect = 0.02
+        sqLength = sqLength * 5
+        this.shape = new THREE.Shape()
+          .moveTo( - sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( -sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, -sqLength );
+          break;
       }
       case 'custom': {
         let shape = this.shape = this.el.sceneEl.systems['shape-creation'].wandShapes.get(this.el)
@@ -2057,6 +2074,14 @@ AFRAME.registerComponent('threed-line-tool', {
     {
       this.mesh.parent.remove(this.mesh)
       this.mesh.geometry.dispose()
+    }
+
+    let skeletonize = true
+    if (skeletonize)
+    {
+      console.log("Geometry", this.geometry, points.length - 1, shape, points)
+      let vlen = this.geometry.groups[0].count;
+
     }
 
     this.mesh = new THREE.Mesh(this.geometry, material)

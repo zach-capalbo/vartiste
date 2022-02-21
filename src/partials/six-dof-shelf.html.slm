@@ -170,6 +170,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
         a-entity threed-line-tool="shape: star" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
         a-entity threed-line-tool="shape: heart" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
         a-entity threed-line-tool="shape: circle" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
+        a-entity threed-line-tool="shape: plank" position="${linePos()}" scale="0.7 0.7 0.7" preactivate-tooltip="3D Shape Wand"
       a-entity scale="0.3 0.3 0.3"
         a-entity refresh-material-when-visible=""
         - let i = 0
