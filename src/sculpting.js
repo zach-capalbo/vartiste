@@ -2079,14 +2079,42 @@ AFRAME.registerComponent('threed-line-tool', {
     let skeletonize = true
     if (skeletonize)
     {
-      console.log("Geometry", this.geometry, points.length - 1, shape, points)
-      let vlen = this.geometry.groups[0].count;
+      // console.log("Geometry", this.geometry, points.length - 1, shape, points)
+      for (let p of points)
+      {
 
+      }
+
+      material = material.clone()
+      material.skinning = true
+      this.mesh = new THREE.SkinnedMesh(this.geometry, material)
+      let rootBone = new THREE.Bone()
+      // rootBone.position.copy(this.startPoint)
+      let bones = [rootBone]
+      for (let p of points)
+      {
+        let bone = new THREE.Bone()
+        bone.position.copy(p)
+        bone.position.sub(this.startPoint)
+        bones.push(bone)
+        rootBone.add(bone)
+      }
+      // rootBone.add(this.mesh)
+      // this.data.meshContainer.object3D.add(rootBone)
+      this.mesh.add(rootBone)
+      this.mesh.position.copy(this.startPoint)
+      this.data.meshContainer.object3D.add(this.mesh)
+      let skeleton = new THREE.Skeleton(bones)
+      this.mesh.bind(skeleton)
+      console.log("Skeletonized", this.mesh, rootBone)
+    }
+    else
+    {
+      this.mesh = new THREE.Mesh(this.geometry, material)
+      this.mesh.position.copy(this.startPoint)
+      this.data.meshContainer.object3D.add(this.mesh)
     }
 
-    this.mesh = new THREE.Mesh(this.geometry, material)
-    this.mesh.position.copy(this.startPoint)
-    this.data.meshContainer.object3D.add(this.mesh)
   },
   stretchMesh(points) {
     if (!this.baseGeometry)
