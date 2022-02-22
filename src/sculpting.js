@@ -942,6 +942,7 @@ Util.registerComponentSystem('threed-line-system', {
     usePaintSystem: {default: false},
     animate: {default: false},
     buildUp: {default: false},
+    skeletonize: {default: false},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -1966,6 +1967,8 @@ AFRAME.registerComponent('threed-line-tool', {
       }
     }
 
+    let skeletonize = this.system.data.skeletonize;
+
     const shape = this.getExtrudeShape()
 
     let lastLength = points[points.length - 1].l + this.shapeDist
@@ -1977,6 +1980,7 @@ AFRAME.registerComponent('threed-line-tool', {
         extrudePath: useSplineTube ? spline : true,
         extrudePts: useSplineTube ? undefined : points,
         centerPoint: this.startPoint,
+        enableWeights: skeletonize,
         UVGenerator: {
           generateTopUV: (g, v, a, b, c) => {
             return [
@@ -2076,28 +2080,27 @@ AFRAME.registerComponent('threed-line-tool', {
       this.mesh.geometry.dispose()
     }
 
-    let skeletonize = true
     if (skeletonize)
     {
       // console.log("Geometry", this.geometry, points.length - 1, shape, points)
-      for (let p of points)
-      {
-
-      }
-
       material = material.clone()
       material.skinning = true
       this.mesh = new THREE.SkinnedMesh(this.geometry, material)
       let rootBone = new THREE.Bone()
+      let cumulativePosition = this.pool('cp', THREE.Vector3)
+      cumulativePosition.set(0,0,0)
       // rootBone.position.copy(this.startPoint)
       let bones = [rootBone]
       for (let p of points)
       {
         let bone = new THREE.Bone()
+        let parentBone = bones[bones.length - 1]
         bone.position.copy(p)
         bone.position.sub(this.startPoint)
+        bone.position.subVectors(bone.position, cumulativePosition)
+        cumulativePosition.add(bone.position)
         bones.push(bone)
-        rootBone.add(bone)
+        parentBone.add(bone)
       }
       // rootBone.add(this.mesh)
       // this.data.meshContainer.object3D.add(rootBone)

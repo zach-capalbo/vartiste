@@ -49,6 +49,8 @@ class ExtrudeGeometry extends BufferGeometry {
     const boneWeightsArray = [];
     const boneIndexArray = [];
 
+    let enableWeights = options.enableWeights !== undefined ? options.enableWeights : false
+
 		for ( let i = 0, l = shapes.length; i < l; i ++ ) {
 
 			const shape = shapes[ i ];
@@ -61,8 +63,12 @@ class ExtrudeGeometry extends BufferGeometry {
 		this.setAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
 		this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
     this.setAttribute( 'normal', new Float32BufferAttribute( normalsArray, 3 ) );
-    this.setAttribute( 'skinIndex', new Uint8BufferAttribute( boneIndexArray, 4));
-    this.setAttribute( 'skinWeight', new Float32BufferAttribute( boneWeightsArray, 4));
+
+    if (enableWeights)
+    {
+      this.setAttribute( 'skinIndex', new Uint8BufferAttribute( boneIndexArray, 4));
+      this.setAttribute( 'skinWeight', new Float32BufferAttribute( boneWeightsArray, 4));
+    }
 
 		// this.computeVertexNormals();
 
@@ -87,6 +93,7 @@ class ExtrudeGeometry extends BufferGeometry {
 			let bevelOffset = options.bevelOffset !== undefined ? options.bevelOffset : 0;
 			let bevelSegments = options.bevelSegments !== undefined ? options.bevelSegments : 3;
       let centerPoint = options.centerPoint !== undefined ? options.centerPoint : new THREE.Vector3(0, 0, 0)
+
 
 			const extrudePath = options.extrudePath;
 
@@ -719,9 +726,16 @@ class ExtrudeGeometry extends BufferGeometry {
         normalHolder.push( z );
       }
 
-      function w(b, ww) {
-        boneIndexHolder.push(b)
-        boneWeightHolder.push(bb)
+      if (enableWeights)
+      {
+        function w(b, ww) {
+          boneIndexHolder.push(b)
+          boneWeightHolder.push(bb)
+        }
+      }
+      else
+      {
+        function w() {}
       }
 
 
@@ -744,9 +758,9 @@ class ExtrudeGeometry extends BufferGeometry {
         addNormal( normals[ 1 ] );
         addNormal( normals[ 2 ] );
 
-        addWeight(0, 1.0);
-        addWeight(0, 1.0);
-        addWeight(0, 1.0);
+        addWeight(1, 1.0);
+        addWeight(1, 1.0);
+        addWeight(1, 1.0);
 			}
 
 			function f4( a, b, c, d, s1, s2, c1, c2 ) {
@@ -781,13 +795,13 @@ class ExtrudeGeometry extends BufferGeometry {
         addNormal( normals[ 2 ] );
         addNormal( normals[ 3 ] );
 
-        addWeight(s1, 1)
         addWeight(s1 + 1, 1)
-        addWeight(s1, 1)
+        addWeight(s1 + 1, 1)
+        addWeight(s1 + 2, 1)
 
         addWeight(s1 + 1, 1)
-        addWeight(s1, 1)
-        addWeight(s1 + 1, 1)
+        addWeight(s1 + 2, 1)
+        addWeight(s1 + 2, 1)
 			}
 
 			function addVertex( index ) {
@@ -809,10 +823,10 @@ class ExtrudeGeometry extends BufferGeometry {
       }
 
       function addWeight(bone, weight) {
+        if (!enableWeights) return;
         boneIndexArray.push(bone, 0, 0, 0)
         boneWeightsArray.push(weight, 0, 0, 0)
       }
-
 			function addUV( vector2 ) {
 
 				uvArray.push( vector2.x );
