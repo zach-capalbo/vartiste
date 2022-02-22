@@ -942,6 +942,7 @@ Util.registerComponentSystem('threed-line-system', {
     usePaintSystem: {default: false},
     animate: {default: false},
     buildUp: {default: false},
+    skeletonize: {default: false},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -1159,7 +1160,7 @@ AFRAME.registerComponent('threed-line-tool', {
     pointToPoint: {default: false},
     mesh: {default: '#character-base', type: 'selector'},
     stretchAxis: {default: 'y', oneOf: ['x', 'y']},
-    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'custom', 'mesh', 'edges']},
+    shape: {default: 'line', oneOf: ['line', 'square', 'oval', 'circle', 'star', 'heart', 'plank', 'custom', 'mesh', 'edges']},
   },
   events: {
     activate: function(e) {
@@ -1811,7 +1812,7 @@ AFRAME.registerComponent('threed-line-tool', {
   getExtrudeShape(initial = false) {
     if (this.shape && this.cachedScale === this.el.object3D.scale.x) return this.shape;
 
-    const sqLength = 0.05 * this.el.object3D.scale.x / 0.7;
+    let sqLength = 0.05 * this.el.object3D.scale.x / 0.7;
 
     this.cachedScale = this.el.object3D.scale.x;
 
@@ -1820,6 +1821,7 @@ AFRAME.registerComponent('threed-line-tool', {
     switch (this.data.shape)
     {
       case 'square':
+      {
         const aspect = 1
         this.shape = new THREE.Shape()
           .moveTo( - sqLength * aspect, -sqLength )
@@ -1832,6 +1834,7 @@ AFRAME.registerComponent('threed-line-tool', {
           .lineTo( -sqLength * aspect, -sqLength )
           .lineTo( -sqLength * aspect, -sqLength );
           break;
+        }
       case 'oval':
         this.shape = new THREE.Shape()
           .moveTo( 0, 0 )
@@ -1868,6 +1871,21 @@ AFRAME.registerComponent('threed-line-tool', {
           .bezierCurveTo( -sqLength * 0.1, -sqLength * 0.7, -sqLength, 0, - sqLength, sqLength * h)
           .bezierCurveTo( -sqLength, sqLength, -sqLength * 0.5, sqLength * 1.3, 0, sqLength * h)
         break;
+      }
+      case 'plank': {
+        const aspect = 0.02
+        sqLength = sqLength * 5
+        this.shape = new THREE.Shape()
+          .moveTo( - sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( -sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( sqLength * aspect, - sqLength )
+          .lineTo( -sqLength * aspect, -sqLength )
+          .lineTo( -sqLength * aspect, -sqLength );
+          break;
       }
       case 'custom': {
         let shape = this.shape = this.el.sceneEl.systems['shape-creation'].wandShapes.get(this.el)
@@ -1949,6 +1967,8 @@ AFRAME.registerComponent('threed-line-tool', {
       }
     }
 
+    let skeletonize = this.system.data.skeletonize;
+
     const shape = this.getExtrudeShape()
 
     let lastLength = points[points.length - 1].l + this.shapeDist
@@ -1960,6 +1980,7 @@ AFRAME.registerComponent('threed-line-tool', {
         extrudePath: useSplineTube ? spline : true,
         extrudePts: useSplineTube ? undefined : points,
         centerPoint: this.startPoint,
+        enableWeights: skeletonize,
         UVGenerator: {
           generateTopUV: (g, v, a, b, c) => {
             return [
@@ -2059,9 +2080,44 @@ AFRAME.registerComponent('threed-line-tool', {
       this.mesh.geometry.dispose()
     }
 
-    this.mesh = new THREE.Mesh(this.geometry, material)
-    this.mesh.position.copy(this.startPoint)
-    this.data.meshContainer.object3D.add(this.mesh)
+    if (skeletonize)
+    {
+      // console.log("Geometry", this.geometry, points.length - 1, shape, points)
+      material = material.clone()
+      material.skinning = true
+      this.mesh = new THREE.SkinnedMesh(this.geometry, material)
+      let rootBone = new THREE.Bone()
+      let cumulativePosition = this.pool('cp', THREE.Vector3)
+      cumulativePosition.set(0,0,0)
+      // rootBone.position.copy(this.startPoint)
+      let bones = [rootBone]
+      for (let p of points)
+      {
+        let bone = new THREE.Bone()
+        let parentBone = bones[bones.length - 1]
+        bone.position.copy(p)
+        bone.position.sub(this.startPoint)
+        bone.position.subVectors(bone.position, cumulativePosition)
+        cumulativePosition.add(bone.position)
+        bones.push(bone)
+        parentBone.add(bone)
+      }
+      // rootBone.add(this.mesh)
+      // this.data.meshContainer.object3D.add(rootBone)
+      this.mesh.add(rootBone)
+      this.mesh.position.copy(this.startPoint)
+      this.data.meshContainer.object3D.add(this.mesh)
+      let skeleton = new THREE.Skeleton(bones)
+      this.mesh.bind(skeleton)
+      console.log("Skeletonized", this.mesh, rootBone)
+    }
+    else
+    {
+      this.mesh = new THREE.Mesh(this.geometry, material)
+      this.mesh.position.copy(this.startPoint)
+      this.data.meshContainer.object3D.add(this.mesh)
+    }
+
   },
   stretchMesh(points) {
     if (!this.baseGeometry)

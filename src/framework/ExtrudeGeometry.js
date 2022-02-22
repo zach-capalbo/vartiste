@@ -22,7 +22,7 @@
 
 // Heavily modified by Zach Capalbo for use in VARTISTE sculpting.js
 
- const { BufferGeometry, Float32BufferAttribute, Vector2, Vector3, ShapeUtils } = THREE;
+ const { BufferGeometry, Float32BufferAttribute, Vector2, Vector3, ShapeUtils, Uint8BufferAttribute } = THREE;
 
 const Curves = THREE;
 
@@ -46,6 +46,10 @@ class ExtrudeGeometry extends BufferGeometry {
 		const verticesArray = [];
 		const uvArray = [];
     const normalsArray = [];
+    const boneWeightsArray = [];
+    const boneIndexArray = [];
+
+    let enableWeights = options.enableWeights !== undefined ? options.enableWeights : false
 
 		for ( let i = 0, l = shapes.length; i < l; i ++ ) {
 
@@ -60,6 +64,12 @@ class ExtrudeGeometry extends BufferGeometry {
 		this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
     this.setAttribute( 'normal', new Float32BufferAttribute( normalsArray, 3 ) );
 
+    if (enableWeights)
+    {
+      this.setAttribute( 'skinIndex', new Uint8BufferAttribute( boneIndexArray, 4));
+      this.setAttribute( 'skinWeight', new Float32BufferAttribute( boneWeightsArray, 4));
+    }
+
 		// this.computeVertexNormals();
 
 		// functions
@@ -68,6 +78,8 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			const placeholder = [];
       const normalHolder = [];
+      const boneIndexHolder = [];
+      const boneWeightHolder = [];
 
 			// options
 
@@ -81,6 +93,7 @@ class ExtrudeGeometry extends BufferGeometry {
 			let bevelOffset = options.bevelOffset !== undefined ? options.bevelOffset : 0;
 			let bevelSegments = options.bevelSegments !== undefined ? options.bevelSegments : 3;
       let centerPoint = options.centerPoint !== undefined ? options.centerPoint : new THREE.Vector3(0, 0, 0)
+
 
 			const extrudePath = options.extrudePath;
 
@@ -713,6 +726,18 @@ class ExtrudeGeometry extends BufferGeometry {
         normalHolder.push( z );
       }
 
+      if (enableWeights)
+      {
+        function w(b, ww) {
+          boneIndexHolder.push(b)
+          boneWeightHolder.push(bb)
+        }
+      }
+      else
+      {
+        function w() {}
+      }
+
 
 			function f3( a, b, c ) {
 
@@ -733,6 +758,9 @@ class ExtrudeGeometry extends BufferGeometry {
         addNormal( normals[ 1 ] );
         addNormal( normals[ 2 ] );
 
+        addWeight(1, 1.0);
+        addWeight(1, 1.0);
+        addWeight(1, 1.0);
 			}
 
 			function f4( a, b, c, d, s1, s2, c1, c2 ) {
@@ -766,6 +794,14 @@ class ExtrudeGeometry extends BufferGeometry {
         addNormal( normals[ 1 ] );
         addNormal( normals[ 2 ] );
         addNormal( normals[ 3 ] );
+
+        addWeight(s1 + 1, 1)
+        addWeight(s1 + 1, 1)
+        addWeight(s1 + 2, 1)
+
+        addWeight(s1 + 1, 1)
+        addWeight(s1 + 2, 1)
+        addWeight(s1 + 2, 1)
 			}
 
 			function addVertex( index ) {
@@ -786,8 +822,11 @@ class ExtrudeGeometry extends BufferGeometry {
         normalsArray.push( vector3.z );
       }
 
-
-
+      function addWeight(bone, weight) {
+        if (!enableWeights) return;
+        boneIndexArray.push(bone, 0, 0, 0)
+        boneWeightsArray.push(weight, 0, 0, 0)
+      }
 			function addUV( vector2 ) {
 
 				uvArray.push( vector2.x );
