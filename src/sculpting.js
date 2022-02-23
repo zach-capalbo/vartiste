@@ -2089,7 +2089,6 @@ AFRAME.registerComponent('threed-line-tool', {
       let rootBone = new THREE.Bone()
       let cumulativePosition = this.pool('cp', THREE.Vector3)
       cumulativePosition.set(0,0,0)
-      // rootBone.position.copy(this.startPoint)
       let bones = [rootBone]
       for (let p of points)
       {
@@ -2611,6 +2610,11 @@ AFRAME.registerComponent('threed-hull-tool', {
     this.geometry.computeBoundingBox()
     this.geometry.boundingBox.getCenter(this.mesh.position)
     this.geometry.center()
+    if (this.mesh.skeleton)
+    {
+      this.mesh.skeleton.bones[1].position.sub(this.mesh.position)
+      this.mesh.bind(this.mesh.skeleton)
+    }
 
     let mesh = this.mesh
     Undo.push(() => {
@@ -2699,6 +2703,8 @@ AFRAME.registerComponent('threed-hull-tool', {
 		const vertices = [];
 		const normals = [];
 		const uvs = [];
+    const boneIndexArray = [];
+    const boneWeightsArray = [];
 
 		// helper variables
 
@@ -2723,6 +2729,13 @@ AFRAME.registerComponent('threed-hull-tool', {
 		this.geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 		this.geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( normals, 3 ) );
 		this.geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uvs, 2 ) );
+
+    if (this.system.data.skeletonize)
+    {
+      this.geometry.setAttribute( 'skinIndex', new THREE.Uint8BufferAttribute( boneIndexArray, 4))
+      this.geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( boneWeightsArray, 4));
+    }
+
     this.geometry.computeVertexNormals()
 
 
@@ -2757,6 +2770,12 @@ AFRAME.registerComponent('threed-hull-tool', {
       material.side = THREE.DoubleSide
     }
 
+    if (this.system.data.skeletonize)
+    {
+      material = material.clone()
+      material.skinning = true;
+    }
+
     // const bvh = geometry.computeBoundsTree();
     let raycaster = this.pool('raycaster', THREE.Raycaster)
     raycaster.ray.direction.set(0, 0, 1);
@@ -2769,8 +2788,41 @@ AFRAME.registerComponent('threed-hull-tool', {
     }
     console.log("Hull hit", raycaster, hit)
 
-    this.mesh = new THREE.Mesh(this.geometry, material)
-    this.data.meshContainer.object3D.add(this.mesh)
+    if (this.system.data.skeletonize)
+    {
+      this.mesh = new THREE.SkinnedMesh(this.geometry, material)
+      let rootBone = new THREE.Bone()
+      let cumulativePosition = this.pool('cp', THREE.Vector3)
+      cumulativePosition.set(0,0,0)
+      let bones = [rootBone]
+      for (let p of shapes)
+      {
+        if (!p.centroid) continue;
+
+        console.log("Checking shape", p)
+        let bone = new THREE.Bone()
+        let parentBone = bones[bones.length - 1]
+        bone.position.copy(p.centroid)
+        // bone.position.sub(this.startPoint)
+        bone.position.subVectors(bone.position, cumulativePosition)
+        cumulativePosition.add(bone.position)
+        bones.push(bone)
+        parentBone.add(bone)
+      }
+      // rootBone.add(this.mesh)
+      // this.data.meshContainer.object3D.add(rootBone)
+      this.mesh.add(rootBone)
+      // this.mesh.position.copy(this.startPoint)
+      this.data.meshContainer.object3D.add(this.mesh)
+      let skeleton = new THREE.Skeleton(bones)
+      this.mesh.bind(skeleton)
+      console.log("Skeletonized", this.mesh, rootBone)
+    }
+    else
+    {
+      this.mesh = new THREE.Mesh(this.geometry, material)
+      this.data.meshContainer.object3D.add(this.mesh)
+    }
 
     console.log("Generated", this.mesh)
 
@@ -2832,6 +2884,20 @@ AFRAME.registerComponent('threed-hull-tool', {
 					// normal
 					normal.set( sinTheta, slope, cosTheta ).normalize();
 					normals.push( normal.x, normal.y, normal.z );
+
+          if (this.system.data.skeletonize)
+          {
+            if (this.data.closed)
+            {
+              boneIndexArray.push(Math.min(y, shapes.length - 2), 0, 0, 0);
+            }
+            else
+            {
+              boneIndexArray.push(THREE.Math.clamp(y + 1, 0, shapes.length), 0, 0, 0);
+            }
+            boneWeightsArray.push(  1, 0, 0, 0);
+          }
+
 
           if ( y === 0)
           {
