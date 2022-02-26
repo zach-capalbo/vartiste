@@ -974,6 +974,7 @@ AFRAME.registerComponent('skeleton-editor', {
         Util.positionObject3DAtTarget(handle.object3D, o, {scale: targetScale})
         handle.setAttribute('grab-redirector-material', 'wireframe: false; shader: matcap; color: #c9f0f2')
         handle.setAttribute('grab-redirector', {target: o, handle: false})
+        handle.setAttribute('bone-redirector', '')
         handle.setAttribute('tooltip', o.name)
       })
     })

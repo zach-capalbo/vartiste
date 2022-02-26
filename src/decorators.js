@@ -108,6 +108,7 @@ AFRAME.registerComponent('decorator-flag', {
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
+    resolveProxy: {default: false},
   },
   emits: {
     startobjectconstraint: {
@@ -278,6 +279,19 @@ AFRAME.registerComponent('decorator-flag', {
     })
   },
   attachTo(el, intersectionInfo) {
+    if (this.data.resolveProxy && el.hasAttribute('grab-redirector'))
+    {
+      let target = el.getAttribute('grab-redirector').target
+      if (target.object3D)
+      {
+        el = target
+      }
+      else
+      {
+        el = {object3D: target}
+      }
+    }
+
     this.attachedTo = el
     this.emitDetails.startobjectconstraint.el = el
     this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
@@ -682,7 +696,7 @@ AFRAME.registerComponent('inspector-flag', {
     }
   },
   init() {
-    this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline')
+    this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline; resolveProxy: true')
     let positioner = this.positioner = new THREE.Object3D;
     this.el.object3D.add(positioner)
     positioner.position.set(0, 0.1, 0.16)

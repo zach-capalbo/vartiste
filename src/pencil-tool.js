@@ -1702,8 +1702,9 @@ AFRAME.registerComponent('reparent-tool', {
       }
     },
     startobjectconstraint: function(e) {
-      console.log("Selected parent", e.detail.el)
-      this.selectedParent = e.detail.el
+      let el = e.detail.el
+      console.log("Selected parent", el)
+      this.selectedParent = el
     },
     endobjectconstraint: function(e) {
       this.selectedParent = null
@@ -1712,8 +1713,8 @@ AFRAME.registerComponent('reparent-tool', {
   init() {
     let flag = this.flag = document.createElement('a-entity')
     this.el.append(flag)
-    flag.setAttribute('decorator-flag', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
-    this.el.setAttribute('selection-box-tool', 'selector: a-entity[reference-glb], a-entity[primitive-construct-placeholder]')
+    flag.setAttribute('decorator-flag', 'resolveProxy: true; selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity[bone-redirector]')
+    this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
     this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
