@@ -294,6 +294,13 @@ class MaterialTransformations {
       // MaterialTransformations.vec2toVec3Attribute(model)
     }
 
+    if (model.el && model.el.hasAttribute('frame') && !model.el.getAttribute('frame').closeable)
+    {
+      if (undoStack) undoStack.push(() => model.visible = true)
+      model.visible = false
+      // MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
     if (model.geometry && model.geometry.attributes.tangent)
     {
       if (model.geometry.attributes.tangent.count !== Math.floor(model.geometry.attributes.tangent.count)) {
@@ -406,6 +413,18 @@ class MaterialTransformations {
       {
         MaterialTransformations.checkTransparency(material)
       }
+    }
+
+    if (model.skeleton && !model.isSkinnedMesh)
+    {
+      model.isSkinnedMesh = true
+      undoStack.push(() => model.isSkinnedMesh = false)
+    }
+
+    if (model.skeleton && !material.skinning)
+    {
+      material.skinning = true
+      undoStack.push(() => material.skinning = false)
     }
   }
 

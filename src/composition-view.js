@@ -51,6 +51,7 @@ AFRAME.registerComponent('composition-view', {
     if (!this.data.enabled) return
 
     Util.traverseNonUI(this.el.getObject3D('mesh'), o => {
+      if (o.el && o.el !== this.el) return;
       if (o.type == "Mesh" || o.type == "SkinnedMesh") { o.material = this.data.compositor.getObject3D('mesh').material}
     })
   }
