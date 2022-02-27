@@ -674,6 +674,14 @@ Util.registerComponentSystem('export-3d-helper-system', {
         c.position.z += - (box.max.z + box.min.z) / 2 / worldScale.z
       }
     }
+    else if (this.data.exportMesh && !this.data.exportShapes && !this.data.exportReferenceObjects && !this.data.exportCanvas && Util.traverseFind(root, o => o.skeleton, {visibleOnly: true}))
+    {
+      root = Util.traverseFind(this.el.sceneEl.querySelector('#composition-view').getObject3D('mesh'), o => {
+        if (o.name.startsWith('AuxScene')) return false;
+        return true;
+      }, {visibleOnly: true})
+    }
+
     try {
       await fn(root)
     }
