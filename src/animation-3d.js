@@ -913,6 +913,21 @@ AFRAME.registerComponent('puppeteer-selection-tool', {
   }
 })
 
+AFRAME.registerComponent('bone-redirector', {
+  dependencies: ['grab-redirector'],
+  events: {
+    bbuttondown: function(e) {
+      this.clone()
+    },
+    ybuttondown: function(e) {
+      this.clone()
+    }
+  },
+  clone() {
+
+  }
+})
+
 AFRAME.registerSystem('skeleton-editor', {})
 
 AFRAME.registerComponent('skeleton-editor', {
@@ -926,6 +941,7 @@ AFRAME.registerComponent('skeleton-editor', {
   init() {
     Pool.init(this, {useSystem: true})
     this.handles = []
+    this.compositionViews = []
     Util.whenLoaded(this.el, () => {
       this.refreshSkeleton()
     })
@@ -935,6 +951,13 @@ AFRAME.registerComponent('skeleton-editor', {
     {
       if (this.helper.parent) this.helper.parent.remove(this.helper)
       Util.recursiveDispose(this.helper)
+    }
+
+    for (let o of this.compositionViews)
+    {
+      o.el.components['composition-view'].data.enabled = true
+      o.material = Compositor.material
+      o.el.classList.add('canvas')
     }
 
     for (let h of this.handles)
@@ -954,6 +977,17 @@ AFRAME.registerComponent('skeleton-editor', {
     let parentWorld = this.pool('parentWorld', THREE.Vector3)
     this.boneToHandle = new Map()
     Util.traverseNonUI(root, (o) => {
+      if (o.el && o.el.hasAttribute('composition-view') && o.material && o.skeleton && !o.material.skinning)
+      {
+        o.el.components['composition-view'].data.enabled = false
+        o.el.classList.remove('canvas')
+        o.isSkinnedMesh = true
+        o.material = o.material.clone()
+        o.material.skinning = true
+        o.material.needsUpdate = true
+        this.compositionViews.push(o)
+        console.log("Replacing material", o)
+      }
       if (!o.isBone) return;
       let handle = document.createElement('a-entity')
       this.el.append(handle)
@@ -972,8 +1006,11 @@ AFRAME.registerComponent('skeleton-editor', {
         targetScale.set(dist, dist, dist)
 
         Util.positionObject3DAtTarget(handle.object3D, o, {scale: targetScale})
+        handle.object3D.userData.vartisteUI = true
         handle.setAttribute('grab-redirector-material', 'wireframe: false; shader: matcap; color: #c9f0f2')
         handle.setAttribute('grab-redirector', {target: o, handle: false})
+        handle.setAttribute('flaggable-control', '')
+        handle.setAttribute('bone-redirector', '')
         handle.setAttribute('tooltip', o.name)
       })
     })

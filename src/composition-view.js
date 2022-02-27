@@ -1,3 +1,5 @@
+import {Util} from './util.js'
+
 AFRAME.registerComponent('forward-draw', {
   schema: {type: 'selector'},
   update() {
@@ -17,7 +19,8 @@ AFRAME.registerComponent('forward-draw', {
 AFRAME.registerComponent('composition-view', {
   dependencies: ['gltf-model'],
   schema: {
-    compositor: {type: 'selector'}
+    compositor: {type: 'selector'},
+    enabled: {default: true},
   },
   init() {
     this.el.classList.add('canvas')
@@ -45,8 +48,10 @@ AFRAME.registerComponent('composition-view', {
   },
   updateMesh() {
     if (!this.el.getObject3D('mesh')) return
+    if (!this.data.enabled) return
 
-    this.el.getObject3D('mesh').traverse(o => {
+    Util.traverseNonUI(this.el.getObject3D('mesh'), o => {
+      if (o.el && o.el !== this.el) return;
       if (o.type == "Mesh" || o.type == "SkinnedMesh") { o.material = this.data.compositor.getObject3D('mesh').material}
     })
   }

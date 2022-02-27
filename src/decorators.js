@@ -6,9 +6,10 @@ import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 
-const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
+const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity.canvas[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
 const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
 const SHAPES_AND_REFERENCED = "a-entity[reference-glb], a-entity[primitive-construct-placeholder]"
+const ALL_MESHES = "a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]"
 
 AFRAME.registerComponent('flaggable-control', {})
 
@@ -108,6 +109,7 @@ AFRAME.registerComponent('decorator-flag', {
     reparent: {default: true},
     icon: {type: 'string'},
     color: {type: 'color', default: '#b6c5f2'},
+    resolveProxy: {default: false},
   },
   emits: {
     startobjectconstraint: {
@@ -278,6 +280,19 @@ AFRAME.registerComponent('decorator-flag', {
     })
   },
   attachTo(el, intersectionInfo) {
+    if (this.data.resolveProxy && el.hasAttribute('grab-redirector'))
+    {
+      let target = el.getAttribute('grab-redirector').target
+      if (target.object3D)
+      {
+        el = target
+      }
+      else
+      {
+        el = {object3D: target}
+      }
+    }
+
     this.attachedTo = el
     this.emitDetails.startobjectconstraint.el = el
     this.emitDetails.startobjectconstraint.intersectionInfo = intersectionInfo
@@ -682,7 +697,7 @@ AFRAME.registerComponent('inspector-flag', {
     }
   },
   init() {
-    this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline')
+    this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline; resolveProxy: true')
     let positioner = this.positioner = new THREE.Object3D;
     this.el.object3D.add(positioner)
     positioner.position.set(0, 0.1, 0.16)
@@ -784,9 +799,9 @@ registerSimpleConstraintFlagComponent('hidden-flag', {icon: "#asset-eye-off", on
 registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-drag-and-drop", color: '#313baa', onColor: '#bea', component: 'adjustable-origin', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", color: '#313baa', component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
-registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null, allowTools: false})
+registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null})
 
-registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#308a5f'})
+registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#308a5f', selector: ALL_MESHES})
 // hide from spectator
 // Trigger down
 // Stay grabbed
