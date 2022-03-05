@@ -732,6 +732,49 @@ AFRAME.registerComponent('restart-animation-on-grab-flag', {
   }
 })
 
+AFRAME.registerComponent('dynamic-body-flag', {
+  dependencies: ['decorator-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      if (this.decorator.attachedManipulator)
+      {
+        el.setAttribute('physx-body', 'type: kinematic')
+      }
+      else
+      {
+        el.setAttribute('physx-body', 'type: dynamic')
+      }
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el
+      if (this.decorator.attachedManipulator)
+      {
+        console.log("Dropping el", el)
+        el.setAttribute('physx-body', 'type: dynamic')
+      }
+      else
+      {
+        el.setAttribute('physx-body', 'type: kinematic')
+      }
+    },
+    activate: function(e) {
+      if (!this.el.sceneEl.systems.physx.physXInitialized)
+      {
+        this.el.sceneEl.setAttribute('art-physics', {scenePhysics: true})
+      }
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('dynamic-body-flag', this.el.getAttribute('dynamic-body-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('decorator-flag', 'color: #308a5f; icon: #asset-cube-send')
+    this.decorator = this.el.components['decorator-flag']
+  }
+})
+
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
   AFRAME.registerComponent(name, {
@@ -806,6 +849,7 @@ registerSimpleConstraintFlagComponent('adjustable-origin-flag', {icon: "#asset-d
 registerSimpleConstraintFlagComponent('edit-vertices-flag', {icon: "#asset-dots-square", color: '#313baa', component: 'vertex-handles', valueOn: '', valueOff: null, allowTools: false})
 registerSimpleConstraintFlagComponent('quick-drawable-flag', {icon: "#asset-lead-pencil", color: '#b435ba', component: 'drawable', valueOn: 'includeTexturelessMeshes: true; useExisting: true', valueOff: null, allowTools: false, selector: 'a-entity[primitive-construct-placeholder]'})
 registerSimpleConstraintFlagComponent('skeleton-only-flag', {icon: "#asset-skeletonator", component: 'skeleton-editor', valueOn: '', valueOff: null})
+registerSimpleConstraintFlagComponent('kinematic-body-flag', {icon: "#asset-image-filter-hdr", component: 'physx-body', valueOn: 'type: kinematic', valueOff: 'type: kinematic'})
 
 registerCombinedFlagComponent('skeleton-flag', ['skeleton-only-flag', 'wireframe-flag'], {icon: '#asset-skeletonator', color: '#308a5f', selector: ALL_MESHES})
 // hide from spectator

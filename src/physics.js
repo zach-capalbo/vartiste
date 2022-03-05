@@ -753,6 +753,7 @@ AFRAME.registerComponent('physx-body', {
     {
       this.rigidBody.setAngularDamping(this.data.angularDamping)
       this.rigidBody.setLinearDamping(this.data.linearDamping)
+      this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eKINEMATIC, false)
       if (this.data.highPrecision)
       {
         this.rigidBody.setSolverIterationCounts(4, 2);
