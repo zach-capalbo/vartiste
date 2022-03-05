@@ -135,6 +135,9 @@ AFRAME.registerComponent('decorator-flag', {
         this.detachTool()
       }
     },
+    activate: function(e) {
+      this.makeClone({leaveAtParent: true})
+    },
     bbuttondown: function(e) {
       if (this.el.is('grabbed'))
       {
@@ -255,9 +258,9 @@ AFRAME.registerComponent('decorator-flag', {
       }
     }
   },
-  makeClone() {
+  makeClone({leaveAtParent = false} = {}) {
     let el = document.createElement('a-entity')
-    if (this.el.attachedTo)
+    if (this.el.attachedTo || leaveAtParent)
     {
       this.el.parentEl.append(el)
     }
@@ -269,14 +272,17 @@ AFRAME.registerComponent('decorator-flag', {
       this.emitDetails.cloneloaded.el = el
       this.el.emit('cloneloaded', this.emitDetails.cloneloaded)
       Util.positionObject3DAtTarget(el.object3D, this.el.object3D)
-      Util.whenComponentInitialized(el, 'decorator-flag', () => {
-        Util.whenLoaded(el.components['decorator-flag'].handle, () => {
-          Util.delay(100).then(() => {
-            console.log("Constraint Clone initialized")
-            el.components['decorator-flag'].attachToTool()
+      if (!leaveAtParent)
+      {
+        Util.whenComponentInitialized(el, 'decorator-flag', () => {
+          Util.whenLoaded(el.components['decorator-flag'].handle, () => {
+            Util.delay(100).then(() => {
+              console.log("Constraint Clone initialized")
+              el.components['decorator-flag'].attachToTool()
+            })
           })
         })
-      })
+      }
     })
   },
   attachTo(el, intersectionInfo) {
