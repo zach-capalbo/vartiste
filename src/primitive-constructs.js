@@ -333,7 +333,7 @@ AFRAME.registerComponent('refresh-material-when-visible', {
 })
 
 AFRAME.registerComponent('primitive-construct-placeholder', {
-  // dependencies: ['raycast-bvh'],
+  dependencies: ['raycast-bvh'],
   schema: {
     primitive: {default: ""},
     gltfModel: {default: ""},

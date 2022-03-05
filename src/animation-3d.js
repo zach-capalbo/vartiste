@@ -1016,3 +1016,27 @@ AFRAME.registerComponent('skeleton-editor', {
     })
   }
 })
+
+AFRAME.registerComponent('animation-playing-indicator', {
+  init() {
+    this.el.setAttribute('geometry', 'primitive: triangle; vertexA: 0 1 0; vertexB: 0.5 0.5 0; vertexC: 0 0 0')
+    this.el.setAttribute('material', 'shader: matcap; color: #308a5f; side: double')
+    this.onPlayingChanged = this.onPlayingChanged.bind(this)
+    this.onFrameChange = this.onFrameChange.bind(this)
+
+  },
+  play() {
+    Compositor.el.addEventListener('framechanged', this.onFrameChange)
+    Compositor.el.addEventListener('playpause', this.onPlayingChanged)
+  },
+  pause() {
+    Compositor.el.removeEventListener('framechanged', this.onFrameChange)
+    Compositor.el.removeEventListener('playpause', this.onPlayingChanged)
+  },
+  onFrameChange() {
+    this.el.object3D.rotation.y = - Compositor.component.currentFrame * (Math.PI * 2) / 30.0
+  },
+  onPlayingChanged() {
+    this.el.setAttribute('visible', Compositor.component.isPlayingAnimation)
+  }
+})
