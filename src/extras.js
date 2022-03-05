@@ -103,15 +103,20 @@ AFRAME.registerComponent('vartiste-extras-popup', {
     this.system = this.el.sceneEl.systems['vartiste-extras'];
     this.el.setAttribute('popup-button', 'popup: extras-popup; deferred: true; autoScale: true')
     this.rows = []
+    this.isPopupListening = new Map();
   },
   populate(popup) {
     console.log("Populating extras", this.system.index[this.data.category], popup)
     let contents = popup.querySelector('a-entity[shelf-content]')
     let shelf = popup.querySelector('a-entity[shelf]')
-    popup.addEventListener('click', (e) => {
-      if (!e.target.hasAttribute('data-vartiste-extra')) return;
-      this.el.sceneEl.systems['file-upload'].handleURL(`${e.target.getAttribute('data-vartiste-extra-url')}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`, {forceReference: this.data.forceReference})
-    })
+    if (!this.isPopupListening.get(popup))
+    {
+      popup.addEventListener('click', (e) => {
+        if (!e.target.hasAttribute('data-vartiste-extra')) return;
+        this.el.sceneEl.systems['file-upload'].handleURL(`${e.target.getAttribute('data-vartiste-extra-url')}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`, {forceReference: this.data.forceReference})
+      })
+      this.isPopupListening.set(popup, true)
+    }
 
     for (let row of this.rows)
     {
