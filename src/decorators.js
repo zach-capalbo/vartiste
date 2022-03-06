@@ -10,6 +10,7 @@ const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity.clickable[reference-g
 const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
 const SHAPES_AND_REFERENCED = "a-entity[reference-glb], a-entity[primitive-construct-placeholder]"
 const ALL_MESHES = "a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]"
+const ALL_MESHES_AND_CANVAS = ALL_MESHES + ", a-entity.canvas"
 
 AFRAME.registerComponent('flaggable-control', {})
 
@@ -750,7 +751,6 @@ AFRAME.registerComponent('dynamic-body-flag', {
       let el = e.detail.el
       if (this.decorator.attachedManipulator)
       {
-        console.log("Dropping el", el)
         el.setAttribute('physx-body', 'type: dynamic')
       }
       else
@@ -772,6 +772,96 @@ AFRAME.registerComponent('dynamic-body-flag', {
   init() {
     this.el.setAttribute('decorator-flag', 'color: #308a5f; icon: #asset-cube-send')
     this.decorator = this.el.components['decorator-flag']
+  }
+})
+
+AFRAME.registerComponent('ray-snap-flag', {
+  dependencies: ['decorator-flag'],
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      this.refreshObjects()
+      this.elConstraint.set(el, this.el.sceneEl.systems.manipulator.installConstraint(el, this.constrainObject.bind(this, el)))
+      this.line.visible = true
+      el.addEventListener('stateadded', this.refreshObjects)
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el
+      this.el.sceneEl.systems.manipulator.removeConstraint(el, this.elConstraint.get(el))
+      this.elConstraint.delete(el)
+      this.line.visible = false
+      el.removeEventListener('stateadded', this.refreshObjects)
+    },
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('ray-snap-flag', this.el.getAttribute('ray-snap-flag'))
+    }
+  },
+  init() {
+    this.el.setAttribute('decorator-flag', 'color: #867555; icon: #asset-nudge-brush')
+
+    Pool.init(this)
+    this.refreshObjects = this.refreshObjects.bind(this)
+
+    let lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0, 0, -1)])
+    this.line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({color: 'green'}))
+    this.el.object3D.add(this.line)
+
+    let lineIndicator = new THREE.Mesh(new THREE.IcosahedronGeometry(0.004, 0), new THREE.MeshBasicMaterial({color: 'green', depthTest: false, transparent: true}))
+    this.line.add(lineIndicator)
+    this.line.visible = false
+
+    this.positioner = new THREE.Object3D
+    this.el.sceneEl.object3D.add(this.positioner)
+
+    this.elConstraint = new Map()
+  },
+  refreshObjects() {
+    this.elList = Array.from(this.el.sceneEl.querySelectorAll(ALL_MESHES_AND_CANVAS))
+  },
+  constrainObject(el, t, dt, localOffset) {
+    let worldScale = this.pool('worldScale', THREE.Vector3)
+    this.el.object3D.getWorldScale(worldScale)
+    let raycaster = this.pool('raycaster', THREE.Raycaster)
+    raycaster.ray.direction.set(0, 0, -1);
+    raycaster.far = worldScale.z;
+    raycaster.firstHitOnly = true;
+    this.el.object3D.getWorldPosition(raycaster.ray.origin)
+    let worldQuat = this.pool('worldQuat', THREE.Quaternion)
+    this.el.object3D.getWorldQuaternion(worldQuat)
+    raycaster.ray.direction.applyQuaternion(worldQuat)
+    let hits = []
+    for (let targetEl of this.elList)
+    {
+      if (!Util.visibleWithAncestors(targetEl.object3D)) continue;
+      if (targetEl === el) continue;
+      hits.length = 0
+      raycaster.intersectObject(targetEl.getObject3D('mesh') || targetEl.object3D, true, hits)
+      if (hits.length > 0)
+      {
+        console.log("Raycast Snap el", hits)
+        // this.positioner.position.copy(hits[0].point)
+        // let originalQuaternion = this.pool('originalQuaternion', THREE.Quaternion)
+        // originalQuaternion.copy(el.object3D.quaternion)
+        // let originalScale = this.pool('originalScale', THREE.Vector3)
+        // originalScale.copy(el.object3D.scale)
+        // Util.positionObject3DAtTarget(el.object3D, this.positioner)
+        // el.object3D.quaternion.copy(originalQuaternion)
+        // el.object3D.scale.copy(originalScale)
+
+        let root = el.object3D.parent
+        let localOrigin = this.pool('localOrigin', THREE.Vector3)
+        localOrigin.copy(raycaster.ray.origin)
+        root.worldToLocal(localOrigin)
+        let localHit = this.pool('localHit', THREE.Vector3)
+        localHit.copy(hits[0].point)
+        root.worldToLocal(localHit)
+        localHit.sub(localOrigin)
+        el.object3D.position.add(localHit)
+        console.log("Pushing object", localOrigin, localHit)
+        break;
+      }
+    }
   }
 })
 
