@@ -257,7 +257,7 @@ Util.registerComponentSystem('animation-3d', {
     return [].concat(this.matrixTracks.frameIndices[obj.uuid] || []).concat(this.visibilityTracks.frameIndices[obj.uuid] || [])
   },
   hasTracks(obj) {
-    return this.matrixTracks.has(obj.uuid) || this.visibilityTracks.has(obj.uuid)
+    return this.matrixTracks.has(obj) || this.visibilityTracks.has(obj)
   },
   keyframe(obj, frameIdx = undefined) {
 

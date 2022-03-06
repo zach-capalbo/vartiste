@@ -153,6 +153,48 @@ class VARTISTEUtil {
     Util.applyMatrix(destMat, obj)
   }
 
+  setObject3DOriginAtTarget(obj, target)
+  {
+    let positioner
+    if (target.parent !== obj)
+    {
+      positioner = this.pool('positioner', THREE.Object3D)
+      obj.add(positioner)
+      Util.positionObject3DAtTarget(positioner, target)
+      target = positioner
+    }
+
+    obj.updateMatrix()
+    target.updateMatrix()
+
+    let matrix = target.matrix
+    matrix.invert()
+
+    if (obj.geometry)
+    {
+      let geometry = obj.geometry
+      geometry.applyMatrix(matrix)
+      if (geometry.boundsTree) geometry.computeBoundsTree()
+      geometry.computeBoundingSphere()
+      geometry.computeBoundingBox()
+    }
+
+    for (let c of obj.children)
+    {
+      if (c.el && c.el === target.el) continue
+      Util.applyMatrix(c.matrix.premultiply(matrix), c)
+    }
+
+    matrix.invert()
+    Util.applyMatrix(obj.matrix.multiply(matrix), obj)
+    Util.applyMatrix(matrix.identity(), target)
+
+    if (positioner)
+    {
+      positioner.parent.remove(positioner)
+    }
+  }
+
   keepingWorldPosition(object3D, fn) {
     let positioner = this.pool('positioner', THREE.Object3D)
     object3D.el.sceneEl.object3D.add(positioner);

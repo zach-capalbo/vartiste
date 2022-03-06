@@ -134,15 +134,32 @@ Util.registerComponentSystem('primitive-constructs', {
 
     Util.whenLoaded(el, () => {
       el.object3D.updateMatrixWorld()
+      let animation3d = this.el.sceneEl.systems['animation-3d']
       for (let shape of shapes)
       {
-        let mesh = Util.traverseClone(shape.getObject3D('mesh'), this.el.sceneEl.systems['animation-3d'].cloneTracks)
+        let mesh = Util.traverseClone(shape.getObject3D('mesh'), animation3d.cloneTracks)
         mesh.el = el
         mesh.traverse(o => o.el = el)
-        targetObj.add(mesh)
-        Util.positionObject3DAtTarget(mesh, shape.getObject3D('mesh'))
+        if (animation3d.hasTracks(shape.object3D))
+        {
+          // console.log("Copying shape tracks", shape.object3D)
+          let object3D = new THREE.Object3D
+          object3D.add(mesh)
+          Util.applyMatrix(shape.object3D.matrix, object3D)
+          Util.applyMatrix(shape.getObject3D('mesh').matrix, mesh)
+          animation3d.cloneTracks(shape.object3D, object3D)
+          let parent = new THREE.Object3D
+          parent.add(object3D)
+          targetObj.add(parent)
+          Util.positionObject3DAtTarget(parent, shape.object3D.parent)
+        }
+        else
+        {
+          targetObj.add(mesh)
+          Util.positionObject3DAtTarget(mesh, shape.getObject3D('mesh'))
+        }
+
         shape.parentEl.removeChild(shape)
-        this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, el.object3D)
       }
 
       let root = el.object3D
@@ -159,7 +176,7 @@ Util.registerComponentSystem('primitive-constructs', {
       }
 
       el.setAttribute('reference-glb', '')
-      el.setAttribute('animation-3d-keyframed')
+      el.setAttribute('animation-3d-keyframed', '')
 
       console.log("Made reference", el)
     })
