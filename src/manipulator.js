@@ -5,6 +5,7 @@ import {Pool} from './pool.js'
 
 export const IMMEDIATE_PRIORITY = 0
 export const GRID_PRIORITY = 100
+export const SNAP_PRIORITY = 200
 export const DEFAULT_GLOBAL_PRIORITY = 400
 export const DEFAULT_PRIORITY = 500
 export const CONSTRAINT_PRIORITY = 600

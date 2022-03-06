@@ -5,6 +5,7 @@ import Color from "color"
 import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
+import {SNAP_PRIORITY} from './manipulator.js'
 
 const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity.canvas[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
 const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
@@ -781,7 +782,7 @@ AFRAME.registerComponent('ray-snap-flag', {
     startobjectconstraint: function(e) {
       let el = e.detail.el
       this.refreshObjects()
-      this.elConstraint.set(el, this.el.sceneEl.systems.manipulator.installConstraint(el, this.constrainObject.bind(this, el)))
+      this.elConstraint.set(el, this.el.sceneEl.systems.manipulator.installConstraint(el, this.constrainObject.bind(this, el), SNAP_PRIORITY))
       this.line.visible = true
       el.addEventListener('stateadded', this.refreshObjects)
     },
@@ -839,16 +840,6 @@ AFRAME.registerComponent('ray-snap-flag', {
       raycaster.intersectObject(targetEl.getObject3D('mesh') || targetEl.object3D, true, hits)
       if (hits.length > 0)
       {
-        console.log("Raycast Snap el", hits)
-        // this.positioner.position.copy(hits[0].point)
-        // let originalQuaternion = this.pool('originalQuaternion', THREE.Quaternion)
-        // originalQuaternion.copy(el.object3D.quaternion)
-        // let originalScale = this.pool('originalScale', THREE.Vector3)
-        // originalScale.copy(el.object3D.scale)
-        // Util.positionObject3DAtTarget(el.object3D, this.positioner)
-        // el.object3D.quaternion.copy(originalQuaternion)
-        // el.object3D.scale.copy(originalScale)
-
         let root = el.object3D.parent
         let localOrigin = this.pool('localOrigin', THREE.Vector3)
         localOrigin.copy(raycaster.ray.origin)
@@ -864,6 +855,9 @@ AFRAME.registerComponent('ray-snap-flag', {
     }
   }
 })
+
+// TODO: Snap to parent, set origin to line origin
+// AFRAME.registerComponent('ray-snap-to-parent-flag', {})
 
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
