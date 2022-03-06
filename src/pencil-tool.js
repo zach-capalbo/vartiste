@@ -5,6 +5,7 @@ import Color from "color"
 import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
+import {PARENTABLE_TARGETS} from './decorators.js'
 
 AFRAME.registerSystem('pencil-tool', {
   clonePencil() {
@@ -1713,7 +1714,7 @@ AFRAME.registerComponent('reparent-tool', {
   init() {
     let flag = this.flag = document.createElement('a-entity')
     this.el.append(flag)
-    flag.setAttribute('decorator-flag', 'resolveProxy: true; selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity[bone-redirector]')
+    flag.setAttribute('decorator-flag', `resolveProxy: true; selector: ${PARENTABLE_TARGETS}`)
     this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
     flag.setAttribute('preactivate-tooltip', 'Parent Selector')

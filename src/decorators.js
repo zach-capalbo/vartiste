@@ -12,6 +12,7 @@ const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipula
 const SHAPES_AND_REFERENCED = "a-entity[reference-glb], a-entity[primitive-construct-placeholder]"
 const ALL_MESHES = "a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]"
 const ALL_MESHES_AND_CANVAS = ALL_MESHES + ", a-entity.canvas"
+export const PARENTABLE_TARGETS = 'a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity[bone-redirector]'
 
 AFRAME.registerComponent('flaggable-control', {})
 
@@ -335,6 +336,11 @@ AFRAME.registerComponent('decorator-flag', {
   }
 })
 
+function cloneloaded(e) {
+  e.stopPropagation()
+  e.detail.el.setAttribute(this.attrName, this.el.getAttribute(this.attrName))
+}
+
 AFRAME.registerComponent('flaggable-manipulator', {
   init() {}
 })
@@ -380,10 +386,7 @@ AFRAME.registerComponent('weight-constraint-flag', {
         el.setAttribute('manipulator-weight', `weight: ${this.calcWeight(el['tool-weight-tool-data'].weightCount)}; type: slow`)
       }
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('weight-constraint-flag', this.el.getAttribute('weight-constraint-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {icon: '#asset-hand-two-lines', color: '#867555'})
@@ -416,10 +419,7 @@ AFRAME.registerComponent('remember-position-flag', {
       positioner.parent.remove(positioner)
       this.positionerMap.delete(el)
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('remember-position-flag', this.el.getAttribute('remember-position-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {icon: '#asset-ear-hearing'})
@@ -453,10 +453,7 @@ AFRAME.registerComponent('show-normals-flag', {
         }
       })
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('show-normals-flag', this.el.getAttribute('show-normals-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-brightness-4'})
@@ -492,10 +489,7 @@ AFRAME.registerComponent('show-uv-flag', {
         }
       })
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('show-uv-flag', this.el.getAttribute('show-uv-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-brush'})
@@ -551,10 +545,7 @@ AFRAME.registerComponent('wireframe-flag', {
         }
       })
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('wireframe-flag', this.el.getAttribute('wireframe-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {color: '#b435ba', icon: '#asset-web'})
@@ -583,10 +574,7 @@ AFRAME.registerComponent('unclickable-flag', {
 
       this.el.setAttribute('decorator-flag', 'color', '#867555')
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('unclickable-flag', this.el.getAttribute('unclickable-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {color: '#867555', icon: '#asset-hand-no-lines'})
@@ -604,10 +592,7 @@ AFRAME.registerComponent('axis-handles-flag', {
     endobjectconstraint: function(e) {
       e.detail.el.removeAttribute('axis-handles')
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('axis-handles-flag', this.el.getAttribute('axis-handles-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', {icon: '#asset-resize', color: '#313baa'})
@@ -674,10 +659,7 @@ AFRAME.registerComponent('inspector-flag', {
       delete view['redirect-grab'];
       view.components['frame'].closeFrame()
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('inspector-flag', this.el.getAttribute('inspector-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', 'icon: #asset-newspaper-variant-outline; resolveProxy: true')
@@ -740,10 +722,7 @@ AFRAME.registerComponent('dynamic-body-flag', {
         this.el.sceneEl.setAttribute('art-physics', {scenePhysics: true})
       }
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('dynamic-body-flag', this.el.getAttribute('dynamic-body-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   init() {
     this.el.setAttribute('decorator-flag', 'color: #308a5f; icon: #asset-cube-send')
@@ -755,7 +734,8 @@ AFRAME.registerComponent('ray-snap-flag', {
   dependencies: ['decorator-flag'],
   schema: {
     emitEvents: {default: false},
-    distance: {default: 0.4}
+    distance: {default: 0.4},
+    selector: {default: ALL_MESHES_AND_CANVAS},
   },
   events: {
     startobjectconstraint: function(e) {
@@ -772,15 +752,13 @@ AFRAME.registerComponent('ray-snap-flag', {
       this.line.visible = false
       el.removeEventListener('stateadded', this.refreshObjects)
     },
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('ray-snap-flag', this.el.getAttribute('ray-snap-flag'))
-    }
+    cloneloaded: cloneloaded,
   },
   emits: {
     snapped: {
       el: null,
       to: null,
+      toEl: null,
       point: new THREE.Vector3()
     },
     unsnapped: {
@@ -808,7 +786,7 @@ AFRAME.registerComponent('ray-snap-flag', {
     this.elConstraint = new Map()
   },
   refreshObjects() {
-    this.elList = Array.from(this.el.sceneEl.querySelectorAll(ALL_MESHES_AND_CANVAS))
+    this.elList = Array.from(this.el.sceneEl.querySelectorAll(this.data.selector))
   },
   constrainObject(el, t, dt, localOffset) {
     let worldScale = this.pool('worldScale', THREE.Vector3)
@@ -824,6 +802,7 @@ AFRAME.registerComponent('ray-snap-flag', {
     let hits = []
     let minDistance = raycaster.far
     let minHit = null
+    let minEl = null
     for (let targetEl of this.elList)
     {
       if (!Util.visibleWithAncestors(targetEl.object3D)) continue;
@@ -834,6 +813,7 @@ AFRAME.registerComponent('ray-snap-flag', {
       {
         minDistance = hits[0].distance
         minHit = hits[0]
+        minEl = targetEl
       }
     }
 
@@ -853,6 +833,7 @@ AFRAME.registerComponent('ray-snap-flag', {
       {
         this.emitDetails.snapped.el = el
         this.emitDetails.snapped.to = minHit.object
+        this.emitDetails.snapped.toEl = minEl
         this.emitDetails.snapped.point = minHit.point
         this.lastSnapped = minHit.object
         this.el.emit('snapped', this.emitDetails.snapped)
@@ -862,6 +843,7 @@ AFRAME.registerComponent('ray-snap-flag', {
 
     if (this.data.emitEvents && this.lastSnapped)
     {
+      this.lastSnapped = null
       this.emitDetails.unsnapped.el = el
       this.el.emit('unsnapped', this.emitDetails.unsnapped)
     }
@@ -872,10 +854,7 @@ AFRAME.registerComponent('ray-snap-flag', {
 AFRAME.registerComponent('ray-snap-to-parent-flag', {
   dependencies: ['ray-snap-flag'],
   events: {
-    cloneloaded: function(e) {
-      e.stopPropagation()
-      e.detail.el.setAttribute('ray-snap-to-parent-flag', this.el.getAttribute('ray-snap-to-parent-flag'))
-    },
+    cloneloaded: cloneloaded,
     startobjectconstraint: function(e) {
       let el = e.detail.el
       console.log("Start object constraint", e)
@@ -886,10 +865,15 @@ AFRAME.registerComponent('ray-snap-to-parent-flag', {
       let el = e.detail.el
       el.removeEventListener('stateadded', this.stateadded)
       el.removeEventListener('stateremoved', this.stateremoved)
+      if (el.is('snappedtoparent'))
+      {
+        el.removeState('snappedtoparent')
+        el.removeAttribute('manipulator-lock')
+      }
     },
     snapped: function(e) {
       console.log("Snapped", e)
-      this.newParentEl = e.detail.to.el
+      this.newParentEl = e.detail.toEl
     },
     unsnapped: function(e) {
       console.log("Unsnapped")
@@ -897,22 +881,36 @@ AFRAME.registerComponent('ray-snap-to-parent-flag', {
     }
   },
   init() {
-    this.el.setAttribute('ray-snap-flag', 'emitEvents: true')
-    this.el.setAttribute('decorator-flag', 'color: white')
+    this.el.setAttribute('ray-snap-flag', `emitEvents: true; selector: ${PARENTABLE_TARGETS}`)
+    this.el.setAttribute('decorator-flag', 'color: #b6c5f2')
     this.stateadded = this.stateadded.bind(this)
     this.stateremoved = this.stateremoved.bind(this)
   },
   stateadded(e) {
     if (e.detail !== 'grabbed') return;
     let el = e.target
-
   },
   stateremoved(e) {
     if (e.detail !== 'grabbed') return;
     console.log("Stateremoved", e, this.newParentEl)
     let el = e.target
-    let newParentEl = this.newParentEl
+    let newParentEl = this.newParentEl// ? Util.resolveGrabRedirection(this.newParentEl) : null
 
+    if (newParentEl && newParentEl.hasAttribute('grab-redirector'))
+    {
+      console.log("resolving redirector")
+      let target = newParentEl.getAttribute('grab-redirector').target
+      if (target.object3D)
+      {
+        newParentEl = target
+      }
+      else
+      {
+        newParentEl = {object3D: target}
+      }
+    }
+
+    if (el.is('snappedtoparent')) return;
 
     if (newParentEl)
     {
@@ -921,7 +919,8 @@ AFRAME.registerComponent('ray-snap-to-parent-flag', {
         newParentEl.object3D.add(el.object3D)
       })
       Util.setObject3DOriginAtTarget(el.object3D, this.el.object3D)
-      el.setAttribute('manipulator-lock', 'lockedRotationAxes: z; lockedPositionAxes: x, y, z')
+      el.setAttribute('manipulator-lock', 'lockedPositionAxes: x, y, z')
+      el.addState('snappedtoparent')
     }
   }
 })
@@ -930,6 +929,9 @@ function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selec
 {
   AFRAME.registerComponent(name, {
     dependencies: ['decorator-flag'].concat(flags),
+    events: {
+      cloneloaded: cloneloaded,
+    },
     init() {
       this.el.setAttribute('decorator-flag', {color, icon})
       if (selector) this.el.setAttribute('decorator-flag', 'selector', selector)
