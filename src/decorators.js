@@ -68,35 +68,10 @@ AFRAME.registerComponent('adjustable-origin', {
   setOrigin() {
     if (!this.data.target) return;
     let obj = this.data.target.object3D || this.data.target
-    obj.updateMatrix()
-    this.handle.object3D.updateMatrix()
-
-    let matrix = this.handle.object3D.matrix
-    matrix.invert()
-
-    if (obj.geometry)
-    {
-      let geometry = obj.geometry
-      geometry.applyMatrix(matrix)
-      if (geometry.boundsTree) geometry.computeBoundsTree()
-      geometry.computeBoundingSphere()
-      geometry.computeBoundingBox()
-    }
-
-    for (let c of obj.children)
-    {
-      if (c.el === this.handle) continue
-      Util.applyMatrix(c.matrix.premultiply(matrix), c)
-    }
-
-    matrix.invert()
-    Util.applyMatrix(obj.matrix.multiply(matrix), obj)
-    Util.applyMatrix(matrix.identity(), this.handle.object3D)
+    Util.setObject3DOriginAtTarget(obj, this.handle.object3D)
     this.el.emit('originmoved', {})
   }
 })
-
-
 
 Util.registerComponentSystem('decorator-flag-system', {
   init() {
@@ -778,6 +753,10 @@ AFRAME.registerComponent('dynamic-body-flag', {
 
 AFRAME.registerComponent('ray-snap-flag', {
   dependencies: ['decorator-flag'],
+  schema: {
+    emitEvents: {default: false},
+    distance: {default: 0.4}
+  },
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
@@ -798,13 +777,24 @@ AFRAME.registerComponent('ray-snap-flag', {
       e.detail.el.setAttribute('ray-snap-flag', this.el.getAttribute('ray-snap-flag'))
     }
   },
+  emits: {
+    snapped: {
+      el: null,
+      to: null,
+      point: new THREE.Vector3()
+    },
+    unsnapped: {
+      el: null,
+    }
+  },
   init() {
     this.el.setAttribute('decorator-flag', 'color: #867555; icon: #asset-nudge-brush')
 
     Pool.init(this)
     this.refreshObjects = this.refreshObjects.bind(this)
+    Util.emitsEvents(this)
 
-    let lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0, 0, -1)])
+    let lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0, 0, -this.data.distance)])
     this.line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({color: 'green'}))
     this.el.object3D.add(this.line)
 
@@ -825,39 +815,116 @@ AFRAME.registerComponent('ray-snap-flag', {
     this.el.object3D.getWorldScale(worldScale)
     let raycaster = this.pool('raycaster', THREE.Raycaster)
     raycaster.ray.direction.set(0, 0, -1);
-    raycaster.far = worldScale.z;
+    raycaster.far = worldScale.z * this.data.distance;
     raycaster.firstHitOnly = true;
     this.el.object3D.getWorldPosition(raycaster.ray.origin)
     let worldQuat = this.pool('worldQuat', THREE.Quaternion)
     this.el.object3D.getWorldQuaternion(worldQuat)
     raycaster.ray.direction.applyQuaternion(worldQuat)
     let hits = []
+    let minDistance = raycaster.far
+    let minHit = null
     for (let targetEl of this.elList)
     {
       if (!Util.visibleWithAncestors(targetEl.object3D)) continue;
       if (targetEl === el) continue;
       hits.length = 0
       raycaster.intersectObject(targetEl.getObject3D('mesh') || targetEl.object3D, true, hits)
-      if (hits.length > 0)
+      if (hits.length > 0 && hits[0].distance < minDistance)
       {
-        let root = el.object3D.parent
-        let localOrigin = this.pool('localOrigin', THREE.Vector3)
-        localOrigin.copy(raycaster.ray.origin)
-        root.worldToLocal(localOrigin)
-        let localHit = this.pool('localHit', THREE.Vector3)
-        localHit.copy(hits[0].point)
-        root.worldToLocal(localHit)
-        localHit.sub(localOrigin)
-        el.object3D.position.add(localHit)
-        console.log("Pushing object", localOrigin, localHit)
-        break;
+        minDistance = hits[0].distance
+        minHit = hits[0]
       }
+    }
+
+    if (minHit)
+    {
+      let root = el.object3D.parent
+      let localOrigin = this.pool('localOrigin', THREE.Vector3)
+      localOrigin.copy(raycaster.ray.origin)
+      root.worldToLocal(localOrigin)
+      let localHit = this.pool('localHit', THREE.Vector3)
+      localHit.copy(minHit.point)
+      root.worldToLocal(localHit)
+      localHit.sub(localOrigin)
+      el.object3D.position.add(localHit)
+
+      if (this.data.emitEvents && this.lastSnapped !== minHit.object)
+      {
+        this.emitDetails.snapped.el = el
+        this.emitDetails.snapped.to = minHit.object
+        this.emitDetails.snapped.point = minHit.point
+        this.lastSnapped = minHit.object
+        this.el.emit('snapped', this.emitDetails.snapped)
+      }
+      return;
+    }
+
+    if (this.data.emitEvents && this.lastSnapped)
+    {
+      this.emitDetails.unsnapped.el = el
+      this.el.emit('unsnapped', this.emitDetails.unsnapped)
     }
   }
 })
 
 // TODO: Snap to parent, set origin to line origin
-// AFRAME.registerComponent('ray-snap-to-parent-flag', {})
+AFRAME.registerComponent('ray-snap-to-parent-flag', {
+  dependencies: ['ray-snap-flag'],
+  events: {
+    cloneloaded: function(e) {
+      e.stopPropagation()
+      e.detail.el.setAttribute('ray-snap-to-parent-flag', this.el.getAttribute('ray-snap-to-parent-flag'))
+    },
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      console.log("Start object constraint", e)
+      el.addEventListener('stateadded', this.stateadded)
+      el.addEventListener('stateremoved', this.stateremoved)
+    },
+    endobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.removeEventListener('stateadded', this.stateadded)
+      el.removeEventListener('stateremoved', this.stateremoved)
+    },
+    snapped: function(e) {
+      console.log("Snapped", e)
+      this.newParentEl = e.detail.to.el
+    },
+    unsnapped: function(e) {
+      console.log("Unsnapped")
+      this.newParentEl = null
+    }
+  },
+  init() {
+    this.el.setAttribute('ray-snap-flag', 'emitEvents: true')
+    this.el.setAttribute('decorator-flag', 'color: white')
+    this.stateadded = this.stateadded.bind(this)
+    this.stateremoved = this.stateremoved.bind(this)
+  },
+  stateadded(e) {
+    if (e.detail !== 'grabbed') return;
+    let el = e.target
+
+  },
+  stateremoved(e) {
+    if (e.detail !== 'grabbed') return;
+    console.log("Stateremoved", e, this.newParentEl)
+    let el = e.target
+    let newParentEl = this.newParentEl
+
+
+    if (newParentEl)
+    {
+      console.log("Reparenting", el, newParentEl)
+      Util.keepingWorldPosition(el.object3D, () => {
+        newParentEl.object3D.add(el.object3D)
+      })
+      Util.setObject3DOriginAtTarget(el.object3D, this.el.object3D)
+      el.setAttribute('manipulator-lock', 'lockedRotationAxes: z; lockedPositionAxes: x, y, z')
+    }
+  }
+})
 
 function registerCombinedFlagComponent(name, flags, {icon, color, onColor, selector})
 {
