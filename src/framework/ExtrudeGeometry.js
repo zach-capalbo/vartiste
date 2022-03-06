@@ -22,7 +22,7 @@
 
 // Heavily modified by Zach Capalbo for use in VARTISTE sculpting.js
 
- const { BufferGeometry, Float32BufferAttribute, Vector2, Vector3, ShapeUtils, Uint8BufferAttribute } = THREE;
+ const { BufferGeometry, Float32BufferAttribute, Vector2, Vector3, ShapeUtils, Uint8BufferAttribute, Uint16BufferAttribute } = THREE;
 
 const Curves = THREE;
 
@@ -44,6 +44,7 @@ class ExtrudeGeometry extends BufferGeometry {
 		const scope = this;
 
 		const verticesArray = [];
+    const indicesArray = []
 		const uvArray = [];
     const normalsArray = [];
     const boneWeightsArray = [];
@@ -63,6 +64,8 @@ class ExtrudeGeometry extends BufferGeometry {
 		this.setAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
 		this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
     this.setAttribute( 'normal', new Float32BufferAttribute( normalsArray, 3 ) );
+
+    this.setIndex(new Uint16BufferAttribute(indicesArray, 1));
 
     if (enableWeights)
     {
@@ -806,13 +809,13 @@ class ExtrudeGeometry extends BufferGeometry {
 
 			function addVertex( index ) {
 
+        indicesArray.push(verticesArray.length / 3)
 				verticesArray.push( placeholder[ index * 3 + 0 ] );
+        // indicesArray.push(verticesArray.length)
 				verticesArray.push( placeholder[ index * 3 + 1 ] );
+        // indicesArray.push(verticesArray.length)
 				verticesArray.push( placeholder[ index * 3 + 2 ] );
 
-        // normalsArray.push( normalHolder[ index * 3 + 0 ] );
-        // normalsArray.push( normalHolder[ index * 3 + 1 ] );
-        // normalsArray.push( normalHolder[ index * 3 + 2 ] );
 
 			}
 

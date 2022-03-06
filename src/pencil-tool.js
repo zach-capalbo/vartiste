@@ -1716,6 +1716,7 @@ AFRAME.registerComponent('reparent-tool', {
     flag.setAttribute('decorator-flag', 'resolveProxy: true; selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity[bone-redirector]')
     this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
+    flag.setAttribute('preactivate-tooltip', 'Parent Selector')
     this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
