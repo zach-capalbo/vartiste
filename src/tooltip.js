@@ -115,21 +115,20 @@ AFRAME.registerComponent('tooltip-style', {
   },
   update(oldData) {
     Util.whenLoaded(this.el, () => {
-      let component = this.el.components[this.attrName.replace("-style", "")]
-      if (!component) {
-        // console.warn("No tooltip component yet", this.attrName)
-        Util.callLater(this.update.bind(this, oldData))
-        return
-      }
-      component.targetY = this.data.offset.y + 0.4
-      component.tooltip.setAttribute('text', 'wrapCount', this.data.wrapCount)
-      component.tooltip.object3D.position.x = this.data.offset.x
-      component.tooltip.object3D.position.z = this.data.offset.z + 0.004
-      component.tooltip.object3D.scale.copy(this.data.scale)
-      component.tooltip.object3D.rotation.set(this.data.rotation.x * Math.PI / 180,
-                                                               this.data.rotation.y * Math.PI / 180,
-                                                               this.data.rotation.z * Math.PI / 180,)
-                                                             })
+      Util.whenComponentInitialized(this.el, 'tooltip', () => {
+        let component = this.el.components.tooltip
+        Util.whenLoaded(component.tooltip, () => {
+          component.targetY = this.data.offset.y + 0.4
+          component.tooltip.setAttribute('text', 'wrapCount', this.data.wrapCount)
+          component.tooltip.object3D.position.x = this.data.offset.x
+          component.tooltip.object3D.position.z = this.data.offset.z + 0.004
+          component.tooltip.object3D.scale.copy(this.data.scale)
+          component.tooltip.object3D.rotation.set(this.data.rotation.x * Math.PI / 180,
+                                                                   this.data.rotation.y * Math.PI / 180,
+                                                                   this.data.rotation.z * Math.PI / 180,)
+                                                                 })
+                                                               })
+    })
   }
 })
 

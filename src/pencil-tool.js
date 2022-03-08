@@ -1718,6 +1718,7 @@ AFRAME.registerComponent('reparent-tool', {
     this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
     flag.setAttribute('preactivate-tooltip', 'Parent Selector')
+    flag.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.3 0.16")
     this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
