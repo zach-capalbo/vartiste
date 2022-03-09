@@ -186,7 +186,7 @@ Util.registerComponentSystem('material-pack-system', {
 
 
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
-    attr.shader = 'pbmatcap'//'standard'
+    attr.shader = 'standard'
     let el = document.createElement('a-entity')
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)

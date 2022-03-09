@@ -568,3 +568,23 @@ Util.registerComponentSystem('glb-exporter', {
     desktopLink.click()
   }
 })
+
+class MeshPBMatcapMaterial extends THREE.ShaderMaterial {
+  constructor(parameters = {})
+  {
+    super(parameters)
+    let originalMatcap = document.getElementById('pbmatcap-placeholder').components.material.material
+    this.copy(originalMatcap)
+    for (let k in originalMatcap.uniforms)
+    {
+      this.uniforms[k].value = originalMatcap.uniforms[k].value
+    }
+    this.matcap = true
+    this.normalMapType = 0
+  }
+  copy(source) {
+    super.copy(source)
+  }
+}
+
+THREE.MeshPBMatcapMaterial = MeshPBMatcapMaterial;
