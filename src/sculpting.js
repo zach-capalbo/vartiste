@@ -975,10 +975,16 @@ Util.registerComponentSystem('threed-line-system', {
     if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask && compositorShader === 'pbmatcap')
     {
       let previewMaterial = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack)
-      this.material = this.el.sceneEl.querySelector('#pbmatcap-placeholder').components.material.material.clone()
-      this.material.matcap = true
-      this.material.normalMapType = 0
-      console.log("Material Clone", this.material)
+      this.material = new THREE.MeshPBMatcapMaterial()
+      for (let k in this.material.uniforms)
+      {
+        if (k in previewMaterial)
+        {
+          this.material.uniforms[k].value = previewMaterial[k]
+          this.material[k] = previewMaterial[k]
+        }
+      }
+      console.log("PBMatcap", this.material)
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
       return this.material
