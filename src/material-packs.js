@@ -186,7 +186,7 @@ Util.registerComponentSystem('material-pack-system', {
 
 
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
-    attr.shader = 'standard'
+    attr.shader = 'pbmatcap'//'standard'
     let el = document.createElement('a-entity')
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)
@@ -389,7 +389,10 @@ Util.registerComponentSystem('material-pack-system', {
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
-    Compositor.el.setAttribute('material', 'shader', 'standard')
+    if (Compositor.el.getAttribute('material').shader === 'flat' || Compositor.el.getAttribute('material').shader === 'matcap')
+    {
+      Compositor.el.setAttribute('material', 'shader', 'standard')
+    }
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
     {
       Undo.collect(() => {

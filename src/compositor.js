@@ -926,6 +926,20 @@ AFRAME.registerComponent('compositor', {
       material.map.wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
       material.map.wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
 
+      if (material.type === "ShaderMaterial")
+      {
+        // function setUniformValue(material, name) {material.uniforms[name].value = material[name]}
+        // setUniformValue(material, 'metalness')
+        // setUniformValue(material, 'roughness')
+        for (let k in material.uniforms)
+        {
+          if (k in material)
+          {
+            material.uniforms[k].value = material[k]
+          }
+        }
+      }
+
       if (material.type !== "MeshStandardMaterial") return
       for (let mode of THREED_MODES)
       {
