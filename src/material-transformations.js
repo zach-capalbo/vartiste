@@ -568,3 +568,46 @@ Util.registerComponentSystem('glb-exporter', {
     desktopLink.click()
   }
 })
+
+class MeshPBMatcapMaterial extends THREE.ShaderMaterial {
+  constructor(parameters = {})
+  {
+    super(parameters)
+    let originalMatcap = document.getElementById('pbmatcap-placeholder').components.material.material
+    this.copy(originalMatcap)
+    for (let k in originalMatcap.uniforms)
+    {
+      this.uniforms[k].value = originalMatcap.uniforms[k].value
+    }
+    for (let k in parameters)
+    {
+      if (k in this.uniforms)
+      {
+        this[k] = parameters[k]
+        this.uniforms[k].value = parameters[k]
+      }
+      else if (['alphaTest', 'transparent', 'depthWrite', 'side', 'opacity'].includes(k)) {
+        this[k] = parameters[k]
+        console.log("Settting param", k, parameters[k])
+      }
+    }
+    this.matcap = true
+    this.normalMapType = 0
+  }
+  copy(source) {
+    super.copy(source)
+    for (let k in source.uniforms)
+    {
+      this.uniforms[k].value = source.uniforms[k].value
+      this[k] = source[k]
+    }
+    this.matcap = true
+    this.normalMapType = 0
+    return this
+  }
+  clone() {
+    return new MeshPBMatcapMaterial().copy(this)
+  }
+}
+
+THREE.MeshPBMatcapMaterial = MeshPBMatcapMaterial;

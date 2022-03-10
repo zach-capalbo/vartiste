@@ -968,11 +968,39 @@ Util.registerComponentSystem('threed-line-system', {
       Util.callLater(() => oldMaterial.dispose())
     }
     let brush = this.el.sceneEl.systems['paint-system'].brush;
+    let color3 = this.el.sceneEl.systems['paint-system'].color3
 
-    if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
+    let compositorShader = Compositor.el.getAttribute('material').shader
+
+    if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask && compositorShader === 'pbmatcap')
+    {
+      let previewMaterial = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack)
+      this.material = new THREE.MeshPBMatcapMaterial()
+      for (let k in this.material.uniforms)
+      {
+        if (k in previewMaterial)
+        {
+          this.material.uniforms[k].value = previewMaterial[k]
+          this.material[k] = previewMaterial[k]
+        }
+      }
+      console.log("PBMatcap", this.material)
+      this.materialNeedsUpdate = false
+      this.el.emit('shapematerialupdated', this.material)
+      return this.material
+    }
+    else if (!this.data.usePaintSystem && this.el.sceneEl.systems['material-pack-system'].activeMaterialMask)
     {
       this.material = this.el.sceneEl.systems['material-pack-system'].previewMaterial(this.el.sceneEl.systems['material-pack-system'].activeMaterialMask.data.pack).clone()
       this.material.side = THREE.FrontSide
+      this.materialNeedsUpdate = false
+      this.el.emit('shapematerialupdated', this.material)
+      return this.material
+    }
+    else if (!this.data.usePaintSystem && compositorShader === 'pbmatcap')
+    {
+      this.material = new THREE.MeshPBMatcapMaterial()
+      this.material.uniforms.color.value.set(color3.r, color3.g, color3.b)
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
       return this.material
@@ -1058,15 +1086,23 @@ Util.registerComponentSystem('threed-line-system', {
     texture.minFilter = THREE.LinearFilter
     let materialType = THREE.MeshBasicMaterial;
 
-    switch (Compositor.el.getAttribute('material').shader)
+    switch (compositorShader)
     {
       case 'standard': materialType = THREE.MeshStandardMaterial; break;
       case 'matcap': materialType = THREE.MeshMatcapMaterial; break;
+      case 'pbmatcap': materialType = THREE.MeshPBMatcapMaterial; break
     }
 
     if (this.el.sceneEl.systems['material-pack-system'].activeMaterialMask || !this.data.usePaintSystem)
     {
-      materialType = THREE.MeshStandardMaterial
+      if (compositorShader === 'pbmatcap')
+      {
+        materialType = THREE.MeshPBMatcapMaterial
+      }
+      else
+      {
+        materialType = THREE.MeshStandardMaterial
+      }
     }
 
     // materialType = THREE.MeshNormalMaterial;
@@ -1076,7 +1112,7 @@ Util.registerComponentSystem('threed-line-system', {
       transparent: transparent,
       depthWrite: !transparent || this.data.shape !== 'line',
       alphaTest: 0.01,
-      color: color || "white",
+      color: color || new THREE.Color("white"),
       opacity: opacity === undefined ? 1.0 : opacity,
       side: transparent ? THREE.DoubleSide : THREE.FrontSide,
     })
@@ -1131,6 +1167,17 @@ Util.registerComponentSystem('threed-line-system', {
         console.log("Set", map)
       }
       this.material.needsUpdate = true
+
+      if (compositorShader === 'pbmatcap')
+      {
+        for (let k in this.material.uniforms)
+        {
+          if (k in this.material)
+          {
+            this.material.uniforms[k].value = this.material[k]
+          }
+        }
+      }
     }
 
     this.materialNeedsUpdate = false

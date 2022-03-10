@@ -389,7 +389,10 @@ Util.registerComponentSystem('material-pack-system', {
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
-    Compositor.el.setAttribute('material', 'shader', 'standard')
+    if (Compositor.el.getAttribute('material').shader === 'flat' || Compositor.el.getAttribute('material').shader === 'matcap')
+    {
+      Compositor.el.setAttribute('material', 'shader', 'standard')
+    }
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
     {
       Undo.collect(() => {

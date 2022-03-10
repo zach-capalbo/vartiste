@@ -115,8 +115,9 @@ AFRAME.registerComponent('tooltip-style', {
   },
   update(oldData) {
     Util.whenLoaded(this.el, () => {
-      Util.whenComponentInitialized(this.el, 'tooltip', () => {
-        let component = this.el.components.tooltip
+      let tooltipName = this.attrName.replace("-style", "").toLowerCase()
+      Util.whenComponentInitialized(this.el, tooltipName, () => {
+        let component = this.el.components[tooltipName]
         Util.whenLoaded(component.tooltip, () => {
           component.targetY = this.data.offset.y + 0.4
           component.tooltip.setAttribute('text', 'wrapCount', this.data.wrapCount)

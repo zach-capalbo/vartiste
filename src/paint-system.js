@@ -24,7 +24,7 @@ AFRAME.registerSystem('paint-system', {
 
   init() {
     this.linearBrushScale = 0
-    this.color3 = new THREE.Color
+    this.color3 = new THREE.Color('#000000')
     this.jitterColor = new THREE.Color
     this.brush = BrushList[this.data.brushIndex]
     this.brush.changeColor(this.data.color)

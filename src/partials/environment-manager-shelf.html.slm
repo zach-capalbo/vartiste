@@ -1,19 +1,16 @@
 a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable: true" scale="0.3 0.3 1"visible="false" system-click-action="system: environment-manager"
   a-entity position="-1.6 -1.1 0" icon-row="mergeButtons: true; autoPosition: false"
-    a-entity icon-button="#asset-backspace-outline" system-click-action="action: reset" tooltip="Remove Environment"
+    /a-entity icon-button="#asset-backspace-outline" system-click-action="action: reset" tooltip="Remove Environment"
     /a-entity icon-button="#asset-blur-linear" system-click-action="action: toneMapping" tooltip="Change Tone Mapping" tooltip__tonemapping="THREE.Linear" tooltip-style__tonemapping="offset: 0, -0.8 0; wrapCount: 14" tonemapping-tooltip=""
-    a-entity icon-button="#asset-blur-linear" dropdown-button="target: a-scene; component: environment-manager; property: toneMapping" tooltip="Change Tone Mapping" tooltip__tonemapping="THREE.Linear" tooltip-style__tonemapping="offset: 0, -0.8 0; wrapCount: 14" tonemapping-tooltip=""
+    a-entity icon-button="#asset-blur-linear" dropdown-button="showActiveOptionTooltip: true; target: a-scene; component: environment-manager; property: toneMapping" tooltip="Change Tone Mapping"
     /a-entity icon-button="#asset-brightness-4" system-click-action="action: usePresetHDRI" tooltip="Use Preset Lighting Environment"
-    a-entity icon-button="#asset-brightness-4" popup-button="popup: environment-selector-popup; deferred: true; offset: 0 0.5 1.5" tooltip="Load Environment"
-    a-entity icon-button="#asset-image-filter-hdr" system-click-action="action: setBackgroundColor" tooltip="Set Background Color"
+    a-entity icon-button="#asset-image-filter-hdr" popup-button="popup: environment-selector-popup; deferred: true; offset: 0 0.5 1.5" tooltip="Load Environment"
+    a-entity icon-button="#asset-brush" system-click-action="action: setBackgroundColor" tooltip="Set Background Color"
+    a-entity icon-button="#asset-bed" toggle-button="target: #environment-place; component: visible" tooltip="Show floor" hide-low-power=""
 
     a-entity icon-button="" visible="false" scale="0 0 0"
-    a-entity icon-button="#asset-record" system-click-action="action: useFlatShading" tooltip="Use Flat Shading"
-    a-entity icon-button="#asset-blur-preview" system-click-action="action: installMatcap" tooltip="Use Matcap Shading"
-    a-entity icon-button="#asset-brightness-4" system-click-action="action: use3DShading" tooltip="Use 3D Shading"
-  a-entity position="0.7 -0.5 0"
-    a-entity icon-button="#asset-bed" toggle-button="target: #environment-place; component: visible" tooltip="Show floor" hide-low-power=""
-    /a-entity icon-button="#asset-blur-preview" system-click-action="action: installPBMatcap" tooltip="Use Matcap Shading"
+
+    a-entity icon-button="#asset-brightness-4" dropdown-button="showActiveOptionTooltip: true; target: #canvas-view; component: material; property: shader; optionIcon: #asset-brightness-4; options: flat, standard, matcap, pbmatcap; labels: Flat Shading, 3D Shading, Matcap, Physically Based Matcap" tooltip="Select Material Rendering" popup-button="offset: 1 1 1; scale: 0.7 0.7 0.7"
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
 

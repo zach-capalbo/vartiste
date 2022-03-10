@@ -759,6 +759,7 @@ AFRAME.registerComponent('icon-row', {
 // You can click the button to set the target property to that value.
 // If the target property changes to a different value, the button will no longer be highlighted.
 AFRAME.registerComponent('radio-button', {
+  // dependencies: ['icon-button'],
   schema: {
     // The value the button will set the property to, and will be highlighted at
     value: {type: 'string'},
@@ -815,11 +816,13 @@ AFRAME.registerComponent('radio-button', {
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
         this.data.target.addEventListener('componentinitialized', this.componentchangedlistener)
 
-        Util.whenLoaded([this.el, this.data.target], () => {
-          if (this.data.target.hasAttribute(this.data.component))
-          {
-            this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
-          }
+        Util.whenComponentInitialized(this.el, 'icon-button', () => {
+          Util.whenLoaded([this.el, this.data.target], () => {
+            if (this.data.target.hasAttribute(this.data.component))
+            {
+              this.setToggle(this.data.target.getAttribute(this.data.component)[this.data.property] === this.data.value, {update: false})
+            }
+          })
         })
       }
     }

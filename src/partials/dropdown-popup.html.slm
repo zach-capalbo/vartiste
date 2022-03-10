@@ -1,2 +1,2 @@
-a-entity shelf="width: 3; height: 4" scale="0.1 0.1 0.1"
+a-entity shelf="width: 3; height: 4; closeable: true; pinnable: false" scale="0.1 0.1 0.1"
   a-entity shelf-content=""
