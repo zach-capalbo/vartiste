@@ -446,6 +446,9 @@ AFRAME.registerComponent('dropdown-button', {
   schema: {
     options: {type: 'array'},
 
+    // [Optional]
+    labels: {type: 'array'},
+
     optionIcon: {type: 'string', default: '#asset-record'},
     tooltip: {default: 'Select'},
 
@@ -456,7 +459,9 @@ AFRAME.registerComponent('dropdown-button', {
     // If `target` is set, this is the property to edit
     property: {type: 'string'},
 
-    selectedValue: {type: 'string'}
+    selectedValue: {type: 'string'},
+
+    showActiveOptionTooltip: {default: false},
   },
   events: {
     popuplaunched: function(e) {
@@ -473,8 +478,8 @@ AFRAME.registerComponent('dropdown-button', {
     Util.whenLoaded(this.data.target ? [this.data.target, this.el] : this.el, () => {
       if (this.data.target)
       {
-        this.data.selectedValue = this.data.property ? this.data.target.getAttribute(this.data.component)[this.data.property]
-                                                     : this.data.target.getAttribute(this.data.component)
+        this.el.setAttribute('dropdown-button', 'selectedValue', this.data.property ? this.data.target.getAttribute(this.data.component)[this.data.property]
+                                                                                    : this.data.target.getAttribute(this.data.component))
 
       }
 
@@ -484,8 +489,22 @@ AFRAME.registerComponent('dropdown-button', {
       }
     })
   },
+  update(oldData) {
+    if (!this.data.showActiveOptionTooltip && oldData.showActiveOptionTooltip)
+    {
+      this.el.removeAttribute("tooltip__dropdown")
+    }
+
+    if (this.data.showActiveOptionTooltip && this.data.selectedValue !== oldData.selectedValue)
+    {
+      this.el.setAttribute('tooltip__dropdown', this.data.selectedValue)
+      this.el.setAttribute('tooltip-style', '')
+      this.el.setAttribute('tooltip-style__dropdown', "offset: 0, -0.8 0; wrapCount: 14")
+    }
+  },
   populatePopup() {
     let options = this.data.options
+    let labels = this.data.labels
     if (!options || options.length === 0)
     {
       options = AFRAME.components[this.data.component].schema[this.data.property].oneOf;
@@ -494,18 +513,23 @@ AFRAME.registerComponent('dropdown-button', {
 
     let popup = this.el.components['popup-button'].popup
     let shelf = popup.querySelector('*[shelf]')
-    shelf.setAttribute('shelf', 'height', Math.max(4, options.length * 0.5 + 0.3))
+    shelf.setAttribute('shelf', 'height', Math.max(2, options.length * 0.5 + 0.3))
     let content = popup.querySelector('*[shelf-content]')
     content.getChildEntities().forEach(el => content.removeChild(el))
-    let maxLength = Math.max.apply(Math, options.map(o => o.length))
-    for (let option of options)
+    let maxLength = Math.max(...options.map(o => o.length), ...labels.map(o => o.length))
+    for (let i in options)
     {
+      let option = options[i]
+      let labelText = option
+      if (labels.length > i)
+      {
+        labelText = this.data.labels[i]
+      }
       let row = document.createElement('a-entity')
       content.append(row)
       row.setAttribute('icon-row', '')
       let button = document.createElement('a-entity')
       row.append(button)
-      button.setAttribute('icon-button', this.data.optionIcon)
 
       if (this.data.target)
       {
@@ -518,6 +542,7 @@ AFRAME.registerComponent('dropdown-button', {
           button.setAttribute('toggle-button', 'toggled', 'true')
         }
       }
+      button.setAttribute('icon-button', this.data.optionIcon)
 
       button.addEventListener('click', (e) => {
         this.el.emit('dropdownoption', option)
@@ -533,7 +558,7 @@ AFRAME.registerComponent('dropdown-button', {
       let label = document.createElement('a-entity')
       row.append(label)
       label.setAttribute('text', `wrapCount: ${maxLength + 3}; width: 1.5; anchor: left; align: left`)
-      label.setAttribute('text', 'value', option)
+      label.setAttribute('text', 'value', labelText)
       label.setAttribute('position', '0.4 0 0')
     }
   }
