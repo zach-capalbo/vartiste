@@ -581,10 +581,14 @@ class MeshPBMatcapMaterial extends THREE.ShaderMaterial {
     }
     for (let k in parameters)
     {
-      this[k] = parameters[k]
       if (k in this.uniforms)
       {
+        this[k] = parameters[k]
         this.uniforms[k].value = parameters[k]
+      }
+      else if (['alphaTest', 'transparent', 'depthWrite', 'side', 'opacity'].includes(k)) {
+        this[k] = parameters[k]
+        console.log("Settting param", k, parameters[k])
       }
     }
     this.matcap = true
@@ -592,6 +596,17 @@ class MeshPBMatcapMaterial extends THREE.ShaderMaterial {
   }
   copy(source) {
     super.copy(source)
+    for (let k in source.uniforms)
+    {
+      this.uniforms[k].value = source.uniforms[k].value
+      this[k] = source[k]
+    }
+    this.matcap = true
+    this.normalMapType = 0
+    return this
+  }
+  clone() {
+    return new MeshPBMatcapMaterial().copy(this)
   }
 }
 
