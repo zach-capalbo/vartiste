@@ -579,6 +579,14 @@ class MeshPBMatcapMaterial extends THREE.ShaderMaterial {
     {
       this.uniforms[k].value = originalMatcap.uniforms[k].value
     }
+    for (let k in parameters)
+    {
+      this[k] = parameters[k]
+      if (k in this.uniforms)
+      {
+        this.uniforms[k].value = parameters[k]
+      }
+    }
     this.matcap = true
     this.normalMapType = 0
   }
