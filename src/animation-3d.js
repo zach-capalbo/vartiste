@@ -211,6 +211,8 @@ class ObjectKeyframeTracks {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
         times.push(finalFrameIdx / fps)
         values.push(...valueFn(this.at(obj, frameIdx), frameIdx, finalFrameIdx / fps))
+
+        if (finalFrameIdx >= maxFrame) break;
       }
       timesThrough++
 
@@ -429,6 +431,8 @@ Util.registerComponentSystem('animation-3d', {
           positionValues.push(...position.toArray())
           rotationValues.push(...rotation.toArray())
           scaleValues.push(...scale.toArray())
+
+          if (finalFrameIdx >= maxFrame) break;
         }
         timesThrough++
 
@@ -491,6 +495,7 @@ Util.registerComponentSystem('animation-3d', {
     let tracks = []
     let maxTime = 0.0
     let maxFrame = 0
+    let fps = Compositor.component.data.frameRate
     obj.traverse(o => {
       maxFrame = Math.max(maxFrame, ...this.allFrameIndices(o))
     })
@@ -499,7 +504,8 @@ Util.registerComponentSystem('animation-3d', {
       let newTracks = this.generateTHREETracks(o, {maxFrame, wrap: this.isWrapping(o)})
       if (newTracks.length <= 0) return;
 
-      maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
+      maxTime = maxFrame / fps
+      // maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
       tracks.push(...newTracks)
     })
     if (!name) name = `vartiste-${shortid.generate()}`
