@@ -6,7 +6,8 @@ import {Util} from './util.js'
 import {BrushList} from './brush-list.js'
 import {UndoStack} from './undo.js'
 import {prepareModelForExport, dedupMaterials} from './material-transformations.js'
-const FILE_VERSION = 3
+import {CanvasShaderProcessor} from './canvas-shader-processor.js'
+const FILE_VERSION = 4
 class ProjectFile {
   static update(obj) {
     if (!('_fileVersion' in obj)) obj._fileVersion = 0
@@ -59,6 +60,17 @@ class ProjectFile {
         {
           console.log("Updating old bump map")
           layer.opacity = Math.pow(layer.opacity, 1/2.2)
+        }
+      }
+      if (obj._fileVersion < 4)
+      {
+        if (layer.mode === 'matcap')
+        {
+          let flipper = new CanvasShaderProcessor({fx: 'flip-y'})
+          for (let frame of layer.frame)
+          {
+            flipper.apply(frame)
+          }
         }
       }
     }

@@ -205,10 +205,11 @@ class ObjectKeyframeTracks {
     let lastFrame = frames[frames.length - 1] + 1
     let finalFrameIdx = 0
     let timesThrough = 0
-    while (finalFrameIdx <= maxFrame || !wrap) {
+    while (finalFrameIdx < maxFrame || !wrap) {
       for (let frameIdx of frames)
       {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+        if (finalFrameIdx >= maxFrame) finalFrameIdx = maxFrame;
         times.push(finalFrameIdx / fps)
         values.push(...valueFn(this.at(obj, frameIdx), frameIdx, finalFrameIdx / fps))
 
@@ -421,10 +422,11 @@ Util.registerComponentSystem('animation-3d', {
       let lastFrame = frames[frames.length - 1] + 1
       let finalFrameIdx = 0
       let timesThrough = 0
-      while (finalFrameIdx <= maxFrame || !wrap) {
+      while (finalFrameIdx < maxFrame || !wrap) {
         for (let frameIdx of frames)
         {
           finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+          if (finalFrameIdx >= maxFrame) finalFrameIdx = maxFrame;
           times.push(finalFrameIdx / fps)
           let matrix = this.trackFrameMatrix(obj, frameIdx)
           matrix.decompose(position, rotation, scale)
@@ -438,6 +440,8 @@ Util.registerComponentSystem('animation-3d', {
 
         if (!wrap) break;
       }
+
+      console.log("Finishing at frame", finalFrameIdx)
 
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
