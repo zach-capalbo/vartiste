@@ -30,7 +30,7 @@
     "express": "^4.15.3",
     "favicons-webpack-plugin": "^2.1.0",
     "file-loader": "^1.1.11",
-    "glsl-shader-loader": "git://github.com/seequent/glsl-shader-loader.git#cbb26d4921e3959570151d4179413815c36d8328",
+    "glsl-shader-loader": "git+https://github.com/seequent/glsl-shader-loader.git#cbb26d4921e3959570151d4179413815c36d8328",
     "gm": "^1.23.1",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",

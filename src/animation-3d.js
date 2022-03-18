@@ -205,12 +205,15 @@ class ObjectKeyframeTracks {
     let lastFrame = frames[frames.length - 1] + 1
     let finalFrameIdx = 0
     let timesThrough = 0
-    while (finalFrameIdx <= maxFrame || !wrap) {
+    while (finalFrameIdx < maxFrame || !wrap) {
       for (let frameIdx of frames)
       {
         finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+        if (finalFrameIdx >= maxFrame) finalFrameIdx = maxFrame;
         times.push(finalFrameIdx / fps)
         values.push(...valueFn(this.at(obj, frameIdx), frameIdx, finalFrameIdx / fps))
+
+        if (finalFrameIdx >= maxFrame) break;
       }
       timesThrough++
 
@@ -419,21 +422,26 @@ Util.registerComponentSystem('animation-3d', {
       let lastFrame = frames[frames.length - 1] + 1
       let finalFrameIdx = 0
       let timesThrough = 0
-      while (finalFrameIdx <= maxFrame || !wrap) {
+      while (finalFrameIdx < maxFrame || !wrap) {
         for (let frameIdx of frames)
         {
           finalFrameIdx = (frameIdx + lastFrame * timesThrough)
+          if (finalFrameIdx >= maxFrame) finalFrameIdx = maxFrame;
           times.push(finalFrameIdx / fps)
           let matrix = this.trackFrameMatrix(obj, frameIdx)
           matrix.decompose(position, rotation, scale)
           positionValues.push(...position.toArray())
           rotationValues.push(...rotation.toArray())
           scaleValues.push(...scale.toArray())
+
+          if (finalFrameIdx >= maxFrame) break;
         }
         timesThrough++
 
         if (!wrap) break;
       }
+
+      console.log("Finishing at frame", finalFrameIdx)
 
 
       let positionTrack = new THREE.VectorKeyframeTrack(`${obj.uuid}.position`, times, positionValues)
@@ -491,6 +499,7 @@ Util.registerComponentSystem('animation-3d', {
     let tracks = []
     let maxTime = 0.0
     let maxFrame = 0
+    let fps = Compositor.component.data.frameRate
     obj.traverse(o => {
       maxFrame = Math.max(maxFrame, ...this.allFrameIndices(o))
     })
@@ -499,7 +508,8 @@ Util.registerComponentSystem('animation-3d', {
       let newTracks = this.generateTHREETracks(o, {maxFrame, wrap: this.isWrapping(o)})
       if (newTracks.length <= 0) return;
 
-      maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
+      maxTime = maxFrame / fps
+      // maxTime = Math.max(maxTime, ...newTracks.map(t => t.times[t.times.length - 1]))
       tracks.push(...newTracks)
     })
     if (!name) name = `vartiste-${shortid.generate()}`

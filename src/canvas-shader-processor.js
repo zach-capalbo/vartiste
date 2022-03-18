@@ -247,6 +247,19 @@ export class CanvasShaderProcessor {
       0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.globalCompositeOperation = oldOp
   }
+  apply(inputCanvas, outputCanvas = undefined)
+  {
+    if (!outputCanvas) outputCanvas = inputCanvas
+    this.setInputCanvas(inputCanvas)
+    this.update()
+    let ctx = outputCanvas.getContext('2d')
+    ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height)
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.drawImage(this.canvas,
+                  0, 0, this.canvas.width, this.canvas.height,
+                  0, 0, outputCanvas.width, outputCanvas.height)
+    return outputCanvas
+  }
 }
 
 const FORWARD = new THREE.Vector3(0, 0, 1)

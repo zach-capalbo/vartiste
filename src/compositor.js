@@ -824,7 +824,11 @@ AFRAME.registerComponent('compositor', {
           material.needsUpdate = true
         }
 
-        if (material[layer.mode].flipY != this.data.flipY) {
+        if (layer.mode === 'matcap')
+        {
+          material[layer.mode].flipY = !this.data.flipY
+        }
+        else if (material[layer.mode].flipY != this.data.flipY) {
           material[layer.mode].flipY = this.data.flipY
         }
 
