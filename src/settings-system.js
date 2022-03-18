@@ -197,7 +197,6 @@ Util.registerComponentSystem('settings-system', {
       compositionView.emit('updatemesh')
     }
 
-    let json = JSON.stringify(saveObj)
     if (this.data.compressProject)
     {
       console.time('compressProject')
@@ -209,11 +208,13 @@ Util.registerComponentSystem('settings-system', {
             r(message.data)
           }
           worker.onerror = e;
-          worker.postMessage(json)
+          worker.postMessage(JSON.stringify(saveObj))
         })
       }
       finally
       {
+        worker.onmessage = null
+        worker.onerror = null
         worker.terminate();
       }
       console.timeEnd('compressProject')
@@ -221,6 +222,7 @@ Util.registerComponentSystem('settings-system', {
     }
     else
     {
+      let json = JSON.stringify(saveObj)
       let encoded = encodeURIComponent(json)
       this.download("data:application/x-binary," + encoded, `${this.projectName}-${this.formatFileDate()}.vartiste`, "Project File")
     }
