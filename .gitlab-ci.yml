@@ -9,7 +9,7 @@ build:
   stage: build
   retry: 2
   script:
-    - npm install
+    - npm install || cat /root/.npm/_logs/*
     - node build-build-info.js
     - npm run-script build
     - echo $CI_JOB_ID > dist/CI_JOB_ID
