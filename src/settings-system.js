@@ -208,7 +208,7 @@ Util.registerComponentSystem('settings-system', {
             r(message.data)
           }
           worker.onerror = e;
-          worker.postMessage(JSON.stringify(saveObj))
+          worker.postMessage(saveObj)
         })
       }
       finally

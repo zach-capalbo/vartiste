@@ -1,5 +1,5 @@
 import Pako from 'pako'
 
 onmessage = function (event) {
-  postMessage(Pako.deflate(event.data));
+  postMessage(Pako.deflate(JSON.stringify(event.data)));
 };

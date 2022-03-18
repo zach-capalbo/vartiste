@@ -842,8 +842,8 @@ class ProjectFile {
     let settings = compositor.el.sceneEl.systems['settings-system']
 
     return {
-      layers,
-      allNodes,
+      layers: layers.map(l => JSON.parse(JSON.stringify(l))),
+      allNodes: allNodes.map(n => n.toJSON()),
       useNodes: compositor.data.useNodes,
       width: compositor.width,
       height: compositor.height,
