@@ -218,7 +218,7 @@ Util.registerComponentSystem('settings-system', {
         worker.terminate();
       }
       console.timeEnd('compressProject')
-      this.download("data:application/x-binary;base64," + base64ArrayBuffer(data), `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
+      this.download(data, `${this.projectName}-${this.formatFileDate()}.vartistez`, "Project File")
     }
     else
     {
