@@ -135,7 +135,10 @@ class MaterialTransformations {
       console.warn("Metalness and roughness are not same dimensions", metalness, roughness)
     }
 
-    let csp = new CanvasShaderProcessor({source: require('./shaders/combine-metal-roughness.glsl')})
+    let csp = this.csp;
+    if (!csp) {
+      csp = this.csp = new CanvasShaderProcessor({source: require('./shaders/combine-metal-roughness.glsl')})
+    }
     csp.setInputCanvas(metalness)
     csp.setCanvasAttribute('u_roughness', roughness)
     csp.update()
