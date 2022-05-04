@@ -1760,3 +1760,11 @@ AFRAME.registerComponent('reparent-tool', {
     }
   }
 })
+
+AFRAME.registerComponent('knife-pencil-tool', {
+  events: {
+    startdrawing: function(e) {
+      
+    }
+  }
+})
