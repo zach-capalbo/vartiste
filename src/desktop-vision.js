@@ -6,24 +6,35 @@ Util.registerComponentSystem('desktop-vision', {
     schema: {
     },
     init() {
-        /*
-            Load the Desktop Vision script asynchronously on init.
-            The sdk is then loaded immediately to manage the oauth flow
-            and automatically close Desktop Vision oauth redirect popup windows.
-        */
+        // Load the Desktop Vision script asynchronously on init if the
+        // desktop.vision oath parameters are specified.
+        // The sdk is then loaded immediately to manage the oauth flow
+        // and automatically close Desktop Vision oauth redirect popup windows.
+        let params = new URLSearchParams(document.location.search)
+        let token = params.get("oauth")
+
+        if (token === 'desktopvision')
+        {
+          console.log("Desktop vision authentication token detected. Auto loading desktop.vision")
+          this.addScript()
+        }
+
+    },
+    addScript() {
+      return new Promise((r, e) => {
         const script = document.createElement('script');
         script.src = "https://js.desktop.vision/three.min.js";
-        script.onload = this.loadDesktopVision
-        document.head.appendChild(script);
-    },
-    loadDesktopVision() {
-        try {
-            window.DesktopVision.loadSDK(THREE, XRControllerModelFactory, XRHandModelFactory);
-        } catch (e) {
-            console.log(e)
+        script.onload = () => {
+          window.DesktopVision.loadSDK(THREE, XRControllerModelFactory, XRHandModelFactory);
+          r()
         }
+        document.head.appendChild(script);
+      })
+
+      this.addScript = function() {};
     },
     async connectToDesktopVision() {
+        await this.addScript()
         this.removeComputer();
         const scope = encodeURIComponent("connect,list");
         const clientID = "wG99zpg7aA2mwwmm8XHV"
@@ -55,6 +66,7 @@ Util.registerComponentSystem('desktop-vision', {
     },
 
     async createComputer(roomOptions) {
+        await this.addScript()
         const { ComputerConnection, Computer } = window.DesktopVision.loadSDK(THREE, XRControllerModelFactory, XRHandModelFactory);
         const sceneContainer = document.querySelector('a-scene')
         const parent = document.querySelector('#camera-offsetter').object3D
