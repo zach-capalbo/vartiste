@@ -329,6 +329,12 @@ Likewise, by using a Receiver node you are connecting to whoever is currently
 broadcasting to that name. Names are not secured, checked, or in any other way
 managed by VARTISTE.**
 
+[Desktop Vision](https://desktop.vision/) functionality is subject to Desktop
+Vision's [privacy policy](https://desktop.vision/privacy/) and [Terms of
+Use](https://desktop.vision/terms/). Note that no Desktop Vision functionality
+is incorporated into VARTISTE until one of the Desktop Vision functionality
+buttons is pressed.
+
 ## About
 
 This is a spare-time project developed by [Zach Capalbo](https://zachcapalbo.com).
