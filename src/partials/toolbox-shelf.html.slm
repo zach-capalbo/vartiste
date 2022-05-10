@@ -22,6 +22,9 @@ a-entity.grab-root toolbox-shelf="" shelf="name: Experimental Functionality; clo
       a-entity icon-button="#asset-account-voice" popup-button="popup: kromophone-shelf;  deferred: true; scale: 0.15 0.15 0.15" tooltip="Kromophone color sonification"
       a-entity icon-button="#asset-rotate-orbit" tooltip="Start Physics" system-click-action="system: art-physics; action: startArtPhysics"
 
-      
+    a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true"
+      a-entity icon-button="#asset-dv-icon" tooltip="Connect to Desktop Vision" system-click-action="system: desktop-vision; action: connectToDesktopVision"
+      a-entity icon-button="#asset-close-circle-outline" system-click-action="system: desktop-vision; action: removeComputer" tooltip="Remove Desktop Vision Computer"
+
     a-entity position="-1.5 1.1 0" icon-row="mergeButtons: true" _quick-access-row=""
   a-entity position="0 -1.4 0" text="value: *Experimental Tools*; width: 3; wrapCount: 40"
