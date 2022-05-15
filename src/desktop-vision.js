@@ -6,39 +6,34 @@ Util.registerComponentSystem('desktop-vision', {
     schema: {
     },
     init() {
-        // Load the Desktop Vision script asynchronously on init if the
-        // desktop.vision oath parameters are specified.
-        // The sdk is then loaded immediately to manage the oauth flow
-        // and automatically close Desktop Vision oauth redirect popup windows.
+        this.clientID = "wG99zpg7aA2mwwmm8XHV"
+
         let params = new URLSearchParams(document.location.search)
         let token = params.get("oauth")
 
-        if (token === 'desktopvision')
-        {
-          console.log("Desktop vision authentication token detected. Auto loading desktop.vision")
-          this.addScript()
+        if (token === 'desktopvision') {
+            // Load the Desktop Vision script asynchronously on init if the
+            // desktop.vision oath parameters are specified.
+            // The sdk is then loaded immediately to manage the oauth flow
+            // and automatically close Desktop Vision oauth redirect popup windows.
+            console.log("Desktop vision authentication token detected. Auto loading desktop.vision")
+            this.addScript()
         }
-
     },
     addScript() {
-      return new Promise((r, e) => {
-        const script = document.createElement('script');
-        script.src = "https://js.desktop.vision/three.min.js";
-        script.onload = () => {
-          window.DesktopVision.loadSDK(THREE, XRControllerModelFactory, XRHandModelFactory);
-          r()
-        }
-        document.head.appendChild(script);
-      })
-
-      this.addScript = function() {};
+        return new Promise((resolve, e) => {
+            const script = document.createElement('script');
+            script.src = "https://js.desktop.vision/three.min.js";
+            script.onload = () => {
+                window.DesktopVision.loadSDK(THREE, XRControllerModelFactory, XRHandModelFactory, { clientId: this.clientID, clientKey: "key" });
+                resolve()
+            }
+            document.head.appendChild(script);
+        })
     },
     async connectToDesktopVision() {
         await this.addScript()
         this.removeComputer();
-        const scope = encodeURIComponent("connect,list");
-        const clientID = "wG99zpg7aA2mwwmm8XHV"
-        const redirectURL = new URL(window.location.href);
         const scene = this.el.sceneEl
         const renderer = scene.renderer
 
@@ -47,9 +42,12 @@ Util.registerComponentSystem('desktop-vision', {
             await session.end();
         }
 
+        const scope = encodeURIComponent("connect,list");
+        const redirectURL = new URL(window.location.href);
         redirectURL.searchParams.set("oauth", "desktopvision");
-        const redirectUri = encodeURIComponent(redirectURL);
-        window.open(`https://desktop.vision/login/?response_type=code&client_id=${clientID}&scope=${scope}&redirect_uri=${redirectUri}&redirect_type=popup&selectComputer=true`);
+
+        const desktopVisionUrl = `https://desktop.vision/login/?redirect_type=popup&response_type=code&client_id=${this.clientID}&scope=${scope}&redirect_uri=${redirectURL}&selectComputer=${true}`
+        window.open(desktopVisionUrl);
 
         let roomOptionsInterval = setInterval(() => {
             try {
