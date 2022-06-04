@@ -630,6 +630,8 @@ AFRAME.registerComponent('icon-row', {
     // If set to true, this icon-row will automatically have it's y position
     // adjusted based on the number of other icon-rows in its parent element.
     autoPosition: {default: true},
+
+    labeled: {default: false},
   },
   events: {
     object3dset: function(e) {
@@ -648,7 +650,18 @@ AFRAME.registerComponent('icon-row', {
 
     this.system = this.el.sceneEl.systems['icon-button']
 
+    if (this.data.labeled) {
+      this.data.mergeButtons = false
+      Util.whenLoaded(this.el, () => this.label())
+    }
     if (this.data.mergeButtons) Util.whenLoaded(this.el, () => this.merge())
+  },
+  update(oldData) {
+    if (this.data.labeled && this.data.mergeButtons)
+    {
+      this.data.mergeButtons = false
+      return
+    }
   },
   async merge() {
     if (!this.data.mergeButtons) return;
@@ -752,6 +765,15 @@ AFRAME.registerComponent('icon-row', {
   setColor(component, color) {
     this.mesh.setColorAt(this.componentToButton.get(component), color)
     this.mesh.instanceColor.needsUpdate = true
+  },
+  label() {
+    for (let el of this.el.getChildEntities())
+    {
+      if (el.hasAttribute('icon-button') && el.hasAttribute('tooltip'))
+      {
+        el.setAttribute('labeled-icon-button', '')
+      }
+    }
   }
 })
 
@@ -852,5 +874,31 @@ AFRAME.registerComponent('icon-row-text', {
   },
   update() {
     this.el.setAttribute('text', 'value', this.data)
+  }
+})
+
+AFRAME.registerComponent('labeled-icon-button', {
+  schema: {defualt: "", type: 'string'},
+  init() {
+    this.system = this.el.sceneEl.systems['icon-button']
+    Util.whenComponentInitialized(this.el, 'icon-button', () => {
+      let mesh = this.el.getObject3D('mesh')
+      let scale = 0.8
+      let padding = 0.05
+      mesh.scale.set(scale, scale, scale)
+      mesh.position.y += (1.0 - scale) / 2
+
+      let label = document.createElement('a-entity')
+      this.el.append(label)
+      let tooltipText = this.el.getAttribute('tooltip')
+      let maxLength = 17
+      if (tooltipText.length > maxLength)
+      {
+        tooltipText = tooltipText.slice(0,maxLength - 3) + "..."
+      }
+
+      label.setAttribute('text', `width: ${this.system.width - padding}; align: center; wrapCount: ${Math.min(tooltipText.length, 8)}; value: ${tooltipText}`)
+      label.setAttribute('position', `0 ${-(1.0 - scale) / 2 - padding} 0`)
+    })
   }
 })

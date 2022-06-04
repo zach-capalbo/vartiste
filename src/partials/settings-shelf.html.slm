@@ -1,4 +1,4 @@
-a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false"
+a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false; labeled: true"
   a-entity click-action="save" icon-button="#asset-floppy" tooltip="Download project"
   a-entity click-action="storeToBrowser" icon-button="#asset-save-to-browser" tooltip="Save Project to Browser"
   a-entity#settings-shelf-load-button icon-button="#asset-folder-open-outline" popup-button="popup: load-shelf; deferred: true; tooltip: Load;"
