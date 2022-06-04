@@ -1,4 +1,4 @@
-a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false"
+a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false; labeled: true"
   a-entity click-action="save" icon-button="#asset-floppy" tooltip="Download project"
   a-entity click-action="storeToBrowser" icon-button="#asset-save-to-browser" tooltip="Save Project to Browser"
   a-entity#settings-shelf-load-button icon-button="#asset-folder-open-outline" popup-button="popup: load-shelf; deferred: true; tooltip: Load;"
@@ -10,7 +10,7 @@ a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false
   a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Scene Inspector" system-click-action="system: scene-organizer; action: launchSceneNode"
   a-entity icon-button="#asset-translate" tooltip="Language" popup-button="popup: language-shelf; deferred: true"
 
-a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false"
+a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false; labeled: true"
   a-entity icon-button="#asset-dice-2" tooltip="Low Quality" click-action="lowQuality" toggle-button=""
   a-entity icon-button="#asset-dice-4" tooltip="Medium Quality" click-action="mediumQuality" toggle-button=""
   a-entity icon-button="#asset-dice-6" tooltip="Full Quality" click-action="fullQuality" toggle-button=""
@@ -31,7 +31,7 @@ a-entity position="0.15 -0.6 0" icon-row="mergeButtons: true; autoPosition: fals
   a-entity text="value: x; width: 4; align: center" position="-0.829 0 0"
   a-entity.height edit-field="tooltip: Edit Height" text="value: 512; width: 0.56; wrapCount: 5.23" position="-0.556 0 0"
 
-a-entity position="-1.6 -1.2 0" icon-row="mergeButtons: true; autoPosition: false"
+a-entity position="-1.6 -1.2 0" icon-row="mergeButtons: true; autoPosition: false; labeled: true"
   a-entity click-action="newComposition" icon-button="#asset-file-outline" tooltip="New Composition"
   a-entity click-action="resample" icon-button="#asset-resize"  tooltip="Resize"
   a-entity click-action="resizeCanvas" icon-button="#asset-arrow-all" tooltip="Resize Canvas Only"

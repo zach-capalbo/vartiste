@@ -1,5 +1,6 @@
 import {Sfx} from './sfx.js'
 import {Util} from './util.js'
+import {Pool} from './pool.js'
 
 const DEFAULT_BUTTON_STYLE_SCHEMA = {
   color: {type: 'color', default: "#abe"},
@@ -178,6 +179,8 @@ AFRAME.registerSystem('icon-button', {
   init() {
     this.width = 0.4
     this.depth = 0.05
+    this.labeledScale = 0.8
+    this.labeledPadding = 0.05
     // this.geometry = new THREE.BufferGeometry().fromGeometry(RoundEdgedBox(this.width, this.width, this.depth - 0.005))
 
     if (Util.isLowPower())
@@ -630,6 +633,8 @@ AFRAME.registerComponent('icon-row', {
     // If set to true, this icon-row will automatically have it's y position
     // adjusted based on the number of other icon-rows in its parent element.
     autoPosition: {default: true},
+
+    labeled: {default: false},
   },
   events: {
     object3dset: function(e) {
@@ -648,6 +653,9 @@ AFRAME.registerComponent('icon-row', {
 
     this.system = this.el.sceneEl.systems['icon-button']
 
+    Pool.init(this, {useSystem: true})
+
+    if (this.data.labeled) Util.whenLoaded(this.el, () => this.label())
     if (this.data.mergeButtons) Util.whenLoaded(this.el, () => this.merge())
   },
   async merge() {
@@ -692,11 +700,30 @@ AFRAME.registerComponent('icon-row', {
     let spacing = 32 / this.system.width * (this.system.width + 0.05)
     canvas.width = spacing * buttons.length
 
+    let labeledScale = this.system.labeledScale
+
+    if (this.data.labeled)
+    {
+      var labelMatrix = this.pool('labelMatrix', THREE.Matrix4)
+      var labelMoveMatrix = this.pool('labelMoveMatrix', THREE.Matrix4)
+      labelMatrix.makeScale(labeledScale, labeledScale, labeledScale)
+      labelMatrix.setPosition(0, (1.0 - labeledScale) / 2.0, 0)
+    }
+
     for (let buttonEl of buttons)
     {
       let component = buttonEl.components['icon-button']
       buttonEl.object3D.updateMatrix()
-      mesh.setMatrixAt(i, buttonEl.object3D.matrix)
+      if (this.data.labeled)
+      {
+        labelMoveMatrix.copy(buttonEl.object3D.matrix)
+        labelMoveMatrix.multiply(labelMatrix)
+        mesh.setMatrixAt(i, labelMoveMatrix)
+      }
+      else
+      {
+        mesh.setMatrixAt(i, buttonEl.object3D.matrix)
+      }
       mesh.setColorAt(i, component.bg.material.color)
       if (component.bg.parent) component.bg.parent.remove(component.bg)
       component.instanceManager = this
@@ -705,7 +732,14 @@ AFRAME.registerComponent('icon-row', {
       let fg = component.fg
       if (fg.material.map && canUseCanvas)
       {
-        ctx.drawImage(fg.material.map.image, i * spacing + spacing - 32, 0, 32, 32)
+        if (this.data.labeled)
+        {
+          ctx.drawImage(fg.material.map.image, i * spacing + spacing - 32 + (1.0 - labeledScale) / 2 * 32, (1.0 - labeledScale) / 2 * 32, 32 * labeledScale, 32 * labeledScale)
+        }
+        else
+        {
+          ctx.drawImage(fg.material.map.image, i * spacing + spacing - 32, 0, 32, 32)
+        }
         usedCanvas = true
 
         if (!fg.material.cloned)
@@ -738,7 +772,7 @@ AFRAME.registerComponent('icon-row', {
         })
       }
       fg.setAttribute('geometry', `width: ${(this.system.width + 0.05) * buttons.length}; height: ${this.system.width}`)
-      fg.setAttribute('position', `${(this.system.width + 0.05) * (buttons.length - 1) / 2 - 0.025} 0 ${this.system.depth + 0.001}`)
+      fg.setAttribute('position', `${(this.system.width + 0.05) * (buttons.length - 1) / 2 - 0.025} ${this.data.labeled ? (1.0 - labeledScale) / 2.0 : 0} ${this.system.depth + 0.001}`)
       Util.whenLoaded(fg, () => {
         fg.components.material.material.toneMapped = false
         fg.components.material.material.needsUpdate = true
@@ -752,6 +786,15 @@ AFRAME.registerComponent('icon-row', {
   setColor(component, color) {
     this.mesh.setColorAt(this.componentToButton.get(component), color)
     this.mesh.instanceColor.needsUpdate = true
+  },
+  label() {
+    for (let el of this.el.getChildEntities())
+    {
+      if (el.hasAttribute('icon-button') && el.hasAttribute('tooltip'))
+      {
+        el.setAttribute('labeled-icon-button', '')
+      }
+    }
   }
 })
 
@@ -852,5 +895,31 @@ AFRAME.registerComponent('icon-row-text', {
   },
   update() {
     this.el.setAttribute('text', 'value', this.data)
+  }
+})
+
+AFRAME.registerComponent('labeled-icon-button', {
+  schema: {defualt: "", type: 'string'},
+  init() {
+    this.system = this.el.sceneEl.systems['icon-button']
+    Util.whenComponentInitialized(this.el, 'icon-button', () => {
+      let mesh = this.el.getObject3D('mesh')
+      let scale = this.system.labeledScale
+      let padding = this.system.labeledPadding
+      mesh.scale.set(scale, scale, scale)
+      mesh.position.y += (1.0 - scale) / 2
+
+      let label = document.createElement('a-entity')
+      this.el.append(label)
+      let tooltipText = this.el.getAttribute('tooltip')
+      let maxLength = 17
+      if (tooltipText.length > maxLength)
+      {
+        tooltipText = tooltipText.slice(0,maxLength - 3) + "..."
+      }
+
+      label.setAttribute('text', `width: ${this.system.width - padding}; align: center; wrapCount: ${Math.min(tooltipText.length, 8)}; value: ${tooltipText}`)
+      label.setAttribute('position', `0 ${-(1.0 - scale) / 2 - padding} 0`)
+    })
   }
 })
