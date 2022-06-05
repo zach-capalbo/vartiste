@@ -7,7 +7,32 @@ import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 import {PARENTABLE_TARGETS} from './decorators.js'
 
+let SENSITIVITY_FUNCTIONS = {
+  constant: (ratio) => 1.0,
+  linear: (ratio) => THREE.Math.lerp(1.0, 0.1, ratio),
+  exponential: (ratio) => Math.exp(1.0 - ratio) / Math.exp(1.0),
+  log: (ratio) => Math.log(2.0 - ratio) / Math.log(2.0),
+  quad: (ratio) => (1.0 - ratio) * (1.0 - ratio),
+  sin: (ratio) => Math.cos(Math.PI / 2.0 * ratio),
+  wave: (ratio) => Math.cos(20.0 * Math.PI * ratio)
+}
+
+Util.registerComponentSystem('pencil-tool-sensitivity', {
+  schema: {
+    scaleFunction: {oneOf: Object.keys(SENSITIVITY_FUNCTIONS), default: "linear"},
+    opacityFunction: {oneOf: Object.keys(SENSITIVITY_FUNCTIONS), default: "linear"},
+  },
+  update(oldData) {
+    console.log("Setting sensitivity functions", this.data.scaleFunction, this.data.opacityFunction)
+    this.scaleFunction = SENSITIVITY_FUNCTIONS[this.data.scaleFunction]
+    this.opacityFunction = SENSITIVITY_FUNCTIONS[this.data.opacityFunction]
+  },
+})
+
 AFRAME.registerSystem('pencil-tool', {
+  init() {
+    this.sensitivity = this.el.sceneEl.systems['pencil-tool-sensitivity']
+  },
   clonePencil() {
     if (!this.lastGrabbed) return
     this.lastGrabbed.createLockedClone()
@@ -406,7 +431,7 @@ AFRAME.registerComponent('pencil-tool', {
       let ratio = intersection.distance / far
       if (this.data.scaleTip)
       {
-        handDrawTool.distanceScale = THREE.Math.lerp(1.0, 0.1, ratio)
+        handDrawTool.distanceScale = this.system.sensitivity.scaleFunction(ratio)
       }
       else
       {
@@ -415,7 +440,8 @@ AFRAME.registerComponent('pencil-tool', {
 
       if (this.data.pressureTip)
       {
-        handDrawTool.pressure = THREE.Math.lerp(1.0, 0.1, ratio)
+        // handDrawTool.pressure = THREE.Math.lerp(1.0, 0.1, ratio)
+        handDrawTool.pressure = this.system.sensitivity.opacityFunction(ratio)
       }
       else
       {
@@ -1764,7 +1790,7 @@ AFRAME.registerComponent('reparent-tool', {
 AFRAME.registerComponent('knife-pencil-tool', {
   events: {
     startdrawing: function(e) {
-      
+
     }
   }
 })
