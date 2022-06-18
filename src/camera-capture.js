@@ -6,6 +6,12 @@ import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 // import { RayTracingRenderer } from 'ray-tracing-renderer'
 
+import {
+	PathTracingSceneGenerator,
+	PathTracingRenderer,
+	PhysicalPathTracingMaterial,
+} from './framework/three-gpu-pathtracer.js'
+
 AFRAME.registerSystem('camera-layers', {
   init() {
     this.CAMERA_LAYERS = CAMERA_LAYERS;
