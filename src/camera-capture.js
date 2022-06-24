@@ -283,6 +283,8 @@ AFRAME.registerSystem('camera-capture', {
 		for (let i = 0; i < 16; ++i)
 		{
 			ptRenderer.update();
+			console.log("Update", i)
+			await Util.delay(10)
 		}
 		//
 		// renderer.render(this.el.sceneEl.object3D, camera);
