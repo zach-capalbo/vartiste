@@ -19,7 +19,7 @@ async function generateThumbnail(path, output)
 
   let page = await browser.newPage()
   await page.goto("https://vartiste.xyz", { waitUntil: 'networkidle2' })
-  await page.waitForFunction(() => window.passedLoadTest)
+  await page.waitForFunction(() => window.passedLoadTest, {timeout: 5 * 60 * 1000})
 
   let [fileChooser] = await Promise.all([
     page.waitForFileChooser(),
@@ -59,6 +59,12 @@ async function generateDirectoryThumbnails(inputDir)
       continue
     }
 
+    if (ls(`${file.path}/desktop.ini`).length > 0)
+    {
+      console.log("Skipping previously generated", file.path)
+      continue
+    }
+
     console.log("Generating", file.full, `${file.path}/thumbnail.png`)
     await generateThumbnail(file.full, `${file.path}/thumbnail.png`)
 
@@ -69,7 +75,11 @@ Vid=
 FolderType=Generic
 Logo=${file.path.toString().replace(/\//g, path.sep)}\\thumbnail.png
 `
-    fs.writeFileSync(`${file.path}/desktop.ini`, desktopIni)
+    try {
+      fs.writeFileSync(`${file.path}/desktop.ini`, desktopIni)
+    } catch (e) {
+      console.error("Could not set thumbnail for folder", file.path, e)
+    }
   }
 }
 
