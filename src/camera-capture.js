@@ -6,6 +6,15 @@ import CubemapToEquirectangular from './framework/CubemapToEquirectangular.js'
 import {CAMERA_LAYERS} from './layer-modes.js'
 // import { RayTracingRenderer } from 'ray-tracing-renderer'
 
+import {
+	PathTracingSceneGenerator,
+	PathTracingRenderer,
+	PhysicalPathTracingMaterial,
+} from './framework/three-gpu-pathtracer.js'
+
+import {Pass as Pass$1} from './framework/three-pass.js';
+const FullScreenQuad = Pass$1.FullScreenQuad
+
 AFRAME.registerSystem('camera-layers', {
   init() {
     this.CAMERA_LAYERS = CAMERA_LAYERS;
@@ -183,11 +192,15 @@ AFRAME.registerSystem('camera-capture', {
     newTarget.dispose()
     return data
   },
-  raytraceToCanvas(camera, canvas) {
+  async raytraceToCanvas(camera, canvas) {
     if (!canvas) {
       canvas = this.getTempCanvas()
       canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     }
+
+		if (!camera) {
+			camera = this.el.sceneEl.camera
+		}
 
     let renderer = this.el.sceneEl.renderer
     let wasXREnabled = renderer.xr.enabled
@@ -206,86 +219,98 @@ AFRAME.registerSystem('camera-capture', {
 
     let ctx = targetTempCanvas.getContext('2d')
 
-    // renderer.render(this.el.sceneEl.object3D, camera);
-    // let tracer = new OrayTracingRenderer.Renderer(renderer, new THREE.Vector2(targetTempCanvas.width, targetTempCanvas.height))
-    // tracer.resetFrame()
-    //
+		const ptMaterial = new PhysicalPathTracingMaterial();
+		const ptRenderer = new PathTracingRenderer( renderer );
+		ptRenderer.setSize( window.innerWidth, window.innerHeight );
+		ptRenderer.camera = camera;
+		ptRenderer.material = ptMaterial;
 
+		// if rendering transparent background
+		ptRenderer.alpha = true;
 
-    let rcanvas = document.createElement('canvas')
-    rcanvas.width = 640
-    rcanvas.height = 480
-    let tracer = new RayTracingRenderer({canvas: rcanvas})
-    tracer.setSize(640, 480)
-    tracer.sync(this.el.sceneEl.time)
-    tracer.renderWhenOffFocus = true
-    tracer.maxHardwareUsage = true
-    tracer.needsUpdate = true
-    tracer.onSampleRendered = (sample, t) => {
-      console.log("Sample Rendered!!", sample, t)
-      Util.debugCanvas(tracer.domElement)
-    };
-    try {
-        let interval;
-        interval = window.setInterval(() => {
-          let originalMaterials = new Map()
-          this.el.sceneEl.object3D.traverse(o => {
-            if (o.material && o.material.type !== 'MeshStandardMaterial') {
-              o.visible = false
-              originalMaterials.set(o, o.material)
-              // o.material = new OrayTracingRenderer.Material({baseMaterial: o.material})
-              o.material = new THREE.MeshStandardMaterial()
-            }
-          })
+		// init quad for rendering to the canvas
+		const fsQuad = new FullScreenQuad( new THREE.MeshBasicMaterial( {
+			map: ptRenderer.target.texture,
 
-          try {
-            let w = console.warn
-            console.warn = function() {};
-            tracer.render(this.el.sceneEl.object3D, camera)
-            console.warn = w;
-        } finally {
+			// if rendering transparent background
+			blending: THREE.CustomBlending,
+		} ) );
 
-          for (let [o, m] of originalMaterials.entries())
-          {
-            o.visible = true
-            o.material = m
-          }
+		let scene = this.el.sceneEl.object3D
 
-          if (tracer.getTotalSamplesRendered() > 128)
-          {
-            window.clearInterval(interval)
-            Util.debugCanvas(tracer.domElement)
-          }
-        }
+		// initialize the scene and update the material properties with the bvh, materials, etc
+		const generator = new PathTracingSceneGenerator();
+		const { bvh, textures, materials, lights } = generator.generate( scene );
 
-      }, 10)
-        window.tracer = tracer
-    } catch (e) {
-      console.error(e)
-      return
-    }
+		// let geometry = Compositor.mesh.geometry
+		let geometry = bvh.geometry
 
+		// update bvh and geometry attribute textures
+		ptMaterial.bvh.updateFrom( bvh );
+		ptMaterial.normalAttribute.updateFrom( geometry.attributes.normal );
+		ptMaterial.tangentAttribute.updateFrom( geometry.attributes.tangent );
+		ptMaterial.uvAttribute.updateFrom( geometry.attributes.uv );
 
-    ctx.drawImage(tracer.domElement, 0, 0)
+		window.ptMaterial = ptMaterial
 
+		// update materials and texture arrays
+		ptMaterial.materialIndexAttribute.updateFrom( geometry.attributes.materialIndex );
+		ptMaterial.textures.setTextures( renderer, 2048, 2048, textures );
+		ptMaterial.materials.updateFrom( materials, textures );
+
+		// update the lights
+		ptMaterial.lights.updateFrom( lights );
+		ptMaterial.lightCount = lights.length;
+
+		// set the environment map
+		const texture = this.el.sceneEl.components['environment-manager'].hdriTexture
+		ptRenderer.material.envMapInfo.updateFrom( texture );
+
+		function animate() {
+			// if the camera position changes call "ptRenderer.reset()"
+
+			// update the camera and render one sample
+			ptRenderer.update();
+
+			// if using alpha = true then the target texture will change every frame
+			// so we must retrieve it before render.
+			fsQuad.material.map = ptRenderer.target.texture;
+
+			// copy the current state of the path tracer to canvas to display
+			fsQuad.render( renderer );
+		}
+
+		for (let i = 0; i < 16; ++i)
+		{
+			ptRenderer.update();
+			console.log("Update", i)
+			await Util.delay(10)
+		}
+		//
+		// renderer.render(this.el.sceneEl.object3D, camera);
+		animate()
+
+		await Util.delay(1000)
+
+    // ctx.drawImage(tracer.domElement, 0, 0)
+		//
     let data = ctx.getImageData(0, 0, targetTempCanvas.width, targetTempCanvas.height)
-
-    renderer.readRenderTargetPixels(newTarget, 0, 0, targetTempCanvas.width, targetTempCanvas.height, data.data)
-
+    renderer.readRenderTargetPixels(ptRenderer.target, 0, 0, targetTempCanvas.width, targetTempCanvas.height, data.data)
     ctx.putImageData(data, 0, 0)
-
+		//
     let destCtx = canvas.getContext('2d')
-
-    destCtx.translate(0, canvas.height)
-    destCtx.scale(1, -1)
+    // destCtx.translate(0, canvas.height)
+    // destCtx.scale(1, -1)
     destCtx.drawImage(targetTempCanvas, 0, 0, canvas.width, canvas.height)
-    destCtx.scale(1, -1)
-    destCtx.translate(0, -canvas.height)
+    // destCtx.scale(1, -1)
+    // destCtx.translate(0, -canvas.height)
 
     renderer.xr.enabled = wasXREnabled
 
     renderer.setRenderTarget(oldTarget)
     newTarget.dispose()
+
+		if (canvas.touch) canvas.touch()
     return canvas
   },
   capturePanorama() {

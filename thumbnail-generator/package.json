@@ -1,0 +1,15 @@
+{
+  "name": "vartiste-thumbnail-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "thumbnail-generator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ls": "^0.2.1",
+    "puppeteer": "^15.0.0"
+  }
+}

@@ -1424,7 +1424,7 @@ AFRAME.registerComponent('threed-line-tool', {
         }
       }
 
-      let scale = (this.system.data.usePressure ? e.detail.pressure : 1.0) * this.calcScale()
+      let scale = (this.system.data.usePressure ? this.el.sceneEl.systems['pencil-tool-sensitivity'].scaleFunction(1.0 - e.detail.pressure) : 1.0) * this.calcScale()
 
       // TODO
       if (this.el.hasAttribute('manipulator-weight')) {
