@@ -21,7 +21,7 @@ const hostInfo = process.env["HTTPS"] === "true" ?
   port: 7979,
 } : {
   contentBase: './dist',
-  disableHostCheck: true,  
+  disableHostCheck: true,
 };
 
 let config = {
@@ -64,6 +64,7 @@ let config = {
       },
       {
         test: /(\@ffmpeg|xatlas-web).*\.wasm/,
+        exclude: /flemist/,
         type: 'javascript/auto',
         use: [{
           loader: 'file-loader',
@@ -76,6 +77,7 @@ let config = {
       {
         test: /\@ffmpeg.*\.worker\.js$/,
         type: 'javascript/auto',
+        exclude: /flemist/,
         use: [{
           loader: 'file-loader',
           options: {
@@ -87,6 +89,7 @@ let config = {
       {
         test: /wasm.*\.wasm/,
         type: 'javascript/auto',
+        exclude: /flemist/,
         use: [{
           loader: 'file-loader',
           options: {
@@ -96,8 +99,21 @@ let config = {
         }]
       },
       {
+        test: /wasm.*ffmpeg-core\.wasm/,
+        type: 'javascript/auto',
+        exclude: /flemist/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: '[name].[ext]'
+          }
+        }]
+      },
+      {
         test: /wasm.*\.js/,
         type: 'javascript/auto',
+        exclude: /flemist/,
         use: [{
           loader: "script-loader",
           // options: {
@@ -141,6 +157,21 @@ let config = {
             },
           },
         ]
+      },
+      {
+        test: /ffmpeg-core.*\.js$/,
+        type: 'javascript/auto',
+        use: [
+          {
+            loader: 'raw-loader'
+          },
+          {
+          loader: 'file-loader',
+          options: {
+            esModule: false,
+            name: '[name].[ext]'
+          }
+        }]
       },
     ]
   }

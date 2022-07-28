@@ -20,6 +20,7 @@ AFRAME.registerSystem('paint-system', {
     wrapY: {type: 'bool', default: false},
 
     jitterColor: {default: false},
+    fadeColor: {default: false},
   },
 
   init() {
@@ -97,14 +98,23 @@ AFRAME.registerSystem('paint-system', {
 
     this.jitterColor.copy(this.color3)
     this.jitterColor.r = THREE.Math.clamp(this.jitterColor.r + (Math.random() - 0.5) * jitterAmmount, 0, 1)
-    this.jitterColor.g += THREE.Math.clamp(this.jitterColor.g + (Math.random() - 0.5) * jitterAmmount, 0, 1)
-    this.jitterColor.b += THREE.Math.clamp(this.jitterColor.b + (Math.random() - 0.5) * jitterAmmount, 0, 1)
+    this.jitterColor.g = THREE.Math.clamp(this.jitterColor.g + (Math.random() - 0.5) * jitterAmmount, 0, 1)
+    this.jitterColor.b = THREE.Math.clamp(this.jitterColor.b + (Math.random() - 0.5) * jitterAmmount, 0, 1)
     this.brush.changeColor(this.jitterColor.getStyle())
+  },
+  updateFade() {
+    if (this.brush.solo) return;
+
   },
   tick(t, dt) {
     if (this.data.jitterColor)
     {
       this.applyJittter()
+    }
+
+    if (this.data.fadeColor)
+    {
+      this.updateFade()
     }
   }
 })
