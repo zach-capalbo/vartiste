@@ -14,7 +14,8 @@ let SENSITIVITY_FUNCTIONS = {
   log: (ratio) => Math.log(2.0 - ratio) / Math.log(2.0),
   quad: (ratio) => (1.0 - ratio) * (1.0 - ratio),
   sin: (ratio) => Math.cos(Math.PI / 2.0 * ratio),
-  wave: (ratio) => Math.cos(20.0 * Math.PI * ratio)
+  wave: (ratio) => Math.cos(20.0 * Math.PI * ratio),
+  inverted: (ratio) => THREE.Math.lerp(0.1, 1, ratio),
 }
 
 Util.registerComponentSystem('pencil-tool-sensitivity', {
