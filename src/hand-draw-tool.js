@@ -87,6 +87,7 @@ AFRAME.registerComponent('hand-draw-tool', {
   startDraw() {
     //console.log("Start drawing")
     this.el.emit('startdrawing')
+    this.startDrawTime = this.el.sceneEl.time
   },
   endDraw() {
     //console.log("End drawing")

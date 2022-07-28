@@ -123,6 +123,7 @@ export class ProceduralBrush extends Brush {
       hqBlending: {default: false},
       drawEdges: {default: false},
       invertScale: {default: false},
+      opacityScale: {default: 1.0},
       minMovement: {type: 'float', default: undefined},
       mode: {default: 'source-over'},
     }, super.schema())
@@ -138,6 +139,7 @@ export class ProceduralBrush extends Brush {
     hqBlending=false,
     drawEdges=false,
     invertScale=false,
+    opacityScale=1.0,
     minMovement=undefined,
     tooltip=undefined,
     user=false,
@@ -162,6 +164,7 @@ export class ProceduralBrush extends Brush {
     this.drawEdges = drawEdges
     this.dragRotate = dragRotate
     this.invertScale = invertScale
+    this.opacityScale = opacityScale
     this.minMovement = minMovement
     this.tooltip = tooltip
     this.user = user
@@ -219,7 +222,7 @@ export class ProceduralBrush extends Brush {
   }
 
   changeOpacity(opacity) {
-    this.opacity = opacity
+    this.opacity = opacity * this.opacityScale
   }
 
   createBrush() {
