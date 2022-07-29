@@ -5,6 +5,7 @@ const { createFFmpeg, fetchFile } = require('!!@flemist/ffmpeg.wasm-st');
 
 
 require('../wasm/ffmpeg-core.js')
+require('../wasm/ffmpeg-core.worker.js')
 require('../wasm/ffmpeg-core.wasm')
 
 const ffmpeg = createFFmpeg({ log: true, corePath: 'ffmpeg-core.js' });
