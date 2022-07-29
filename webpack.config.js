@@ -113,7 +113,7 @@ let config = {
       {
         test: /wasm.*\.js/,
         type: 'javascript/auto',
-        exclude: /flemist/,
+        exclude: /flemist|ffmpeg-core/,
         use: [{
           loader: "script-loader",
           // options: {
