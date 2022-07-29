@@ -184,6 +184,7 @@ function minimizer() {
 
   return [new TerserPlugin({
   parallel: true,
+  exclude: /ffmpeg-core/,
   terserOptions: {
     toplevel: true,
     keep_classnames: /Node|Layer|Brush/
