@@ -27,7 +27,7 @@ html
         console.info("Polyfilling WebXR")
         new WebXRPolyfill
 
-    /script src="https://aframe.io/releases/1.2.0/aframe.js"
+    /script src="https://aframe.io/releases/1.3.0/aframe.js"
     script src="aframe.js"
     script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.9.0/aframe-enviropacks.js"
 

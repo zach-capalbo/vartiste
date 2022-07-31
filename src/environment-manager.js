@@ -24,7 +24,7 @@ Util.registerComponentSystem('environment-manager', {
     rendererExposure: {default: 0.724},
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
-    initialState: {default: STATE_PRESET},
+    initialState: {default: STATE_COLOR},
     toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']},
     transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']},
     alphaTest: {default: 0.01},
@@ -60,10 +60,10 @@ Util.registerComponentSystem('environment-manager', {
     Util.whenLoaded(this.el, () => {
       this.usePresetHDRI({initial: true})
 
-      if (this.data.initialState !== STATE_PRESET)
-      {
-        this.useEnviropack("tankfarm")
-      }
+      // if (this.data.initialState !== STATE_PRESET)
+      // {
+      //   this.useEnviropack("tankfarm")
+      // }
     })
   },
   update(oldData) {
@@ -261,7 +261,7 @@ Util.registerComponentSystem('environment-manager', {
     this.switchState(STATE_HDRI, !initial)
     await new Promise( (r,e) => {
   		new RGBELoader()
-  			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
+  			.setDataType( THREE.HalfFloatType ) // alt: FloatType, HalfFloatType
   			.load( new URL(require('./assets/colorful_studio_1k.hdr').toString(), window.location).toString() , ( texture, textureData ) => {
           if (!(initial && this.hasSwitched))
           {

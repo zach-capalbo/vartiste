@@ -57,7 +57,7 @@ AFRAME.registerComponent('hdri-environment', {
   loadRGBE(url) {
     return new Promise((r, e) => {
       new RGBELoader()
-  			.setDataType( THREE.UnsignedByteType ) // alt: FloatType, HalfFloatType
+  			.setDataType( THREE.HalfFloatType ) // alt: FloatType, HalfFloatType
   			.load( url , function ( texture, textureData ) {
           r({texture, textureData})
   			} );
