@@ -1,3 +1,4 @@
+if (!THREE.Math) THREE.Math = THREE.MathUtils;
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, THREE) :
 	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
