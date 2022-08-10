@@ -1,0 +1,8 @@
+a-entity shelf="name: Material Options"
+  a-entity shelf-content=""
+      - for (let prop of ['roughness', 'metalness'])
+        a-entity icon-row="mergeButtons: true"
+          a-entity position="1.5 0 0"
+            a-entity text="width: 1; wrapCount: 8; anchor: left; value: ${prop}" position="-1.7 0 0"
+            a-entity lever="gripRadius: 0.12; axis: y; valueRange: 0 1; target: a-scene; component: threed-line-system; property: ${prop}"
+            a-entity edit-field="type: float; target: a-scene; component: threed-line-system; property: ${prop}; toFixed: 3" text="width: 1; wrapCount: 8; anchor: right" position="0.8 0 0"

@@ -10,6 +10,7 @@ import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 import {MeshBVH} from './framework/three-mesh-bvh.js';
+import {Brush, Evaluator} from './framework/three-bvh-csg.js';
 
 window.simplify3d = simplify3d;
 
@@ -943,6 +944,8 @@ Util.registerComponentSystem('threed-line-system', {
     animate: {default: false},
     buildUp: {default: false},
     skeletonize: {default: false},
+    roughness: {default: 0.5},
+    metalness: {default: 0.0},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -950,6 +953,8 @@ Util.registerComponentSystem('threed-line-system', {
   },
   update(oldData) {
     if (this.data.usePaintSystem !== oldData.usePaintSystem) this.markMaterial()
+    if (this.roughness !== oldData.roughness) this.markMaterial()
+    if (this.metalness !== oldData.metalness) this.markMaterial()
   },
   markMaterial() {
     this.materialNeedsUpdate = true
@@ -1011,7 +1016,8 @@ Util.registerComponentSystem('threed-line-system', {
         color: brush.color,
         envMap: this.el.sceneEl.systems['environment-manager'].envMap,
         envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity,
-        roughness: 0.5,
+        roughness: this.data.roughness,
+        metalness: this.data.metalness
       })
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
@@ -2987,5 +2993,17 @@ AFRAME.registerComponent('threed-hull-tool', {
 			groupStart += groupCount;
 
 		};
+  }
+})
+
+AFRAME.registerComponent('csg-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate'],
+  schema: {
+    operation: {default: 'SUBTRACTION'}
+  },
+  init() {
+    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
+    let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
+    let flagB = this.flagB = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagB'})
   }
 })
