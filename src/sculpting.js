@@ -10,7 +10,7 @@ import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 import {MeshBVH} from './framework/three-mesh-bvh.js';
-import {Brush, Evaluator} from './framework/three-bvh-csg.js';
+import {Brush, Evaluator, SUBTRACTION, DIFFERENCE} from './framework/three-bvh-csg.js';
 
 window.simplify3d = simplify3d;
 
@@ -2997,13 +2997,75 @@ AFRAME.registerComponent('threed-hull-tool', {
 })
 
 AFRAME.registerComponent('csg-tool', {
-  dependencies: ['six-dof-tool', 'grab-activate'],
+  dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
   schema: {
     operation: {default: 'SUBTRACTION'}
   },
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      if (e.target === this.flagA)
+      {
+        this.elA = el
+      }
+      else
+      {
+        this.elB = el
+      }
+      console.log("CSG Selection", this.elA, this.elB)
+    },
+    endobjectconstraint: function(e) {
+      if (e.target === this.flagA)
+      {
+        this.elA = null
+      }
+      else
+      {
+        this.elB = null
+      }
+    },
+    click: function(e) {
+      this.runCSG()
+    }
+  },
   init() {
+    Pool.init(this)
     let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
+    Util.whenLoaded(flagA, () => flagA.object3D.position.x *= -1)
     let flagB = this.flagB = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagB'})
+  },
+  runCSG() {
+    if (!this.elA || !this.elB)
+    {
+      console.log("Cannot CSG without elA and elB", this.elA, this.elB)
+      return
+    }
+
+    const csgEvaluator = new Evaluator();
+    let meshA = this.elA.getObject3D('mesh')
+    let meshB = this.elB.getObject3D('mesh')
+
+    let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
+    const brush1 = new Brush(meshA.geometry, meshA.material);
+    const brush2 = new Brush(meshB.geometry, meshB.material);
+
+    originalMatrix.copy(meshA.matrixWorld)
+
+    brush1.matrixWorld.identity()
+    brush2.matrixWorld.identity()
+    Util.applyMatrix(meshA.matrixWorld, brush1)
+    Util.applyMatrix(meshB.matrixWorld, brush2)
+    brush1.matrixWorld.copy(meshA.matrixWorld)
+    brush2.matrixWorld.copy(meshB.matrixWorld)
+
+    // Util.applyMatrix(this.elA.)
+
+    csgEvaluator.useGroups = false;
+
+    const result = csgEvaluator.evaluate( brush1, brush2, SUBTRACTION, this.elA.getObject3D('mesh'));
+    originalMatrix.invert()
+    Util.applyMatrix(originalMatrix, result)
+    console.log("CSGED", brush1, brush2, result )
   }
 })

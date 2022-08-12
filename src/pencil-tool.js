@@ -108,7 +108,6 @@ AFRAME.registerSystem('pencil-tool', {
     let flag = document.createElement('a-entity')
     parentEl.append(flag)
     flag.setAttribute('decorator-flag', `resolveProxy: true; selector: ${selector}`)
-    parentEl.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     flag.setAttribute('position', '0.1 0 0')
     flag.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.3 0.16")
     parentEl.setAttribute(`cable-connector${connectorName ? "__" + connectorName : ""}`, {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
@@ -1752,6 +1751,7 @@ AFRAME.registerComponent('reparent-tool', {
   init() {
     let flag = this.flag = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {selector: PARENTABLE_TARGETS})
     flag.setAttribute('preactivate-tooltip', 'Parent Selector')
+    this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
     })

@@ -113,6 +113,7 @@ a-entity.grab-root#six-dof-shelf shelf="name: 6DoF Tool Shelf; closeable: true" 
     a-entity preactivate-tooltip="Delete Tool" delete-box-tool="" position="${miscPos()}" tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.1 0.1"
     a-entity preactivate-tooltip="Straight Edge" straight-edge-tool="" position="${miscPos()}" scale="5 5 5" tooltip-style="scale: 0.1 0.1 1.0; offset: 0 -0.47 0.1"
     a-entity preactivate-tooltip="Desk Alignment" desk-registration-tool="" position="${miscPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 0.1"
+    a-entity preactivate-tooltip="Boolean Tool" csg-tool="" position="${miscPos()}"  tooltip-style="scale: 0.3 0.3 1.0; offset: 0 -0.3 0.1"
   a-entity#constraint-flags visible="false"
     - let flagToolI = 0
     - let flagPos = (y = 0) => `${(flagToolI % 5) * 0.14 - 0.3} ${Math.floor((flagToolI++) / 5) * -0.3 + y + 0.3} 0`
