@@ -10,7 +10,7 @@ import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 import {MeshBVH} from './framework/three-mesh-bvh.js';
-import {Brush, Evaluator, SUBTRACTION, DIFFERENCE} from './framework/three-bvh-csg.js';
+import {Brush, Evaluator, ADDITION, SUBTRACTION, DIFFERENCE, INTERSECTION} from './framework/three-bvh-csg.js';
 
 window.simplify3d = simplify3d;
 
@@ -2996,10 +2996,12 @@ AFRAME.registerComponent('threed-hull-tool', {
   }
 })
 
+const CSG_TOOL_OPERATION_MAP = {ADDITION, SUBTRACTION, DIFFERENCE, INTERSECTION}
+
 AFRAME.registerComponent('csg-tool', {
   dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
   schema: {
-    operation: {default: 'SUBTRACTION'}
+    operation: {default: 'SUBTRACTION', oneOf: Object.keys(CSG_TOOL_OPERATION_MAP)}
   },
   events: {
     startobjectconstraint: function(e) {
@@ -3032,8 +3034,11 @@ AFRAME.registerComponent('csg-tool', {
     Pool.init(this)
     let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
+    flagA.setAttribute('decorator-flag', 'color', '#CB3B4E')
     Util.whenLoaded(flagA, () => flagA.object3D.position.x *= -1)
     let flagB = this.flagB = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagB'})
+
+    this.el.setAttribute('action-tooltips', 'b: Switch Operation')
   },
   runCSG() {
     if (!this.elA || !this.elB)
@@ -3050,6 +3055,7 @@ AFRAME.registerComponent('csg-tool', {
     const brush1 = new Brush(meshA.geometry, meshA.material);
     const brush2 = new Brush(meshB.geometry, meshB.material);
 
+    meshA.updateMatrixWorld()
     originalMatrix.copy(meshA.matrixWorld)
 
     brush1.matrixWorld.identity()
@@ -3063,9 +3069,22 @@ AFRAME.registerComponent('csg-tool', {
 
     csgEvaluator.useGroups = false;
 
-    const result = csgEvaluator.evaluate( brush1, brush2, SUBTRACTION, this.elA.getObject3D('mesh'));
+    const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation], this.elA.getObject3D('mesh'));
     originalMatrix.invert()
-    Util.applyMatrix(originalMatrix, result)
+
+    // Util.applyMatrix(originalMatrix, result)
+
+    // result.parent.matrix.multiply(originalMatrix)
+    // Util.applyMatrix(result.parent.matrix, result.parent)
+
+    result.matrix.multiply(originalMatrix)
+    Util.applyMatrix(result.matrix, result)
+
+    result.geometry.computeBoundingBox()
+    result.geometry.computeBoundingSphere()
+    result.geometry.computeBoundsTree()
+    result.updateMatrixWorld()
+
     console.log("CSGED", brush1, brush2, result )
   }
 })
