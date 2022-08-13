@@ -19,17 +19,16 @@ html
     meta property="twitter:description" content=desc
     meta property="twitter:image" content="https://vartiste.xyz/preview.jpg"
 
-    meta http-equiv="origin-trial" content="AmaZzI13Ja+rPDsKWBS01EGrfugM0xsJeBsTHepHjRpjr0REomv7+daPXyN0pyREHi9dds7mEyNRZ9/zmrWmLQ4AAABjeyJvcmlnaW4iOiJodHRwczovL3ZhcnRpc3RlLnh5ejo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2NTg4Nzk5OTl9"
-
     - if false
       script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'
       javascript:
         console.info("Polyfilling WebXR")
         new WebXRPolyfill
 
-    /script src="https://aframe.io/releases/1.2.0/aframe.js"
+    /script src="https://aframe.io/releases/1.3.0/aframe.js"
+    /script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@744e2b869e281f840cff7d9cb02e95750ce90920/dist/aframe-master.min.js"
     script src="aframe.js"
-    script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.9.0/aframe-enviropacks.js"
+    script src="https://cdn.jsdelivr.net/npm/aframe-enviropacks@0.10.0/aframe-enviropacks.js"
 
     /script src="https://docs.opencv.org/3.4.0/opencv.js"
 

@@ -207,7 +207,7 @@ export class CanvasShaderProcessor {
     var count = this.positionLength / 2;
     gl.drawArrays(primitiveType, offset, count);
   }
-  drawBrush(brush, ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, reupdate=true} = {})
+  drawBrush(brush, ctx, x, y, {rotation=0, pressure=1.0, distance=0.0, eraser=false, scale=1.0, reupdate=true, drawTime = 0.0} = {})
   {
     let {width, height, autoRotate} = brush
     width = Math.floor(width)
@@ -226,6 +226,8 @@ export class CanvasShaderProcessor {
       this.updateTexture(this.getContext(), "u_input", ctx.canvas)
     }
 
+    console.log("u_drawTime", drawTime)
+
     this.setUniform("u_color", "uniform3fv", brush.color3.toArray())
     this.setUniforms("uniform1f", {
       u_x: x,
@@ -234,7 +236,8 @@ export class CanvasShaderProcessor {
       u_brush_height: brush.height * scale,
       u_brush_rotation: autoRotate ? 2*Math.PI*Math.random() : rotation,
       u_opacity: brush.opacity * pressure,
-      u_t: VARTISTE.Util.el.time % 1.0
+      u_t: VARTISTE.Util.el.time % 1.0,
+      u_drawTime: drawTime,
     })
 
     this.update(false)

@@ -32,7 +32,10 @@ AFRAME.registerComponent('edit-field', {
 
     // When true, this will clear the current value of the property when editing
     // (mainly to avoid the user having to backspace everything)
-    autoClear: {type: 'boolean', default: false}
+    autoClear: {type: 'boolean', default: false},
+
+    // For float types, pick a fixed number of decimals to round to
+    toFixed: {default: -1}
   },
   events: {
     'popuplaunched': function(e) { this.connectKeyboard()},
@@ -99,7 +102,14 @@ AFRAME.registerComponent('edit-field', {
         this.componentchangedlistener = (e) => {
           if (e.detail.name === this.data.component)
           {
-            this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toString(), {update: false})
+            if (this.data.type === 'float' && this.data.toFixed > 0)
+            {
+              this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toFixed(this.data.toFixed), {update: false})
+            }
+            else
+            {
+              this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toString(), {update: false})
+            }
           }
         }
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)

@@ -121,11 +121,13 @@ AFRAME.registerComponent('draw-canvas', {
 
     let {x,y} = this.uvToPoint(uv, canvas)
 
+
     if (this.data.emitDrawEvents)
     {
       this.emitDetails.drawing.x = x
       this.emitDetails.drawing.y = y
       this.emitDetails.drawing.uv = uv
+      this.emitDetails.drawing.drawTime = drawTime
       this.el.emit('drawing', this.emitDetails.drawing)
     }
 
@@ -139,6 +141,17 @@ AFRAME.registerComponent('draw-canvas', {
 
     let firstDraw = !this.wasDrawing
     this.wasDrawing = true
+
+    let drawTime = 0
+
+    if (firstDraw)
+    {
+      this.startDrawTime = this.el.sceneEl.time
+    }
+    else
+    {
+      drawTime = this.el.sceneEl.time - this.startDrawTime
+    }
 
     if (firstDraw && sourceEl)
     {
@@ -182,7 +195,7 @@ AFRAME.registerComponent('draw-canvas', {
     try {
       if (firstDraw && brush.startDrawing)
       {
-        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending}
+        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending, drawTime}
         brush.startDrawing(ctx, x, y, drawOptions)
       }
 
@@ -204,13 +217,14 @@ AFRAME.registerComponent('draw-canvas', {
           lerpedOpts.pressure = THREE.Math.lerp(lastParams.pressure, pressure, lerp)
           lerpedOpts.distance = THREE.Math.lerp(lastParams.distance, distance, lerp)
           lerpedOpts.scale = THREE.Math.lerp(lastParams.scale, scale, lerp)
+          lerpedOpts.drawTime = THREE.Math.lerp(lastParams.drawTime, drawTime, lerp)
 
           this.wrap(xx,yy,width,height, this.wrappedDraw, ctx, brush, lerpedOpts)
         }
       }
       else
       {
-        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending}
+        let drawOptions = {rotation, pressure, distance, imageData, scale, hqBlending, drawTime}
         this.wrap(x,y,width,height, this.wrappedDraw, ctx, brush, drawOptions)
       }
     }

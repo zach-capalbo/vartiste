@@ -75,6 +75,7 @@ const BRUSH_FX = [
   // 'ryb-blend',
   'oklab-blend',
   // 'erode',
+  'hq-fade',
 ]
 
 const CAMERA_LAYERS = {

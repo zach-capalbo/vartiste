@@ -10,7 +10,7 @@ import {SNAP_PRIORITY} from './manipulator.js'
 const DEFAULT_SELECTOR = "a-entity[six-dof-tool], a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity.canvas[composition-view], a-entity[flaggable-manipulator], a-entity[flaggable-control]"
 const TOOLS_ONLY_SELECTOR = "a-entity[six-dof-tool], a-entity[flaggable-manipulator]"
 const SHAPES_AND_REFERENCED = "a-entity[reference-glb], a-entity[primitive-construct-placeholder]"
-const ALL_MESHES = "a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]"
+export const ALL_MESHES = "a-entity[reference-glb], a-entity[primitive-construct-placeholder], a-entity[composition-view]"
 const ALL_MESHES_AND_CANVAS = ALL_MESHES + ", a-entity.canvas"
 export const PARENTABLE_TARGETS = 'a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder], a-entity[bone-redirector]'
 

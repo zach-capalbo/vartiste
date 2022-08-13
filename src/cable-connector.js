@@ -2,6 +2,7 @@ import {Util} from './util.js'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 AFRAME.registerComponent('cable-connector', {
+  multiple: true,
   schema: {
     target: {type: 'selector'},
     numLinks: {default: 24},

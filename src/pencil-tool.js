@@ -5,7 +5,8 @@ import Color from "color"
 import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
-import {PARENTABLE_TARGETS} from './decorators.js'
+import {PARENTABLE_TARGETS, ALL_MESHES} from './decorators.js'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 let SENSITIVITY_FUNCTIONS = {
   constant: (ratio) => 1.0,
@@ -102,6 +103,36 @@ AFRAME.registerSystem('pencil-tool', {
     cylinder.classList.add('clickable')
     cylinder.setAttribute('propogate-grab', "")
     return cylinder
+  },
+  createConnectedFlag(parentEl, {selector = ALL_MESHES, connectorName} = {})
+  {
+    let flag = document.createElement('a-entity')
+    parentEl.append(flag)
+    flag.setAttribute('decorator-flag', `resolveProxy: true; selector: ${selector}`)
+    flag.setAttribute('position', '0.1 0 0')
+    flag.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.3 0.16")
+    flag._connectorConstraints = new Map()
+    let connectorAttribute = `cable-connector${connectorName ? "__" + connectorName : ""}`
+    parentEl.setAttribute(connectorAttribute, {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
+
+    flag.addEventListener('startobjectconstraint', (e) => {
+      let el = e.detail.el
+      let fn = this.el.sceneEl.systems['manipulator'].installConstraint(el, () => {
+        parentEl.components[connectorAttribute].catenary()
+      })
+      flag._connectorConstraints.set(el, fn)
+    }, POST_MANIPULATION_PRIORITY)
+
+    flag.addEventListener('endobjectconstraint', (e) => {
+      let el = e.detail.el
+      if (flag._connectorConstraints.has(el))
+      {
+        this.el.sceneEl.systems['manipulator'].removeConstraint(el, flag._connectorConstraints.get(el))
+        flag._connectorConstraints.delete(el)
+      }
+    })
+
+    return flag
   },
   resetAllTools() {
     this.el.sceneEl.querySelectorAll('a-entity[six-dof-tool]').forEach(el => {
@@ -1739,14 +1770,9 @@ AFRAME.registerComponent('reparent-tool', {
     }
   },
   init() {
-    let flag = this.flag = document.createElement('a-entity')
-    this.el.append(flag)
-    flag.setAttribute('decorator-flag', `resolveProxy: true; selector: ${PARENTABLE_TARGETS}`)
-    this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
-    flag.setAttribute('position', '0.1 0 0')
+    let flag = this.flag = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {selector: PARENTABLE_TARGETS})
     flag.setAttribute('preactivate-tooltip', 'Parent Selector')
-    flag.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.3 0.16")
-    this.el.setAttribute('cable-connector', {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
+    this.el.setAttribute('selection-box-tool', 'selector: a-entity.clickable[reference-glb], a-entity.clickable[primitive-construct-placeholder]')
     Util.whenComponentInitialized(this.el, 'selection-box-tool', () => {
       this.selectionBoxTool = this.el.components['selection-box-tool']
     })

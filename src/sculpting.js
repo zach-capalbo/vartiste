@@ -10,6 +10,7 @@ import simplify2d from 'simplify-2d'
 import simplify3d from 'simplify-3d'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 import {MeshBVH} from './framework/three-mesh-bvh.js';
+import {Brush, Evaluator, ADDITION, SUBTRACTION, DIFFERENCE, INTERSECTION} from './framework/three-bvh-csg.js';
 
 window.simplify3d = simplify3d;
 
@@ -943,6 +944,8 @@ Util.registerComponentSystem('threed-line-system', {
     animate: {default: false},
     buildUp: {default: false},
     skeletonize: {default: false},
+    roughness: {default: 0.5},
+    metalness: {default: 0.0},
   },
   init() {
     this.materialNeedsUpdate = true
@@ -950,6 +953,8 @@ Util.registerComponentSystem('threed-line-system', {
   },
   update(oldData) {
     if (this.data.usePaintSystem !== oldData.usePaintSystem) this.markMaterial()
+    if (this.roughness !== oldData.roughness) this.markMaterial()
+    if (this.metalness !== oldData.metalness) this.markMaterial()
   },
   markMaterial() {
     this.materialNeedsUpdate = true
@@ -1011,7 +1016,8 @@ Util.registerComponentSystem('threed-line-system', {
         color: brush.color,
         envMap: this.el.sceneEl.systems['environment-manager'].envMap,
         envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity,
-        roughness: 0.5,
+        roughness: this.data.roughness,
+        metalness: this.data.metalness
       })
       this.materialNeedsUpdate = false
       this.el.emit('shapematerialupdated', this.material)
@@ -2987,5 +2993,122 @@ AFRAME.registerComponent('threed-hull-tool', {
 			groupStart += groupCount;
 
 		};
+  }
+})
+
+const CSG_TOOL_OPERATION_MAP = {ADDITION, SUBTRACTION, DIFFERENCE, INTERSECTION}
+const CSG_TOOL_OPERATION_ARRAY = Object.keys(CSG_TOOL_OPERATION_MAP)
+AFRAME.registerComponent('csg-tool', {
+  dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
+  schema: {
+    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY}
+  },
+  events: {
+    startobjectconstraint: function(e) {
+      let el = e.detail.el
+      el.addEventListener('click', this.runCSG)
+      if (e.target === this.flagA)
+      {
+        this.elA = el
+      }
+      else
+      {
+        this.elB = el
+      }
+      console.log("CSG Selection", this.elA, this.elB)
+    },
+    endobjectconstraint: function(e) {
+      e.detail.el.removeEventListener('click', this.runCSG)
+      if (e.target === this.flagA)
+      {
+        this.elA = null
+      }
+      else
+      {
+        this.elB = null
+      }
+    },
+    click: function(e) {
+      this.runCSG()
+    },
+    bbuttondown: function(e) {
+      console.log("Switching operation to", CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
+      this.el.setAttribute('csg-tool', 'operation', CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
+    }
+  },
+  init() {
+    Pool.init(this)
+    let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
+    let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
+    flagA.setAttribute('decorator-flag', 'color', '#CB3B4E')
+    flagA.setAttribute('preactivate-tooltip', 'Operation Target (Mesh A)')
+    Util.whenLoaded(flagA, () => flagA.object3D.position.x *= -1)
+    let flagB = this.flagB = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagB'})
+    flagB.setAttribute('preactivate-tooltip', 'Operand (Mesh B)')
+
+    this.el.setAttribute('action-tooltips', 'b: Switch Operation; click: Evaulate Boolean')
+
+    this.runCSG = this.runCSG.bind(this)
+  },
+  update(oldData)
+  {
+    this.el.setAttribute('action-tooltips', `label: Boolean (${this.data.operation})`)
+  },
+  brushify(mesh, useGroups = false){
+    return new Brush(mesh.geometry, mesh.material);
+  },
+  runCSG() {
+    if (!this.elA || !this.elB)
+    {
+      console.log("Cannot CSG without elA and elB", this.elA, this.elB)
+      return
+    }
+
+    const csgEvaluator = new Evaluator();
+    let meshA = this.elA.getObject3D('mesh')
+    let meshB = this.elB.getObject3D('mesh')
+
+    csgEvaluator.useGroups = meshA.material !== meshB.material;
+    let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
+    const brush1 = this.brushify(meshA, csgEvaluator.useGroups)
+    const brush2 = this.brushify(meshB, csgEvaluator.useGroups)
+
+    meshA.updateMatrixWorld()
+    originalMatrix.copy(meshA.matrixWorld)
+
+    brush1.matrixWorld.identity()
+    brush2.matrixWorld.identity()
+    Util.applyMatrix(meshA.matrixWorld, brush1)
+    Util.applyMatrix(meshB.matrixWorld, brush2)
+    brush1.matrixWorld.copy(meshA.matrixWorld)
+    brush2.matrixWorld.copy(meshB.matrixWorld)
+
+    const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation]);
+    Util.applyMatrix(meshA.matrix, result)
+    meshA.parent.remove(meshA)
+    meshA.geometry.dispose()
+    this.elA.setObject3D('mesh', result)
+    originalMatrix.invert()
+
+    result.matrix.multiply(originalMatrix)
+    Util.applyMatrix(result.matrix, result)
+
+    result.geometry.computeBoundingBox()
+    result.geometry.computeBoundingSphere()
+    result.geometry.computeBoundsTree()
+    result.updateMatrixWorld()
+
+    if (!csgEvaluator.useGroups)
+    {
+      result.material = meshA.material
+    }
+
+    for (let group of result.geometry.groups)
+    {
+      if (group.materialIndex === undefined)
+      {
+        group.materialIndex = 0
+      }
+    }
   }
 })

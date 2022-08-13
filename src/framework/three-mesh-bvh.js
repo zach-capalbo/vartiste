@@ -3471,6 +3471,11 @@ class MeshBVH {
 		const side = isMaterial ? materialOrSide.side : materialOrSide;
 		for ( let i = 0, l = roots.length; i < l; i ++ ) {
 
+			if (isArrayMaterial && !materialOrSide[ groups[ i ].materialIndex ])
+			{
+				throw new Error("Unknown material or side", materialOrSide, groups[i].materialIndex, groups)
+			}
+
 			const materialSide = isArrayMaterial ? materialOrSide[ groups[ i ].materialIndex ].side : side;
 			const startCount = intersects.length;
 
