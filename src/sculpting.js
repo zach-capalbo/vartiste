@@ -3040,6 +3040,34 @@ AFRAME.registerComponent('csg-tool', {
 
     this.el.setAttribute('action-tooltips', 'b: Switch Operation')
   },
+  brushify(mesh, useGroups = false){
+    return new Brush(mesh.geometry, mesh.material);
+    
+    if (useGroups)
+    {
+      if (mesh.material.length)
+      {
+        return new Brush(mesh.geometry, mesh.material);
+      }
+      else
+      {
+        let geo = mesh.geometry.clone()
+        geo.addGroup(0, geo.attributes.position.count, 0)
+        return new Brush(geo, [mesh.material])
+      }
+    }
+    else
+    {
+      if (mesh.material.length)
+      {
+        return new Brush(mesh.geometry, mesh.material[0])
+      }
+      else
+      {
+        return new Brush(mesh.geometry, mesh.material)
+      }
+    }
+  },
   runCSG() {
     if (!this.elA || !this.elB)
     {
@@ -3051,9 +3079,10 @@ AFRAME.registerComponent('csg-tool', {
     let meshA = this.elA.getObject3D('mesh')
     let meshB = this.elB.getObject3D('mesh')
 
+    csgEvaluator.useGroups = true;
     let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
-    const brush1 = new Brush(meshA.geometry, meshA.material);
-    const brush2 = new Brush(meshB.geometry, meshB.material);
+    const brush1 = this.brushify(meshA, csgEvaluator.useGroups)
+    const brush2 = this.brushify(meshB, csgEvaluator.useGroups)
 
     meshA.updateMatrixWorld()
     originalMatrix.copy(meshA.matrixWorld)
@@ -3067,7 +3096,6 @@ AFRAME.registerComponent('csg-tool', {
 
     // Util.applyMatrix(this.elA.)
 
-    csgEvaluator.useGroups = false;
 
     const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation], this.elA.getObject3D('mesh'));
     originalMatrix.invert()
@@ -3080,10 +3108,20 @@ AFRAME.registerComponent('csg-tool', {
     result.matrix.multiply(originalMatrix)
     Util.applyMatrix(result.matrix, result)
 
+    console.log("Material", result.material.slice(), result.geometry.groups)
+
     result.geometry.computeBoundingBox()
     result.geometry.computeBoundingSphere()
     result.geometry.computeBoundsTree()
     result.updateMatrixWorld()
+
+    for (let group of result.geometry.groups)
+    {
+      if (group.materialIndex === undefined)
+      {
+        group.materialIndex = 0
+      }
+    }
 
     console.log("CSGED", brush1, brush2, result )
   }
