@@ -3006,6 +3006,7 @@ AFRAME.registerComponent('csg-tool', {
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
+      el.addEventListener('click', this.runCSG)
       if (e.target === this.flagA)
       {
         this.elA = el
@@ -3017,6 +3018,7 @@ AFRAME.registerComponent('csg-tool', {
       console.log("CSG Selection", this.elA, this.elB)
     },
     endobjectconstraint: function(e) {
+      e.detail.el.removeEventListener('click', this.runCSG)
       if (e.target === this.flagA)
       {
         this.elA = null
@@ -3041,6 +3043,8 @@ AFRAME.registerComponent('csg-tool', {
     flagB.setAttribute('preactivate-tooltip', 'Operand (Mesh B)')
 
     this.el.setAttribute('action-tooltips', 'b: Switch Operation; click: Evaulate Boolean')
+
+    this.runCSG = this.runCSG.bind(this)
   },
   update(oldData)
   {
@@ -3089,6 +3093,11 @@ AFRAME.registerComponent('csg-tool', {
     result.geometry.computeBoundingSphere()
     result.geometry.computeBoundsTree()
     result.updateMatrixWorld()
+
+    if (!csgEvaluator.useGroups)
+    {
+      result.material = meshA.material
+    }
 
     for (let group of result.geometry.groups)
     {

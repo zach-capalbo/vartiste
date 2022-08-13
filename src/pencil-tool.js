@@ -6,6 +6,7 @@ import {Brush} from './brush.js'
 import {BrushList} from './brush-list.js'
 import {Undo} from './undo.js'
 import {PARENTABLE_TARGETS, ALL_MESHES} from './decorators.js'
+import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
 let SENSITIVITY_FUNCTIONS = {
   constant: (ratio) => 1.0,
@@ -110,7 +111,27 @@ AFRAME.registerSystem('pencil-tool', {
     flag.setAttribute('decorator-flag', `resolveProxy: true; selector: ${selector}`)
     flag.setAttribute('position', '0.1 0 0')
     flag.setAttribute('tooltip-style', "scale: 0.3 0.3 1.0; offset: 0 -0.3 0.16")
-    parentEl.setAttribute(`cable-connector${connectorName ? "__" + connectorName : ""}`, {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
+    flag._connectorConstraints = new Map()
+    let connectorAttribute = `cable-connector${connectorName ? "__" + connectorName : ""}`
+    parentEl.setAttribute(connectorAttribute, {target: flag, lineWidth: 0.01, sourceOffset: new THREE.Vector3(0, -0.2, 0), targetOffset: new THREE.Vector3(0, 0, 0.1)})
+
+    flag.addEventListener('startobjectconstraint', (e) => {
+      let el = e.detail.el
+      let fn = this.el.sceneEl.systems['manipulator'].installConstraint(el, () => {
+        parentEl.components[connectorAttribute].catenary()
+      })
+      flag._connectorConstraints.set(el, fn)
+    }, POST_MANIPULATION_PRIORITY)
+
+    flag.addEventListener('endobjectconstraint', (e) => {
+      let el = e.detail.el
+      if (flag._connectorConstraints.has(el))
+      {
+        this.el.sceneEl.systems['manipulator'].removeConstraint(el, flag._connectorConstraints.get(el))
+        flag._connectorConstraints.delete(el)
+      }
+    })
+
     return flag
   },
   resetAllTools() {
