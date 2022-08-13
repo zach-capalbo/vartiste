@@ -2997,11 +2997,11 @@ AFRAME.registerComponent('threed-hull-tool', {
 })
 
 const CSG_TOOL_OPERATION_MAP = {ADDITION, SUBTRACTION, DIFFERENCE, INTERSECTION}
-
+const CSG_TOOL_OPERATION_ARRAY = Object.keys(CSG_TOOL_OPERATION_MAP)
 AFRAME.registerComponent('csg-tool', {
   dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
   schema: {
-    operation: {default: 'SUBTRACTION', oneOf: Object.keys(CSG_TOOL_OPERATION_MAP)}
+    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY}
   },
   events: {
     startobjectconstraint: function(e) {
@@ -3030,6 +3030,10 @@ AFRAME.registerComponent('csg-tool', {
     },
     click: function(e) {
       this.runCSG()
+    },
+    bbuttondown: function(e) {
+      console.log("Switching operation to", CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
+      this.el.setAttribute('csg-tool', 'operation', CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
     }
   },
   init() {
@@ -3048,7 +3052,7 @@ AFRAME.registerComponent('csg-tool', {
   },
   update(oldData)
   {
-    this.el.setAttribute('action-tooltips', `label: Boolean ${this.data.operation}`)
+    this.el.setAttribute('action-tooltips', `label: Boolean (${this.data.operation})`)
   },
   brushify(mesh, useGroups = false){
     return new Brush(mesh.geometry, mesh.material);
