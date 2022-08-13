@@ -3035,38 +3035,19 @@ AFRAME.registerComponent('csg-tool', {
     let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
     flagA.setAttribute('decorator-flag', 'color', '#CB3B4E')
+    flagA.setAttribute('preactivate-tooltip', 'Operation Target (Mesh A)')
     Util.whenLoaded(flagA, () => flagA.object3D.position.x *= -1)
     let flagB = this.flagB = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagB'})
+    flagB.setAttribute('preactivate-tooltip', 'Operand (Mesh B)')
 
-    this.el.setAttribute('action-tooltips', 'b: Switch Operation')
+    this.el.setAttribute('action-tooltips', 'b: Switch Operation; click: Evaulate Boolean')
+  },
+  update(oldData)
+  {
+    this.el.setAttribute('action-tooltips', `label: Boolean ${this.data.operation}`)
   },
   brushify(mesh, useGroups = false){
     return new Brush(mesh.geometry, mesh.material);
-    
-    if (useGroups)
-    {
-      if (mesh.material.length)
-      {
-        return new Brush(mesh.geometry, mesh.material);
-      }
-      else
-      {
-        let geo = mesh.geometry.clone()
-        geo.addGroup(0, geo.attributes.position.count, 0)
-        return new Brush(geo, [mesh.material])
-      }
-    }
-    else
-    {
-      if (mesh.material.length)
-      {
-        return new Brush(mesh.geometry, mesh.material[0])
-      }
-      else
-      {
-        return new Brush(mesh.geometry, mesh.material)
-      }
-    }
   },
   runCSG() {
     if (!this.elA || !this.elB)
@@ -3079,7 +3060,7 @@ AFRAME.registerComponent('csg-tool', {
     let meshA = this.elA.getObject3D('mesh')
     let meshB = this.elB.getObject3D('mesh')
 
-    csgEvaluator.useGroups = true;
+    csgEvaluator.useGroups = meshA.material !== meshB.material;
     let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
     const brush1 = this.brushify(meshA, csgEvaluator.useGroups)
     const brush2 = this.brushify(meshB, csgEvaluator.useGroups)
@@ -3094,21 +3075,15 @@ AFRAME.registerComponent('csg-tool', {
     brush1.matrixWorld.copy(meshA.matrixWorld)
     brush2.matrixWorld.copy(meshB.matrixWorld)
 
-    // Util.applyMatrix(this.elA.)
-
-
-    const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation], this.elA.getObject3D('mesh'));
+    const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation]);
+    Util.applyMatrix(meshA.matrix, result)
+    meshA.parent.remove(meshA)
+    meshA.geometry.dispose()
+    this.elA.setObject3D('mesh', result)
     originalMatrix.invert()
-
-    // Util.applyMatrix(originalMatrix, result)
-
-    // result.parent.matrix.multiply(originalMatrix)
-    // Util.applyMatrix(result.parent.matrix, result.parent)
 
     result.matrix.multiply(originalMatrix)
     Util.applyMatrix(result.matrix, result)
-
-    console.log("Material", result.material.slice(), result.geometry.groups)
 
     result.geometry.computeBoundingBox()
     result.geometry.computeBoundingSphere()
@@ -3122,7 +3097,5 @@ AFRAME.registerComponent('csg-tool', {
         group.materialIndex = 0
       }
     }
-
-    console.log("CSGED", brush1, brush2, result )
   }
 })
