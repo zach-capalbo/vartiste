@@ -74,6 +74,10 @@ Util.registerComponentSystem('optimize-mesh-raycast', {
     var oldRayCast = this.oldRayCast
     var data = this.data
     THREE.Mesh.prototype.raycast = function(...args) {
+      if (this.material.length)
+      {
+        return oldRayCast.call(this, ...args)
+      }
       wasSkinned = this.isSkinnedMesh
       this.isSkinnedMesh = this.isSkinnedMesh && this.material.skinning && !data.ignoreSkinning
 

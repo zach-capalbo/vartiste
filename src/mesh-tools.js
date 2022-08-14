@@ -695,7 +695,7 @@ Util.registerComponentSystem('mesh-clipping', {
     for (let el of this.clippedEls.values())
     {
       el.getObject3D('mesh').traverseVisible(o => {
-        if (o.material) {
+        if (o.material && !o.material.length) {
           o.material.clippingPlanes = this.clippingPlanes
           if (this.data.forceDoubleSided && this.el.sceneEl.renderer.localClippingEnabled)
           {

@@ -3085,9 +3085,10 @@ AFRAME.registerComponent('csg-tool', {
 
     const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation]);
     Util.applyMatrix(meshA.matrix, result)
-    meshA.parent.remove(meshA)
-    meshA.geometry.dispose()
+    meshA.parent.add(result)
     this.elA.setObject3D('mesh', result)
+    
+    meshA.geometry.dispose()
     originalMatrix.invert()
 
     result.matrix.multiply(originalMatrix)

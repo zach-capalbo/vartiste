@@ -426,7 +426,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   update(oldData) {
     if (this.data.detached) {
       this.el.setAttribute('mesh-can-be-clipped', '')
-      if (!this.el.getObject3D('mesh').material.transparent)
+      if (!this.el.getObject3D('mesh').material)
+      {
+        console.error("No material for", this.el, this.el.getObject3D('mesh'))
+      }
+      if (this.el.getObject3D('mesh').material.length || !this.el.getObject3D('mesh').material.transparent)
       {
         this.el.setAttribute('shadow', 'cast', true)
       }

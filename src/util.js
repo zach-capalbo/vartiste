@@ -577,7 +577,7 @@ class VARTISTEUtil {
       let arr = []
       // arr.length = attr.count * attr.itemSize
 
-      console.log(name, attr)
+      console.log("Deinterleaving", name, attr)
 
       for (let i = 0; i < attr.count; ++i)
       {
