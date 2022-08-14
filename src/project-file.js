@@ -664,7 +664,17 @@ class ProjectFile {
             // console.log("Saving reference image", el)
             savedUserData.isReferenceImage = true;
           }
-          if (el.hasAttribute('primitive-construct-placeholder')) savedUserData.isPrimitiveConstruct = true;
+          if (el.hasAttribute('primitive-construct-placeholder')) {
+            if (el.getObject3D('mesh').material && el.getObject3D('mesh').material.length)
+            {
+              console.warn("Can't save multimaterial primitive right now. Converting to reference")
+              savedUserData.isReferenceModel = true
+            }
+            else
+            {
+              savedUserData.isPrimitiveConstruct = true;
+            }
+          }
           if (el.hasAttribute('reference-glb')) savedUserData.isReferenceModel = true;
         }
         else if (o.el && o.el.getObject3D('mesh') === o)

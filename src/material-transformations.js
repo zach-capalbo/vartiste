@@ -243,20 +243,34 @@ class MaterialTransformations {
     {
       if (!m.material) continue;
 
-      let hash = materialHash(m.material, imageHash)
-      let cached = materialCache.get(hash)
-
-      if (!cached)
-      {
-        materialCache.set(hash, m.material)
-        cached = m.material
-      }
-
       if (undoStack) {
-        originalMaterials.set(m, m.material)
+        originalMaterials.set(m, m.material.length ? Array.from(m.material) : m.material)
       }
 
-      m.material = cached
+      let materials = m.material.length ? Array.from(m.material) : [m.material]
+
+      for (let i in materials)
+      {
+        let material = materials[i]
+        // console.log("Trying to hash", m, materials, i, material)
+        let hash = materialHash(material, imageHash)
+        let cached = materialCache.get(hash)
+
+        if (!cached)
+        {
+          materialCache.set(hash, material)
+          cached = material
+        }
+
+        if (m.material.length)
+        {
+          m.material[i] = cached
+        }
+        else
+        {
+          m.material = cached
+        }
+      }
     }
 
     if (undoStack) {
@@ -269,52 +283,7 @@ class MaterialTransformations {
     }
   }
 
-  // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
-  static prepareModelForExport(model, material, {undoStack} = {}) {
-    if (!material) material = model.material
-    // console.log("Preparing", model, material)
-
-    if (model.geometry && model.geometry.attributes)
-    {
-      // if (undoStack) {
-      //   let oldGeometry = model.geometry
-      //   undoStack.push(() => model.geometry = oldGeometry)
-      // }
-      Util.deinterleaveAttributes(model.geometry)
-    }
-
-    if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
-    {
-      if (undoStack) undoStack.push(() => model.visible = true)
-      model.visible = false
-      // MaterialTransformations.vec2toVec3Attribute(model)
-    }
-
-    if (model.geometry && !model.geometry.getAttribute)
-    {
-      if (undoStack) undoStack.push(() => model.visible = true)
-      model.visible = false
-      // MaterialTransformations.vec2toVec3Attribute(model)
-    }
-
-    if (model.el && model.el.hasAttribute('frame') && !model.el.getAttribute('frame').closeable)
-    {
-      if (undoStack) undoStack.push(() => model.visible = true)
-      model.visible = false
-      // MaterialTransformations.vec2toVec3Attribute(model)
-    }
-
-    if (model.geometry && model.geometry.attributes.tangent)
-    {
-      if (model.geometry.attributes.tangent.count !== Math.floor(model.geometry.attributes.tangent.count)) {
-        console.warn("Deleting non-integral tangent attribute from", model, model.geometry.attributes.tangent)
-        model.geometry.deleteAttribute('tangent')
-      }
-    }
-
-    if (!material) return;
-
-
+  static prepareMaterialForExport(material, {undoStack} = {}) {
     if (material.bumpMap && material.bumpMap.image) {
       console.log("Bumping into normal")
       if (material.normalMap) console.warn("Ignoring existing normal map")
@@ -416,6 +385,62 @@ class MaterialTransformations {
       {
         MaterialTransformations.checkTransparency(material)
       }
+    }
+  }
+
+  // Runs preprocessing to deal with quirks of the THREE.GLTFExporter
+  static prepareModelForExport(model, material, {undoStack} = {}) {
+    if (!material) material = model.material
+    // console.log("Preparing", model, material)
+
+    if (model.geometry && model.geometry.attributes)
+    {
+      // if (undoStack) {
+      //   let oldGeometry = model.geometry
+      //   undoStack.push(() => model.geometry = oldGeometry)
+      // }
+      Util.deinterleaveAttributes(model.geometry)
+    }
+
+    if (model.geometry && model.geometry.attributes && model.geometry.attributes.position && model.geometry.attributes.position.itemSize !== 3)
+    {
+      if (undoStack) undoStack.push(() => model.visible = true)
+      model.visible = false
+      // MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
+    if (model.geometry && !model.geometry.getAttribute)
+    {
+      if (undoStack) undoStack.push(() => model.visible = true)
+      model.visible = false
+      // MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
+    if (model.el && model.el.hasAttribute('frame') && !model.el.getAttribute('frame').closable)
+    {
+      if (undoStack) undoStack.push(() => model.visible = true)
+      model.visible = false
+      // console.log("Hiding uncloseable", model, model.el, model.el.getAttribute('frame'))
+      // MaterialTransformations.vec2toVec3Attribute(model)
+    }
+
+    if (model.geometry && model.geometry.attributes.tangent)
+    {
+      if (model.geometry.attributes.tangent.count !== Math.floor(model.geometry.attributes.tangent.count)) {
+        console.warn("Deleting non-integral tangent attribute from", model, model.geometry.attributes.tangent)
+        model.geometry.deleteAttribute('tangent')
+      }
+    }
+
+    if (!material) return;
+
+    if (material.length)
+    {
+      for (let m of material) { MaterialTransformations.prepareMaterialForExport(m, {undoStack}) }
+    }
+    else
+    {
+      MaterialTransformations.prepareMaterialForExport(material, {undoStack})
     }
 
     if (model.skeleton && !model.isSkinnedMesh)
