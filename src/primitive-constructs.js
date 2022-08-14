@@ -476,12 +476,14 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
       if (!wasDetached || !this.system.data.shareMaterial)
       {
-        newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.clone()
+        newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material.length ? Array.from(this.el.getObject3D('mesh').material).map(m => m.clone()) : this.el.getObject3D('mesh').material.clone()
       }
       else
       {
         newPlaceHolder.getObject3D('mesh').material = this.el.getObject3D('mesh').material
       }
+
+      Util.applyMatrix(this.el.getObject3D('mesh').matrix, newPlaceHolder.getObject3D('mesh'))
 
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.getObject3D('mesh'), newPlaceHolder.getObject3D('mesh'))
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, newPlaceHolder.object3D)
