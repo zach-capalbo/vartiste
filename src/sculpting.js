@@ -3003,7 +3003,7 @@ AFRAME.registerComponent('csg-tool', {
   schema: {
     operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY},
     repeatInterval: {default: 50},
-    repeatWait: {default: 500},
+    repeatWait: {default: 300},
   },
   events: {
     startobjectconstraint: function(e) {
@@ -3015,7 +3015,8 @@ AFRAME.registerComponent('csg-tool', {
       {
         this.elA = el
         this.csgEvaluator = new Evaluator()
-        this.brush1 = this.brushify(el.getObject3D('mesh'))
+        let mesh = el.getObject3D('mesh')
+        this.brush1 = mesh.isBrush ? mesh : this.brushify(mesh)
       }
       else
       {
@@ -3092,7 +3093,7 @@ AFRAME.registerComponent('csg-tool', {
     // brush.matrixWorld.copy(mesh.matrixWorld)
     return brush
   },
-  runCSG() {
+  runCSG({enableUndo = true} = {}) {
     if (!this.elA || !this.elB)
     {
       console.log("Cannot CSG without elA and elB", this.elA, this.elB)
@@ -3138,12 +3139,19 @@ AFRAME.registerComponent('csg-tool', {
     meshA.parent.add(result)
     meshA.geometry.dispose()
 
-    Undo.pushSymmetric((u) => {
-      this.elA.setObject3D('mesh', result)
-      u.push(() => {
-        this.elA.setObject3D('mesh', meshA)
+    if (enableUndo)
+    {
+      Undo.pushSymmetric((u) => {
+        this.elA.setObject3D('mesh', result)
+        u.push(() => {
+          this.elA.setObject3D('mesh', meshA)
+        })
       })
-    })
+    }
+    else
+    {
+      this.elA.setObject3D('mesh', result)
+    }
 
     // console.log("result", result.matrix.elements.slice())
     result.matrix.copy(originalBrushMatrix)
@@ -3178,7 +3186,7 @@ AFRAME.registerComponent('csg-tool', {
   tick(t,dt) {
     if (this.startPressed && t - this.data.repeatWait > this.startPressed)
     {
-      this.runCSG()
+      this.runCSG({enableUndo: false})
       this.startPressed += this.data.repeatInterval
     }
   }
