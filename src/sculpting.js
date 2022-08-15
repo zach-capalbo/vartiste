@@ -3014,11 +3014,27 @@ AFRAME.registerComponent('csg-tool', {
       if (e.target === this.flagA)
       {
         this.elA = el
+        this.csgEvaluator = new Evaluator()
+        this.brush1 = this.brushify(el.getObject3D('mesh'))
       }
       else
       {
         this.elB = el
+        this.brush2 = this.brushify(el.getObject3D('mesh'))
       }
+
+      if (this.elA && this.elB)
+      {
+        // let positioner = this.pool('positioner', THREE.Object3D)
+        // let parent = this.elA.getObject3D('mesh').parent
+        // parent.add(positioner)
+        // Util.positionObject3DAtTarget(positioner, this.elB.getObject3D('mesh'))
+        // Util.applyMatrix(positioner.matrixWorld, this.brush2)
+        // this.brush1.matrixWorld.copy(this.elA.getObject3D('mesh').matrixWorld)
+        // console.log("Trying to position boolean", this.brush1, this.brush2, this.elA.getObject3D('mesh'), this.elB.getObject3D('mesh'), positioner)
+        // parent.remove(positioner)
+      }
+
       console.log("CSG Selection", this.elA, this.elB)
     },
     endobjectconstraint: function(e) {
@@ -3069,8 +3085,12 @@ AFRAME.registerComponent('csg-tool', {
   {
     this.el.setAttribute('action-tooltips', `label: Boolean (${this.data.operation})`)
   },
-  brushify(mesh, useGroups = false){
-    return new Brush(mesh.geometry, mesh.material);
+  brushify(mesh){
+    let brush = new Brush(mesh.geometry, mesh.material);
+    // mesh.updateMatrixWorld()
+    // Util.applyMatrix(mesh.matrixWorld, brush)
+    // brush.matrixWorld.copy(mesh.matrixWorld)
+    return brush
   },
   runCSG() {
     if (!this.elA || !this.elB)
@@ -3079,28 +3099,42 @@ AFRAME.registerComponent('csg-tool', {
       return
     }
 
-    const csgEvaluator = new Evaluator();
+    const csgEvaluator = this.csgEvaluator;
     // csgEvaluator.debug.enabled = true
     let meshA = this.elA.getObject3D('mesh')
     let meshB = this.elB.getObject3D('mesh')
 
     csgEvaluator.useGroups = meshA.material !== meshB.material;
     let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
-    const brush1 = this.brushify(meshA, csgEvaluator.useGroups)
-    const brush2 = this.brushify(meshB, csgEvaluator.useGroups)
+    const brush1 = this.brush1
+    const brush2 = this.brush2
+
+    let originalBrushMatrix = this.pool('originalBrushMatrix', THREE.Matrix4)
 
     meshA.updateMatrixWorld()
     originalMatrix.copy(meshA.matrixWorld)
+    originalBrushMatrix.copy(brush1.matrix)
+
+    let originalBrushParent = brush1.parent
+    if (originalBrushParent)
+    {
+      originalBrushParent.remove(brush1)
+    }
 
     brush1.matrixWorld.identity()
     brush2.matrixWorld.identity()
-    Util.applyMatrix(meshA.matrixWorld, brush1)
+    Util.applyMatrix(originalMatrix, brush1)
     Util.applyMatrix(meshB.matrixWorld, brush2)
-    brush1.matrixWorld.copy(meshA.matrixWorld)
+    brush1.matrixWorld.copy(originalMatrix)
     brush2.matrixWorld.copy(meshB.matrixWorld)
 
     const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation]);
-    Util.applyMatrix(meshA.matrix, result)
+
+    if (originalBrushParent)
+    {
+      originalBrushParent.add(brush1)
+    }
+
     meshA.parent.add(result)
     meshA.geometry.dispose()
 
@@ -3111,8 +3145,9 @@ AFRAME.registerComponent('csg-tool', {
       })
     })
 
+    // console.log("result", result.matrix.elements.slice())
+    result.matrix.copy(originalBrushMatrix)
     originalMatrix.invert()
-
     result.matrix.multiply(originalMatrix)
     Util.applyMatrix(result.matrix, result)
 
@@ -3121,9 +3156,11 @@ AFRAME.registerComponent('csg-tool', {
     result.geometry.computeBoundsTree()
     result.updateMatrixWorld()
 
-    window.csgEvaluator = csgEvaluator
-    window.csgResult = result
-    console.log("Eval", result, csgEvaluator)
+    // window.csgEvaluator = csgEvaluator
+    // window.csgResult = result
+    // console.log("Eval", result, csgEvaluator)
+
+    this.brush1 = result
 
     if (!csgEvaluator.useGroups)
     {
