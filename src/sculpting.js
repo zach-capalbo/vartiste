@@ -3001,12 +3001,16 @@ const CSG_TOOL_OPERATION_ARRAY = Object.keys(CSG_TOOL_OPERATION_MAP)
 AFRAME.registerComponent('csg-tool', {
   dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
   schema: {
-    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY}
+    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY},
+    repeatInterval: {default: 50},
+    repeatWait: {default: 500},
   },
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
       el.addEventListener('click', this.runCSG)
+      el.addEventListener('triggerdown', this.events.triggerdown)
+      el.addEventListener('triggerup', this.events.triggerup)
       if (e.target === this.flagA)
       {
         this.elA = el
@@ -3019,6 +3023,8 @@ AFRAME.registerComponent('csg-tool', {
     },
     endobjectconstraint: function(e) {
       e.detail.el.removeEventListener('click', this.runCSG)
+      e.detail.el.removeEventListener('triggerdown', this.events.triggerdown)
+      e.detail.el.removeEventListener('triggerup', this.events.triggerup)
       if (e.target === this.flagA)
       {
         this.elA = null
@@ -3034,10 +3040,18 @@ AFRAME.registerComponent('csg-tool', {
     bbuttondown: function(e) {
       console.log("Switching operation to", CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
       this.el.setAttribute('csg-tool', 'operation', CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
+    },
+    triggerdown: function(e) {
+      console.log("Starting triggerdown", this, this.el)
+      this.startPressed = this.el.sceneEl.time
+    },
+    triggerup: function(e) {
+      this.startPressed = undefined
     }
   },
   init() {
     Pool.init(this)
+    this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
     let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
     flagA.setAttribute('decorator-flag', 'color', '#CB3B4E')
@@ -3049,6 +3063,7 @@ AFRAME.registerComponent('csg-tool', {
     this.el.setAttribute('action-tooltips', 'b: Switch Operation; click: Evaulate Boolean')
 
     this.runCSG = this.runCSG.bind(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
   },
   update(oldData)
   {
@@ -3065,6 +3080,7 @@ AFRAME.registerComponent('csg-tool', {
     }
 
     const csgEvaluator = new Evaluator();
+    // csgEvaluator.debug.enabled = true
     let meshA = this.elA.getObject3D('mesh')
     let meshB = this.elB.getObject3D('mesh')
 
@@ -3105,6 +3121,10 @@ AFRAME.registerComponent('csg-tool', {
     result.geometry.computeBoundsTree()
     result.updateMatrixWorld()
 
+    window.csgEvaluator = csgEvaluator
+    window.csgResult = result
+    console.log("Eval", result, csgEvaluator)
+
     if (!csgEvaluator.useGroups)
     {
       result.material = meshA.material
@@ -3116,6 +3136,13 @@ AFRAME.registerComponent('csg-tool', {
       {
         group.materialIndex = 0
       }
+    }
+  },
+  tick(t,dt) {
+    if (this.startPressed && t - this.data.repeatWait > this.startPressed)
+    {
+      this.runCSG()
+      this.startPressed += this.data.repeatInterval
     }
   }
 })
