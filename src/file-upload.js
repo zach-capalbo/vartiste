@@ -1150,6 +1150,7 @@ AFRAME.registerComponent('reference-glb', {
     this.el.classList.add('reference-glb')
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
     this.el.setAttribute('action-tooltips', 'b: Clone')
+    this.el.setAttribute('button-repeater', 'b: true')
     Util.whenComponentInitialized(this.el, 'frame', () => {
       let decomposeButton = this.el.components['frame'].addButton('#asset-shape-outline')
       decomposeButton.setAttribute('tooltip', 'Decompose to shape constructs')

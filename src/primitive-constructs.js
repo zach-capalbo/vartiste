@@ -387,7 +387,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     'bbuttonup': function(e) {
       if (this.el.is("grabbed"))
       {
-        this.makeClone()
+        this.makeClone(e.detail.isRepeat)
       }
       else
       {
@@ -426,6 +426,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   update(oldData) {
     if (this.data.detached) {
       this.el.setAttribute('mesh-can-be-clipped', '')
+      this.el.setAttribute('button-repeater', 'b: true')
       if (!this.el.getObject3D('mesh').material)
       {
         console.error("No material for", this.el, this.el.getObject3D('mesh'))
@@ -461,9 +462,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
     this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
   },
-  makeClone() {
+  makeClone(isScatter) {
     let wasDetached = this.el.getAttribute('primitive-construct-placeholder').detached
-    console.log("Cloning", this.el, wasDetached)
+    if (!isScatter) {
+      console.log("Cloning", this.el, wasDetached)
+    }
     let newPlaceHolder = document.createElement('a-entity')
     this.el.parentEl.append(newPlaceHolder)
     newPlaceHolder.setAttribute('geometry', this.el.getAttribute('geometry'))
@@ -484,6 +487,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
       }
 
       Util.applyMatrix(this.el.getObject3D('mesh').matrix, newPlaceHolder.getObject3D('mesh'))
+
+      if (isScatter)
+      {
+        // newPlaceHolder.object3D.rotateOnWorldAxis(this.el.sceneEl.object3D.up, Math.random() * Math.PI * 2.0)
+      }
 
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.getObject3D('mesh'), newPlaceHolder.getObject3D('mesh'))
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, newPlaceHolder.object3D)

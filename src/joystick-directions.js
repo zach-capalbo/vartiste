@@ -367,6 +367,110 @@ AFRAME.registerComponent('hand-action-tooltip', {
   }
 })
 
+class ButtonRepeatHandler {
+  constructor(el, button) {
+    this.el = el
+    this.button = button
+    this.down = this.down.bind(this)
+    this.up = this.up.bind(this)
+    this.pressed = false
+    el.addEventListener(`${button}down`, this.down)
+    el.addEventListener(`${button}up`, this.up)
+  }
+  down(e) {
+    console.log("Starting repeat for", this.button, this.el)
+    this.startTime = el.sceneEl.time
+    this.pressed = true
+  }
+  up(e) {
+    console.log("Ending repeat for", this.button, this.el)
+    this.startTime = undefined
+    this.pressed = false
+  }
+}
 
+AFRAME.registerSystem('button-repeater', {
+  init() {
+    this.buttonHandlers = new Map()
+  },
+  install(el, buttons) {
+    if (!this.buttonHandlers.has(el))
+    {
+      this.buttonHandlers.set(el, new Map())
+    }
+
+    let elHandlers = this.buttonHandlers.get(el)
+
+    for (let button of buttons)
+    {
+      if (elHandlers.has(button))
+      {
+        continue;
+      }
+
+      elHandlers.set(el, new ButtonRepeatHandler(el, button))
+    }
+  },
+  tick(t, dt) {
+
+  }
+})
+
+AFRAME.registerComponent('button-repeater', {
+  schema: {
+    a: {default: false},
+    b: {default: false},
+    x: {default: false},
+    y: {default: false},
+    trigger: {default: false},
+    grip: {default: false},
+    timeout: {default: 300},
+    interval: {default: 100},
+  },
+  events: {
+    abuttondown: function(e) { this.onDown('abutton', e)},
+    bbuttondown: function(e) { this.onDown('bbutton', e)},
+    xbuttondown: function(e) { this.onDown('xbutton', e)},
+    ybuttondown: function(e) { this.onDown('ybutton', e)},
+    triggerdown: function(e) { this.onDown('trigger', e)},
+    gripdown: function(e) { this.onDown('grip', e)},
+
+    abuttonup: function(e) { this.onUp('abutton', e)},
+    bbuttonup: function(e) { this.onUp('bbutton', e)},
+    xbuttonup: function(e) { this.onUp('xbutton', e)},
+    ybuttonup: function(e) { this.onUp('ybutton', e)},
+    triggerup: function(e) { this.onUp('trigger', e)},
+    gripup: function(e) { this.onUp('grip', e)},
+  },
+  init() {
+    this.buttonStartTimes = {}
+    this.el.sceneEl.systems['button-caster'].install(['b'])
+    this.repeatDetail = {isRepeat: true}
+  },
+  onDown(button, e) {
+    if (e.detail.isRepeat) return;
+    // console.log("Button down", button, e)
+
+    this.buttonStartTimes[button] = this.el.sceneEl.time
+  },
+  onUp(button, e) {
+    if (e.detail.isRepeat) return;
+    // console.log("Button real up", button, e)
+
+    delete this.buttonStartTimes[button]
+  },
+  tick(t,dt) {
+    for (let [button, time] of Object.entries(this.buttonStartTimes))
+    {
+      if (t - time > this.data.timeout)
+      {
+        // console.log("Repeating", button)
+        this.el.emit(`${button}down`, this.repeatDetail)
+        this.el.emit(`${button}up`, this.repeatDetail)
+        this.buttonStartTimes[button] = t + this.data.interval - this.data.timeout
+      }
+    }
+  }
+})
 
 export { JoystickDirections, ButtonMaps, Axes }
