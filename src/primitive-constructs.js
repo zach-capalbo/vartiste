@@ -181,6 +181,7 @@ Util.registerComponentSystem('primitive-constructs', {
       console.log("Made reference", el)
     })
     this.el.sceneEl.emit('refreshobjects')
+    return el
   },
   makeDrawable() {
     this.grabConstruct(null);
@@ -439,7 +440,14 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   },
   remove() {
     this.el.getObject3D('mesh').traverse(o => {
-      if (o.material) o.material.dispose()
+      if (o.material.length) {
+        for (let m of o.material)
+        {
+          m.dispose()
+        }
+      } else if (o.material) {
+        o.material.dispose()
+      }
       if (o.geometry) o.geometry.dispose()
     })
   },
@@ -503,16 +511,37 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
 AFRAME.registerComponent('grouping-tool', {
   dependencies: ['selection-box-tool'],
+  schema: {
+    mergeGeometry: {default: false},
+  },
   events: {
     grabstarted: function(e) {
       if (!this.el.components['selection-box-tool'].grabbing) return;
 
       console.log("Grabbed", e.detail.grabbed)
       this.el.components['selection-box-tool'].toggleGrabbing(false)
-      this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
+      let reference = this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
+
+      if (this.data.mergeGeometry)
+      {
+        Util.whenLoaded(reference, () => {
+          Util.callLater(() => {
+            Util.mergeBufferGeometries(reference, {useGroups: true})
+            Util.disposeEl(reference)
+          })
+        })
+      }
+
+    },
+    bbuttondown: function(e) {
+      this.el.setAttribute('grouping-tool', 'mergeGeometry', !this.data.mergeGeometry)
     }
   },
   init() {
     this.el.setAttribute('selection-box-tool', 'selector', 'a-entity[primitive-construct-placeholder], .reference-glb')
+    this.el.setAttribute('action-tooltips', 'b', 'Toggle merge geometry')
   },
+  update(oldData) {
+    this.el.setAttribute('action-tooltips', 'label', this.data.mergeGeometry ? 'Grouping Tool' : 'Merge Geometry Tool')
+  }
 })

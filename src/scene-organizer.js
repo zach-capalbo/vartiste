@@ -397,7 +397,7 @@ AFRAME.registerComponent('object3d-view', {
     this.targetEl.setAttribute('animation-3d-keyframed', 'puppeteering', e.target.is('toggled'))
   },
   hierarchyToBones() {
-    
+
   },
   applyWrapping() {
     let wrap = this.el.sceneEl.systems['animation-3d'].isWrapping(this.object)
@@ -468,26 +468,7 @@ AFRAME.registerComponent('object3d-view', {
     })
   },
   mergeBufferGeometries() {
-    let geometries = []
-    Util.traverseCondition(this.object, o => !(o.userData && o.userData.vartisteUI), o => {
-      if (!o.geometry) return;
-      let geometry = o.geometry.clone()
-      for (let attribute in geometry.attributes)
-      {
-        if (attribute === 'position' || attribute === 'normal' || attribute === 'uv') continue;
-        geometry.deleteAttribute(attribute)
-      }
-      o.updateMatrixWorld()
-      geometry.applyMatrix4(o.matrixWorld)
-      geometries.push(geometry)
-    })
-    let merged = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, false)
-    let mesh = new THREE.Mesh(merged, Util.traverseFind(this.object, o => o.material).material)
-    merged.computeBoundingBox()
-    merged.boundingBox.getCenter(mesh.position)
-    merged.center()
-    let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
-    // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
+    Util.mergeBufferGeometries(this.object, {useGroups: true})
   },
   mergeBufferGeometriesAndMaterials() {
 
