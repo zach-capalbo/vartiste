@@ -1,4 +1,4 @@
-a-entity shelf="name: Material Options"
+a-entity shelf="name: Material Options; closeable: true"
   a-entity shelf-content=""
       - for (let prop of ['roughness', 'metalness'])
         a-entity icon-row="mergeButtons: true"

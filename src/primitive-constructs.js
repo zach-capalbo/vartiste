@@ -542,6 +542,6 @@ AFRAME.registerComponent('grouping-tool', {
     this.el.setAttribute('action-tooltips', 'b', 'Toggle merge geometry')
   },
   update(oldData) {
-    this.el.setAttribute('action-tooltips', 'label', this.data.mergeGeometry ? 'Grouping Tool' : 'Merge Geometry Tool')
+    this.el.setAttribute('action-tooltips', 'label', this.data.mergeGeometry ? 'Merge Geometry Tool' : 'Grouping Tool')
   }
 })
