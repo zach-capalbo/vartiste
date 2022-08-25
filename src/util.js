@@ -2,6 +2,7 @@ import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import {INTERSECTED, CONTAINED, NOT_INTERSECTED} from './framework/three-mesh-bvh.js'
 import {THREED_MODES} from './layer-modes.js'
+import {BufferGeometryUtils} from './framework/BufferGeometryUtils.js'
 const Color = require('color')
 
 export const MAP_FROM_FILENAME = {
@@ -193,6 +194,69 @@ class VARTISTEUtil {
     {
       positioner.parent.remove(positioner)
     }
+  }
+
+  mergeBufferGeometries(object, {useGroups = false} = {}) {
+    let geometries = []
+    let firstMaterial
+    let materials = []
+    let differentMaterials = false
+    if (object.object3D) object = object.object3D;
+
+    Util.traverseCondition(object, o => !(o.userData && o.userData.vartisteUI), o => {
+      if (!o.geometry) return;
+
+      let geometry = o.geometry.clone()
+      for (let attribute in geometry.attributes)
+      {
+        if (attribute === 'position' || attribute === 'normal' || attribute === 'uv') continue;
+        geometry.deleteAttribute(attribute)
+      }
+
+      if (useGroups)
+      {
+        if (o.material && !firstMaterial)
+        {
+          firstMaterial = o.material
+        }
+        else if (o.material && o.material !== firstMaterial)
+        {
+          differentMaterials = true
+        }
+        if (o.material && o.material.length)
+        {
+          // This needs aa BufferGeometryUtils fix....
+          materials.push(...o.material)
+          // materials.push(o.material[0])
+        }
+        else if (o.material)
+        {
+          materials.push(o.material)
+        }
+
+        if (!o.material.length && geometry.groups.length > 0)
+        {
+          geometry.groups.length = 0
+        }
+      }
+
+      o.updateMatrixWorld()
+      geometry.applyMatrix4(o.matrixWorld)
+      geometries.push(geometry)
+    })
+    if (geometries.length <= 1) return;
+
+    useGroups = useGroups && differentMaterials
+    let merged = BufferGeometryUtils.mergeBufferGeometries(geometries, useGroups)
+    let mesh = new THREE.Mesh(merged, useGroups ? materials : Util.traverseFind(object, o => o.material).material)
+
+    merged.computeBoundingBox()
+    merged.boundingBox.getCenter(mesh.position)
+    merged.center()
+    let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+    console.log("Merged", merged, mesh)
+    return el
+    // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
   }
 
   keepingWorldPosition(object3D, fn) {

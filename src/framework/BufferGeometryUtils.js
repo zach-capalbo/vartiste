@@ -214,9 +214,13 @@ var BufferGeometryUtils = {
 
 		var offset = 0;
 
+		var nextGroupIndex = 0;
+
 		for ( var i = 0; i < geometries.length; ++ i ) {
 
 			var geometry = geometries[ i ];
+
+			let groupIndex = nextGroupIndex;
 
 			// ensure that all geometries are indexed, or none
 
@@ -253,7 +257,24 @@ var BufferGeometryUtils = {
 			mergedGeometry.userData.mergedUserData = mergedGeometry.userData.mergedUserData || [];
 			mergedGeometry.userData.mergedUserData.push( geometry.userData );
 
-			if ( useGroups ) {
+			if ( useGroups && geometry.groups.length > 0) {
+
+				// Keep existing groups
+
+				let nextOffset = offset;
+
+				for ( var group of geometry.groups ) {
+
+					mergedGeometry.addGroup( offset + group.start, group.count, groupIndex + group.materialIndex );
+					nextOffset = Math.max(nextOffset, offset + group.start + group.count);
+					nextGroupIndex = Math.max(nextGroupIndex, groupIndex + group.materialIndex);
+
+				}
+
+				nextGroupIndex ++;
+				offset = nextOffset;
+
+			} else if ( useGroups ) {
 
 				var count;
 
@@ -271,9 +292,10 @@ var BufferGeometryUtils = {
 
 				}
 
-				mergedGeometry.addGroup( offset, count, i );
+				mergedGeometry.addGroup( offset, count, groupIndex );
 
 				offset += count;
+				++ nextGroupIndex;
 
 			}
 

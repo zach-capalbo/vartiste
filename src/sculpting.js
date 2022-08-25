@@ -3001,24 +3001,47 @@ const CSG_TOOL_OPERATION_ARRAY = Object.keys(CSG_TOOL_OPERATION_MAP)
 AFRAME.registerComponent('csg-tool', {
   dependencies: ['six-dof-tool', 'grab-activate', 'grab-root'],
   schema: {
-    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY}
+    operation: {default: 'SUBTRACTION', oneOf: CSG_TOOL_OPERATION_ARRAY},
+    repeatInterval: {default: 50},
+    repeatWait: {default: 300},
   },
   events: {
     startobjectconstraint: function(e) {
       let el = e.detail.el
       el.addEventListener('click', this.runCSG)
+      el.addEventListener('triggerdown', this.events.triggerdown)
+      el.addEventListener('triggerup', this.events.triggerup)
       if (e.target === this.flagA)
       {
         this.elA = el
+        this.csgEvaluator = new Evaluator()
+        let mesh = el.getObject3D('mesh')
+        this.brush1 = mesh.isBrush ? mesh : this.brushify(mesh)
       }
       else
       {
         this.elB = el
+        this.brush2 = this.brushify(el.getObject3D('mesh'))
       }
+
+      if (this.elA && this.elB)
+      {
+        // let positioner = this.pool('positioner', THREE.Object3D)
+        // let parent = this.elA.getObject3D('mesh').parent
+        // parent.add(positioner)
+        // Util.positionObject3DAtTarget(positioner, this.elB.getObject3D('mesh'))
+        // Util.applyMatrix(positioner.matrixWorld, this.brush2)
+        // this.brush1.matrixWorld.copy(this.elA.getObject3D('mesh').matrixWorld)
+        // console.log("Trying to position boolean", this.brush1, this.brush2, this.elA.getObject3D('mesh'), this.elB.getObject3D('mesh'), positioner)
+        // parent.remove(positioner)
+      }
+
       console.log("CSG Selection", this.elA, this.elB)
     },
     endobjectconstraint: function(e) {
       e.detail.el.removeEventListener('click', this.runCSG)
+      e.detail.el.removeEventListener('triggerdown', this.events.triggerdown)
+      e.detail.el.removeEventListener('triggerup', this.events.triggerup)
       if (e.target === this.flagA)
       {
         this.elA = null
@@ -3034,10 +3057,18 @@ AFRAME.registerComponent('csg-tool', {
     bbuttondown: function(e) {
       console.log("Switching operation to", CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
       this.el.setAttribute('csg-tool', 'operation', CSG_TOOL_OPERATION_ARRAY[(CSG_TOOL_OPERATION_ARRAY.indexOf(this.data.operation) + 1) % CSG_TOOL_OPERATION_ARRAY.length])
+    },
+    triggerdown: function(e) {
+      console.log("Starting triggerdown", this, this.el)
+      this.startPressed = this.el.sceneEl.time
+    },
+    triggerup: function(e) {
+      this.startPressed = undefined
     }
   },
   init() {
     Pool.init(this)
+    this.el.sceneEl.systems['button-caster'].install(['trigger', 'b'])
     let handle = this.handle = this.el.sceneEl.systems['pencil-tool'].createHandle({radius: 0.07, height: 0.3, parentEl: this.el})
     let flagA = this.flagA = this.el.sceneEl.systems['pencil-tool'].createConnectedFlag(this.el, {connectorName: 'flagA'})
     flagA.setAttribute('decorator-flag', 'color', '#CB3B4E')
@@ -3049,54 +3080,82 @@ AFRAME.registerComponent('csg-tool', {
     this.el.setAttribute('action-tooltips', 'b: Switch Operation; click: Evaulate Boolean')
 
     this.runCSG = this.runCSG.bind(this)
+    this.tick = AFRAME.utils.throttleTick(this.tick, 10, this)
   },
   update(oldData)
   {
     this.el.setAttribute('action-tooltips', `label: Boolean (${this.data.operation})`)
   },
-  brushify(mesh, useGroups = false){
-    return new Brush(mesh.geometry, mesh.material);
+  brushify(mesh){
+    let brush = new Brush(mesh.geometry, mesh.material);
+    // mesh.updateMatrixWorld()
+    // Util.applyMatrix(mesh.matrixWorld, brush)
+    // brush.matrixWorld.copy(mesh.matrixWorld)
+    return brush
   },
-  runCSG() {
+  runCSG({enableUndo = true} = {}) {
     if (!this.elA || !this.elB)
     {
       console.log("Cannot CSG without elA and elB", this.elA, this.elB)
       return
     }
 
-    const csgEvaluator = new Evaluator();
+    const csgEvaluator = this.csgEvaluator;
+    // csgEvaluator.debug.enabled = true
     let meshA = this.elA.getObject3D('mesh')
     let meshB = this.elB.getObject3D('mesh')
 
     csgEvaluator.useGroups = meshA.material !== meshB.material;
     let originalMatrix = this.pool('originalMatrix', THREE.Matrix4)
-    const brush1 = this.brushify(meshA, csgEvaluator.useGroups)
-    const brush2 = this.brushify(meshB, csgEvaluator.useGroups)
+    const brush1 = this.brush1
+    const brush2 = this.brush2
+
+    let originalBrushMatrix = this.pool('originalBrushMatrix', THREE.Matrix4)
 
     meshA.updateMatrixWorld()
     originalMatrix.copy(meshA.matrixWorld)
+    originalBrushMatrix.copy(brush1.matrix)
+
+    let originalBrushParent = brush1.parent
+    if (originalBrushParent)
+    {
+      originalBrushParent.remove(brush1)
+    }
 
     brush1.matrixWorld.identity()
     brush2.matrixWorld.identity()
-    Util.applyMatrix(meshA.matrixWorld, brush1)
+    Util.applyMatrix(originalMatrix, brush1)
     Util.applyMatrix(meshB.matrixWorld, brush2)
-    brush1.matrixWorld.copy(meshA.matrixWorld)
+    brush1.matrixWorld.copy(originalMatrix)
     brush2.matrixWorld.copy(meshB.matrixWorld)
 
     const result = csgEvaluator.evaluate( brush1, brush2, CSG_TOOL_OPERATION_MAP[this.data.operation]);
-    Util.applyMatrix(meshA.matrix, result)
+
+    if (originalBrushParent)
+    {
+      originalBrushParent.add(brush1)
+    }
+
     meshA.parent.add(result)
     meshA.geometry.dispose()
 
-    Undo.pushSymmetric((u) => {
-      this.elA.setObject3D('mesh', result)
-      u.push(() => {
-        this.elA.setObject3D('mesh', meshA)
+    if (enableUndo)
+    {
+      Undo.pushSymmetric((u) => {
+        this.elA.setObject3D('mesh', result)
+        u.push(() => {
+          this.elA.setObject3D('mesh', meshA)
+        })
       })
-    })
+    }
+    else
+    {
+      this.elA.setObject3D('mesh', result)
+    }
 
+    // console.log("result", result.matrix.elements.slice())
+    result.matrix.copy(originalBrushMatrix)
     originalMatrix.invert()
-
     result.matrix.multiply(originalMatrix)
     Util.applyMatrix(result.matrix, result)
 
@@ -3104,6 +3163,12 @@ AFRAME.registerComponent('csg-tool', {
     result.geometry.computeBoundingSphere()
     result.geometry.computeBoundsTree()
     result.updateMatrixWorld()
+
+    // window.csgEvaluator = csgEvaluator
+    // window.csgResult = result
+    // console.log("Eval", result, csgEvaluator)
+
+    this.brush1 = result
 
     if (!csgEvaluator.useGroups)
     {
@@ -3116,6 +3181,13 @@ AFRAME.registerComponent('csg-tool', {
       {
         group.materialIndex = 0
       }
+    }
+  },
+  tick(t,dt) {
+    if (this.startPressed && t - this.data.repeatWait > this.startPressed)
+    {
+      this.runCSG({enableUndo: false})
+      this.startPressed += this.data.repeatInterval
     }
   }
 })

@@ -280,7 +280,7 @@ AFRAME.registerSystem('button-caster', {
     }
   },
   forwardDownEvent(caster, button, e) {
-    console.log("Forwarding button", caster, button, e)
+    // console.log("Forwarding button", caster, button, e)
     if (caster.components.raycaster.intersections.length == 0) return
 
     let intersection = caster.components.raycaster.intersections.sort(i => navigator.xr ? i.distance : - i.distance)[0]

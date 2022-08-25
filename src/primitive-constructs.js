@@ -181,6 +181,7 @@ Util.registerComponentSystem('primitive-constructs', {
       console.log("Made reference", el)
     })
     this.el.sceneEl.emit('refreshobjects')
+    return el
   },
   makeDrawable() {
     this.grabConstruct(null);
@@ -387,7 +388,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
     'bbuttonup': function(e) {
       if (this.el.is("grabbed"))
       {
-        this.makeClone()
+        this.makeClone(e.detail.isRepeat)
       }
       else
       {
@@ -426,6 +427,7 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   update(oldData) {
     if (this.data.detached) {
       this.el.setAttribute('mesh-can-be-clipped', '')
+      this.el.setAttribute('button-repeater', 'b: true')
       if (!this.el.getObject3D('mesh').material)
       {
         console.error("No material for", this.el, this.el.getObject3D('mesh'))
@@ -438,7 +440,14 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
   },
   remove() {
     this.el.getObject3D('mesh').traverse(o => {
-      if (o.material) o.material.dispose()
+      if (o.material.length) {
+        for (let m of o.material)
+        {
+          m.dispose()
+        }
+      } else if (o.material) {
+        o.material.dispose()
+      }
       if (o.geometry) o.geometry.dispose()
     })
   },
@@ -461,9 +470,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
     this.el.getObject3D('mesh').geometry = this.el.getObject3D('mesh').geometry.clone()
   },
-  makeClone() {
+  makeClone(isScatter) {
     let wasDetached = this.el.getAttribute('primitive-construct-placeholder').detached
-    console.log("Cloning", this.el, wasDetached)
+    if (!isScatter) {
+      console.log("Cloning", this.el, wasDetached)
+    }
     let newPlaceHolder = document.createElement('a-entity')
     this.el.parentEl.append(newPlaceHolder)
     newPlaceHolder.setAttribute('geometry', this.el.getAttribute('geometry'))
@@ -485,6 +496,11 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
       Util.applyMatrix(this.el.getObject3D('mesh').matrix, newPlaceHolder.getObject3D('mesh'))
 
+      if (isScatter)
+      {
+        // newPlaceHolder.object3D.rotateOnWorldAxis(this.el.sceneEl.object3D.up, Math.random() * Math.PI * 2.0)
+      }
+
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.getObject3D('mesh'), newPlaceHolder.getObject3D('mesh'))
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, newPlaceHolder.object3D)
     })
@@ -495,16 +511,37 @@ AFRAME.registerComponent('primitive-construct-placeholder', {
 
 AFRAME.registerComponent('grouping-tool', {
   dependencies: ['selection-box-tool'],
+  schema: {
+    mergeGeometry: {default: false},
+  },
   events: {
     grabstarted: function(e) {
       if (!this.el.components['selection-box-tool'].grabbing) return;
 
       console.log("Grabbed", e.detail.grabbed)
       this.el.components['selection-box-tool'].toggleGrabbing(false)
-      this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
+      let reference = this.el.sceneEl.systems['primitive-constructs'].makeReference(Object.values(e.detail.grabbed))
+
+      if (this.data.mergeGeometry)
+      {
+        Util.whenLoaded(reference, () => {
+          Util.callLater(() => {
+            Util.mergeBufferGeometries(reference, {useGroups: true})
+            Util.disposeEl(reference)
+          })
+        })
+      }
+
+    },
+    bbuttondown: function(e) {
+      this.el.setAttribute('grouping-tool', 'mergeGeometry', !this.data.mergeGeometry)
     }
   },
   init() {
     this.el.setAttribute('selection-box-tool', 'selector', 'a-entity[primitive-construct-placeholder], .reference-glb')
+    this.el.setAttribute('action-tooltips', 'b', 'Toggle merge geometry')
   },
+  update(oldData) {
+    this.el.setAttribute('action-tooltips', 'label', this.data.mergeGeometry ? 'Merge Geometry Tool' : 'Grouping Tool')
+  }
 })

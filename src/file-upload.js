@@ -647,11 +647,38 @@ async function addGlbReference(file, {loadingManager = undefined} = {}) {
   let asset = document.createElement('a-asset-item')
   asset.id = `asset-model-${id}`
 
-  let loader = new THREE.GLTFLoader(loadingManager)
-  loader.setDRACOLoader(Compositor.el.sceneEl.systems['gltf-model'].dracoLoader)
+  let model
 
-  let buffer = await file.arrayBuffer()
-  let model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  if (file.name && file.name.slice(-4).toLowerCase() == '.fbx')
+  {
+    const { FBXLoader } = await import('./framework/FBXLoader.js')
+    let loader = new FBXLoader(loadingManager)
+    let buffer = await file.arrayBuffer()
+    model = new THREE.Object3D()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+    model.traverse(o => {
+      if (o.material && o.material.isMeshPhongMaterial)
+      {
+        o.material = new THREE.MeshStandardMaterial({color: o.material.color, map: o.material.map})
+      }
+    })
+  }
+  else if (file.name && file.name.slice(-4).toLowerCase() == '.obj')
+  {
+    let loader = new THREE.OBJLoader(loadingManager)
+    model = new THREE.Object3D()
+    let buffer = await file.text()
+    model.scene = loader.parse(buffer)
+    model.add(model.scene)
+  }
+  else
+  {
+    let loader = new THREE.GLTFLoader(loadingManager)
+    loader.setDRACOLoader(Compositor.el.sceneEl.systems['gltf-model'].dracoLoader)
+    let buffer = await file.arrayBuffer()
+    model = await new Promise((r, e) => loader.parse(buffer, "", r, e))
+  }
 
 
   let entity = document.createElement('a-entity')
@@ -1123,6 +1150,7 @@ AFRAME.registerComponent('reference-glb', {
     this.el.classList.add('reference-glb')
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
     this.el.setAttribute('action-tooltips', 'b: Clone')
+    this.el.setAttribute('button-repeater', 'b: true')
     Util.whenComponentInitialized(this.el, 'frame', () => {
       let decomposeButton = this.el.components['frame'].addButton('#asset-shape-outline')
       decomposeButton.setAttribute('tooltip', 'Decompose to shape constructs')
