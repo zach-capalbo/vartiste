@@ -781,6 +781,22 @@ class VARTISTEUtil {
         ctx.fillStyle = 'rgb(0, 0, 0)'
         shouldFill = true;
         break;
+      case 'transmissionMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatRoughnessMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatNormalMap':
+        ctx.fillStyle = 'rgb(128, 128, 255)'
+        shouldFill = true
+        break;
       default:
         console.warn("Can't fill unknown map", map)
         break;

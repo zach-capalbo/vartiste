@@ -557,7 +557,7 @@ AFRAME.registerComponent('camera-tool', {
     let originalMaterials = new Map()
     let colorOnlyMaterials = new Map()
     this.el.sceneEl.object3D.traverseVisible(o => {
-      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.type === "MeshStandardMaterial" || o.material.type === "MeshMatcapMaterial")) {
+      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.isMeshStandardMaterial || o.material.type === "MeshMatcapMaterial")) {
         originalMaterials.set(o, o.material)
       }
       else if (o.material)
@@ -623,7 +623,7 @@ AFRAME.registerComponent('camera-tool', {
             side: m.side,
             transparent: m.transparent,
             opacity: m.opacity,
-            visible: m.type === 'MeshStandardMaterial',
+            visible: m.isMeshStandardMaterial,
             clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
           })
         }

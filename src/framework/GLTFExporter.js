@@ -21,7 +21,7 @@ const {
 	Source,
 	sRGBEncoding,
 	Vector3
-} = 'three';
+} = THREE;
 
 class GLTFExporter {
 
@@ -53,11 +53,11 @@ class GLTFExporter {
 
 		} );
 
-		this.register( function ( writer ) {
-
-			return new GLTFMaterialsVolumeExtension( writer );
-
-		} );
+		// this.register( function ( writer ) {
+		//
+		// 	return new GLTFMaterialsVolumeExtension( writer );
+		//
+		// } );
 
 		this.register( function ( writer ) {
 
@@ -65,11 +65,11 @@ class GLTFExporter {
 
 		} );
 
-		this.register( function ( writer ) {
-
-			return new GLTFMaterialsIridescenceExtension( writer );
-
-		} );
+		// this.register( function ( writer ) {
+		//
+		// 	return new GLTFMaterialsIridescenceExtension( writer );
+		//
+		// } );
 
 	}
 
@@ -113,6 +113,11 @@ class GLTFExporter {
 
 			plugins.push( this.pluginCallbacks[ i ]( writer ) );
 
+		}
+
+		if (typeof onError !== 'function' && !options)
+		{
+			options = onError
 		}
 
 		writer.setPlugins( plugins );
@@ -352,7 +357,10 @@ function getToBlobPromise( canvas, mimeType ) {
 
 	if ( canvas.toBlob !== undefined ) {
 
-		return new Promise( ( resolve ) => canvas.toBlob( resolve, mimeType ) );
+		return new Promise( ( resolve ) => {
+			console.log("ToBlobbing canvas")
+			canvas.toBlob( resolve, mimeType )
+		});
 
 	}
 
@@ -369,6 +377,8 @@ function getToBlobPromise( canvas, mimeType ) {
 		quality = 0.8;
 
 	}
+
+	console.log("Tring convertToBlob", canvas)
 
 	return canvas.convertToBlob( {
 
@@ -439,7 +449,7 @@ class GLTFWriter {
 			trs: false,
 			onlyVisible: true,
 			truncateDrawRange: true,
-			maxTextureSize: Infinity,
+			maxTextureSize: () => Infinity,
 			animations: [],
 			includeCustomExtensions: false
 		}, options );
@@ -747,11 +757,11 @@ class GLTFWriter {
 
 		console.warn( 'THREE.GLTFExporter: Merged metalnessMap and roughnessMap textures.' );
 
-		const metalness = metalnessMap?.image;
-		const roughness = roughnessMap?.image;
+		const metalness = metalnessMap ? metalnessMap.image : null;
+		const roughness = roughnessMap ? roughnessMap.image : null;
 
-		const width = Math.max( metalness?.width || 0, roughness?.width || 0 );
-		const height = Math.max( metalness?.height || 0, roughness?.height || 0 );
+		const width = Math.max( metalness ? metalness.width : 0, roughness ? roughness.width : 0 );
+		const height = Math.max( metalness ? metalness.height : 0, roughness ? roughness.height : 0 );
 
 		const canvas = getCanvas();
 		canvas.width = width;
@@ -801,7 +811,8 @@ class GLTFWriter {
 
 		const texture = reference.clone();
 
-		texture.source = new Source( canvas );
+		// texture.source = new Source( canvas );
+		texture.image = canvas;
 		texture.encoding = LinearEncoding;
 
 		return texture;
@@ -1108,8 +1119,9 @@ class GLTFWriter {
 
 		const canvas = getCanvas();
 
-		canvas.width = Math.min( image.width, options.maxTextureSize );
-		canvas.height = Math.min( image.height, options.maxTextureSize );
+		// TODO: Map name
+		canvas.width = Math.min( image.width, options.maxTextureSize(image, "map") );
+		canvas.height = Math.min( image.height, options.maxTextureSize(image, "map") );
 
 		const ctx = canvas.getContext( '2d' );
 
@@ -1233,7 +1245,7 @@ class GLTFWriter {
 
 		if ( ! json.textures ) json.textures = [];
 
-		let mimeType = map.userData.mimeType;
+		let mimeType = map.userData ? map.userData.mimeType : 'image/png';
 
 		if ( mimeType === 'image/webp' ) mimeType = 'image/png';
 
@@ -2753,3 +2765,4 @@ GLTFExporter.Utils = {
 };
 
 export { GLTFExporter };
+THREE.GLTFExporter = GLTFExporter
