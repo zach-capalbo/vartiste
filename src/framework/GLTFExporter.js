@@ -353,13 +353,13 @@ function getCanvas() {
 
 }
 
-function getToBlobPromise( canvas, mimeType ) {
+function getToBlobPromise( canvas, mimeType, imageQuality ) {
 
 	if ( canvas.toBlob !== undefined ) {
 
 		return new Promise( ( resolve ) => {
 			console.log("ToBlobbing canvas")
-			canvas.toBlob( resolve, mimeType )
+			canvas.toBlob( resolve, mimeType, imageQuality )
 		});
 
 	}
@@ -448,10 +448,14 @@ class GLTFWriter {
 			binary: false,
 			trs: false,
 			onlyVisible: true,
+			bypassVARTISTEUi: true,
 			truncateDrawRange: true,
 			maxTextureSize: () => Infinity,
 			animations: [],
-			includeCustomExtensions: false
+			includeCustomExtensions: false,
+			mimeType: 'image/png',
+			imageQuality: undefined,
+			postProcessJSON: function(j) { return j; }
 		}, options );
 
 		if ( this.options.animations.length > 0 ) {
@@ -473,6 +477,8 @@ class GLTFWriter {
 
 		// Merge buffers.
 		const blob = new Blob( buffers, { type: 'application/octet-stream' } );
+
+		options.postProcessJSON(json);
 
 		// Declare extensions.
 		const extensionsUsedList = Object.keys( extensionsUsed );
@@ -659,6 +665,8 @@ class GLTFWriter {
 		const cache = this.cache;
 
 		if ( cache.attributesNormalized.has( normal ) )	return cache.attributesNormalized.get( normal );
+
+		if (!normal.clone) return normal;
 
 		const attribute = normal.clone();
 		const v = new Vector3();
@@ -1097,7 +1105,7 @@ class GLTFWriter {
 	 * @param  {String} mimeType export format
 	 * @return {Integer}     Index of the processed texture in the "images" array
 	 */
-	processImage( image, format, flipY, mimeType = 'image/png' ) {
+	processImage( image, format, flipY, mimeType = 'image/png', mapName ) {
 
 		const writer = this;
 		const cache = writer.cache;
@@ -1119,9 +1127,16 @@ class GLTFWriter {
 
 		const canvas = getCanvas();
 
+		let maxTextureSize = options.maxTextureSize;
+
+		if (typeof maxTextureSize === 'function')
+		{
+			maxTextureSize = maxTextureSize(image, mapName)
+		}
+
 		// TODO: Map name
-		canvas.width = Math.min( image.width, options.maxTextureSize(image, "map") );
-		canvas.height = Math.min( image.height, options.maxTextureSize(image, "map") );
+		canvas.width = Math.min( image.width, maxTextureSize );
+		canvas.height = Math.min( image.height, maxTextureSize );
 
 		const ctx = canvas.getContext( '2d' );
 
@@ -1161,15 +1176,28 @@ class GLTFWriter {
 
 		} else {
 
-			ctx.drawImage( image, 0, 0, canvas.width, canvas.height );
+			ctx.drawImage( image, 0, 0, image.width, image.height,
+														0, 0, canvas.width, canvas.height );
 
+		}
+
+		if ( typeof options.mimeType === 'function' )
+		{
+			mimeType = options.mimeType(canvas, mapName)
+			imageDef.mimeType = mimeType
+		}
+
+		let imageQuality = options.imageQuality
+		if (typeof imageQuality === 'function')
+		{
+			imageQuality = imageQuality(canvas, mapName)
 		}
 
 		if ( options.binary === true ) {
 
 			pending.push(
 
-				getToBlobPromise( canvas, mimeType )
+				getToBlobPromise( canvas, mimeType, imageQuality )
 					.then( blob => writer.processBufferViewImage( blob ) )
 					.then( bufferViewIndex => {
 
@@ -1183,13 +1211,13 @@ class GLTFWriter {
 
 			if ( canvas.toDataURL !== undefined ) {
 
-				imageDef.uri = canvas.toDataURL( mimeType );
+				imageDef.uri = canvas.toDataURL( mimeType, imageQuality );
 
 			} else {
 
 				pending.push(
 
-					getToBlobPromise( canvas, mimeType )
+					getToBlobPromise( canvas, mimeType, imageQuality )
 						.then( blob => new FileReader().readAsDataURL( blob ) )
 						.then( dataURL => {
 
@@ -1236,7 +1264,7 @@ class GLTFWriter {
 	 * @param  {Texture} map Map to process
 	 * @return {Integer} Index of the processed texture in the "textures" array
 	 */
-	processTexture( map ) {
+	processTexture( map, mapSlot ) {
 
 		const cache = this.cache;
 		const json = this.json;
@@ -1251,10 +1279,18 @@ class GLTFWriter {
 
 		const textureDef = {
 			sampler: this.processSampler( map ),
-			source: this.processImage( map.image, map.format, map.flipY, mimeType )
+			source: this.processImage( map.image, map.format, map.flipY, mimeType, mapSlot )
 		};
 
-		if ( map.name ) textureDef.name = map.name;
+		if ( map.name ) {
+
+			textureDef.name = map.name;
+
+		} else {
+
+			textureDef.name = mapSlot;
+
+		}
 
 		this._invokeAll( function ( ext ) {
 
@@ -1324,7 +1360,7 @@ class GLTFWriter {
 
 			const metalRoughTexture = this.buildMetalRoughTexture( material.metalnessMap, material.roughnessMap );
 
-			const metalRoughMapDef = { index: this.processTexture( metalRoughTexture ) };
+			const metalRoughMapDef = { index: this.processTexture( metalRoughTexture,  "metalnessMap" ) };
 			this.applyTextureTransform( metalRoughMapDef, metalRoughTexture );
 			materialDef.pbrMetallicRoughness.metallicRoughnessTexture = metalRoughMapDef;
 
@@ -1333,7 +1369,7 @@ class GLTFWriter {
 		// pbrMetallicRoughness.baseColorTexture or pbrSpecularGlossiness diffuseTexture
 		if ( material.map ) {
 
-			const baseColorMapDef = { index: this.processTexture( material.map ) };
+			const baseColorMapDef = { index: this.processTexture( material.map, "map" ) };
 			this.applyTextureTransform( baseColorMapDef, material.map );
 			materialDef.pbrMetallicRoughness.baseColorTexture = baseColorMapDef;
 
@@ -1362,7 +1398,7 @@ class GLTFWriter {
 			// emissiveTexture
 			if ( material.emissiveMap ) {
 
-				const emissiveMapDef = { index: this.processTexture( material.emissiveMap ) };
+				const emissiveMapDef = { index: this.processTexture( material.emissiveMap, "emissiveMap" ) };
 				this.applyTextureTransform( emissiveMapDef, material.emissiveMap );
 				materialDef.emissiveTexture = emissiveMapDef;
 
@@ -1373,7 +1409,7 @@ class GLTFWriter {
 		// normalTexture
 		if ( material.normalMap ) {
 
-			const normalMapDef = { index: this.processTexture( material.normalMap ) };
+			const normalMapDef = { index: this.processTexture( material.normalMap, "normalMap" ) };
 
 			if ( material.normalScale && material.normalScale.x !== 1 ) {
 
@@ -1392,7 +1428,7 @@ class GLTFWriter {
 		if ( material.aoMap ) {
 
 			const occlusionMapDef = {
-				index: this.processTexture( material.aoMap ),
+				index: this.processTexture( material.aoMap, "aoMap" ),
 				texCoord: 1
 			};
 
@@ -1804,7 +1840,8 @@ class GLTFWriter {
 
 		if ( ! json.animations ) json.animations = [];
 
-		clip = GLTFExporter.Utils.mergeMorphTargetTracks( clip.clone(), root );
+		console.warn("Skipping morph target merging")
+		// clip = GLTFExporter.Utils.mergeMorphTargetTracks( clip.clone(), root );
 
 		const tracks = clip.tracks;
 		const channels = [];
@@ -1844,6 +1881,7 @@ class GLTFWriter {
 			if ( trackProperty === PATH_PROPERTIES.morphTargetInfluences ) {
 
 				outputItemSize /= trackNode.morphTargetInfluences.length;
+				outputItemSize = Math.max(1, Math.round(outputItemSize))
 
 			}
 
@@ -2027,6 +2065,7 @@ class GLTFWriter {
 				const child = object.children[ i ];
 
 				if ( child.visible || options.onlyVisible === false ) {
+					if (options.bypassVARTISTEUi && child.userData && child.userData.vartisteUI) continue;
 
 					const nodeIndex = this.processNode( child );
 
@@ -2081,6 +2120,7 @@ class GLTFWriter {
 			const child = scene.children[ i ];
 
 			if ( child.visible || options.onlyVisible === false ) {
+				if (options.bypassVARTISTEUi && child.userData && child.userData.vartisteUI) continue;
 
 				const nodeIndex = this.processNode( child );
 
@@ -2352,7 +2392,7 @@ class GLTFMaterialsPBRSpecularGlossiness {
 
 		if ( material.specularMap ) {
 
-			const specularMapDef = { index: writer.processTexture( material.specularMap ) };
+			const specularMapDef = { index: writer.processTexture( material.specularMap, "specularMap" ) };
 			writer.applyTextureTransform( specularMapDef, material.specularMap );
 			extensionDef.specularGlossinessTexture = specularMapDef;
 
@@ -2393,7 +2433,7 @@ class GLTFMaterialsClearcoatExtension {
 
 		if ( material.clearcoatMap ) {
 
-			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap ) };
+			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap, "clearcoarMap" ) };
 			writer.applyTextureTransform( clearcoatMapDef, material.clearcoatMap );
 			extensionDef.clearcoatTexture = clearcoatMapDef;
 
@@ -2403,7 +2443,7 @@ class GLTFMaterialsClearcoatExtension {
 
 		if ( material.clearcoatRoughnessMap ) {
 
-			const clearcoatRoughnessMapDef = { index: writer.processTexture( material.clearcoatRoughnessMap ) };
+			const clearcoatRoughnessMapDef = { index: writer.processTexture( material.clearcoatRoughnessMap, "clearcoatRoughnessMap" ) };
 			writer.applyTextureTransform( clearcoatRoughnessMapDef, material.clearcoatRoughnessMap );
 			extensionDef.clearcoatRoughnessTexture = clearcoatRoughnessMapDef;
 
@@ -2411,7 +2451,7 @@ class GLTFMaterialsClearcoatExtension {
 
 		if ( material.clearcoatNormalMap ) {
 
-			const clearcoatNormalMapDef = { index: writer.processTexture( material.clearcoatNormalMap ) };
+			const clearcoatNormalMapDef = { index: writer.processTexture( material.clearcoatNormalMap, "clearcoatNormalMap" ) };
 			writer.applyTextureTransform( clearcoatNormalMapDef, material.clearcoatNormalMap );
 			extensionDef.clearcoatNormalTexture = clearcoatNormalMapDef;
 
@@ -2454,7 +2494,7 @@ class GLTFMaterialsIridescenceExtension {
 
 		if ( material.iridescenceMap ) {
 
-			const iridescenceMapDef = { index: writer.processTexture( material.iridescenceMap ) };
+			const iridescenceMapDef = { index: writer.processTexture( material.iridescenceMap, "iridescenceMap" ) };
 			writer.applyTextureTransform( iridescenceMapDef, material.iridescenceMap );
 			extensionDef.iridescenceTexture = iridescenceMapDef;
 
@@ -2466,7 +2506,7 @@ class GLTFMaterialsIridescenceExtension {
 
 		if ( material.iridescenceThicknessMap ) {
 
-			const iridescenceThicknessMapDef = { index: writer.processTexture( material.iridescenceThicknessMap ) };
+			const iridescenceThicknessMapDef = { index: writer.processTexture( material.iridescenceThicknessMap, "iridescenceThicknessMap" ) };
 			writer.applyTextureTransform( iridescenceThicknessMapDef, material.iridescenceThicknessMap );
 			extensionDef.iridescenceThicknessTexture = iridescenceThicknessMapDef;
 
@@ -2508,7 +2548,7 @@ class GLTFMaterialsTransmissionExtension {
 
 		if ( material.transmissionMap ) {
 
-			const transmissionMapDef = { index: writer.processTexture( material.transmissionMap ) };
+			const transmissionMapDef = { index: writer.processTexture( material.transmissionMap, "transmissionMap" ) };
 			writer.applyTextureTransform( transmissionMapDef, material.transmissionMap );
 			extensionDef.transmissionTexture = transmissionMapDef;
 
@@ -2550,7 +2590,7 @@ class GLTFMaterialsVolumeExtension {
 
 		if ( material.thicknessMap ) {
 
-			const thicknessMapDef = { index: writer.processTexture( material.thicknessMap ) };
+			const thicknessMapDef = { index: writer.processTexture( material.thicknessMap, "thicknessMap" ) };
 			writer.applyTextureTransform( thicknessMapDef, material.thicknessMap );
 			extensionDef.thicknessTexture = thicknessMapDef;
 
@@ -2700,7 +2740,9 @@ GLTFExporter.Utils = {
 
 			if ( targetIndex === undefined ) {
 
-				throw new Error( 'THREE.GLTFExporter: Morph target name not found: ' + sourceTrackBinding.propertyIndex );
+				// throw new Error( 'THREE.GLTFExporter: Morph target name not found: ' + sourceTrackBinding.propertyIndex );
+				targetIndex = parseInt(sourceTrackBinding.propertyIndex)
+				console.warn('Using', sourceTrackBinding.propertyIndex, "as target index")
 
 			}
 
