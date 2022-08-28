@@ -53,11 +53,11 @@ class GLTFExporter {
 
 		} );
 
-		// this.register( function ( writer ) {
-		//
-		// 	return new GLTFMaterialsVolumeExtension( writer );
-		//
-		// } );
+		this.register( function ( writer ) {
+
+			return new GLTFMaterialsVolumeExtension( writer );
+
+		} );
 
 		this.register( function ( writer ) {
 
@@ -65,11 +65,11 @@ class GLTFExporter {
 
 		} );
 
-		// this.register( function ( writer ) {
-		//
-		// 	return new GLTFMaterialsIridescenceExtension( writer );
-		//
-		// } );
+		this.register( function ( writer ) {
+
+			return new GLTFMaterialsIridescenceExtension( writer );
+
+		} );
 
 	}
 
@@ -358,7 +358,6 @@ function getToBlobPromise( canvas, mimeType, imageQuality ) {
 	if ( canvas.toBlob !== undefined ) {
 
 		return new Promise( ( resolve ) => {
-			console.log("ToBlobbing canvas")
 			canvas.toBlob( resolve, mimeType, imageQuality )
 		});
 
@@ -377,8 +376,6 @@ function getToBlobPromise( canvas, mimeType, imageQuality ) {
 		quality = 0.8;
 
 	}
-
-	console.log("Tring convertToBlob", canvas)
 
 	return canvas.convertToBlob( {
 
@@ -1134,7 +1131,6 @@ class GLTFWriter {
 			maxTextureSize = maxTextureSize(image, mapName)
 		}
 
-		// TODO: Map name
 		canvas.width = Math.min( image.width, maxTextureSize );
 		canvas.height = Math.min( image.height, maxTextureSize );
 
