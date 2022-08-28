@@ -49,7 +49,9 @@ const PHYSICAL_MODES = [
   "clearcoatMap",
   "clearcoatNormalMap",
   "clearcoatRoughnessMap",
-  "sheenColorMap"
+  "sheenColorMap",
+  "thicknessMap",
+  "specularColorMap",
 ]
 
 const THREED_MODES = [].concat(STANDARD_MODES, PHYSICAL_MODES);

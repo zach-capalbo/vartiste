@@ -226,7 +226,7 @@ export class CanvasShaderProcessor {
       this.updateTexture(this.getContext(), "u_input", ctx.canvas)
     }
 
-    console.log("u_drawTime", drawTime)
+    // console.log("u_drawTime", drawTime)
 
     this.setUniform("u_color", "uniform3fv", brush.color3.toArray())
     this.setUniforms("uniform1f", {

@@ -915,6 +915,12 @@ AFRAME.registerComponent('compositor', {
           case "clearcoatRoughnessMap":
             material.clearcoatRoughness = layer.opacity
             break;
+          case "thicknessMap":
+            material.thickness = layer.opacity
+            break;
+          case "specularColorMap":
+            material.specularIntensity = layer.opacity
+            break;
         }
 
         modesUsed.add(layer.mode)

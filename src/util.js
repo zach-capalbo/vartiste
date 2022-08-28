@@ -17,6 +17,8 @@ export const MAP_FROM_FILENAME = {
   'matcap': [/(\b|_)matcap(\b|_)/i],
   'transmissionMap': [/(\b|_)transmission(map)?(\b|_)/i],
   'clearcoatMap': [/(\b|_)clearcoat(map)?(\b|_)/i],
+  'thicknessMap': [/(\b|_)thickness(map)?(\b|_)/i],
+  'thicknessMap': [/(\b|_)spec(ular)?(color)?(map)?(\b|_)/i],
 }
 
 function whenLoadedSingle(entity, fn) {
@@ -800,6 +802,14 @@ class VARTISTEUtil {
         shouldFill = true
         break;
       case 'sheenColorMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'sheenColorMap':
+        ctx.fillStyle = 'rgb(0.01, 0.01, 0.01)'
+        shouldFill = true;
+        break;
+      case 'specularColorMap':
         ctx.fillStyle = 'rgb(0, 0, 0)'
         shouldFill = true;
         break;
