@@ -207,3 +207,13 @@ AFRAME.registerComponent('delete-low-power', {
     })
   }
 })
+
+AFRAME.registerComponent('simple-render-sort', {
+  init() {
+    if (this.el.sceneEl.renderer)
+    {
+      this.el.sceneEl.renderer.setOpaqueSort(function(a,b) { return a.z - b.z; })
+      this.el.sceneEl.renderer.setTransparentSort(function(a,b) { return b.z - a.z; })
+    }
+  }
+})

@@ -101,6 +101,7 @@ require('./scene-organizer')
 require('./controller-proxy')
 require('./extras')
 require('./decorators')
+require('./popup-book')
 
 require('./hubs-connector-shim.js')
 
