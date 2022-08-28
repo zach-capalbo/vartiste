@@ -463,10 +463,9 @@ AFRAME.registerComponent('webxr-motion-controller', {
 
         if (!minNode || !maxNode) continue;
 
-        THREE.Quaternion.slerp(
+        valueNode.quaternion.slerpQuaternions(
           minNode.quaternion,
           maxNode.quaternion,
-          valueNode.quaternion,
           visualResponse.value
         );
 

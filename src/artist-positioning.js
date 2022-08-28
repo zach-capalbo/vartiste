@@ -120,7 +120,7 @@ Util.registerComponentSystem('artist-root', {
     cameraObj.getWorldDirection(cameraWorld)
     let spherical = new THREE.Spherical();
     spherical.setFromCartesianCoords(cameraWorld.x, cameraWorld.y, cameraWorld.z)
-    targetObj.rotation.y = - spherical.theta
+    targetObj.rotation.y = - spherical.theta + Math.PI
     // cameraWorld.y = 0
     // cameraWorld.normalize()
     //
@@ -218,16 +218,16 @@ AFRAME.registerComponent('reset-transform-on-vr', {
 // Workaround for the `look-controls` not updating the matrix
 AFRAME.registerComponent('camera-matrix-helper', {
   dependencies: ['camera'],
-  init() {
-    this.obj = new THREE.Object3D
-    this.el.setObject3D('camera-matrix-helper', this.obj)
-    this.el.object3D.parent.add(this.obj)
-    Util.whenLoaded(document.getElementById('camera-root'), () => this.cameraObject = document.getElementById('camera-root').object3D)
-  },
-  tick() {
-    this.obj.matrix.compose(this.cameraObject.position, this.cameraObject.quaternion, this.cameraObject.scale)
-    this.obj.matrix.decompose(this.obj.position, this.obj.quaternion, this.obj.scale)
-  }
+  // init() {
+  //   this.obj = new THREE.Object3D
+  //   this.el.setObject3D('camera-matrix-helper', this.obj)
+  //   this.el.object3D.parent.add(this.obj)
+  //   Util.whenLoaded(document.getElementById('camera-root'), () => this.cameraObject = document.getElementById('camera-root').object3D)
+  // },
+  // tick() {
+  //   this.obj.matrix.compose(this.cameraObject.position, this.cameraObject.quaternion, this.cameraObject.scale)
+  //   this.obj.matrix.decompose(this.obj.position, this.obj.quaternion, this.obj.scale)
+  // }
 })
 
 AFRAME.registerComponent('artist-shadow', {

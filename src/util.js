@@ -315,8 +315,8 @@ class VARTISTEUtil {
   cameraObject3D() {
     // return document.querySelector('#camera').object3D//.getObject3D('camera-matrix-helper')
     let scene = AFRAME.scenes[0]
-    let camera = AFRAME.scenes[0].camera.el
-    return scene.is('vr-mode') && document.querySelector('a-scene').hasWebXR ? camera.getObject3D('camera-matrix-helper') : camera.object3D
+    return scene.camera
+    return scene.is('vr-mode') && scene.hasWebXR ? camera.getObject3D('camera-matrix-helper') : camera.object3D
   }
 
   // Brings `initialEl` right in front of the camera
