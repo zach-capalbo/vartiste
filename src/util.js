@@ -14,7 +14,9 @@ export const MAP_FROM_FILENAME = {
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss|ssion)?(map)?(\b|_)/i],
   'metalnessMap': [/(\b|_)metal(ness|l?ic)?(map)?(\b|_)/i],
   'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
-  'matcap': [/(\b|_)matcap(\b|_)/i]
+  'matcap': [/(\b|_)matcap(\b|_)/i],
+  'transmissionMap': [/(\b|_)transmission(map)?(\b|_)/i],
+  'clearcoatMap': [/(\b|_)clearcoat(map)?(\b|_)/i],
 }
 
 function whenLoadedSingle(entity, fn) {
@@ -796,6 +798,10 @@ class VARTISTEUtil {
       case 'clearcoatNormalMap':
         ctx.fillStyle = 'rgb(128, 128, 255)'
         shouldFill = true
+        break;
+      case 'sheenColorMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
         break;
       default:
         console.warn("Can't fill unknown map", map)

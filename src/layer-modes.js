@@ -49,9 +49,7 @@ const PHYSICAL_MODES = [
   "clearcoatMap",
   "clearcoatNormalMap",
   "clearcoatRoughnessMap",
-
-  // Need THREEJS upgrade
-  // "sheenColorMap"
+  "sheenColorMap"
 ]
 
 const THREED_MODES = [].concat(STANDARD_MODES, PHYSICAL_MODES);

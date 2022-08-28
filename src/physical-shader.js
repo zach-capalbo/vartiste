@@ -48,7 +48,8 @@ AFRAME.registerShader('physical', {
 
     transmission: {default: 0.0, min: 0.0, max: 1.0},
     transmissionMap: {type: 'map'},
-    ior: {default: 1.51, min: 1.0, max: 2.333}
+    ior: {default: 1.51, min: 1.0, max: 2.333},
+    thickness: {default: 0.01},
   },
 
   /**
@@ -172,6 +173,7 @@ function getMaterialData (data, materialData) {
   materialData.wireframe = data.wireframe;
   materialData.wireframeLinewidth = data.wireframeLinewidth;
   materialData.ior = data.ior
+  materialData.thickness = data.thickness
 
   if (data.normalMap) { materialData.normalScale = data.normalScale; }
 

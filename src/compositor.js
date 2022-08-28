@@ -904,6 +904,7 @@ AFRAME.registerComponent('compositor', {
             break;
           case "sheenColorMap":
             material.sheen = layer.opacity
+            material.sheenColor.setRGB(1, 1, 1)
             break;
           case "clearcoatMap":
             material.clearcoat = layer.opacity
