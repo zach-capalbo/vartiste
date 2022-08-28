@@ -257,26 +257,9 @@ var BufferGeometryUtils = {
 			mergedGeometry.userData.mergedUserData = mergedGeometry.userData.mergedUserData || [];
 			mergedGeometry.userData.mergedUserData.push( geometry.userData );
 
-			if ( useGroups && geometry.groups.length > 0) {
+			if ( useGroups ) {
 
-				// Keep existing groups
-
-				let nextOffset = offset;
-
-				for ( var group of geometry.groups ) {
-
-					mergedGeometry.addGroup( offset + group.start, group.count, groupIndex + group.materialIndex );
-					nextOffset = Math.max(nextOffset, offset + group.start + group.count);
-					nextGroupIndex = Math.max(nextGroupIndex, groupIndex + group.materialIndex);
-
-				}
-
-				nextGroupIndex ++;
-				offset = nextOffset;
-
-			} else if ( useGroups ) {
-
-				var count;
+				let count;
 
 				if ( isIndexed ) {
 
@@ -288,14 +271,31 @@ var BufferGeometryUtils = {
 
 				} else {
 
+					console.error( 'THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index ' + i + '. The geometry must have either an index or a position attribute' );
 					return null;
 
 				}
 
-				mergedGeometry.addGroup( offset, count, groupIndex );
+				if ( geometry.groups.length > 0 ) {
 
-				offset += count;
+					// Keep existing groups
+
+					for ( let group of geometry.groups ) {
+
+						let offsetMaterialIndex = groupIndex + group.materialIndex;
+						mergedGeometry.addGroup( offset + group.start, group.count, offsetMaterialIndex );
+						nextGroupIndex = Math.max( nextGroupIndex, offsetMaterialIndex );
+
+					}
+
+				} else {
+
+					mergedGeometry.addGroup( offset, count, groupIndex );
+
+				}
+
 				++ nextGroupIndex;
+				offset += count;
 
 			}
 

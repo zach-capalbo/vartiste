@@ -32,7 +32,7 @@ const MATH_MODES = [
   "luminosity",
 ]
 
-const THREED_MODES = [
+const STANDARD_MODES = [
   "bumpMap",
   "displacementMap",
   "normalMap",
@@ -41,8 +41,20 @@ const THREED_MODES = [
   "roughnessMap",
   "envMap",
   "aoMap",
-  "matcap"
+  "matcap",
 ]
+
+const PHYSICAL_MODES = [
+  "transmissionMap",
+  "clearcoatMap",
+  "clearcoatNormalMap",
+  "clearcoatRoughnessMap",
+  "sheenColorMap",
+  "thicknessMap",
+  "specularColorMap",
+]
+
+const THREED_MODES = [].concat(STANDARD_MODES, PHYSICAL_MODES);
 
 const FX = [
   'blur',
@@ -88,6 +100,6 @@ const CAMERA_LAYERS = {
     PROJECTOR_MASK: 6,
 }
 
-const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES)
+const LAYER_MODES = [].concat(BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES, PHYSICAL_MODES)
 
-module.exports = {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES, FX, CAMERA_LAYERS, BRUSH_FX}
+module.exports = {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES, FX, CAMERA_LAYERS, BRUSH_FX, PHYSICAL_MODES, STANDARD_MODES}

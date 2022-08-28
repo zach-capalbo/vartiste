@@ -3471,6 +3471,13 @@ class MeshBVH {
 		const side = isMaterial ? materialOrSide.side : materialOrSide;
 		for ( let i = 0, l = roots.length; i < l; i ++ ) {
 
+			if (isArrayMaterial && !groups[ i ])
+			{
+				// throw new Error("No group for", i, groups, roots)
+				console.warn("No group for", i, groups, roots)
+				continue;
+			}
+
 			if (isArrayMaterial && !materialOrSide[ groups[ i ].materialIndex ])
 			{
 				throw new Error("Unknown material or side", materialOrSide, groups[i].materialIndex, groups)

@@ -398,7 +398,7 @@ Util.registerComponentSystem('settings-system', {
 
     let exporter = new THREE.GLTFExporter()
     let glb = await new Promise((r, e) => {
-      exporter.parse(mesh, r, {
+      let ret = exporter.parse(mesh, r, e, {
         binary: true,
         animations: mesh.animations || [],
         includeCustomExtensions: true,

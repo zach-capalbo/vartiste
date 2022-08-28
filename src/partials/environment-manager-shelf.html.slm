@@ -10,7 +10,7 @@ a-entity.grab-root#environment-manager shelf="name: Environment Shelf; closeable
 
     a-entity icon-button="" visible="false" scale="0 0 0"
 
-    a-entity icon-button="#asset-brightness-4" dropdown-button="showActiveOptionTooltip: true; target: #canvas-view; component: material; property: shader; optionIcon: #asset-brightness-4; options: flat, standard, matcap, pbmatcap; labels: Flat Shading, 3D Shading, Matcap, Physically Based Matcap" tooltip="Select Material Rendering" popup-button="offset: 1 1 1; scale: 0.7 0.7 0.7"
+    a-entity icon-button="#asset-brightness-4" dropdown-button="showActiveOptionTooltip: true; target: #canvas-view; component: material; property: shader; optionIcon: #asset-brightness-4; options: flat, standard, physical, matcap, pbmatcap; labels: Flat Shading, 3D Shading, Advanced 3D Shading, Matcap, Physically Based Matcap" tooltip="Select Material Rendering" popup-button="offset: 1 1 1; scale: 0.7 0.7 0.7"
 
   a-entity position="0.5 0 0" text="width: 1.7; wrapCount: 20; value: Drag and drop an HDRI onto the window to load it."
 

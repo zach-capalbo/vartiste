@@ -240,7 +240,7 @@ Util.registerComponentSystem('environment-manager', {
   setToneMapping(toneMapping) {
     this.el.renderer.toneMapping = toneMapping
     document.querySelectorAll('#world-root,#artist-root,a-sky').forEach(r => { r.object3D.traverse(o => {
-      if (o.visible && o.material && (o.material.type === 'MeshStandardMaterial' || o.material.type === 'MeshBasicMaterial'))
+      if (o.visible && o.material && (o.material.isMeshStandardMaterial || o.material.type === 'MeshBasicMaterial'))
       {
         o.material.needsUpdate = true
       }
@@ -310,7 +310,7 @@ Util.registerComponentSystem('environment-manager', {
   },
 
   shouldTouchMaterial(material) {
-    return material.type === 'MeshStandardMaterial'
+    return material.isMeshStandardMaterial
   },
 
   installMatcap() {

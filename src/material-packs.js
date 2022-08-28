@@ -657,7 +657,7 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
   },
   fillMaterial() {
-    Compositor.el.setAttribute('material', 'shader', 'standard')
+    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', 'standard')
     let canvas = Compositor.drawableCanvas
     canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height)
     this.applyMask()

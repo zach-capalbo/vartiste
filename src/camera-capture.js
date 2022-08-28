@@ -557,7 +557,7 @@ AFRAME.registerComponent('camera-tool', {
     let originalMaterials = new Map()
     let colorOnlyMaterials = new Map()
     this.el.sceneEl.object3D.traverseVisible(o => {
-      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.type === "MeshStandardMaterial" || o.material.type === "MeshMatcapMaterial")) {
+      if (o.material && (o.material.type === "MeshBasicMaterial" || o.material.isMeshStandardMaterial || o.material.type === "MeshMatcapMaterial")) {
         originalMaterials.set(o, o.material)
       }
       else if (o.material)
@@ -623,7 +623,7 @@ AFRAME.registerComponent('camera-tool', {
             side: m.side,
             transparent: m.transparent,
             opacity: m.opacity,
-            visible: m.type === 'MeshStandardMaterial',
+            visible: m.isMeshStandardMaterial,
             clippingPlanes: this.el.sceneEl.systems['mesh-clipping'] ? this.el.sceneEl.systems['mesh-clipping'].clippingPlanes : [],
           })
         }
@@ -1635,6 +1635,30 @@ Util.registerComponentSystem('spectator-camera', {
         return cameraVR
       };
 
+			let originalSetRenderTarget = this.el.sceneEl.renderer.setRenderTarget;
+			let originalGetRenderTarget = this.el.sceneEl.renderer.getRenderTarget;
+			this.el.sceneEl.renderer.setRenderTarget = fakeSetRenderTarget;
+			this.el.sceneEl.renderer.getRenderTarget = fakeGetRenderTarget;
+			var currentTarget = 1234
+			function fakeGetRenderTarget() {
+				return currentTarget;
+			}
+			function fakeSetRenderTarget(t) {
+				return gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+				// TODO: Fix tonemapping here:
+				if (t === 1234)
+				{
+					gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+					currentTarget = 1234
+				}
+				else
+				{
+					originalSetRenderTarget(t)
+					currentTarget = t
+				}
+			}
+
       this.el.sceneEl.object3D.autoUpdate = false
       this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
       this.el.sceneEl.object3D.autoUpdate = autoUpdate
@@ -1643,6 +1667,9 @@ Util.registerComponentSystem('spectator-camera', {
       originalCameras[0].layers.enable(CAMERA_LAYERS.LEFT_EYE)
       renderer.xr.getCamera = getCamera
       renderer.xr.getCamera(camera).cameras = originalCameras
+
+			this.el.sceneEl.renderer.setRenderTarget = originalSetRenderTarget;
+			this.el.sceneEl.renderer.getRenderTarget = originalGetRenderTarget;
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
 

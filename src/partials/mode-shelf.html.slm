@@ -1,9 +1,9 @@
-- const {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES} = require('./layer-modes.js')
-a-entity shelf="frame: false" scale="0.35 0.35 0.35"
-  a-entity position="-1 1.3 0" scale="0.66 0.66 1"
-    a-entity icon-button="#asset-close-circle-outline" popup-action="close" position="4.157 -3.840 0"
+- const {LAYER_MODES, BLEND_MODES, COLOR_MODES, MATH_MODES, STANDARD_MODES, PHYSICAL_MODES} = require('./layer-modes.js')
+a-entity shelf="width: 5; closeable: true; pinnable: false" scale="0.35 0.35 0.35"
+  a-entity position="-1.3 1.3 0" scale="0.66 0.66 1"
+    /a-entity icon-button="#asset-close-circle-outline" popup-action="close" position="4.157 -3.840 0"
     - var modeListIndex = 0
-    -for (let container of [BLEND_MODES, COLOR_MODES, MATH_MODES, THREED_MODES])
+    -for (let container of [BLEND_MODES, COLOR_MODES, MATH_MODES, STANDARD_MODES, PHYSICAL_MODES])
       a-entity position="${modeListIndex++ * 1.3} 0 0"
         - var i = 0
         - for (let mode of container)

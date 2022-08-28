@@ -14,7 +14,11 @@ export const MAP_FROM_FILENAME = {
   'emissiveMap': [/(\b|_)emi(t|tion|ssive|ss|ssion)?(map)?(\b|_)/i],
   'metalnessMap': [/(\b|_)metal(ness|l?ic)?(map)?(\b|_)/i],
   'roughnessMap': [/(\b|_)rough(ness)?(map)?(\b|_)/i],
-  'matcap': [/(\b|_)matcap(\b|_)/i]
+  'matcap': [/(\b|_)matcap(\b|_)/i],
+  'transmissionMap': [/(\b|_)transmission(map)?(\b|_)/i],
+  'clearcoatMap': [/(\b|_)clearcoat(map)?(\b|_)/i],
+  'thicknessMap': [/(\b|_)thickness(map)?(\b|_)/i],
+  'thicknessMap': [/(\b|_)spec(ular)?(color)?(map)?(\b|_)/i],
 }
 
 function whenLoadedSingle(entity, fn) {
@@ -315,8 +319,8 @@ class VARTISTEUtil {
   cameraObject3D() {
     // return document.querySelector('#camera').object3D//.getObject3D('camera-matrix-helper')
     let scene = AFRAME.scenes[0]
-    let camera = AFRAME.scenes[0].camera.el
-    return scene.is('vr-mode') && document.querySelector('a-scene').hasWebXR ? camera.getObject3D('camera-matrix-helper') : camera.object3D
+    return scene.camera
+    return scene.is('vr-mode') && scene.hasWebXR ? camera.getObject3D('camera-matrix-helper') : camera.object3D
   }
 
   // Brings `initialEl` right in front of the camera
@@ -778,6 +782,34 @@ class VARTISTEUtil {
         shouldFill = true;
         break;
       case 'emissiveMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'transmissionMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatRoughnessMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'clearcoatNormalMap':
+        ctx.fillStyle = 'rgb(128, 128, 255)'
+        shouldFill = true
+        break;
+      case 'sheenColorMap':
+        ctx.fillStyle = 'rgb(0, 0, 0)'
+        shouldFill = true;
+        break;
+      case 'sheenColorMap':
+        ctx.fillStyle = 'rgb(0.01, 0.01, 0.01)'
+        shouldFill = true;
+        break;
+      case 'specularColorMap':
         ctx.fillStyle = 'rgb(0, 0, 0)'
         shouldFill = true;
         break;

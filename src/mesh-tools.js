@@ -543,7 +543,7 @@ AFRAME.registerComponent('normal-paint-tool', {
         meshDir.copy(worldDir)
         meshDir.applyQuaternion(meshQuat)
 
-        // if (o.material.type === 'MeshStandardMaterial') o.material = new THREE.MeshNormalMaterial()
+        // if (o.material.isMeshStandardMaterial) o.material = new THREE.MeshNormalMaterial()
 
         let attr = o.geometry.attributes.normal
 

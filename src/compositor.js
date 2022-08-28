@@ -4,7 +4,7 @@ const {Layer, CanvasNode, MaterialNode} = NodeTypes
 Object.assign(NodeTypes, AINodes)
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
-import {THREED_MODES} from "./layer-modes.js"
+import {THREED_MODES, PHYSICAL_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Pool} from './pool.js'
@@ -806,9 +806,11 @@ AFRAME.registerComponent('compositor', {
         if (layer.needsUpdate === false && layer.updateTime < this.drawnT) {
           modesUsed.add(layer.mode)
         }
-        if (material.type !== "MeshStandardMaterial" && material.type !== "MeshMatcapMaterial" &&  material.type !== "ShaderMaterial") continue
+        if (!material.isMeshStandardMaterial && material.type !== "MeshMatcapMaterial" &&  material.type !== "ShaderMaterial") continue
 
         if (modesUsed.has(layer.mode)) continue;
+
+        if (!material.isMeshPhysicalMaterial && PHYSICAL_MODES.indexOf(layer.mode) >= 0) continue;
 
         if (layer.mode === 'envMap' && !canSetSkybox) continue
 
@@ -897,6 +899,28 @@ AFRAME.registerComponent('compositor', {
             }
             material.envMap.mapping = THREE.SphericalReflectionMapping
             break
+          case "transmissionMap":
+            material.transmission = layer.opacity
+            break;
+          case "sheenColorMap":
+            material.sheen = layer.opacity
+            material.sheenColor.setRGB(1, 1, 1)
+            break;
+          case "clearcoatMap":
+            material.clearcoat = layer.opacity
+            break;
+          case "clearcoatNormalMap":
+            material.clearcoatNormalScale = new THREE.Vector2(layer.opacity, this.data.flipNormal ? -layer.opacity : layer.opacity)
+            break;
+          case "clearcoatRoughnessMap":
+            material.clearcoatRoughness = layer.opacity
+            break;
+          case "thicknessMap":
+            material.thickness = layer.opacity
+            break;
+          case "specularColorMap":
+            material.specularIntensity = layer.opacity
+            break;
         }
 
         modesUsed.add(layer.mode)
@@ -944,7 +968,7 @@ AFRAME.registerComponent('compositor', {
         }
       }
 
-      if (material.type !== "MeshStandardMaterial") return
+      if (!material.isMeshStandardMaterial) return
       for (let mode of THREED_MODES)
       {
         if (mode == "envMap" && !canSetSkybox) continue
