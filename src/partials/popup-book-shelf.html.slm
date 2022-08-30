@@ -1,0 +1,8 @@
+a-entity shelf="name: Popup Layers; closeable: true"
+  a-entity shelf-content=""
+    a-entity icon-row=""
+      a-entity tooltip="Distance Function" icon-button="#asset-palette-swatch-outline" dropdown-button="target: #active-popup-book; component: popup-book; property: distanceFunction"
+    a-entity icon-row=""
+      a-entity tooltip="Layer spacing" lever="target: #active-popup-book; component: popup-book; property: distance; valueRange: 1 0; initialValue: 0.1"
+      a-entity position="1.6 0 0" tooltip="Base size" lever="target: #active-popup-book; component: popup-book; property: geometrySize; valueRange: 10 0.1; initialValue: 5"
+  a-entity#active-popup-book popup-book="" position="3.5 0 0.1" rotation="0 15 0"

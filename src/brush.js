@@ -171,9 +171,7 @@ export class ProceduralBrush extends Brush {
     this.mode = mode
     this.hidden = hidden
 
-    let overlayCanvas = document.createElement("canvas")
-    overlayCanvas.width = width
-    overlayCanvas.height = height
+    let overlayCanvas = Util.createCanvas(width, height)
     this.overlayCanvas = overlayCanvas;
     this.unenumerable("overlayCanvas")
 
@@ -270,7 +268,14 @@ export class ProceduralBrush extends Brush {
 
     if (!this.previewSrc)
     {
-      this.previewSrc = this.overlayCanvas.toDataURL()
+      if (this.overlayCanvas.toDataURL)
+      {
+        this.previewSrc = this.overlayCanvas.toDataURL()
+      }
+      else
+      {
+        this.overlayCanvas.toBlob().then((b) => this.previewSrc = b)
+      }
     }
 
     this.createOutline(this.overlayCanvas)
@@ -286,9 +291,7 @@ export class ProceduralBrush extends Brush {
   createOutline(source) {
     if (!this.drawEdges) return
     let {width, height} = source
-    this.outlineCanvas = this.outlineCanvas || document.createElement('canvas')
-    this.outlineCanvas.width = width
-    this.outlineCanvas.height = height
+    this.outlineCanvas = this.outlineCanvas || Util.createCanvas(width, height)
 
     let outlineCtx = this.outlineCanvas.getContext('2d')
     outlineCtx.drawImage(source, 1, 1, width-2,height-2)
@@ -780,9 +783,7 @@ export class LineBrush extends Brush
     }
     else
     {
-      let canvas = document.createElement('canvas')
-      canvas.width = 32
-      canvas.height = 32
+      let canvas = Util.createCanvas(32, 32)
       let ctx = canvas.getContext('2d')
 
       ctx.strokeStyle = "#FFF"

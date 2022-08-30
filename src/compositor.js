@@ -46,13 +46,11 @@ AFRAME.registerComponent('compositor', {
 
     Pool.init(this)
 
-    let compositeCanvas = document.createElement("canvas")
-    compositeCanvas.width = width
-    compositeCanvas.height = height
+    let compositeCanvas = Util.createCanvas(width, height)
     document.body.append(compositeCanvas)
     this.compositeCanvas = compositeCanvas
 
-    this.preOverlayCanvas = document.createElement("canvas")
+    this.preOverlayCanvas = Util.createCanvas(width, height)
     this.preOverlayCanvas.width = width
     this.preOverlayCanvas.height = height
 
@@ -82,10 +80,7 @@ AFRAME.registerComponent('compositor', {
 
     this.activateLayer(this.layers[1])
 
-    let overlayCanvas = document.createElement("canvas")
-    overlayCanvas.width = this.width
-    overlayCanvas.height = this.height
-    document.body.append(overlayCanvas)
+    let overlayCanvas = Util.createCanvas(this.width, this.height)
     this.overlayCanvas = overlayCanvas;
     this.overlayCtx = this.overlayCanvas.getContext('2d')
 
@@ -124,7 +119,7 @@ AFRAME.registerComponent('compositor', {
   update(oldData) {
     if (this.data.textureScale != 1)
     {
-      this.textureCanvas = this.textureCanvas || document.createElement("canvas")
+      this.textureCanvas = this.textureCanvas || Util.createCanvas()
       this.textureCanvas.width = this.width * this.data.textureScale
       this.textureCanvas.height = this.height * this.data.textureScale
     }
@@ -1142,9 +1137,7 @@ AFRAME.registerComponent('compositor', {
 
     if (resample)
     {
-      var resampleCanvas = document.createElement('canvas')
-      resampleCanvas.width = width
-      resampleCanvas.height = height
+      var resampleCanvas = Util.createCanvas(width, height)
       var resampleCtx = resampleCanvas.getContext('2d')
       resampleCtx.globalCompositeOperation = 'copy'
     }
