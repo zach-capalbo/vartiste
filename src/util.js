@@ -56,6 +56,8 @@ async function awaitLoadingAll(entities) {
   }
 }
 
+const hasOffscreenCanvas = (typeof OffscreenCanvas !== 'undefined')
+
 // General Utilities, accessible via `window.VARTISTE.Util`
 class VARTISTEUtil {
   // Returns `{width, height}` as integers greater than 0
@@ -92,12 +94,28 @@ class VARTISTEUtil {
     matrix.decompose(obj.position, obj.rotation, obj.scale)
   }
 
+  createCanvas(width = 1, height = 1)
+  {
+    // TODO
+    if (false && hasOffscreenCanvas)
+    {
+      let c = new OffscreenCanvas(width, height)
+      c.tagName = 'CANVAS'
+      return c
+    }
+
+    let c = document.createElement('canvas')
+    c.width = width
+    c.height = height
+    return c
+  }
+
   // If `destination` is provided, resizes `destination` to the same size as
   // `canvas` and copies `canvas` contents to `destination`. If `destination` is
   // not provided, it creates a new canvas with the same size and contents as
   // `canvas`.
   cloneCanvas(canvas, destination = undefined) {
-    if (typeof destination === 'undefined') destination = document.createElement('canvas')
+    if (typeof destination === 'undefined') destination = this.createCanvas(canvas.width, canvas.height)
     destination.width = canvas.width
     destination.height = canvas.height
     destination.getContext('2d').drawImage(canvas, 0, 0)

@@ -524,6 +524,12 @@ AFRAME.registerComponent('dropdown-button', {
     let popup = this.el.components['popup-button'].popup
     let shelf = popup.querySelector('*[shelf]')
     shelf.setAttribute('shelf', 'height', Math.max(2, options.length * 0.5 + 0.3))
+
+    popup.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute('popup-action')) return
+      e.stopPropagation()
+    })
+
     let content = popup.querySelector('*[shelf-content]')
     content.getChildEntities().forEach(el => content.removeChild(el))
     let maxLength = Math.max(...options.map(o => o.length), ...labels.map(o => o.length))

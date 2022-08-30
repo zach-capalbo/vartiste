@@ -1,6 +1,7 @@
 import shortid from 'shortid'
 import {THREED_MODES} from "./layer-modes.js"
 import {CanvasShaderProcessor} from "./canvas-shader-processor.js"
+import {Util} from './util.js'
 
 var sceneEl;
 
@@ -24,9 +25,7 @@ export class Layer {
 
     this.updateTime = 0
 
-    let canvas = document.createElement("canvas")
-    canvas.width = this.width
-    canvas.height = this.height
+    let canvas = Util.createCanvas(this.width, this.height)
     canvas.id = `layer-${this.id}`
     document.body.append(canvas)
     this.canvas = canvas;

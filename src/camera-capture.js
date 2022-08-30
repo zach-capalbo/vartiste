@@ -875,12 +875,8 @@ AFRAME.registerComponent('spray-can-tool', {
     this.el.setAttribute('six-dof-tool', 'orientation', new THREE.Vector3(0, 0, 1))
 
     ;(function(self) {
-      this.cameraCanvas = document.createElement('canvas')
-      this.cameraCanvas.width = self.data.canvasSize.x
-      this.cameraCanvas.height = self.data.canvasSize.y
-      this.targetCanvas = document.createElement('canvas')
-      this.targetCanvas.width = 1024
-      this.targetCanvas.height = 512
+      this.cameraCanvas = Util.createCanvas(self.data.canvasSize.x, self.data.canvasSize.y)
+      this.targetCanvas = Util.createCanvas(1024, 512)
       this.sprayCanTool = self
 
       let camera = this.data.orthographic ?

@@ -1145,8 +1145,12 @@ AFRAME.registerComponent('reference-glb', {
       }
     },
   },
+  emits: {
+    cloned: {newEl: null},
+  },
   init() {
     Pool.init(this)
+    Util.emitsEvents(this)
     this.el.classList.add('reference-glb')
     this.el.setAttribute('frame', 'closeable: true; autoHide: true; useBounds: true')
     this.el.setAttribute('action-tooltips', 'b: Clone')
@@ -1201,6 +1205,9 @@ AFRAME.registerComponent('reference-glb', {
       }
 
       this.el.sceneEl.systems['animation-3d'].cloneTracks(this.el.object3D, el.object3D)
+
+      this.emitDetails.cloned.newEl = el
+      this.el.emit('cloned', this.emitDetails.cloned)
     })
   }
 })

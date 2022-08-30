@@ -21,3 +21,4 @@ a-entity#advanced-drawing-shelf grab-root="" shelf="name: Advanced Drawing Shelf
     a-entity icon-row="": a-entity icon-row-text="Other Tools"
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-badge-account-horizontal-outline" popup-button="popup: timer-shelf; deferred: true; autoScale: true" tooltip="Drawing Practice Timer"
+      a-entity icon-button="#asset-newspaper-variant-outline" popup-button="popup: popup-book-shelf; deferred: true; autoScale: true" tooltip="Popup Layers"
