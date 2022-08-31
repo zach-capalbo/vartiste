@@ -337,7 +337,8 @@ class VARTISTEUtil {
   cameraObject3D() {
     // return document.querySelector('#camera').object3D//.getObject3D('camera-matrix-helper')
     let scene = AFRAME.scenes[0]
-    return scene.camera
+    let camera = scene.camera.el
+    return camera.object3D
     return scene.is('vr-mode') && scene.hasWebXR ? camera.getObject3D('camera-matrix-helper') : camera.object3D
   }
 

@@ -120,7 +120,7 @@ Util.registerComponentSystem('artist-root', {
     cameraObj.getWorldDirection(cameraWorld)
     let spherical = new THREE.Spherical();
     spherical.setFromCartesianCoords(cameraWorld.x, cameraWorld.y, cameraWorld.z)
-    targetObj.rotation.y = - spherical.theta + Math.PI
+    targetObj.rotation.y = - spherical.theta
     // cameraWorld.y = 0
     // cameraWorld.normalize()
     //
