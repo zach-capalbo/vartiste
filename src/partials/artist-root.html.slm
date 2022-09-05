@@ -2,7 +2,7 @@ a-entity#camera-reset-el position="0.0130435652091113 1.0412983252490486 0.66002
 a-entity#artist-root position="0 0 0"
   /a-entity geometry="primitive: plane; width: 1; height: 1" rotation="-90 0 0"
     /a-sphere radius="0.1"
-  a-entity#camera-offsetter between-target-positioner="root: #artist-root; target: #camera-root"
+  a-entity#camera-offsetter between-target-positioner="root: #artist-root; target: #camera"
     a-entity#camera-root desktop-controls="" look-controls="" reset-transform-on-vr=""
       a-entity position-at-target="target: #camera"
         a-entity#artist-helmet camera-layers='layers: spectator' gltf-model="#asset-headset" position="0 0 0" scale="0.05 0.05 0.05"
