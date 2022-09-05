@@ -4,6 +4,7 @@ import {CanvasShaderProcessor, UVStretcher} from './canvas-shader-processor.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {MarchingSquaresOpt} from './framework/marching-squares.js'
+import './framework/flood-fill.js'
 
 export class Brush {
   static schema() {

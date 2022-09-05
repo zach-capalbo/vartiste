@@ -3,7 +3,7 @@ import {UndoStack} from './undo.js'
 import {base64ArrayBuffer} from './framework/base64ArrayBuffer.js'
 import './framework/GLTFExporter.js'
 import {CanvasShaderProcessor} from './canvas-shader-processor.js'
-import {THREED_MODES} from './layer-modes.js'
+import {THREED_MODES, THREEJS_MAPS} from './layer-modes.js'
 import shortid from 'shortid'
 
 // Contains utilities for transforming materials and textures. Singleton
@@ -210,7 +210,7 @@ class MaterialTransformations {
   {
     function materialHash(material, imageHash) {
       let parts = []
-      for (let m of ['map'].concat(THREED_MODES))
+      for (let m of THREEJS_MAPS)
       {
         if (!material[m]) continue;
         if (!material[m].image) continue;

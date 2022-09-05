@@ -505,6 +505,8 @@ AFRAME.registerSystem('physx', {
 
     for (let [obj, body] of this.objects)
     {
+        if (obj.el.components['physx-body'].data.type === 'static') continue;
+        
         const transform = body.getGlobalPose()
         this.worldHelper.position.copy(transform.translation);
         this.worldHelper.quaternion.copy(transform.rotation);
