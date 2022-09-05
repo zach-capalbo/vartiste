@@ -4,7 +4,7 @@ const {Layer, CanvasNode, MaterialNode} = NodeTypes
 Object.assign(NodeTypes, AINodes)
 import {Util} from "./util.js"
 import {ProjectFile} from "./project-file.js"
-import {THREED_MODES, PHYSICAL_MODES} from "./layer-modes.js"
+import {THREEJS_MAPS, THREED_MODES, PHYSICAL_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Pool} from './pool.js'
@@ -407,7 +407,7 @@ AFRAME.registerComponent('compositor', {
     let material = this.el.getObject3D('mesh').material.clone()
     // let material = new THREE.MeshMatcapMaterial()
 
-    for (let map of ['map'].concat(THREED_MODES))
+    for (let map of THREEJS_MAPS)
     {
       if (map === 'envMap') continue
       if (!Compositor.material[map] || !Compositor.material[map].image) continue;
@@ -1186,6 +1186,20 @@ AFRAME.registerComponent('compositor', {
     {
       layer.touch()
       this.el.emit('layerupdated', {layer})
+    }
+
+    let material = this.el.getObject3D('mesh').material
+    material.map = createTexture()
+    material.map.image = this.compositeCanvas
+    material.needsUpdate = true
+
+    for (let map of THREED_MODES)
+    {
+      if (material[map])
+      {
+        material[map].dispose()
+        material[map] = null
+      }
     }
 
     this.el.emit('resized', {width, height})

@@ -3,7 +3,7 @@ import {Pool} from './pool.js'
 import {Undo} from './undo.js'
 import shortid from 'shortid'
 import {STATE_TOGGLED} from './icon-button.js'
-import {THREED_MODES} from './layer-modes.js'
+import {THREED_MODES, THREEJS_MAPS} from './layer-modes.js'
 import {Layer} from './layer.js'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
 
@@ -341,7 +341,7 @@ AFRAME.registerComponent('object3d-view', {
   createLayers() {
     Util.traverseNonUI(this.object, o => {
       if (!o.material) return;
-      for (let map of ['map'].concat(THREED_MODES))
+      for (let map of THREEJS_MAPS)
       {
         if (map === 'envMap') continue;
         if (!o.material[map] || !o.material[map].image) continue;
