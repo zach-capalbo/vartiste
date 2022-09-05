@@ -2429,7 +2429,7 @@ class GLTFMaterialsClearcoatExtension {
 
 		if ( material.clearcoatMap ) {
 
-			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap, "clearcoarMap" ) };
+			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap, "clearcoatMap" ) };
 			writer.applyTextureTransform( clearcoatMapDef, material.clearcoatMap );
 			extensionDef.clearcoatTexture = clearcoatMapDef;
 

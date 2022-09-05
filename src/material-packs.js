@@ -5,7 +5,7 @@ import {toSrcString} from './file-upload.js'
 import shortid from 'shortid'
 import {PHYSICAL_MODES} from './layer-modes.js'
 
-export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap', 'transmissionMap', 'thicknessMap'];
+export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap', 'transmissionMap', 'thicknessMap', 'clearcoatMap', 'clearcoatRoughnessMap', 'sheenColorMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -166,6 +166,18 @@ Util.registerComponentSystem('material-pack-system', {
       {
         attr['thickness'] = 1
       }
+      else if (map === 'clearcoatMap')
+      {
+        attr['clearcoat'] = 1
+      }
+      else if (map === 'clearcoatRoughnessMap')
+      {
+        attr['clearcoatRoughness'] = 1
+      }
+      else if (map === 'sheenColorMap')
+      {
+        attr['sheen'] = 1
+      }
 
       attr[map] = img
       hasAttr = true
@@ -201,7 +213,6 @@ Util.registerComponentSystem('material-pack-system', {
 
     if (PHYSICAL_MODES.some(m => m in attr))
     {
-      console.log("Using physical material")
       attr.shader = 'physical'
     }
 
@@ -349,6 +360,18 @@ Util.registerComponentSystem('material-pack-system', {
           {
             attr['thickness'] = o.material.thickness
           }
+          else if (m === 'clearcoatMap')
+          {
+            attr['clearcoat'] = o.material.clearcoat
+          }
+          else if (m === 'clearcoatRoughnessMap')
+          {
+            attr['clearcoatRoughness'] = o.material.clearcoatRoughness
+          }
+          else if (m === 'sheenColorMap')
+          {
+            attr['sheen'] = o.material.sheen
+          }
 
           hasAttr = true
         }
@@ -422,10 +445,7 @@ Util.registerComponentSystem('material-pack-system', {
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
-    if (Compositor.el.getAttribute('material').shader === 'flat' || Compositor.el.getAttribute('material').shader === 'matcap')
-    {
-      Compositor.el.setAttribute('material', 'shader', 'standard')
-    }
+    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in mask.maps) ? 'physical' : 'standard')
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
     {
       Undo.collect(() => {
@@ -522,6 +542,9 @@ AFRAME.registerComponent('material-pack', {
     aoMapEnabled: {default: true},
     transmissionMapEnabled: {default: true},
     thicknessMapEnabled: {default: true},
+    clearcoatMapEnabled: {default: true},
+    clearcoatRoughnessMapEnabled: {default: true},
+    sheenColorMapEnabled: {default: true}
   },
   events: {
     click: function(e) {
@@ -646,6 +669,16 @@ AFRAME.registerComponent('material-pack', {
       {
         attr["roughness"] = 1
       }
+      else if (map === 'transmissionMap')
+      {
+        attr['transmission'] = 1
+        attr.shader = 'physical'
+      }
+      else if (map === 'thicknessMap')
+      {
+        attr['thickness'] = 1
+        attr.shader = 'physical'
+      }
     }
 
     await Promise.all(promises)
@@ -692,7 +725,7 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
   },
   fillMaterial() {
-    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', 'standard')
+    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in this.maps) ? 'physical' : 'standard')
     let canvas = Compositor.drawableCanvas
     canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height)
     this.applyMask()
