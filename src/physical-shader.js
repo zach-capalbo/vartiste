@@ -50,6 +50,7 @@ AFRAME.registerShader('physical', {
     transmissionMap: {type: 'map'},
     ior: {default: 1.51, min: 1.0, max: 2.333},
     thickness: {default: 0.01},
+    thicknessMap: {type: 'map'},
   },
 
   /**
@@ -70,6 +71,7 @@ AFRAME.registerShader('physical', {
     if (data.ambientOcclusionMap) { utils.material.updateDistortionMap('ambientOcclusion', this, data); }
     if (data.metalnessMap) { utils.material.updateDistortionMap('metalness', this, data); }
     if (data.roughnessMap) { utils.material.updateDistortionMap('roughness', this, data); }
+    if (data.transmissionMap) { utils.material.updateDistortionMap('transmission', this, data); }
     this.updateEnvMap(data);
   },
 
@@ -81,6 +83,7 @@ AFRAME.registerShader('physical', {
     if (data.ambientOcclusionMap) { utils.material.updateDistortionMap('ambientOcclusion', this, data); }
     if (data.metalnessMap) { utils.material.updateDistortionMap('metalness', this, data); }
     if (data.roughnessMap) { utils.material.updateDistortionMap('roughness', this, data); }
+    if (data.transmissionMap) { utils.material.updateDistortionMap('transmission', this, data); }
     this.updateEnvMap(data);
   },
 
@@ -172,8 +175,9 @@ function getMaterialData (data, materialData) {
   materialData.roughness = data.roughness;
   materialData.wireframe = data.wireframe;
   materialData.wireframeLinewidth = data.wireframeLinewidth;
-  materialData.ior = data.ior
-  materialData.thickness = data.thickness
+  materialData.ior = data.ior;
+  materialData.thickness = data.thickness;
+  materialData.transmission = data.transmission;
 
   if (data.normalMap) { materialData.normalScale = data.normalScale; }
 

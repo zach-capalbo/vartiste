@@ -3,8 +3,9 @@ import {Layer} from './layer.js'
 import {Undo} from './undo.js'
 import {toSrcString} from './file-upload.js'
 import shortid from 'shortid'
+import {PHYSICAL_MODES} from './layer-modes.js'
 
-export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap'];
+export const HANDLED_MAPS = ['normalMap', 'emissiveMap', 'metalnessMap', 'roughnessMap', 'aoMap', 'transmissionMap', 'thicknessMap'];
 
 Util.registerComponentSystem('material-pack-system', {
   events: {
@@ -155,7 +156,17 @@ Util.registerComponentSystem('material-pack-system', {
       if (map === 'displacementMap') {
         console.warn("Ignoring displacement map for the time being")
         continue;
+
       }
+      if (map === 'transmissionMap')
+      {
+        attr['transmission'] = 1
+      }
+      else if (map === 'thicknessMap')
+      {
+        attr['thickness'] = 1
+      }
+
       attr[map] = img
       hasAttr = true
     }
@@ -187,6 +198,13 @@ Util.registerComponentSystem('material-pack-system', {
 
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
+
+    if (PHYSICAL_MODES.some(m => m in attr))
+    {
+      console.log("Using physical material")
+      attr.shader = 'physical'
+    }
+
     let el = document.createElement('a-entity')
     let packContainer = this.packRootEl.querySelector('.pack-container')
     packContainer.append(el)
@@ -204,6 +222,13 @@ Util.registerComponentSystem('material-pack-system', {
       return Util.whenLoaded(el, () => {
         this.loadedPacks[name] = el;
         el.setAttribute('material-pack', 'pack', name)
+
+        if (attr.shader === 'physical')
+        {
+            el.components['material-pack'].view.setAttribute('material', 'shader', 'physical')
+            console.log("Physical el", el)
+        }
+
         if (attr.emissiveMap)
         {
           attr.emissive = attr.emissiveMap
@@ -310,11 +335,19 @@ Util.registerComponentSystem('material-pack-system', {
 
           if (m === 'metalnessMap')
           {
-            attr["metalness"] = 1
+            attr["metalness"] = o.material.metalness
           }
           else if (m === 'roughnessMap')
           {
-            attr["roughness"] = 1
+            attr["roughness"] = o.material.roughness
+          }
+          else if (m === 'transmissionMap')
+          {
+            attr['transmission'] = o.material.transmission
+          }
+          else if (m === 'thicknessMap')
+          {
+            attr['thickness'] = o.material.thickness
           }
 
           hasAttr = true
@@ -487,6 +520,8 @@ AFRAME.registerComponent('material-pack', {
     roughnessMapEnabled: {default: true},
     emissiveMapEnabled: {default: true},
     aoMapEnabled: {default: true},
+    transmissionMapEnabled: {default: true},
+    thicknessMapEnabled: {default: true},
   },
   events: {
     click: function(e) {
