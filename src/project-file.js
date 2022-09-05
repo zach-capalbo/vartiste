@@ -67,9 +67,9 @@ class ProjectFile {
         if (layer.mode === 'matcap')
         {
           let flipper = new CanvasShaderProcessor({fx: 'flip-y'})
-          for (let frame of layer.frame)
+          for (let frame of layer.frames)
           {
-            flipper.apply(frame)
+            // flipper.apply(frame)
           }
         }
       }

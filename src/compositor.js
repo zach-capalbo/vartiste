@@ -843,6 +843,12 @@ AFRAME.registerComponent('compositor', {
 
         if (material[layer.mode].image !== layerCanvas)
         {
+          if (material[layer.mode].image.width !== layerCanvas.width || material[layer.mode].image.height !== layerCanvas.height)
+          {
+            material[layer.mode].dispose()
+            material[layer.mode] = createTexture()
+            material.needsUpdate = true
+          }
           material[layer.mode].image = layerCanvas
           material[layer.mode].needsUpdate = true
         }
