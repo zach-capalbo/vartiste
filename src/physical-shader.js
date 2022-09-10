@@ -58,7 +58,9 @@ AFRAME.registerShader('physical', {
     clearcoatNormalMap: {type: 'map'},
     sheen: {default: 0.0, min: 0.0, max: 1.0},
     sheenColor: {type: 'color', default: '#fff'},
-    sheenColorMap: {type: 'map'}
+    sheenColorMap: {type: 'map'},
+    attenuationColor: {type: 'color', default: '#ffffff'},
+    attenuationDistance: {default: 0.0}
 
   },
 
@@ -68,7 +70,7 @@ AFRAME.registerShader('physical', {
    */
   init: function (data) {
     this.rendererSystem = this.el.sceneEl.systems.renderer;
-    this.materialData = {color: new THREE.Color(), emissive: new THREE.Color(), sheenColor: new THREE.Color()};
+    this.materialData = {color: new THREE.Color(), emissive: new THREE.Color(), sheenColor: new THREE.Color(), attenuationColor: new THREE.Color()};
     getMaterialData(data, this.materialData);
     this.rendererSystem.applyColorCorrection(this.materialData.color);
     this.rendererSystem.applyColorCorrection(this.materialData.emissive);
@@ -191,6 +193,8 @@ function getMaterialData (data, materialData) {
   materialData.clearcoatRoughness = data.clearcoatRoughness;
   materialData.sheen = data.sheen;
   materialData.sheenColor.set(data.sheenColor);
+  materialData.attenuationDistance = data.attenuationDistance;
+  materialData.attenuationColor.set(data.attenuationColor);
 
   if (data.normalMap) { materialData.normalScale = data.normalScale; }
 
