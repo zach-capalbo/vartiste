@@ -14,7 +14,7 @@ build:
     - npm run-script build
     - echo $CI_JOB_ID > dist/CI_JOB_ID
   artifacts:
-    expire_in: 1 week
+    expire_in: 3 days
     paths:
       - dist
 
@@ -59,7 +59,7 @@ test:
     - npm install
     - ./node_modules/codeceptjs/bin/codecept.js run --debug --steps
   artifacts:
-    expire_in: 1 week
+    expire_in: 3 days
     when: always
     paths:
       - tests/output
@@ -117,7 +117,7 @@ pages:
     - mkdir -p public
     - mv dist/* public
   artifacts:
-    expire_in: 1 week
+    expire_in: 3 days
     paths:
       - public
   only:
@@ -150,8 +150,9 @@ toolkit:
 
 itch:
   stage: deploy
+  when: manual
   only:
-    - itch
+    - release
   script:
     - rm dist/gallery/*.vartiste
     - rm -r dist/stats
