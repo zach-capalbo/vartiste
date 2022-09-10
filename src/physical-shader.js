@@ -50,6 +50,18 @@ AFRAME.registerShader('physical', {
     transmissionMap: {type: 'map'},
     ior: {default: 1.51, min: 1.0, max: 2.333},
     thickness: {default: 0.01},
+    thicknessMap: {type: 'map'},
+    clearcoat: {default: 0.0, min: 0.0, max: 1.0},
+    clearcoatMap: {type: 'map'},
+    clearcoatRoughness: {default: 0.0, min: 0.0, max: 1.0},
+    clearcoatRoughnessMap: {type: 'map'},
+    clearcoatNormalMap: {type: 'map'},
+    sheen: {default: 0.0, min: 0.0, max: 1.0},
+    sheenColor: {type: 'color', default: '#fff'},
+    sheenColorMap: {type: 'map'},
+    attenuationColor: {type: 'color', default: '#ffffff'},
+    attenuationDistance: {default: 0.0}
+
   },
 
   /**
@@ -58,7 +70,7 @@ AFRAME.registerShader('physical', {
    */
   init: function (data) {
     this.rendererSystem = this.el.sceneEl.systems.renderer;
-    this.materialData = {color: new THREE.Color(), emissive: new THREE.Color()};
+    this.materialData = {color: new THREE.Color(), emissive: new THREE.Color(), sheenColor: new THREE.Color(), attenuationColor: new THREE.Color()};
     getMaterialData(data, this.materialData);
     this.rendererSystem.applyColorCorrection(this.materialData.color);
     this.rendererSystem.applyColorCorrection(this.materialData.emissive);
@@ -70,6 +82,7 @@ AFRAME.registerShader('physical', {
     if (data.ambientOcclusionMap) { utils.material.updateDistortionMap('ambientOcclusion', this, data); }
     if (data.metalnessMap) { utils.material.updateDistortionMap('metalness', this, data); }
     if (data.roughnessMap) { utils.material.updateDistortionMap('roughness', this, data); }
+    if (data.transmissionMap) { utils.material.updateDistortionMap('transmission', this, data); }
     this.updateEnvMap(data);
   },
 
@@ -81,6 +94,7 @@ AFRAME.registerShader('physical', {
     if (data.ambientOcclusionMap) { utils.material.updateDistortionMap('ambientOcclusion', this, data); }
     if (data.metalnessMap) { utils.material.updateDistortionMap('metalness', this, data); }
     if (data.roughnessMap) { utils.material.updateDistortionMap('roughness', this, data); }
+    if (data.transmissionMap) { utils.material.updateDistortionMap('transmission', this, data); }
     this.updateEnvMap(data);
   },
 
@@ -172,8 +186,15 @@ function getMaterialData (data, materialData) {
   materialData.roughness = data.roughness;
   materialData.wireframe = data.wireframe;
   materialData.wireframeLinewidth = data.wireframeLinewidth;
-  materialData.ior = data.ior
-  materialData.thickness = data.thickness
+  materialData.ior = data.ior;
+  materialData.thickness = data.thickness;
+  materialData.transmission = data.transmission;
+  materialData.clearcoat = data.clearcoat;
+  materialData.clearcoatRoughness = data.clearcoatRoughness;
+  materialData.sheen = data.sheen;
+  materialData.sheenColor.set(data.sheenColor);
+  materialData.attenuationDistance = data.attenuationDistance;
+  materialData.attenuationColor.set(data.attenuationColor);
 
   if (data.normalMap) { materialData.normalScale = data.normalScale; }
 

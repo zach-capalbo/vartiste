@@ -2429,7 +2429,7 @@ class GLTFMaterialsClearcoatExtension {
 
 		if ( material.clearcoatMap ) {
 
-			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap, "clearcoarMap" ) };
+			const clearcoatMapDef = { index: writer.processTexture( material.clearcoatMap, "clearcoatMap" ) };
 			writer.applyTextureTransform( clearcoatMapDef, material.clearcoatMap );
 			extensionDef.clearcoatTexture = clearcoatMapDef;
 
@@ -2592,8 +2592,13 @@ class GLTFMaterialsVolumeExtension {
 
 		}
 
-		extensionDef.attenuationDistance = material.attenuationDistance;
-		extensionDef.attenuationColor = material.attenuationColor.toArray();
+		if ( material.attenuationDistance > 0 )
+		{
+
+			extensionDef.attenuationDistance = material.attenuationDistance;
+			extensionDef.attenuationColor = material.attenuationColor.toArray();
+			
+		}
 
 		materialDef.extensions = materialDef.extensions || {};
 		materialDef.extensions[ this.name ] = extensionDef;
