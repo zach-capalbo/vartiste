@@ -13,6 +13,7 @@ function createTexture() {
   let t = new THREE.Texture()
   t.generateMipmaps = false
   t.minFilter = THREE.LinearFilter
+  t.encoding = THREE.sRGBEncoding
   // t.wrapS = THREE.RepeatWrapping
   // t.wrapT = THREE.RepeatWrapping
   return t
