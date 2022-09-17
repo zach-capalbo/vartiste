@@ -13,6 +13,7 @@ Util.registerComponentSystem('vartiste-extras', {
   },
   init() {
     this.loadDB()
+    this.handles = {}
   },
   async loadDB() {
     let db = this.db = new Dexie("extras")
@@ -56,6 +57,37 @@ Util.registerComponentSystem('vartiste-extras', {
 
     this.el.sceneEl.setAttribute('vartiste-extras', {extraURLs: [].concat(this.data.extraURLs, [value])})
   },
+  async updateDirectoryHandle(handle) {
+    if (handle === undefined)
+    {
+      handle = await showDirectoryPicker()
+    }
+    let index = {}
+    try {
+      let indexFile = handle.getFileHandle('index.json')
+      let fileData = await indexFile.getFile()
+      index = JSON.parse(await fileData.text())
+    }
+    catch (e) {
+      console.warn("Could not load index from", handle)
+      for await (let dir of handle.values())
+      {
+        if (dir.kind === 'file') continue;
+        index[dir.name] = []
+        for await (let f of dir.values())
+        {
+          if (f.kind !== 'file') continue;
+          index[dir.name].push(f.name)
+        }
+      }
+    }
+
+    console.log("Setting index", index)
+
+    this.indices.set('handle://' + handle.name, index)
+    this.handles['handle://' + handle.name] = handle
+    this.addExtraURL('handle://' + handle.name)
+  },
   async updateExtraURLs() {
     this.indices = new Map()
     await this.fetchIndex()
@@ -63,13 +95,18 @@ Util.registerComponentSystem('vartiste-extras', {
 
     this.db.transaction('rw', this.db.extraURLs, async () => {
       await this.db.extraURLs.clear()
-      await this.db.extraURLs.bulkAdd(this.data.extraURLs.map(u => { return {url: u}}))
+      await this.db.extraURLs.bulkAdd(this.data.extraURLs.filter(u => !u.startsWith('handle://')).map(u => { return {url: u}}))
     })
 
     for (let i in this.data.extraURLs)
     {
       let extra = this.data.extraURLs[i]
       try {
+        if (extra.startsWith('handle://'))
+        {
+          this.updateDirectoryHandle(this.handles[extra])
+          continue;
+        }
         if (extra.endsWith("/")) {
           extra = extra.slice(0, -1)
           this.data.extraURLs[i] = extra
@@ -111,9 +148,23 @@ AFRAME.registerComponent('vartiste-extras-popup', {
     let shelf = popup.querySelector('a-entity[shelf]')
     if (!this.isPopupListening.get(popup))
     {
-      popup.addEventListener('click', (e) => {
+      popup.addEventListener('click', async (e) => {
         if (!e.target.hasAttribute('data-vartiste-extra')) return;
-        this.el.sceneEl.systems['file-upload'].handleURL(`${e.target.getAttribute('data-vartiste-extra-url')}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`, {forceReference: this.data.forceReference})
+        let baseURL = e.target.getAttribute('data-vartiste-extra-url');
+        if (baseURL.startsWith('handle://'))
+        {
+          let handle = this.system.handles[baseURL]
+          let dir = await handle.getDirectoryHandle(this.data.category)
+          let fileHandle = await dir.getFileHandle(e.target.getAttribute('data-vartiste-extra'))
+          let fileData = await fileHandle.getFile()
+          let fileURL = await URL.createObjectURL(fileData)
+          console.log("Created file url", fileURL)
+          this.el.sceneEl.systems['file-upload'].handleURL({url: fileURL, name: fileHandle.name}, {forceReference: this.data.forceReference})
+        }
+        else
+        this.el.sceneEl.systems['file-upload'].handleURL(`${baseURL}/${this.data.category}/${e.target.getAttribute('data-vartiste-extra')}`, {forceReference: this.data.forceReference})
+        {
+        }
       })
       this.isPopupListening.set(popup, true)
     }

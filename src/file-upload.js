@@ -13,8 +13,16 @@ const HANDLED_MODEL_FORMAT_REGEX = /\.(glb|obj|vrm|gltf|fbx)$/i;
 
 class URLFileAdapter {
   constructor(url) {
-    this.url = url
-    this.name = url
+    if (url.url)
+    {
+      this.url = url.url
+      this.name = url.name
+    }
+    else
+    {
+      this.url = url
+      this.name = url
+    }
   }
   async text() {
     let resp = await fetch(this.url)
