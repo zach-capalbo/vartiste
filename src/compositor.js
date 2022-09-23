@@ -34,7 +34,7 @@ AFRAME.registerComponent('compositor', {
     usePreOverlayCanvas: {default: true},
     useNodes: {default: false},
     flipY: {default: false},
-    flipNormal: {default: true},
+    flipNormal: {default: false},
     skipDrawing: {default: false},
     wrapTexture: {default: false},
     doubleSided: {default: false},
@@ -819,6 +819,10 @@ AFRAME.registerComponent('compositor', {
 
         if (!material[layer.mode]) {
           material[layer.mode] = createTexture()
+          if (THREED_MODES.indexOf(layer.mode) >= 0)
+          {
+            material[layer.mode].encoding = THREE.LinearEncoding
+          }
           material.needsUpdate = true
         }
 

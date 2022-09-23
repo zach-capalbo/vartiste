@@ -53,7 +53,7 @@ AFRAME.registerComponent('fix-light-shadow', {
   }
 })
 
-
+AFRAME.components.raycaster.Component.prototype.updateLine = function(){}
 // Improves global raycasting performance but decreases raycaster accuracy on skinned or morphed meshes.
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {
@@ -66,7 +66,7 @@ Util.registerComponentSystem('optimize-mesh-raycast', {
   },
   init() {
     this.oldRayCast = THREE.Mesh.prototype.raycast
-
+    
   },
   update() {
     var wasSkinned = false
@@ -217,3 +217,4 @@ AFRAME.registerComponent('simple-render-sort', {
     }
   }
 })
+

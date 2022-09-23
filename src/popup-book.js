@@ -11,6 +11,7 @@ AFRAME.registerComponent('popup-book', {
   schema: {
     distance: {default: 0.1},
     distanceFunction: {oneOf: Object.keys(DISTANCE_FUNCTIONS), default: 'linear'},
+    taper: {default: 1.0},
 
     geometrySize: {default: 5},
   },
@@ -61,6 +62,8 @@ AFRAME.registerComponent('popup-book', {
     }
     this.layerEls.length = 0
 
+    let taper = this.data.taper
+
     for (let layer of Compositor.component.layers)
     {
       if (!layer.visible) continue;
@@ -76,9 +79,10 @@ AFRAME.registerComponent('popup-book', {
       el.setAttribute('draw-canvas', {canvas: layer.canvas})
       el.setAttribute('canvas-updater', "throttle: 10")
       el.classList.add("canvas")
-      el.setAttribute('position', `0 0 ${DISTANCE_FUNCTIONS[this.data.distanceFunction](i++, this.data)}`)
-      el.setAttribute('scale', `${layer.transform.scale.x} ${layer.transform.scale.y} 1`)
+      el.setAttribute('position', `0 ${taper} ${DISTANCE_FUNCTIONS[this.data.distanceFunction](i++, this.data)}`)
+      el.setAttribute('scale', `${layer.transform.scale.x * taper} ${layer.transform.scale.y * taper} 1`)
       el.setAttribute('propogate-grab', '')
+      taper = taper * taper
       console.log("Created popout layer", layer, layer.transform.scale)
       this.layerEls.push(el)
       Util.whenLoaded(el, () => {

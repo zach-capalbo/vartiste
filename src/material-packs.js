@@ -211,7 +211,7 @@ Util.registerComponentSystem('material-pack-system', {
     let promises = Object.values(attr).map(i => i.decode && i.decode() || Promise.resolve())
     attr.shader = 'standard'
 
-    if (PHYSICAL_MODES.some(m => m in attr))
+    if (PHYSICAL_MODES.some(m => m in attr && !(attr[m].id || "").startsWith('default')))
     {
       attr.shader = 'physical'
     }
@@ -445,7 +445,7 @@ Util.registerComponentSystem('material-pack-system', {
   },
   activateMaterialMask(mask) {
     this.activeMaterialMask = mask
-    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in mask.maps) ? 'physical' : 'standard')
+    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in mask.maps && !(mask.maps[m].id || "").startsWith('default')) ? 'physical' : 'standard')
     if (!Util.isCanvasFullyTransparent(Compositor.drawableCanvas))
     {
       Undo.collect(() => {
@@ -725,7 +725,7 @@ AFRAME.registerComponent('material-pack', {
     this.el.querySelector('*[expandable-shelf]').setAttribute('expandable-shelf', 'expanded', false)
   },
   fillMaterial() {
-    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in this.maps) ? 'physical' : 'standard')
+    if (!Compositor.material.isMeshPhysicalMaterial) Compositor.el.setAttribute('material', 'shader', PHYSICAL_MODES.some(m => m in this.maps && !(this.maps[m].id || "").startsWith("default")) ? 'physical' : 'standard')
     let canvas = Compositor.drawableCanvas
     canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height)
     this.applyMask()
