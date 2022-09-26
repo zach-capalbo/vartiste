@@ -53,7 +53,7 @@ AFRAME.registerComponent('fix-light-shadow', {
   }
 })
 
-AFRAME.components.raycaster.Component.prototype.updateLine = function(){}
+//AFRAME.components.raycaster.Component.prototype.updateLine = function(){}
 // Improves global raycasting performance but decreases raycaster accuracy on skinned or morphed meshes.
 Util.registerComponentSystem('optimize-mesh-raycast', {
   schema: {

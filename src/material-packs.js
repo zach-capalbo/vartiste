@@ -239,6 +239,13 @@ Util.registerComponentSystem('material-pack-system', {
             el.components['material-pack'].view.setAttribute('material', 'shader', 'physical')
             console.log("Physical el", el)
         }
+        else
+        {
+          for (let m of PHYSICAL_MODES)
+          {
+            delete attr[m];
+          }
+        }
 
         if (attr.emissiveMap)
         {
