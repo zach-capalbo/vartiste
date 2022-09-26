@@ -1165,7 +1165,7 @@ Util.registerComponentSystem('threed-line-system', {
         texture = new THREE.Texture;
         texture.image = maps[map]
         texture.needsUpdate = true
-        texture.encoding = THREE.sRGBEncoding
+        texture.encoding = map === 'src' ? THREE.sRGBEncoding : THREE.LinearEncoding
         texture.generateMipmaps = false
         texture.minFilter = THREE.LinearFilter
         this.material[map] = texture
