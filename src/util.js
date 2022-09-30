@@ -1107,7 +1107,7 @@ class VARTISTEUtil {
     matrix.invert()
     matrix.multiply(meshB.matrixWorld)
 
-    if (bvh.intersectsGeometry(meshA.geometry, meshB.geometry, matrix)) return true
+    if (bvh.intersectsGeometry(meshB.geometry, matrix)) return true
     if (!includeContained) return false
 
     let tmpBox = this.pool('tmpBox', THREE.Box3)
