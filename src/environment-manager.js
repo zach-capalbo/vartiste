@@ -348,6 +348,8 @@ Util.registerComponentSystem('environment-manager', {
       let imageTexture = await new THREE.TextureLoader().loadAsync(document.querySelector("#asset-colorful_studio").src)
       imageTexture.mapping = THREE.EquirectangularReflectionMapping;
       imageTexture.encoding = THREE.sRGBEncoding
+      imageTexture.magFilter = THREE.LinearFilter
+      imageTexture.minFilter = THREE.LinearFilter
       skyEl.removeObject3D('mesh')
       let g = new GroundProjectedEnv(imageTexture)
       g.material.color = new THREE.Color()
