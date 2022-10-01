@@ -25,7 +25,7 @@ Util.registerComponentSystem('environment-manager', {
     rendererExposure: {default: 0.724},
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
-    initialState: {default: STATE_COLOR},
+    initialState: {default: STATE_PRESET},
     toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']},
     transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']},
     alphaTest: {default: 0.01},
@@ -60,13 +60,15 @@ Util.registerComponentSystem('environment-manager', {
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
     this.canvasRoot = this.el.querySelector('#canvas-root')
     this.hasSwitched = false
+    this.skyEl = this.el.querySelector('a-sky')
+    Util.whenLoaded(this.skyEl, () => {
+      this.initialSkyMesh = this.skyEl.getObject3D('mesh')
+    })
     Util.whenLoaded(this.el, () => {
-      this.usePresetHDRI({initial: true})
-
-      // if (this.data.initialState !== STATE_PRESET)
-      // {
-      //   this.useEnviropack("tankfarm")
-      // }
+      if (this.data.initialState === STATE_PRESET)
+      {
+        this.usePresetHDRI({initial: true})
+      }
     })
   },
   update(oldData) {
@@ -75,6 +77,21 @@ Util.registerComponentSystem('environment-manager', {
       this.setToneMapping(THREE[this.data.toneMapping])
     }
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
+    if (this.data.groundProject !== oldData.groundProject && this.state === STATE_HDRI && this.hdriTexture)
+    {
+      if (this.uninstallState) {
+        this.uninstallState()
+        this.uninstallState = null
+      }
+      if (this.substate === 'preset-hdri')
+      {
+        this.usePresetHDRI()
+      }
+      else
+      {
+        this.installHDREnvironment(this.hdriTexture, false)
+      }
+    }
   },
   switchState(newState, updateSwitched = true) {
     if (updateSwitched) { this.hasSwitched = true; }
@@ -176,7 +193,11 @@ Util.registerComponentSystem('environment-manager', {
   installGroundProjectedEnvironment(texture, switchState = true) {
     if (switchState) { this.switchState(STATE_HDRI) }
 
-    let skyEl = document.getElementsByTagName('a-sky')[0]
+    let skyEl = this.skyEl
+    if (!this.initialSkyMesh)
+    {
+      this.initialSkyMesh = skyEl.getObject3D('mesh')
+    }
     skyEl.removeObject3D('mesh')
     let ground = new GroundProjectedEnv(texture)
     ground.scale.setScalar(this.data.groundProjectScale)
@@ -203,13 +224,17 @@ Util.registerComponentSystem('environment-manager', {
     if (this.uninstallState) return
 
     this.uninstallState = () => {
+      skyEl.setObject3D('mesh', this.initialSkyMesh)
       this.setToneMapping(THREE.LinearToneMapping)
+      this.el.sceneEl.object3D.environment = null;
       this.setSkyBrightness(1.0)
       this.el.renderer.toneMappingExposure = 1.0
       skyEl.getObject3D('mesh').material.map = null
       skyEl.getObject3D('mesh').scale.x = 1
       skyEl.getObject3D('mesh').scale.z = 1
       skyEl.getObject3D('mesh').material.needsUpdate = true
+      console.log("Cleared map", skyEl.getObject3D('mesh').material.map, skyEl.getObject3D('mesh').material)
+      Util.recursiveDispose(ground)
       for (let [l, i] of originalLights) {
         l.setAttribute('light', {intensity: i})
       }
@@ -276,6 +301,7 @@ Util.registerComponentSystem('environment-manager', {
     if (this.uninstallState) return
 
     this.uninstallState = () => {
+      skyEl.setObject3D('mesh', this.initialSkyMesh)
       this.setToneMapping(THREE.LinearToneMapping)
       this.setSkyBrightness(1.0)
       this.el.renderer.toneMappingExposure = 1.0
@@ -341,7 +367,6 @@ Util.registerComponentSystem('environment-manager', {
 
     let skyEl = document.querySelector('a-sky');
     skyEl.setAttribute('material', {src: ""})
-    skyEl.setAttribute('material', {src: "#asset-colorful_studio"})
     
     if (this.data.groundProject)
     {
@@ -355,6 +380,10 @@ Util.registerComponentSystem('environment-manager', {
       g.material.color = new THREE.Color()
       g.scale.setScalar(this.data.groundProjectScale)
       skyEl.setObject3D('mesh', g)
+    }
+    else
+    {
+      skyEl.setAttribute('material', {src: "#asset-colorful_studio"})
     }
 
     this.setToneMapping(initial ? THREE.NoToneMapping : THREE.LinearToneMapping)
@@ -406,7 +435,9 @@ Util.registerComponentSystem('environment-manager', {
   setBackgroundColor(color) {
     this.switchState(STATE_COLOR)
     if (color === undefined) color = this.el.sceneEl.systems['paint-system'].data.color
-    document.querySelector('a-sky').setAttribute('material', 'color', color)
+    this.skyEl.setAttribute('material', 'color', color)
+    this.skyEl.getObject3D('mesh').material.map = null
+    this.skyEl.getObject3D('mesh').material.needsUpdate = true
   },
   toneMapping() {
     this.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
