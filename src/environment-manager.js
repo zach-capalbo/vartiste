@@ -4,6 +4,7 @@ import {RGBELoader} from './framework/RGBELoader.js'
 import {Util} from './util.js'
 import {Pool} from './pool.js'
 import {POST_MANIPULATION_PRIORITY} from './manipulator.js'
+import {GroundProjectedEnv} from './framework/GroundProjectedEnv.js'
 
 const [
   STATE_COLOR,
@@ -24,10 +25,12 @@ Util.registerComponentSystem('environment-manager', {
     rendererExposure: {default: 0.724},
     bgExposure: {default: 1.0},
     envMapIntensity: {default: 1.0},
-    initialState: {default: STATE_COLOR},
+    initialState: {default: STATE_PRESET},
     toneMapping: {default: 'NoToneMapping', oneOf: ['NoToneMapping', 'LinearToneMapping', 'ReinhardToneMapping', 'CineonToneMapping', 'ACESFilmicToneMapping']},
     transparencyMode: {default: 'depthBlend', oneOf: ['depthBlend', 'blend', 'hashed']},
     alphaTest: {default: 0.01},
+    groundProject: {default: true},
+    groundProjectScale: {default: 100},
   },
   events: {
     anglechanged: function (e) {
@@ -57,13 +60,15 @@ Util.registerComponentSystem('environment-manager', {
     this.elementsToCheck = Array.from(document.querySelectorAll('#world-root,#artist-root'))
     this.canvasRoot = this.el.querySelector('#canvas-root')
     this.hasSwitched = false
+    this.skyEl = this.el.querySelector('a-sky')
+    Util.whenLoaded(this.skyEl, () => {
+      this.initialSkyMesh = this.skyEl.getObject3D('mesh')
+    })
     Util.whenLoaded(this.el, () => {
-      this.usePresetHDRI({initial: true})
-
-      // if (this.data.initialState !== STATE_PRESET)
-      // {
-      //   this.useEnviropack("tankfarm")
-      // }
+      if (this.data.initialState === STATE_PRESET)
+      {
+        this.usePresetHDRI({initial: true})
+      }
     })
   },
   update(oldData) {
@@ -72,6 +77,22 @@ Util.registerComponentSystem('environment-manager', {
       this.setToneMapping(THREE[this.data.toneMapping])
     }
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
+    if (this.data.groundProject !== oldData.groundProject && this.state === STATE_HDRI && this.hdriTexture)
+    {
+      let hdriTexture = this.hdriTexture
+      if (this.uninstallState) {
+        this.uninstallState()
+        this.uninstallState = null
+      }
+      if (this.substate === 'preset-hdri')
+      {
+        this.usePresetHDRI()
+      }
+      else
+      {
+        this.installHDREnvironment(hdriTexture, false)
+      }
+    }
   },
   switchState(newState, updateSwitched = true) {
     if (updateSwitched) { this.hasSwitched = true; }
@@ -170,13 +191,87 @@ Util.registerComponentSystem('environment-manager', {
     skyEl.getObject3D('mesh').material.color.g = exposure
     skyEl.getObject3D('mesh').material.color.b = exposure
   },
-  installHDREnvironment(texture, switchState = true) {
+  installGroundProjectedEnvironment(texture, switchState = true) {
     if (switchState) { this.switchState(STATE_HDRI) }
+
+    let skyEl = this.skyEl
+    if (!this.initialSkyMesh)
+    {
+      this.initialSkyMesh = skyEl.getObject3D('mesh')
+    }
+    skyEl.removeObject3D('mesh')
+    let ground = new GroundProjectedEnv(texture)
+    ground.scale.setScalar(this.data.groundProjectScale)
+    ground.material.color = new THREE.Color()
+    skyEl.setObject3D('mesh', ground)
+
+    this.setSkyBrightness(0.7)
+
+    this.hdriTexture = texture
+
+    // this.el.sceneEl.object3D.background = texture;
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    
+    var originalLights = []
+    document.querySelectorAll('*[light]').forEach(l => {
+      originalLights.push([l, l.components.light.data.intensity])
+      l.setAttribute('light', {intensity: 0})
+    })
+    
+    this.envMap = this.generatePMREM(texture);
+    this.el.sceneEl.object3D.environment = this.envMap; 
+    this.substate = 'ground'
+
+    if (this.uninstallState) return
+
+    this.uninstallState = () => {
+      skyEl.setObject3D('mesh', this.initialSkyMesh)
+      this.setToneMapping(THREE.LinearToneMapping)
+      this.el.sceneEl.object3D.environment = null;
+      this.setSkyBrightness(1.0)
+      this.el.renderer.toneMappingExposure = 1.0
+      skyEl.getObject3D('mesh').material.map = null
+      skyEl.getObject3D('mesh').scale.x = 1
+      skyEl.getObject3D('mesh').scale.z = 1
+      skyEl.getObject3D('mesh').material.needsUpdate = true
+      console.log("Cleared map", skyEl.getObject3D('mesh').material.map, skyEl.getObject3D('mesh').material)
+      Util.recursiveDispose(ground)
+      for (let [l, i] of originalLights) {
+        l.setAttribute('light', {intensity: i})
+      }
+
+      this.el.object3D.traverse(o => {
+        if (o.material && this.shouldTouchMaterial(o.material) && o.material.envMap == this.envMap)
+        {
+          o.material.envMap = null
+          o.material.needsUpdate = true
+        }
+      })
+
+      this.hdriTexture = undefined
+    }
+  },
+  generatePMREM(texture) {
     let renderer = AFRAME.scenes[0].renderer
     let wasXREnabled = renderer.xr.enabled
     renderer.xr.enabled = false
     var pmremGenerator = new THREE.PMREMGenerator( renderer );
     pmremGenerator.compileEquirectangularShader();
+    var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+    envMap.mapping = THREE.CubeUVReflectionMapping;
+    renderer.xr.enabled = wasXREnabled
+    pmremGenerator.dispose()
+    return envMap
+  },
+  installHDREnvironment(texture, switchState = true) {
+    if (this.data.groundProject)
+    {
+      return this.installGroundProjectedEnvironment(texture, switchState);
+    }
+    
+    if (switchState) { this.switchState(STATE_HDRI) }
+
+    let envMap = this.generatePMREM(texture)
 
     let scene = this.el.object3D
 
@@ -191,13 +286,9 @@ Util.registerComponentSystem('environment-manager', {
     this.setSkyBrightness(0.7)
 
     this.hdriTexture = texture
-
-    var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-    envMap.mapping = THREE.CubeUVReflectionMapping
-
     // When new three.js is integrated into AFRAME, we can do something like:
-    // scene.background = texture;
-    // scene.environment = envMap;
+    scene.background = texture;
+    scene.environment = envMap;
 
     var originalLights = []
     document.querySelectorAll('*[light]').forEach(l => {
@@ -206,15 +297,13 @@ Util.registerComponentSystem('environment-manager', {
     })
 
     this.envMap = envMap
-    renderer.xr.enabled = wasXREnabled
-
-    pmremGenerator.dispose()
 
     this.substate = ''
 
     if (this.uninstallState) return
 
     this.uninstallState = () => {
+      skyEl.setObject3D('mesh', this.initialSkyMesh)
       this.setToneMapping(THREE.LinearToneMapping)
       this.setSkyBrightness(1.0)
       this.el.renderer.toneMappingExposure = 1.0
@@ -278,8 +367,27 @@ Util.registerComponentSystem('environment-manager', {
       return;
     }
 
-    document.querySelector('a-sky').setAttribute('material', {src: ""})
-    document.querySelector('a-sky').setAttribute('material', {src: "#asset-colorful_studio"})
+    let skyEl = document.querySelector('a-sky');
+    skyEl.setAttribute('material', {src: ""})
+    
+    if (this.data.groundProject)
+    {
+      let imageTexture = await new THREE.TextureLoader().loadAsync(document.querySelector("#asset-colorful_studio").src)
+      imageTexture.mapping = THREE.EquirectangularReflectionMapping;
+      imageTexture.encoding = THREE.sRGBEncoding
+      imageTexture.magFilter = THREE.LinearFilter
+      imageTexture.minFilter = THREE.LinearFilter
+      skyEl.removeObject3D('mesh')
+      let g = new GroundProjectedEnv(imageTexture)
+      g.material.color = new THREE.Color()
+      g.scale.setScalar(this.data.groundProjectScale)
+      skyEl.setObject3D('mesh', g)
+    }
+    else
+    {
+      skyEl.setAttribute('material', {src: "#asset-colorful_studio"})
+    }
+
     this.setToneMapping(initial ? THREE.NoToneMapping : THREE.LinearToneMapping)
     this.setSkyBrightness(0.98)
     this.el.renderer.toneMappingExposure = 0.724
@@ -329,7 +437,9 @@ Util.registerComponentSystem('environment-manager', {
   setBackgroundColor(color) {
     this.switchState(STATE_COLOR)
     if (color === undefined) color = this.el.sceneEl.systems['paint-system'].data.color
-    document.querySelector('a-sky').setAttribute('material', 'color', color)
+    this.skyEl.setAttribute('material', 'color', color)
+    this.skyEl.getObject3D('mesh').material.map = null
+    this.skyEl.getObject3D('mesh').material.needsUpdate = true
   },
   toneMapping() {
     this.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)

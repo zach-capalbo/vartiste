@@ -1014,8 +1014,8 @@ Util.registerComponentSystem('threed-line-system', {
     {
       this.material = new THREE.MeshStandardMaterial({
         color: brush.color,
-        envMap: this.el.sceneEl.systems['environment-manager'].envMap,
-        envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity,
+        // envMap: this.el.sceneEl.systems['environment-manager'].envMap,
+        // envMapIntensity: this.el.sceneEl.systems['environment-manager'].data.envMapIntensity,
         roughness: this.data.roughness,
         metalness: this.data.metalness
       })
@@ -1127,8 +1127,8 @@ Util.registerComponentSystem('threed-line-system', {
 
     if (materialType === THREE.MeshStandardMaterial)
     {
-      this.material.envMap = this.el.sceneEl.systems['environment-manager'].envMap,
-      this.material.envMapIntensity = this.el.sceneEl.systems['environment-manager'].data.envMapIntensity
+      // this.material.envMap = this.el.sceneEl.systems['environment-manager'].envMap,
+      // this.material.envMapIntensity = this.el.sceneEl.systems['environment-manager'].data.envMapIntensity
     }
     else if (materialType === THREE.MeshMatcapMaterial)
     {
