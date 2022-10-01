@@ -79,6 +79,7 @@ Util.registerComponentSystem('environment-manager', {
     this.el.sceneEl.renderer.toneMappingExposure = this.data.rendererExposure
     if (this.data.groundProject !== oldData.groundProject && this.state === STATE_HDRI && this.hdriTexture)
     {
+      let hdriTexture = this.hdriTexture
       if (this.uninstallState) {
         this.uninstallState()
         this.uninstallState = null
@@ -89,7 +90,7 @@ Util.registerComponentSystem('environment-manager', {
       }
       else
       {
-        this.installHDREnvironment(this.hdriTexture, false)
+        this.installHDREnvironment(hdriTexture, false)
       }
     }
   },
@@ -210,15 +211,15 @@ Util.registerComponentSystem('environment-manager', {
 
     // this.el.sceneEl.object3D.background = texture;
     texture.mapping = THREE.EquirectangularReflectionMapping;
-    this.el.sceneEl.object3D.environment = texture;
-
+    
     var originalLights = []
     document.querySelectorAll('*[light]').forEach(l => {
       originalLights.push([l, l.components.light.data.intensity])
       l.setAttribute('light', {intensity: 0})
     })
-
-    this.envMap = texture
+    
+    this.envMap = this.generatePMREM(texture);
+    this.el.sceneEl.object3D.environment = this.envMap; 
     this.substate = 'ground'
 
     if (this.uninstallState) return
@@ -250,6 +251,18 @@ Util.registerComponentSystem('environment-manager', {
       this.hdriTexture = undefined
     }
   },
+  generatePMREM(texture) {
+    let renderer = AFRAME.scenes[0].renderer
+    let wasXREnabled = renderer.xr.enabled
+    renderer.xr.enabled = false
+    var pmremGenerator = new THREE.PMREMGenerator( renderer );
+    pmremGenerator.compileEquirectangularShader();
+    var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
+    envMap.mapping = THREE.CubeUVReflectionMapping;
+    renderer.xr.enabled = wasXREnabled
+    pmremGenerator.dispose()
+    return envMap
+  },
   installHDREnvironment(texture, switchState = true) {
     if (this.data.groundProject)
     {
@@ -258,11 +271,7 @@ Util.registerComponentSystem('environment-manager', {
     
     if (switchState) { this.switchState(STATE_HDRI) }
 
-    let renderer = AFRAME.scenes[0].renderer
-    let wasXREnabled = renderer.xr.enabled
-    renderer.xr.enabled = false
-    var pmremGenerator = new THREE.PMREMGenerator( renderer );
-    pmremGenerator.compileEquirectangularShader();
+    let envMap = this.generatePMREM(texture)
 
     let scene = this.el.object3D
 
@@ -277,10 +286,6 @@ Util.registerComponentSystem('environment-manager', {
     this.setSkyBrightness(0.7)
 
     this.hdriTexture = texture
-
-    var envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-    envMap.mapping = THREE.CubeUVReflectionMapping
-
     // When new three.js is integrated into AFRAME, we can do something like:
     scene.background = texture;
     scene.environment = envMap;
@@ -292,9 +297,6 @@ Util.registerComponentSystem('environment-manager', {
     })
 
     this.envMap = envMap
-    renderer.xr.enabled = wasXREnabled
-
-    pmremGenerator.dispose()
 
     this.substate = ''
 
@@ -443,7 +445,6 @@ Util.registerComponentSystem('environment-manager', {
     this.setToneMapping((this.el.sceneEl.renderer.toneMapping + 1) % 6)
   },
   updateMaterials() {
-    return;
     if (this.state === STATE_HDRI)
     {
       for (let r of this.elementsToCheck)
