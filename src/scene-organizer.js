@@ -652,7 +652,7 @@ AFRAME.registerComponent('grab-redirector', {
 
     let globe = this.globe = document.createElement('a-entity')
     this.el.append(globe)
-    globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 8; segmentsHeight: 8`)
+    globe.setAttribute('geometry', `primitive: sphere; radius: ${this.data.radius}; segmentsWidth: 5; segmentsHeight: 5`)
     if (this.el.hasAttribute('grab-redirector-material'))
     {
       globe.setAttribute('material', this.el.getAttribute('grab-redirector-material'))

@@ -1655,6 +1655,8 @@ Util.registerComponentSystem('spectator-camera', {
 				}
 			}
 
+      let originalEncoding = this.el.sceneEl.renderer.outputEncoding;
+      this.el.sceneEl.renderer.outputEncoding = THREE.LinearEncoding;
       this.el.sceneEl.object3D.autoUpdate = false
       this.el.sceneEl.renderer.render(this.fakeNotSceneProxy, camera);
       this.el.sceneEl.object3D.autoUpdate = autoUpdate
@@ -1666,6 +1668,7 @@ Util.registerComponentSystem('spectator-camera', {
 
 			this.el.sceneEl.renderer.setRenderTarget = originalSetRenderTarget;
 			this.el.sceneEl.renderer.getRenderTarget = originalGetRenderTarget;
+      this.el.sceneEl.renderer.outputEncoding = originalEncoding;
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, xrSession.renderState.baseLayer.framebuffer)
 

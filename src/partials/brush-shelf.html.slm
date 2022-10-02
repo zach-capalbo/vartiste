@@ -1,4 +1,4 @@
-a-entity icon-row="mergeButtons: true" position="-1.5 1.35 0"
+a-entity icon-row="mergeButtons: true; labeled: true" position="-1.6 1.35 0" scale="1.2 1.2 1.2"
   /a-entity click-action="toggleRotation" icon-button="#asset-rotate-3d-variant" tooltip="Toggle Brush Rotation"
   a-entity icon-button="#asset-lead-pencil" tooltip="Brush Editor" toggle-button="target: #brush-editor; component: visible; useUntoggledColor: false"
   a-entity icon-button="#asset-swap-horizontal-variant" toggle-button="system: paint-system; property: wrapX" tooltip="Toggle Wrap X"
