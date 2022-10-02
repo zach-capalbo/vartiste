@@ -11,8 +11,6 @@ export function loadAsset(fileName, assetsEl) {
 
   let assetSrc = require(`./assets/${asset}`)
 
-  console.log("Loading asset", fileName, assetSrc, assetsEl)
-
 // if (assetSrc.startsWith("asset/") && /\.(png|jpg)/i.test(assetSrc))
   if ((assetSrc.startsWith("asset/") && /\.(png|jpg)$/i.test(assetSrc) )
     || /^data:image/.test(assetSrc))

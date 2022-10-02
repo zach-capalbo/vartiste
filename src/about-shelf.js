@@ -1,11 +1,11 @@
 var buildInfo;
 
+buildInfo = require('!!val-loader!./build-info.js')
 try {
- buildInfo = require('./built-info.js')
+//  buildInfo = require('./built-info.js')
 }
 catch (e)
 {
- // buildInfo = require('!!val-loader!./build-info.js')
  buildInfo = {
    version: "DEV",
    date: new Date().toString()
