@@ -210,7 +210,7 @@ let app = Object.assign({
     new HtmlWebpackPlugin({
       template: './src/template.html.slm',
       filename: 'index.html',
-      // scriptLoading: 'blocking',
+      scriptLoading: 'blocking',
     }),
   ].concat(devMode
     ? [
