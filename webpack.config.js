@@ -6,7 +6,6 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
 const { StatsWriterPlugin } = require("webpack-stats-plugin")
-const webpack = require('webpack')
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
@@ -211,7 +210,7 @@ let app = Object.assign({
     new HtmlWebpackPlugin({
       template: './src/template.html.slm',
       filename: 'index.html',
-      scriptLoading: 'blocking',
+      // scriptLoading: 'blocking',
     }),
   ].concat(devMode
     ? [
@@ -233,6 +232,7 @@ let app = Object.assign({
     splitChunks: {},
     minimize: !devMode,
     minimizer: minimizer(),
+    emitOnErrors: true,
   },
 }, config);
 
