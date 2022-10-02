@@ -438,8 +438,8 @@ AFRAME.registerComponent('compositor', {
     return material
   },
   drawOverlay(ctx) {
-    if (!this.data.drawOverlay) return
-    if (this.el.sceneEl.systems['low-power'].isLowPower() && this.uiRoot && this.uiRoot.getAttribute('visible')) return
+    if (!this.data.drawOverlay) return false;
+    if (this.el.sceneEl.systems['low-power'].isLowPower() && this.uiRoot && this.uiRoot.getAttribute('visible')) return false;
     ctx.save()
     const {width, height} = this
 
@@ -447,6 +447,7 @@ AFRAME.registerComponent('compositor', {
     // Layer.clearTransform(this.el.components['draw-canvas'].transform)
 
     let overlayCtx = this.overlayCtx
+    let anyUpdates = false;
 
     if (this.data.onionSkin && this.activeLayer.frames.length > 1)
     {
@@ -458,6 +459,7 @@ AFRAME.registerComponent('compositor', {
       ]
       for (let [frameOffset, color] of onionSkins)
       {
+        anyUpdates = true;
         if (this.activeLayer.frames.length <= Math.abs(frameOffset)) continue;
         overlayCtx.clearRect(0, 0, width, height)
         overlayCtx.globalCompositeOperation = 'copy'
@@ -493,6 +495,7 @@ AFRAME.registerComponent('compositor', {
 
     if (brush.solo && !brush.direct)
     {
+      anyUpdates = true;
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas})
     }
 
@@ -523,6 +526,7 @@ AFRAME.registerComponent('compositor', {
 
         if (!intersection) continue
         this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, overlay.uv, {canvas: this.overlayCanvas, rotation: overlay.rotation})
+        anyUpdates = true;
       }
     }
 
@@ -537,9 +541,11 @@ AFRAME.registerComponent('compositor', {
       overlayCtx.globalCompositeOperation = 'copy'
       this.el.components['draw-canvas'].drawOutlineUV(overlayCtx, {x: 0, y: 0}, {canvas: this.overlayCanvas, brush})
       ctx.drawImage(this.overlayCanvas, 0, 0)
+      anyUpdates = true;
     }
 
     ctx.restore()
+    return anyUpdates
   },
   playPauseAnimation() {
     this.isPlayingAnimation = !this.isPlayingAnimation
@@ -932,8 +938,6 @@ AFRAME.registerComponent('compositor', {
         modesUsed.add(layer.mode)
       }
 
-      // if (!anyUpdates) return;
-
       if (this.data.usePreOverlayCanvas)
       {
         let preOverlayCtx = this.preOverlayCanvas.getContext('2d')
@@ -941,7 +945,9 @@ AFRAME.registerComponent('compositor', {
         preOverlayCtx.drawImage(this.compositeCanvas, 0, 0)
       }
 
-      this.drawOverlay(ctx)
+      anyUpdates = this.drawOverlay(ctx) || anyUpdates
+      if (!anyUpdates && !this.lastTimeHadUpdates) return;
+      this.lastTimeHadUpdates = anyUpdates
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
