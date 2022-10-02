@@ -224,6 +224,8 @@ AFRAME.registerComponent('webxr-motion-controller', {
       let mesh = this.el.getObject3D('mesh')
       if (!mesh) return;
 
+      this.componentVisualNodes = {};
+
       (() => {
         if (!this.data.hideTrackingMesh) return
         let trackingMesh = mesh.getObjectByName('TRACKING_MESH')
@@ -240,6 +242,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
       this.enabled = false
       this.data.enabled = false
       this.tick = function() {};
+      this.componentVisualNodes = {};
       this.el.setAttribute('laser-controls', `hand: ${this.data.hand}`)
       Util.whenLoaded(this.el, () => {
         // this.el.removeAttribute('webxr-laser')
@@ -446,20 +449,29 @@ AFRAME.registerComponent('webxr-motion-controller', {
       }
     }
   },
+  cachedVisualResponseNode(motionControllerRoot, name)
+  {
+    let value = this.componentVisualNodes[name]
+    if (value) return value;
+
+    value = motionControllerRoot.getObjectByName(name)
+    this.componentVisualNodes[name] = value;
+    return value;
+  },
   updateComponentVisuals(component) {
     let motionControllerRoot = this.el.getObject3D('mesh')
     if (!motionControllerRoot) return;
 
     for (let visualResponse of Object.values(component.visualResponses))
     {
-      const valueNode = motionControllerRoot.getObjectByName(visualResponse.valueNodeName);
+      const valueNode = this.cachedVisualResponseNode(motionControllerRoot, visualResponse.valueNodeName);
 
       // Calculate the new properties based on the weight supplied
       if (visualResponse.valueNodeProperty === 'visibility') {
         valueNode.visible = visualResponse.value;
       } else if (visualResponse.valueNodeProperty === 'transform') {
-        const minNode = motionControllerRoot.getObjectByName(visualResponse.minNodeName);
-        const maxNode = motionControllerRoot.getObjectByName(visualResponse.maxNodeName);
+        const minNode = this.cachedVisualResponseNode(motionControllerRoot, visualResponse.minNodeName);
+        const maxNode = this.cachedVisualResponseNode(motionControllerRoot, visualResponse.maxNodeName);
 
         if (!minNode || !maxNode) continue;
 
@@ -480,7 +492,7 @@ AFRAME.registerComponent('webxr-motion-controller', {
     if (this.data.highlightButtonPresses && Object.values(component.visualResponses).length)
     {
       let value = component.values.button
-      let valueNode = motionControllerRoot.getObjectByName(Object.values(component.visualResponses)[0].valueNodeName)
+      let valueNode = this.cachedVisualResponseNode(motionControllerRoot, Object.values(component.visualResponses)[0].valueNodeName)
       if (!valueNode) {
         console.warn("can't find node", component.visualResponses[0].valueNodeName)
         return;

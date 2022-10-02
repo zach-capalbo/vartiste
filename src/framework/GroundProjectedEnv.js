@@ -148,7 +148,7 @@ export class GroundProjectedEnv extends Mesh {
 			radius: { value: options.radius || 100 },
 		};
 
-		const geometry = new IcosahedronGeometry( 1, 16 );
+		const geometry = new IcosahedronGeometry( 1, 1 );
 		const material = new ShaderMaterial( {
 			uniforms,
 			fragmentShader,
