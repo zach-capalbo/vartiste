@@ -155,7 +155,7 @@ let config = {
           }
         },
         generator: {
-          filename: 'asset/[hash].[ext]'
+          filename: 'asset/[contenthash].[ext]'
         }
         // use: [
         //   {
