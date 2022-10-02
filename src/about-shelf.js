@@ -1,7 +1,8 @@
 var buildInfo;
 
 try {
- buildInfo = require('./built-info.js')
+//  buildInfo = require('./built-info.js')
+throw "e"
 }
 catch (e)
 {
