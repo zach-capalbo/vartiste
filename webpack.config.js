@@ -31,6 +31,7 @@ let config = {
   output: {
     filename: '[name].bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '',
   },
   resolve: {fallback: { "stream": false }},
   module: {
