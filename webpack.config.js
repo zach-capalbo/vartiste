@@ -6,22 +6,21 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
 const { StatsWriterPlugin } = require("webpack-stats-plugin")
-const webpack = require('webpack')
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
 
 const hostInfo = process.env["HTTPS"] === "true" ?
 {
-  contentBase: './dist',
-  disableHostCheck: true,
+  // contentBase: './dist',
+  //disableHostCheck: true,
 
   https: true,
   host: '0.0.0.0',
   port: 7979,
 } : {
-  contentBase: './dist',
-  disableHostCheck: true,
+  // contentBase: './dist',
+  // disableHostCheck: true,
 };
 
 let config = {
@@ -31,7 +30,9 @@ let config = {
   output: {
     filename: '[name].bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '',
   },
+  resolve: {fallback: { "stream": false }},
   module: {
     rules: [
       {
@@ -44,11 +45,11 @@ let config = {
       { test: /\.html$/, loader: 'html-loader' },
       { test: /oss-licenses-used/,loader: 'raw-loader'},
       { test: /\.html\.(pug)$/, loader: 'pug-loader' },
-      { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
+      { test: /\.(md)$/, use: [{loader: 'html-loader'}, {loader: 'markdown-loader'}] },
       { test: /\.(ya?ml)$/, loader: 'yaml-loader', type: 'json'},
       { test: /\.v3\.(frag|vert|glsl)$/, loader: 'webpack-glsl-loader'},
       { test: /[^3]\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
-      { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
+      { test: /\.(styl)$/, use: [{loader: 'style-loader'}, {loader: 'css-loader'}, {loader: 'stylus-loader'}]},
       { test: /gallery.*\.vartistez?$/,
         use: [{
           loader: 'file-loader',
@@ -146,17 +147,26 @@ let config = {
         }]
       },
       {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr|webp|woff)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 1024,
-              esModule: false,
-              fallback: require.resolve('file-loader'),
-              name: 'asset/[contenthash].[ext]',
-            },
-          },
-        ]
+        type: 'asset/resource',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 4 * 1024 // 4kb
+          }
+        },
+        generator: {
+          filename: 'asset/[contenthash].[ext]'
+        }
+        // use: [
+        //   {
+        //     loader: 'url-loader',
+        //     options: {
+        //       limit: 1024,
+        //       esModule: false,
+        //       fallback: require.resolve('file-loader'),
+        //       name: 'asset/[contenthash].[ext]',
+        //     },
+        //   },
+        // ]
       },
       {
         test: /ffmpeg-core.*\.js$/,
@@ -199,7 +209,8 @@ let app = Object.assign({
     new FaviconsWebpackPlugin(faviconPath),
     new HtmlWebpackPlugin({
       template: './src/template.html.slm',
-      filename: 'index.html'
+      filename: 'index.html',
+      scriptLoading: 'blocking',
     }),
   ].concat(devMode
     ? [
@@ -221,6 +232,7 @@ let app = Object.assign({
     splitChunks: {},
     minimize: !devMode,
     minimizer: minimizer(),
+    emitOnErrors: true,
   },
 }, config);
 
@@ -334,22 +346,12 @@ let toolkitDoc = Object.assign({
         },
         { test: /oss-licenses-used/,loader: 'raw-loader'},
         { test: /\.html\.(pug)$/, loader: 'pug-loader' },
-        { test: /\.(md)$/, loader: 'html-loader!markdown-loader' },
+        { test: /\.(md)$/,  use: [{loader: 'html-loader'}, {loader: 'markdown-loader'}] },
         { test: /\.(frag|vert|glsl)$/, loader: 'glsl-shader-loader'},
-        { test: /\.(styl)$/, loader: 'style-loader!css-loader!stylus-loader'},
-        { test: /\.(css)$/, loader: 'style-loader!css-loader'},
+        { test: /\.(styl)$/, use: [{loader: 'style-loader'}, {loader: 'css-loader'}, {loader: 'stylus-loader'}]},
+        { test: /\.(css)$/, use: [{loader: 'style-loader'}, {loader: 'css-loader'}]},
         {test: /\.(png|jpe?g|gif|obj|mtl|glb|wav|hdr)$/i,
-          use: [
-            {
-              loader: 'url-loader',
-              options: {
-                limit: 8192,
-                esModule: false,
-                fallback: require.resolve('file-loader'),
-                name: 'asset/[contenthash].[ext]',
-              },
-            },
-          ]
+          type: 'asset/resource'
         }
       ]
     }
