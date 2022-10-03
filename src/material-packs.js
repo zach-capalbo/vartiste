@@ -736,7 +736,7 @@ AFRAME.registerComponent('material-pack', {
     let canvas = Compositor.drawableCanvas
     canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height)
     this.applyMask()
-
+    if (canvas.touch) canvas.touch()
   },
   applyMask({maskCanvas = undefined, eraseMask = true} = {}) {
     this.isApplying = true

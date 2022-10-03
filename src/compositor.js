@@ -733,8 +733,6 @@ AFRAME.registerComponent('compositor', {
     {
       this.drawLayers()
     }
-
-    this.drawnT = t
   },
   quickDraw() {
     this.lastTimeHadUpdates = true
@@ -807,12 +805,13 @@ AFRAME.registerComponent('compositor', {
       for (let layer of layers) {
         if (!layer.visible) continue
 
+        if (layer.updateTime > this.drawnT)
+        {
+          anyUpdates = true;
+        }
+
         if (THREED_MODES.indexOf(layer.mode) < 0)
         {
-          if (layer.updateTime > this.drawnT)
-          {
-            anyUpdates = true;
-          }
           layer.draw(ctx, this.currentFrame)
           continue
         }
@@ -879,6 +878,8 @@ AFRAME.registerComponent('compositor', {
           material[layer.mode].needsUpdate = true
         }
 
+        layer.needsUpdate = false
+
         switch (layer.mode)
         {
           case "displacementMap":
@@ -916,7 +917,7 @@ AFRAME.registerComponent('compositor', {
             }
             break
           case "envMap":
-            if (canInstallSkybox)
+            if (canSetSkybox)
             {
               this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
             }
@@ -959,6 +960,7 @@ AFRAME.registerComponent('compositor', {
       anyUpdates = this.drawOverlay(ctx) || anyUpdates
       if (!anyUpdates && !this.lastTimeHadUpdates) return;
       this.lastTimeHadUpdates = anyUpdates
+      this.drawnT = this.el.sceneEl.time
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
