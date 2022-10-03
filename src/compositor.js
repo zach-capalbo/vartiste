@@ -144,6 +144,7 @@ AFRAME.registerComponent('compositor', {
       this.el.getObject3D('mesh').material.side = this.data.doubleSided ? THREE.DoubleSide : THREE.FrontSide
       this.el.getObject3D('mesh').material.shadowSide = this.data.doubleSided ? THREE.FrontSide : null;
     }
+    this.lastTimeHadUpdates = true
   },
 
   addLayer(position, {layer, activate = true} = {}) {
@@ -152,6 +153,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, layer)
     this.el.emit('layeradded', {layer})
     if (activate) this.activateLayer(layer)
+    this.lastTimeHadUpdates = true
     Undo.push(e=> this.deleteLayer(layer), () => this.addLayer(position, {layer}))
     return layer;
   },
@@ -173,6 +175,7 @@ AFRAME.registerComponent('compositor', {
     this.layers.splice(position + 1, 0, newLayer)
     this.el.emit('layeradded', {layer: newLayer})
     this.activateLayer(newLayer)
+    this.lastTimeHadUpdates = true
     Undo.push(e=> this.deleteLayer(newLayer), () => this.duplicateLayer(layer))
     return newLayer;
   },
@@ -215,6 +218,7 @@ AFRAME.registerComponent('compositor', {
     this.layers[idx2] = layer1
     this.el.emit('layersmoved', {layers: [layer1,layer2]})
     Undo.push(e=> this.swapLayers(layer1, layer2), e=> this.swapLayers(layer2, layer1))
+    this.lastTimeHadUpdates = true
   },
   mergeLayers(fromLayer, ontoLayer) {
     Undo.pushCanvas(ontoLayer.canvas)
@@ -269,6 +273,7 @@ AFRAME.registerComponent('compositor', {
     }
 
     this.el.emit('layerdeleted', {layer})
+    this.lastTimeHadUpdates = true
   },
   setLayerBlendMode(layer,mode) {
     let oldMode = layer.mode
@@ -342,6 +347,7 @@ AFRAME.registerComponent('compositor', {
       0)
     this.redirector.object3D.scale.set(layer.transform.scale.x, layer.transform.scale.y, 1)
     this.redirector.object3D.rotation.set(0, 0, -layer.transform.rotation)
+    this.lastTimeHadUpdates = true
   },
   deleteNode(node) {
     let nodeIdx = this.allNodes.indexOf(node)
@@ -391,6 +397,7 @@ AFRAME.registerComponent('compositor', {
       }
       o.geometry.attributes.uv.needsUpdate = true
     }
+    this.lastTimeHadUpdates = true
   },
   frozenMaterial(force = false) {
     if (force)
@@ -573,6 +580,7 @@ AFRAME.registerComponent('compositor', {
     param.frame = this.currentFrame
     this.el.emit('framechanged', param)
     delete param.frame
+    this.lastTimeHadUpdates = true
   },
   nextFrame() {
     this.setIsPlayingAnimation(false)
@@ -589,6 +597,7 @@ AFRAME.registerComponent('compositor', {
     let frameToUndo = this.currentFrame
     Undo.push(() => this.deleteFrame(frameToUndo))
     this.el.emit('layerupdated', {layer: this.activeLayer})
+    this.lastTimeHadUpdates = true
   },
   addFrameBefore() {
     this.currentFrame = this.activeLayer.frameIdx(this.currentFrame - 1)
@@ -598,6 +607,7 @@ AFRAME.registerComponent('compositor', {
     Undo.push(() => this.deleteFrame(frameToUndo))
     console.log(this.activeLayer.frameIdx(this.currentFrame), this.activeLayer.frames)
     this.el.emit('layerupdated', {layer: this.activeLayer})
+    this.lastTimeHadUpdates = true
   },
   duplicateFrameAfter() {
     let sourceCanvas = this.activeLayer.frame(this.currentFrame)
@@ -723,10 +733,9 @@ AFRAME.registerComponent('compositor', {
     {
       this.drawLayers()
     }
-
-    this.drawnT = t
   },
   quickDraw() {
+    this.lastTimeHadUpdates = true
     if (this.data.useNodes)
     {
       this.drawNodes()
@@ -796,12 +805,13 @@ AFRAME.registerComponent('compositor', {
       for (let layer of layers) {
         if (!layer.visible) continue
 
+        if (layer.updateTime > this.drawnT)
+        {
+          anyUpdates = true;
+        }
+
         if (THREED_MODES.indexOf(layer.mode) < 0)
         {
-          if (layer.updateTime > this.drawnT)
-          {
-            anyUpdates = true;
-          }
           layer.draw(ctx, this.currentFrame)
           continue
         }
@@ -868,6 +878,8 @@ AFRAME.registerComponent('compositor', {
           material[layer.mode].needsUpdate = true
         }
 
+        layer.needsUpdate = false
+
         switch (layer.mode)
         {
           case "displacementMap":
@@ -905,7 +917,7 @@ AFRAME.registerComponent('compositor', {
             }
             break
           case "envMap":
-            if (canInstallSkybox)
+            if (canSetSkybox)
             {
               this.el.sceneEl.systems['environment-manager'].installSkybox(layerCanvas, layer.opacity)
             }
@@ -948,6 +960,7 @@ AFRAME.registerComponent('compositor', {
       anyUpdates = this.drawOverlay(ctx) || anyUpdates
       if (!anyUpdates && !this.lastTimeHadUpdates) return;
       this.lastTimeHadUpdates = anyUpdates
+      this.drawnT = this.el.sceneEl.time
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
