@@ -450,19 +450,22 @@ Util.registerComponentSystem('environment-manager', {
       for (let r of this.elementsToCheck)
       {
         r.object3D.traverseVisible(o => {
-          if (o.visible && o.material && (this.shouldTouchMaterial(o.material)))
+          const material = o.material
+          if (!material) return
+          if (!o.visible) return
+          if (this.shouldTouchMaterial(material))
           {
-            if (o.material.envMap !== this.envMap || o.material.envMapIntensity !== this.data.envMapIntensity)
+            if (material.envMap !== this.envMap || material.envMapIntensity !== this.data.envMapIntensity)
             {
-              o.material.envMap = this.envMap
-              o.material.needsUpdate = true
-              o.material.envMapIntensity = this.data.envMapIntensity
+              material.envMap = this.envMap
+              material.needsUpdate = true
+              material.envMapIntensity = this.data.envMapIntensity
             }
           }
-          if (o.visible && o.material && o.material.transparent && o.material.alphaTest !== this.data.alphaTest)
+          if (material.transparent && material.alphaTest !== this.data.alphaTest)
           {
-            o.material.alphaTest = this.data.alphaTest
-            o.material.needsUpdate = true
+            material.alphaTest = this.data.alphaTest
+            material.needsUpdate = true
           }
         })
       }

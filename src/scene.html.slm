@@ -65,7 +65,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
           a-entity#color-selection.grab-root shelf="name: Color Selection Shelf; height: 3.6" long-doc="The color selection shelf contains controls for picking and selecting the color" position="-1.2237972376022719 1.1089245377853298 1.5950361276901273" rotation="8.414556064744165 -43.40889617288809 0" scale="0.059734986610044456 0.059734986610044456 0.059734986610044456" remember-position=""
             a-entity position="0 0.25 0"== partial('./partials/color-selection-shelf.html.slm')
           a-entity.grab-root settings-shelf="" shelf="name: Settings Shelf; closeable: true" position="0 0 0" scale="0.3 0.3 1" visible="false" remember-position=""
-          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 3.5" position="-1.2615992761846009 0.8821897808609439 1.637656040856965" rotation="-17.58675354205625 -41.5842248480332 0" scale="0.05397885688998725 0.05397885688998725 0.17992952296662423" remember-position=""
+          a-entity.grab-root brush-shelf="" shelf="name: Brush Shelf; height: 2.9" position="-1.2615992761846009 0.8821897808609439 1.637656040856965" rotation="-17.58675354205625 -41.5842248480332 0" scale="0.05397885688998725 0.05397885688998725 0.17992952296662423" remember-position=""
           == partial('./partials/about-shelf.html.slm')
           == partial('./partials/timeline-shelf.html.slm')
           == partial('./partials/toolbox-shelf.html.slm')

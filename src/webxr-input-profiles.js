@@ -39,6 +39,8 @@ AFRAME.registerSystem('webxr-input-profiles', {
     {
       this.el.systems['tracked-controls-webxr'].pause()
       this.el.systems['tracked-controls-webxr'].tick = function() {};
+      this.el.systems['tracked-controls-webvr'].pause()
+      this.el.systems['tracked-controls-webvr'].tick = function() {};
     }
 
     this.updateControllerList = this.updateControllerList.bind(this)
