@@ -48,7 +48,7 @@ AFRAME.registerComponent('shelf', {
     // Title bar
     name: {type: 'string'},
 
-    // If the height / width will never change, freezing can offer some render performance improvment
+    // If the height / width will never change, freezing can offer some render performance improvement
     freeze: {default: true},
   },
   events: {
@@ -97,7 +97,8 @@ AFRAME.registerComponent('shelf', {
       this.data.closeable = this.data.closable
     }
 
-    if (oldData && oldData.width && oldData.height && (oldData.width !== this.data.width || oldData.height !== this.data.height || oldData.offset !== this.data.offset))
+    if (oldData && oldData.width && oldData.height 
+      && (oldData.width !== this.data.width || oldData.height !== this.data.height || oldData.offset !== this.data.offset))
     {
       this.unfreeze()
     }
@@ -160,7 +161,10 @@ AFRAME.registerComponent('shelf', {
     merged.el = this.el
     this.el.sceneEl.object3D.add(merged)
     this.el.setObject3D('mesh', merged)
+    
     Util.applyMatrix(this.container.object3D.matrix, merged)
+    merged.position.y -= this.data.offset.y
+    
     this.container.object3D.parent.remove(this.container.object3D)
     this.container.parentEl.removeChild(this.container)
     this.merged = merged
@@ -168,6 +172,7 @@ AFRAME.registerComponent('shelf', {
     this.frozen = true
   },
   unfreeze() {
+    console.log("Unfreezing")
     if (!this.frozen) return
     this.merged.parent.remove(this.merged)
     Util.recursiveDispose(this.merged)
