@@ -266,7 +266,7 @@ class VARTISTEUtil {
       geometry.applyMatrix4(o.matrixWorld)
       geometries.push(geometry)
     })
-    if (geometries.length <= 1) return;
+    if (geometries.length <= 1 && createConstruct) return;
 
     useGroups = useGroups && differentMaterials
     let merged = BufferGeometryUtils.mergeBufferGeometries(geometries, useGroups)

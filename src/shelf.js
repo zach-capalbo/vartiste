@@ -157,6 +157,14 @@ AFRAME.registerComponent('shelf', {
     this.container.object3D.parent.remove(this.container.object3D)
     this.el.sceneEl.object3D.add(this.container.object3D)
     this.container.object3D.updateMatrixWorld() 
+    Util.traverseFindAll(this.container.object3D, o => !o.visible).forEach(o => {
+      if (!o.visible)
+      {
+        o.parent.remove(o)
+        Util.recursiveDispose(o)
+      }
+    })
+    
     let merged = Util.mergeBufferGeometries(this.container.object3D, {useGroups: true, createConstruct: false})
     merged.el = this.el
     this.el.sceneEl.object3D.add(merged)

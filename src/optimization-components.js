@@ -222,6 +222,7 @@ Util.registerComponentSystem('vr-render-scale', {
   schema: {
     renderScale: {default: 1.0},
     rememberRenderScale: {default: true},
+    snapToDistance: {default: 0.06}
   },
   events: {
     'exit-vr': function(e) {
@@ -236,6 +237,33 @@ Util.registerComponentSystem('vr-render-scale', {
     }
   },
   update(oldData) {
+    if (this.data.renderScale !== oldData.renderScale)
+    {
+      console.log("Checking render scale distance", this.data.renderScale, Math.abs(this.data.renderScale - 1.0))
+      if (Math.abs(this.data.renderScale - 1.0) < this.data.snapToDistance)
+      {
+        this.el.setAttribute('vr-render-scale', 'renderScale: 1.0')
+        return;
+      }
+
+      if (Math.abs(this.data.renderScale - 2.0) < this.data.snapToDistance)
+      {
+        this.el.setAttribute('vr-render-scale', 'renderScale: 2.0')
+        return;
+      }
+
+      if (Math.abs(this.data.renderScale - 1.5) < this.data.snapToDistance / 2)
+      {
+        this.el.setAttribute('vr-render-scale', 'renderScale: 1.5')
+        return;
+      }
+
+      if (Math.abs(this.data.renderScale - 0.5) < this.data.snapToDistance / 2)
+      {
+        this.el.setAttribute('vr-render-scale', 'renderScale: 0.5')
+        return;
+      }
+    }
     if (this.data.rememberRenderScale)
     {
       localStorage.setItem('renderScale', this.data.renderScale)

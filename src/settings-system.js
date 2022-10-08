@@ -564,6 +564,12 @@ Util.registerComponentSystem('settings-system', {
   lowQualityAction() { this.setQuality(0.25) },
   mediumQualityAction() { this.setQuality(0.5) },
   fullQualityAction() { this.setQuality(1.0) },
+  lowPowerAction() {
+    window.location.search = "?lowPower=true"
+  },
+  highPowerAction() {
+    window.location.search = "?highPower=true"
+  },
   setStabilizeAmount(amount) {
     document.querySelectorAll('*[smoothed-webxr-motion-controller]').forEach((e) => e.setAttribute('smoothed-webxr-motion-controller', {amount}))
     this.el.emit('stabilizationchanged', {stabilization: amount})
