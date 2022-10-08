@@ -1236,6 +1236,7 @@ AFRAME.registerComponent('compositor', {
 
     this.resetMapTexture()
 
+    let material = this.el.getObject3D('mesh').material
     for (let map of THREED_MODES)
     {
       if (material[map])
