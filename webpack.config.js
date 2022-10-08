@@ -284,6 +284,7 @@ let toolkit = Object.assign({
   output: {
     filename: 'vartiste-toolkit.js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '',
   },
 });
 
