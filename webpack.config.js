@@ -5,7 +5,8 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
-const { StatsWriterPlugin } = require("webpack-stats-plugin")
+const { StatsWriterPlugin } = require("webpack-stats-plugin");
+const { pid } = require('process');
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
@@ -382,5 +383,6 @@ else if (process.env.VARTISTE_TOOLKIT_ONLY==="true")
 }
 else
 {
-  module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
+  module.exports = [app, toolkit]
+  // module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
 }
