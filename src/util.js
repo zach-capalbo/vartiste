@@ -218,7 +218,7 @@ class VARTISTEUtil {
     }
   }
 
-  mergeBufferGeometries(object, {useGroups = false} = {}) {
+  mergeBufferGeometries(object, {useGroups = false, createConstruct = true} = {}) {
     let geometries = []
     let firstMaterial
     let materials = []
@@ -274,11 +274,18 @@ class VARTISTEUtil {
 
     merged.computeBoundingBox()
     merged.boundingBox.getCenter(mesh.position)
-    merged.center()
-    let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
-    console.log("Merged", merged, mesh)
-    return el
-    // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
+    if (createConstruct)
+    {
+      merged.center()
+      // Util.whenLoaded(el, () => Util.positionObject3DAtTarget(el.object3D, this.object))
+      let el = this.el.sceneEl.systems['primitive-constructs'].decompose(mesh)
+      console.log("Merged", merged, mesh)
+      return el
+    }
+    else
+    {
+      return mesh
+    }
   }
 
   keepingWorldPosition(object3D, fn) {

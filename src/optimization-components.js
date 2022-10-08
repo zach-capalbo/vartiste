@@ -218,3 +218,33 @@ AFRAME.registerComponent('simple-render-sort', {
   }
 })
 
+Util.registerComponentSystem('vr-render-scale', {
+  schema: {
+    renderScale: {default: 1.0},
+    rememberRenderScale: {default: true},
+  },
+  events: {
+    'exit-vr': function(e) {
+      this.el.renderer.xr.setFramebufferScaleFactor(this.data.renderScale)
+    }
+  },
+  init() {
+    if (this.data.rememberRenderScale)
+    {
+      let storedRenderScale = parseFloat(localStorage.getItem('renderScale') ?? this.data.renderScale)
+      this.data.renderScale = storedRenderScale
+    }
+  },
+  update(oldData) {
+    if (this.data.rememberRenderScale)
+    {
+      localStorage.setItem('renderScale', this.data.renderScale)
+    }
+
+    if (!this.el.is('vr-mode'))
+    {
+      console.log("Setting render scale", this.data.renderScale)
+      this.el.renderer.xr.setFramebufferScaleFactor(this.data.renderScale)
+    }
+  }
+})

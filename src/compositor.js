@@ -978,6 +978,7 @@ AFRAME.registerComponent('compositor', {
       material.map.needsUpdate = true
       material.map.wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
       material.map.wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+      material.map.generateMipmaps = false
 
       if (material.type === "ShaderMaterial")
       {

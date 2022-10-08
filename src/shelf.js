@@ -47,6 +47,9 @@ AFRAME.registerComponent('shelf', {
 
     // Title bar
     name: {type: 'string'},
+
+    // If the height / width will never change, freezing can offer some render performance improvment
+    freeze: {default: true},
   },
   events: {
     componentchanged: function(e) {
@@ -94,6 +97,11 @@ AFRAME.registerComponent('shelf', {
       this.data.closeable = this.data.closable
     }
 
+    if (oldData && oldData.width && oldData.height && (oldData.width !== this.data.width || oldData.height !== this.data.height || oldData.offset !== this.data.offset))
+    {
+      this.unfreeze()
+    }
+
     if (this.container.hasLoaded)
     {
       this.container.querySelector('.bg').setAttribute('geometry', {width: this.data.width, height: this.data.height})
@@ -130,11 +138,46 @@ AFRAME.registerComponent('shelf', {
       let handle = this.container.querySelector('.handle')
       handle.setAttribute('position', `0 -${this.data.height / 2 + handle.getAttribute('geometry').radius} 0`)
       handle.setAttribute('geometry', 'height', this.data.width * 1)
+
+      if (this.data.freeze)
+      {
+        Util.callLater(() => this.freeze())
+      }
     }
     else
     {
       this.container.addEventListener('loaded', e => this.update())
     }
+  },
+  freeze() {
+    if (this.frozen) return;
+    if (!this.data.freeze) return;
+
+    this.container.object3D.parent.remove(this.container.object3D)
+    this.el.sceneEl.object3D.add(this.container.object3D)
+    this.container.object3D.updateMatrixWorld() 
+    let merged = Util.mergeBufferGeometries(this.container.object3D, {useGroups: true, createConstruct: false})
+    merged.el = this.el
+    this.el.sceneEl.object3D.add(merged)
+    this.el.setObject3D('mesh', merged)
+    Util.applyMatrix(this.container.object3D.matrix, merged)
+    this.container.object3D.parent.remove(this.container.object3D)
+    this.container.parentEl.removeChild(this.container)
+    this.merged = merged
+
+    this.frozen = true
+  },
+  unfreeze() {
+    if (!this.frozen) return
+    this.merged.parent.remove(this.merged)
+    Util.recursiveDispose(this.merged)
+    var container = document.createElement("a-entity")
+    container.innerHTML = shelfHtml
+    container.querySelectorAll('.clickable').forEach((e) => e['redirect-grab'] = this.el)
+    this.container = container
+    this.el.prepend(container)
+    this.frozen = false
+    this.update({})
   }
 });
 
