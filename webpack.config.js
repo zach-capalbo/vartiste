@@ -61,7 +61,12 @@ let config = {
       { test: /\.vartiste-brushez?$/, use: {loader: 'file-loader'} },
       {
         test: /\.worker\.js$/,
-        use: { loader: "worker-loader" },
+        use: { 
+          loader: "worker-loader",
+          options: {
+            filename: "[name].[contenthash].worker.js",
+          }, 
+        },
       },
       {
         test: /(\@ffmpeg|xatlas-web).*\.wasm/,
@@ -335,7 +340,12 @@ let toolkitDoc = Object.assign({
         },
         {
           test: /\.worker\.js$/,
-          use: { loader: "worker-loader" },
+          use: { 
+            loader: "worker-loader",
+            options: {
+              filename: "[name].[contenthash].worker.js",
+            },
+          },
         },
         {
           test: /\.html\.(slm|slim)$/,
@@ -364,6 +374,10 @@ if (process.env.VARTISTE_TOOLKIT==="true")
 else if (process.env.VARTISTE_APP_ONLY==="true")
 {
   module.exports = [app]
+}
+else if (process.env.VARTISTE_TOOLKIT_ONLY==="true")
+{
+  module.exports = [toolkit]
 }
 else
 {
