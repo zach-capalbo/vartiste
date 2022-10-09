@@ -241,9 +241,17 @@ AFRAME.registerComponent('position-at-target', {
   schema: {
     target: {type: 'selector'},
     throttle: {default: 0},
+    enabled: {default: true},
   },
   update(oldData) {
-    this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
+    if (this.data.enabled)
+    {
+      this.tick = AFRAME.utils.throttleTick(this._tick, this.data.throttle, this)
+    }
+    else
+    {
+      this.tick = function(){};
+    }
   },
   tick(t,dt) {},
   _tick(t,dt) {

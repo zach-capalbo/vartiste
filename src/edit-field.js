@@ -115,7 +115,7 @@ AFRAME.registerComponent('edit-field', {
         this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
 
         Util.whenLoaded([this.numpad, this.el, this.data.target], () => {
-          this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property].toString(), {update: false})
+          this.componentchangedlistener({detail: {name: this.data.component}})
         })
       }
     }

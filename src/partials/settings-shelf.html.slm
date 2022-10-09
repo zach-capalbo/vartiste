@@ -11,9 +11,7 @@ a-entity position="-1.6 1.1 0" icon-row="mergeButtons: true; autoPosition: false
   a-entity icon-button="#asset-translate" tooltip="Language" popup-button="popup: language-shelf; deferred: true"
 
 a-entity position="-1.6 0.6 0" icon-row="mergeButtons: true; autoPosition: false; labeled: true"
-  a-entity icon-button="#asset-dice-2" tooltip="Low Quality" click-action="lowQuality" toggle-button=""
-  a-entity icon-button="#asset-dice-4" tooltip="Medium Quality" click-action="mediumQuality" toggle-button=""
-  a-entity icon-button="#asset-dice-6" tooltip="Full Quality" click-action="fullQuality" toggle-button=""
+  a-entity icon-button="#asset-dice-2" tooltip="Quality Settings" popup-button="popup: quality-settings-shelf; deferred: true; autoScale: true"
   /a-entity icon-button="#asset-badge-account-horizontal-outline" tooltip="Toggle Reference Import" toggle-button="target: a-scene; component: settings-system; property: addReferences;"
   /a-entity click-action="undo" icon-button="#asset-undo" tooltip="Undo"
 

@@ -5,7 +5,8 @@ const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 const Visualizer = require('webpack-visualizer-plugin2');
-const { StatsWriterPlugin } = require("webpack-stats-plugin")
+const { StatsWriterPlugin } = require("webpack-stats-plugin");
+const { pid } = require('process');
 
 const production = process.env["CI"] === "true" || process.env["PROD"] === "true"
 const devMode = !production
@@ -61,7 +62,12 @@ let config = {
       { test: /\.vartiste-brushez?$/, use: {loader: 'file-loader'} },
       {
         test: /\.worker\.js$/,
-        use: { loader: "worker-loader" },
+        use: { 
+          loader: "worker-loader",
+          options: {
+            filename: "[name].[contenthash].worker.js",
+          }, 
+        },
       },
       {
         test: /(\@ffmpeg|xatlas-web).*\.wasm/,
@@ -279,6 +285,7 @@ let toolkit = Object.assign({
   output: {
     filename: 'vartiste-toolkit.js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '',
   },
 });
 
@@ -335,7 +342,12 @@ let toolkitDoc = Object.assign({
         },
         {
           test: /\.worker\.js$/,
-          use: { loader: "worker-loader" },
+          use: { 
+            loader: "worker-loader",
+            options: {
+              filename: "[name].[contenthash].worker.js",
+            },
+          },
         },
         {
           test: /\.html\.(slm|slim)$/,
@@ -365,7 +377,12 @@ else if (process.env.VARTISTE_APP_ONLY==="true")
 {
   module.exports = [app]
 }
+else if (process.env.VARTISTE_TOOLKIT_ONLY==="true")
+{
+  module.exports = [toolkit]
+}
 else
 {
-  module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
+  // module.exports = [app, toolkit]
+  module.exports = [app, toolkitTest, toolkitDoc, toolkit].concat(static)
 }

@@ -1006,6 +1006,30 @@ AFRAME.registerComponent('lever', {
     {
       this.grip.setAttribute('radius', this.data.gripRadius)
     }
+
+    if (this.data.target !== oldData.target)
+    {
+      if (oldData.target)
+      {
+        oldData.target.removeEventListener('componentchanged', this.componentchangedlistener)
+      }
+
+      if (this.data.target)
+      {
+        this.componentchangedlistener = (e) => {
+          if (e.detail.name === this.data.component)
+          {
+            this.setValue(this.data.target.getAttribute(this.data.component)[this.data.property])
+            this.constrainObject()
+          }
+        }
+        this.data.target.addEventListener('componentchanged', this.componentchangedlistener)
+
+        Util.whenLoaded([this.grip, this.el, this.data.target], () => {
+          this.componentchangedlistener({detail: {name: this.data.component}})
+        })
+      }
+    }
   },
   tick() {},
 
@@ -1065,6 +1089,8 @@ AFRAME.registerComponent('lever', {
         {
           this.data.target.setAttribute(this.data.component, this.value)
         }
+
+        this.lastAngle = this.angle
       }
       else
       {

@@ -5,6 +5,11 @@ import {Util} from './util.js'
 
 const BRUSHES_PER_ROW = 8
 AFRAME.registerComponent('brush-shelf', {
+  schema: {
+    rowCount: {default: 2},
+    currentRowStart: {default: 0},
+    rowSpacing: {default: 0.6}
+  },
   init() {
     this.system = this.el.sceneEl.systems['paint-system']
 
@@ -42,6 +47,7 @@ AFRAME.registerComponent('brush-shelf', {
 
     this.brushRow = document.createElement('a-entity')
     this.el.querySelector('.brushes').append(this.brushRow)
+    this.brushRow.setAttribute('bypass-hidden-updates', '')
 
     Util.whenLoaded(this.el, async () => {
       this.brushButtons = []
@@ -51,18 +57,17 @@ AFRAME.registerComponent('brush-shelf', {
       }
     })
   },
+  update(oldData) {
+    if (this.data.rowCount !== oldData.rowCount && oldData.rowCount)
+    {
+      this.layoutHeight()
+    }
+
+    this.layoutRows()
+  },
   async addBrush(brush, defaultBrush = false) {
     if (brush.hidden) return;
-    if (this.nextTimeExpand)
-    {
-      if (this.el.querySelector('.brushes').children.length > 4)
-      {
-        let extra = this.el.querySelector('.brushes').children.length - 4
-        this.el.setAttribute('shelf', 'height', 3.5 + extra * 0.6)
-        this.el.setAttribute('shelf', 'offset', `0 ${- extra * 0.6 / 2} 0`)
-      }
-      this.nextTimeExpand = false
-    }
+
     let button = document.createElement('a-entity')
     let idx = BrushList.indexOf(brush)
 
@@ -93,11 +98,48 @@ AFRAME.registerComponent('brush-shelf', {
         await Util.delay(10)
         this.brushRow.setAttribute('icon-row', 'autoPosition: false; mergeButtons: true')
       }
+
       this.brushRow = document.createElement('a-entity')
-      this.brushRow.setAttribute('position', `0 ${-0.6 * this.el.querySelector('.brushes').children.length} 0`)
+      this.brushRow.setAttribute('position', `0 ${-this.data.rowSpacing * this.el.querySelector('.brushes').children.length} 0`)
+
       this.el.querySelector('.brushes').append(this.brushRow)
+      this.brushRow.setAttribute('bypass-hidden-updates', '')
       this.nextTimeExpand = true
     }
+
+    if (!defaultBrush)
+    {
+      this.data.currentRowStart = this.clampRowStart(99999)
+      this.layoutHeight()
+    }
+    this.layoutRows()
+  },
+  layoutRows() {
+    let rows = Array.from(this.el.querySelectorAll('.brushes > a-entity'))
+    const {currentRowStart, rowCount} = this.data;
+
+    for (let i = 0; i < rows.length; ++i)
+    {
+      let row = rows[i]
+      if (i >= currentRowStart && i < currentRowStart + rowCount)
+      {
+        row.setAttribute('visible', true)
+        row.setAttribute('position', `0 ${-this.data.rowSpacing * (i - currentRowStart)} 0`)
+      }
+      else
+      {
+        row.setAttribute('visible', false)
+      }
+    }
+  },
+  layoutHeight() {
+    let rows = Array.from(this.el.querySelectorAll('.brushes > a-entity'))
+    const {rowCount} = this.data;
+    let extra = Math.min(rowCount, rows.length) - 2
+    this.el.setAttribute('shelf', 'height', 2.9 + extra * 0.6)
+    this.el.setAttribute('shelf', 'offset', `0 ${- extra * 0.6 / 2} 0`)
+
+    this.el.querySelector('.brush-page-controls').object3D.position.y = - 0.96 - extra * 0.6
   },
   deleteLastBrush() {
     let lastButton = Array.from(this.el.querySelectorAll('*[brush-idx]')).slice(-1)[0]
@@ -121,5 +163,19 @@ AFRAME.registerComponent('brush-shelf', {
   },
   clearLayerAction() {
     this.el.sceneEl.systems['cut-copy-system'].clear()
+  },
+  clampRowStart(row) {
+    let currentRows = Array.from(this.el.querySelectorAll('.brushes > a-entity')).length
+    return THREE.MathUtils.clamp(row, 0, Math.max(0, currentRows - this.data.rowCount))
+  },
+  nextRowAction() {
+    this.el.setAttribute('brush-shelf', 'currentRowStart', this.clampRowStart(this.data.currentRowStart + 1))
+  },
+  previousRowAction() {
+    this.el.setAttribute('brush-shelf', 'currentRowStart', this.clampRowStart(this.data.currentRowStart - 1))
+  },
+  showAllAction() {
+    this.el.setAttribute('brush-shelf', 'rowCount', this.data.rowCount > 2 ? 2 : 9999)
+    this.el.setAttribute('brush-shelf', 'currentRowStart', 0)
   }
 })

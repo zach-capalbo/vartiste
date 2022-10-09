@@ -42,9 +42,9 @@ AFRAME.registerComponent('settings-shelf', {
     // })
 
     this.el.sceneEl.addEventListener('qualitychanged', e => {
-      this.el.querySelector('[click-action="lowQuality"]').components['toggle-button'].setToggle(e.detail.quality <= 0.25)
-      this.el.querySelector('[click-action="mediumQuality"]').components['toggle-button'].setToggle(e.detail.quality > 0.25 && e.detail.quality <= 0.5)
-      this.el.querySelector('[click-action="fullQuality"]').components['toggle-button'].setToggle(e.detail.quality > 0.5)
+      this.el.querySelector('[click-action="lowQuality"]')?.components['toggle-button'].setToggle(e.detail.quality <= 0.25)
+      this.el.querySelector('[click-action="mediumQuality"]')?.components['toggle-button'].setToggle(e.detail.quality > 0.25 && e.detail.quality <= 0.5)
+      this.el.querySelector('[click-action="fullQuality"]')?.components['toggle-button'].setToggle(e.detail.quality > 0.5)
     })
 
     document.getElementById('canvas-view').addEventListener('resized', e => {

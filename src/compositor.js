@@ -118,12 +118,7 @@ AFRAME.registerComponent('compositor', {
   },
 
   update(oldData) {
-    if (this.data.textureScale != 1)
-    {
-      this.textureCanvas = this.textureCanvas || Util.createCanvas()
-      this.textureCanvas.width = this.width * this.data.textureScale
-      this.textureCanvas.height = this.height * this.data.textureScale
-    }
+    this.resetMapTexture()
     if (this.data.useNodes !== oldData.useNodes)
     {
       for (let node of this.allNodes)
@@ -145,6 +140,26 @@ AFRAME.registerComponent('compositor', {
       this.el.getObject3D('mesh').material.shadowSide = this.data.doubleSided ? THREE.FrontSide : null;
     }
     this.lastTimeHadUpdates = true
+  },
+
+  resetMapTexture() {
+    if (this.data.textureScale != 1)
+    {
+      this.textureCanvas = this.textureCanvas || Util.createCanvas()
+      this.textureCanvas.width = this.width * this.data.textureScale
+      this.textureCanvas.height = this.height * this.data.textureScale
+      let material = this.el.getObject3D('mesh').material
+      material.map = createTexture()
+      material.map.image = this.textureCanvas
+      material.needsUpdate = true
+    }
+    else
+    {
+      let material = this.el.getObject3D('mesh').material
+      material.map = createTexture()
+      material.map.image = this.compositeCanvas
+      material.needsUpdate = true
+    }
   },
 
   addLayer(position, {layer, activate = true} = {}) {
@@ -978,6 +993,7 @@ AFRAME.registerComponent('compositor', {
       material.map.needsUpdate = true
       material.map.wrapS = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
       material.map.wrapT = this.data.wrapTexture ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping
+      material.map.generateMipmaps = false
 
       if (material.type === "ShaderMaterial")
       {
@@ -1218,11 +1234,9 @@ AFRAME.registerComponent('compositor', {
       this.el.emit('layerupdated', {layer})
     }
 
-    let material = this.el.getObject3D('mesh').material
-    material.map = createTexture()
-    material.map.image = this.compositeCanvas
-    material.needsUpdate = true
+    this.resetMapTexture()
 
+    let material = this.el.getObject3D('mesh').material
     for (let map of THREED_MODES)
     {
       if (material[map])

@@ -523,11 +523,14 @@ AFRAME.registerComponent("layer-shelves", {
 
     if (layer.materialPack)
     {
-      this.shelves[layer.id].querySelector('.bg').setAttribute('show-material-pack', `pack: ${layer.materialPack}`)
+      this.shelves[layer.id].querySeletor('*[shelf]').components.shelf.unfreeze()
+      Util.whenLoaded(this.shelves[layer.id].components.shelf.container, () => {
+        this.shelves[layer.id].querySelector('.bg').setAttribute('show-material-pack', `pack: ${layer.materialPack}`)
+      })
     }
     else
     {
-      this.shelves[layer.id].querySelector('.bg').removeAttribute('show-material-pack')
+      this.shelves[layer.id].querySelector('.bg')?.removeAttribute('show-material-pack')
     }
   },
   compositor_layersmoved(e) {
