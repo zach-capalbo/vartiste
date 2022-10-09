@@ -383,6 +383,6 @@ else if (process.env.VARTISTE_TOOLKIT_ONLY==="true")
 }
 else
 {
-  module.exports = [app, toolkit]
-  // module.exports = [app, toolkit, toolkitTest, toolkitDoc].concat(static)
+  // module.exports = [app, toolkit]
+  module.exports = [app, toolkitTest, toolkitDoc, toolkit].concat(static)
 }
