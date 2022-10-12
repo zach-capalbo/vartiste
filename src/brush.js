@@ -1175,7 +1175,7 @@ export class FillShapeBrush extends VectorBrush{
   }
 }
 
-export class FloodFillBrush extends VectorBrush {
+export class MarchingSquaresFloodFillBrush extends VectorBrush {
   drawTo(ctx, x, y, opts = {}) {
     // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
     // let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -1198,6 +1198,24 @@ export class FloodFillBrush extends VectorBrush {
     ctx.fill()
     ctx.globalAlpha = oldGlobalAlpha
     this.shape = undefined
+  }
+}
+
+export class FloodFillBrush extends FillBrush {
+  drawTo(ctx, x, y, opts = {}) {
+    // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
+    // let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
+    // let data = new Uint32Array(imageData.data.buffer)
+    this.lastPos = {x, y}
+    this.color3 = new THREE.Color
+    this.fcolor = {r: 0, g: 0, b:0}
+  }
+  endDrawing(ctx) {
+    this.color3.set(this.color)
+    this.fcolor.r = Math.round(this.color3.r * 255)
+    this.fcolor.g = Math.round(this.color3.g * 255)
+    this.fcolor.b = Math.round(this.color3.b * 255)
+    paintBucketApp.floodFill(ctx, Math.round(this.lastPos.x), Math.round(this.lastPos.y), this.fcolor)
   }
 }
 

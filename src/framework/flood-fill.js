@@ -123,16 +123,6 @@ var paintBucketApp = (function () {
 
 		matchStartColor = function (pixelPos, startR, startG, startB) {
 
-			// var r = outlineLayerData.data[pixelPos],
-			// 	g = outlineLayerData.data[pixelPos + 1],
-			// 	b = outlineLayerData.data[pixelPos + 2],
-			// 	a = outlineLayerData.data[pixelPos + 3];
-			//
-			// // If current pixel of the outline image is black
-			// if (matchOutlineColor(r, g, b, a)) {
-			// 	return false;
-			// }
-
 			var r = colorLayerData.data[pixelPos],
 			g = colorLayerData.data[pixelPos + 1],
 			b = colorLayerData.data[pixelPos + 2];
@@ -147,11 +137,10 @@ var paintBucketApp = (function () {
 				return false;
 			}
 
-			return true;
+			return false;
 		},
 
 		colorPixel = function (pixelPos, r, g, b, a) {
-
 			colorLayerData.data[pixelPos] = r;
 			colorLayerData.data[pixelPos + 1] = g;
 			colorLayerData.data[pixelPos + 2] = b;
@@ -241,18 +230,19 @@ var paintBucketApp = (function () {
 				return;
 			}
 
-			// if (matchOutlineColor(r, g, b, a)) {
-			// 	// Return because clicked outline
-			// 	return;
-			// }
-
 			floodFill(startX, startY, r, g, b);
-
-			// redraw();
 		},
 
-    _floodfill = function(canvas, startX, startY) {
-      context = canvas.getContext('2d')
+    _floodfill = function(canvas, startX, startY, color) {
+	  if (canvas.canvas) {
+		context = canvas
+		canvas = context.canvas
+	  }
+	  else
+	  {
+      	context = canvas.getContext('2d')
+	  }
+	  curColor = color
       drawingAreaWidth = canvasWidth = canvas.width
       drawingAreaHeight = canvasHeight = canvas.height
       colorLayerData = context.getImageData(0, 0, canvasWidth, canvasHeight)
