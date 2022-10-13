@@ -233,7 +233,7 @@ var paintBucketApp = (function () {
 
 			// if (r === curColor.r && g === curColor.g && b === curColor.b) {
 				// Return because trying to fill with the same color
-			if (matchColor(r,g,b,a,curColor.r, curColor.g, curColor.b, a)) {
+			if (matchColor(r,g,b,a,curColor.r, curColor.g, curColor.b, 255)) {
 				return;
 			}
 
@@ -247,7 +247,7 @@ var paintBucketApp = (function () {
 	  }
 	  else
 	  {
-      	context = canvas.getContext('2d')
+      	context = canvas.getContext('2d', {willReadFrequently: true})
 	  }
 
 	  outputContext ??= context

@@ -239,8 +239,7 @@ Util.registerComponentSystem('vr-render-scale', {
   update(oldData) {
     if (this.data.renderScale !== oldData.renderScale)
     {
-      console.log("Checking render scale distance", this.data.renderScale, Math.abs(this.data.renderScale - 1.0))
-      if (Math.abs(this.data.renderScale - 1.0) < this.data.snapToDistance)
+      if (Math.abs(this.data.renderScale - 1.00) < this.data.snapToDistance)
       {
         this.el.setAttribute('vr-render-scale', 'renderScale: 1.0')
         return;
