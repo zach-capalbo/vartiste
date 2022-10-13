@@ -1202,20 +1202,33 @@ export class MarchingSquaresFloodFillBrush extends VectorBrush {
 }
 
 export class FloodFillBrush extends FillBrush {
-  drawTo(ctx, x, y, opts = {}) {
-    // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
-    // let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
-    // let data = new Uint32Array(imageData.data.buffer)
-    this.lastPos = {x, y}
+  constructor(...args) {
+    super(...args)
+    this.overlayImg = new Image()
+    this.overlayImg.src = this.previewSrc
+    this.filledCanvas = Util.createCanvas()
     this.color3 = new THREE.Color
     this.fcolor = {r: 0, g: 0, b:0}
+    this.tooltip = "Flood Fill"
   }
-  endDrawing(ctx) {
+  startDrawing(ctx) {
+    Util.ensureSize(this.filledCanvas, ctx.canvas.width, ctx.canvas.height)
+    this.filledCtx = this.filledCanvas.getContext('2d')
     this.color3.set(this.color)
     this.fcolor.r = Math.round(this.color3.r * 255)
     this.fcolor.g = Math.round(this.color3.g * 255)
     this.fcolor.b = Math.round(this.color3.b * 255)
-    paintBucketApp.floodFill(ctx, Math.round(this.lastPos.x), Math.round(this.lastPos.y), this.fcolor)
+  }
+  drawTo(ctx, x, y, {pressure=1.0} = {}) {
+    paintBucketApp.floodFill(ctx, Math.round(x), Math.round(y), this.fcolor, this.filledCtx)
+
+    ctx.globalAlpha = pressure
+    ctx.globalAlpha *= this.opacity
+    ctx.drawImage(this.filledCanvas, 0, 0)
+  }
+  drawOutline(ctx, x, y, {distance=0,rotation=0} = {})
+  {
+    ctx.drawImage(this.overlayImg, x, y)
   }
 }
 

@@ -75,7 +75,7 @@ AFRAME.registerSystem('brush-system', {
       new Brush.ImageBrush('lines2', 'lines_condensed1', {width: 20, height: 20, connected: true, dragRotate: true, textured: true}),
       new Brush.ImageBrush('lines4', 'line_grunge1', {width: 64, height: 16, textured: true}),
       
-      new Brush.FloodFillBrush('flood_fill', "flood"),
+      new Brush.FloodFillBrush('flood_fill', "flood", {tooltip: "Flood Fill"}),
       // new Brush.FxBrush('oklab', {baseBrush: new Brush.ProceduralBrush('', {connected: true, hqBlending: false}), type: 'oklab-blend', previewSrc: require('./assets/blur-preview.png')}),
     //  new Brush.StretchBrush('stretch_grass',"grass", {tooltip: "Thick Paint", textured: true}),
     // new Brush.VectorBrush('vector'),
