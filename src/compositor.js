@@ -8,12 +8,13 @@ import {THREEJS_MAPS, THREED_MODES, PHYSICAL_MODES} from "./layer-modes.js"
 import {Undo} from './undo.js'
 import {CanvasRecorder} from './canvas-recorder.js'
 import {Pool} from './pool.js'
+import { CanvasShaderProcessor } from "./canvas-shader-processor.js"
 
 function createTexture() {
   let t = new THREE.Texture()
   t.generateMipmaps = false
   t.minFilter = THREE.LinearFilter
-  // t.encoding = THREE.sRGBEncoding
+  // t.encoding = THREE.sRGBEncoding // sRGBEncoding is _really_ slow
   t.encoding = THREE.LinearEncoding
   // t.wrapS = THREE.RepeatWrapping
   // t.wrapT = THREE.RepeatWrapping
@@ -56,6 +57,8 @@ AFRAME.registerComponent('compositor', {
     this.preOverlayCanvas = Util.createCanvas(width, height)
     this.preOverlayCanvas.width = width
     this.preOverlayCanvas.height = height
+
+    this.encodingConverter = new CanvasShaderProcessor({canvas: Util.createCanvas(width, height), fx: 'srgb-to-linear'})
 
     this.currentFrame = 0
     this.isAnimating = false
@@ -987,6 +990,14 @@ AFRAME.registerComponent('compositor', {
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
+      if (material.map.encoding === THREE.LinearEncoding)
+      {
+        this.encodingConverter.setInputCanvas(this.compositeCanvas)
+        this.encodingConverter.update(false)
+        ctx.globalCompositeOperation = 'copy'
+        ctx.drawImage(this.encodingConverter.canvas, 0, 0)
+      }
+
       if (this.data.textureScale != 1)
       {
         let textureCtx = this.textureCanvas.getContext('2d')
@@ -1187,6 +1198,9 @@ AFRAME.registerComponent('compositor', {
 
     this.preOverlayCanvas.width = this.width
     this.preOverlayCanvas.height = this.height
+
+    this.encodingConverter = new CanvasShaderProcessor({canvas: Util.createCanvas(width, height), fx: 'srgb-to-linear'})
+
 
     if (resample)
     {
