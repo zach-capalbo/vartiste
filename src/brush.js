@@ -988,8 +988,9 @@ export class StretchBrush extends LineBrush {
     if (this.uvStretcher.canvas.width !== ctx.canvas.width * 2 ||
         this.uvStretcher.canvas.height !== ctx.canvas.height * 2)
     {
-      this.uvStretcher.canvas.width = ctx.canvas.width * 2
-      this.uvStretcher.canvas.height = ctx.canvas.height * 2
+      this.uvStretcher.dispose()
+      this.uvStretcher.canvas.width = Math.min(ctx.canvas.width * 2, 4096)
+      this.uvStretcher.canvas.height = Math.min(ctx.canvas.height * 2, 4096)
     }
     this.updateBrush()
   }

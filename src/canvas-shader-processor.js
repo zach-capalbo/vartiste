@@ -1,3 +1,5 @@
+import { Util } from './util'
+
 let glBackingCanvas
 let stretchBackingCanvas
 
@@ -287,9 +289,7 @@ export class UVStretcher extends CanvasShaderProcessor
   constructor(options) {
     if (!stretchBackingCanvas)
     {
-      stretchBackingCanvas = document.createElement('canvas')
-      stretchBackingCanvas.width = 2048
-      stretchBackingCanvas.height = 2048
+      stretchBackingCanvas = Util.createCanvas(2048, 2048)
     }
     super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert'), canvas: stretchBackingCanvas}, options))
     this.vertexPositions = []
