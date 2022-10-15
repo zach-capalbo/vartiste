@@ -133,7 +133,7 @@ AFRAME.registerComponent('draw-canvas', {
 
     let imageData
 
-    let highQuality = (this.el.sceneEl.systems['settings-system']) ? (this.el.sceneEl.systems['settings-system'].quality > 0.75) : true
+    let highQuality = true;
 
     let hqBlending = brush.hqBlending && brush.opacity < 0.4
 

@@ -57,7 +57,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
 
     a-entity#unhide-ui bypass-hidden-updates="" position="-0.16 1.2545312767040833 0.21243601320796098" remember-position=""
       a-entity.grab-root scale="0.05 0.05 0.05" shelf="width: 1; height: 1; _name: UI Toggle Shelf" remember-position=""
-        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" lag-tooltip="" scale="2 2 2"
+        a-entity icon-button="#asset-eye" system-click-action="system: settings-system; action: toggleUIAction" tooltip="Toggle UI" speech-alias="Toggle UI" _lag-tooltip="" scale="2 2 2"
     a-entity#ui bypass-hidden-updates="" remember-position=""
       a-entity position="0 1.1 -0.5"
         == partial('./partials/quick-menu.html.slm')
@@ -101,7 +101,7 @@ a-scene _stats="" renderer="maxCanvasWidth: -1; maxCanvasHeight: -1; colorManage
     a-entity#canvas-root remember-position=""
       a-entity#canvas-view.canvas[
         grab-options="undoable: true"
-        material="shader: flat; transparent: true; npot: true"
+        material="shader: flat; transparent: true;"
         geometry="primitive: plane; width: 80; height: 35"
         position="0.03 1.0545312767040833 0.11243601320796098" rotation="0 0 0" scale="0.0085 0.0085 0.0085"
         compositor=""

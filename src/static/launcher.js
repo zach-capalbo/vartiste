@@ -3,7 +3,8 @@ require('../app.styl')
 var buildInfo;
 
 try {
- buildInfo = require('../built-info.js')
+//  buildInfo = require('../built-info.js')
+buildInfo = require('!!val-loader!../build-info.js')
 }
 catch (e)
 {

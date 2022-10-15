@@ -17,7 +17,7 @@
   },
   "homepage": "https://gitlab.com/zach-geek/vartiste#README",
   "dependencies": {
-    "acorn": "^8.0.1",
+    "acorn": "^8.8.0",
     "ls": "^0.2.1"
   }
 }

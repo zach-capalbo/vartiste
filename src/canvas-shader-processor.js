@@ -1,6 +1,11 @@
+import { Util } from './util'
+
 let glBackingCanvas
+let stretchBackingCanvas
 
 const FX_UV_PASSTHROUGH = require('./shaders/fx-uv-passthrough.vert')
+
+var contextCount = 0
 
 // Apply glsl shader effects directly to canvases
 export class CanvasShaderProcessor {
@@ -27,9 +32,21 @@ export class CanvasShaderProcessor {
     this.textures = {}
     this.textureIdx = {}
   }
+  dispose() {
+    if (this.canvas !== glBackingCanvas && this.canvas !== stretchBackingCanvas && this._ctx)
+    {
+      this._ctx.getExtension('WEBGL_lose_context').loseContext();
+      console.log("--CanvasShaderProcessor WebGL Contexts:", --contextCount)
+      this._ctx = null
+    }
+  }
   getContext() {
     if (this._ctx) return this._ctx
     this._ctx = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+    if (this.canvas !== glBackingCanvas && this.canvas !== stretchBackingCanvas)
+    {
+      console.warn("++CanvasShaderProcessor WebGL Contexts:", ++contextCount)
+    }
     return this._ctx
   }
   createShader(gl, type, source) {
@@ -267,16 +284,12 @@ export class CanvasShaderProcessor {
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 
-let stretchBackingCanvas
-
 export class UVStretcher extends CanvasShaderProcessor
 {
   constructor(options) {
     if (!stretchBackingCanvas)
     {
-      stretchBackingCanvas = document.createElement('canvas')
-      stretchBackingCanvas.width = 2048
-      stretchBackingCanvas.height = 2048
+      stretchBackingCanvas = Util.createCanvas(2048, 2048)
     }
     super(Object.assign({vertexShader: require('./shaders/stretch-brush-uv-passthrough.vert'), canvas: stretchBackingCanvas}, options))
     this.vertexPositions = []

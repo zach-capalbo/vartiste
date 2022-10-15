@@ -5,4 +5,4 @@ a-entity shelf="frame: true; name: Layer Control; pinnable: false" bypass-hidden
     a-entity.clickable click-action="deleteLayer" icon-button="#asset-delete" tooltip="Delete Layer"
     a-entity icon-button="#asset-newspaper-variant-outline" tooltip="Expand Layer Controls" click-action="expandLayers"
     a-entity icon-button="#asset-arrow-right" tooltip="Next Layer" click-action="nextLayer"
-  a-entity propogate-grab="" material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 800"
+  a-entity propogate-grab="" material="shader: flat; transparent: true; npot: true" geometry="primitive: plane; width: 3; height: 2" canvas-updater="throttle: 100"

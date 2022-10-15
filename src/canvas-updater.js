@@ -1,10 +1,12 @@
+import {Util} from './util.js'
 // Sets `needsUpdate = true` on the element's mesh's material at a throttled
 // interval. *Note,* this will only update visible meshes.
 AFRAME.registerComponent('canvas-updater', {
   dependencies: ['geometry', 'material'],
   schema: {
     // Minimum interval milliseconds between updates
-    throttle: {type: 'int', default: 300}
+    throttle: {type: 'int', default: 300},
+    autoConvertsRGB: {default: true},
   },
 
   init() {
@@ -13,6 +15,10 @@ AFRAME.registerComponent('canvas-updater', {
     {
       this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle + Math.random() * 100, this)
     }
+    this.needsSRGBConversion = false;
+  },
+  remove() {
+    this.encodingConverter?.dispose()
   },
 
   tick(t, dt) {
@@ -26,6 +32,36 @@ AFRAME.registerComponent('canvas-updater', {
     material = el.getObject3D('mesh').material;
     if (!material.map) { return; }
     if (material.map.image.getUpdateTime && material.map.image.getUpdateTime() < this.drawnT) return
+    if (material.map.encoding === THREE.sRGBEncoding && this.data.autoConvertsRGB)
+    {
+      material.map.encoding = THREE.LinearEncoding
+      this.needsSRGBConversion = true
+    }
+
+    if (this.needsSRGBConversion && material.map.image !== this.outputCanvas)
+    {
+      let originalImage = this.originalImage = material.map.image
+      this.encodingConverter?.dispose()
+      this.encodingConverter = new CanvasShaderProcessor({fx: 'srgb-to-linear'})
+      this.outputCanvas = Util.createCanvas(this.encodingConverter.canvas.width, this.encodingConverter.canvas.height)
+      material.map = new THREE.Texture()
+      material.map.encoding = THREE.LinearEncoding
+      material.map.generateMipmaps = false
+      material.map.minFilter = THREE.LinearFilter
+      material.map.image = this.outputCanvas
+      material.map.image.touch = originalImage.touch?.bind(originalImage)
+      material.map.image.getUpdateTime = originalImage.getUpdateTime?.bind(originalImage)
+    }
+    
+    if (this.needsSRGBConversion)
+    {
+      this.encodingConverter.setInputCanvas(this.originalImage)
+      this.encodingConverter.update()
+      let ctx = this.outputCanvas.getContext('2d')
+      ctx.globalCompositeOperation = 'copy'
+      ctx.drawImage(this.encodingConverter.canvas, 0, 0)
+    }
+
     material.map.needsUpdate = true;
     this.drawnT = t
   }

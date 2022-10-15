@@ -211,6 +211,14 @@ Util.registerComponentSystem('environment-manager', {
 
     // this.el.sceneEl.object3D.background = texture;
     texture.mapping = THREE.EquirectangularReflectionMapping;
+
+    const shadowScale = 5
+    let shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry( shadowScale, shadowScale ),
+                                       new THREE.ShadowMaterial())
+    shadowCatcher.receiveShadow = true
+    shadowCatcher.rotation.x = - Math.PI / 2
+    shadowCatcher.material.opacity = 0.7
+    ground.parent.add(shadowCatcher)
     
     var originalLights = []
     document.querySelectorAll('*[light]').forEach(l => {
@@ -236,6 +244,8 @@ Util.registerComponentSystem('environment-manager', {
       skyEl.getObject3D('mesh').material.needsUpdate = true
       console.log("Cleared map", skyEl.getObject3D('mesh').material.map, skyEl.getObject3D('mesh').material)
       Util.recursiveDispose(ground)
+      shadowCatcher.parent.remove(shadowCatcher)
+      Util.recursiveDispose(shadowCatcher)
       for (let [l, i] of originalLights) {
         l.setAttribute('light', {intensity: i})
       }

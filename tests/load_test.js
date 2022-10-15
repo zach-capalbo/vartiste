@@ -1,20 +1,21 @@
 const assert = require('assert');
 
 const LANDING_TEXT = "VARTISTE - WebXR Drawing, Texturing, and more!";
+const LOAD_TIME = 40;
 
 Feature('load');
 
 Scenario('Access Page', (I) => {
   I.amOnPage("/index.html");
   I.see(LANDING_TEXT)
-  I.waitForFunction(() => window.passedLoadTest, 20)
+  I.waitForFunction(() => window.passedLoadTest, LOAD_TIME)
   I.dontSee("It looks like VARTISTE Crashed")
 });
 
 Scenario('Load Preset', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
   I.see(LANDING_TEXT)
-  I.waitForFunction(() => window.passedLoadTest, 20)
+  I.waitForFunction(() => window.passedLoadTest, LOAD_TIME)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
   let meshLength = await I.executeScript(() => Compositor.meshes.length)
   assert.equal(meshLength, 2)
@@ -35,7 +36,7 @@ Scenario('Load Preset', async (I) => {
 Scenario('Crash the page', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
   I.see(LANDING_TEXT)
-  I.waitForFunction(() => window.passedLoadTest, 20)
+  I.waitForFunction(() => window.passedLoadTest, LOAD_TIME)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
 
   I.executeScript(() => document.querySelector('a-scene').systems['crash-handler'].shouldCrash = true)
@@ -63,7 +64,7 @@ Scenario('Toolkit test', async (I) => {
 Scenario('Skeletonator', async (I) => {
   I.amOnPage("/index.html?load=gallery/hubs_avatar.vartiste");
   I.see(LANDING_TEXT)
-  I.waitForFunction(() => window.passedLoadTest, 20)
+  I.waitForFunction(() => window.passedLoadTest, LOAD_TIME)
   I.waitForFunction(() => window.loadedSuccessfully, 100)
   let meshLength = await I.executeScript(() => Compositor.meshes.length)
   assert.equal(meshLength, 2)

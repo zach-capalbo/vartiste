@@ -988,8 +988,9 @@ export class StretchBrush extends LineBrush {
     if (this.uvStretcher.canvas.width !== ctx.canvas.width * 2 ||
         this.uvStretcher.canvas.height !== ctx.canvas.height * 2)
     {
-      this.uvStretcher.canvas.width = ctx.canvas.width * 2
-      this.uvStretcher.canvas.height = ctx.canvas.height * 2
+      this.uvStretcher.dispose()
+      this.uvStretcher.canvas.width = Math.min(ctx.canvas.width * 2, 4096)
+      this.uvStretcher.canvas.height = Math.min(ctx.canvas.height * 2, 4096)
     }
     this.updateBrush()
   }
@@ -1175,7 +1176,7 @@ export class FillShapeBrush extends VectorBrush{
   }
 }
 
-export class FloodFillBrush extends VectorBrush {
+export class MarchingSquaresFloodFillBrush extends VectorBrush {
   drawTo(ctx, x, y, opts = {}) {
     // c.f. http://www.williammalone.com/articles/html5-canvas-javascript-paint-bucket-tool/
     // let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -1198,6 +1199,37 @@ export class FloodFillBrush extends VectorBrush {
     ctx.fill()
     ctx.globalAlpha = oldGlobalAlpha
     this.shape = undefined
+  }
+}
+
+export class FloodFillBrush extends FillBrush {
+  constructor(...args) {
+    super(...args)
+    this.overlayImg = new Image()
+    this.overlayImg.src = this.previewSrc
+    this.filledCanvas = Util.createCanvas()
+    this.color3 = new THREE.Color
+    this.fcolor = {r: 0, g: 0, b:0}
+    this.tooltip = "Flood Fill"
+  }
+  startDrawing(ctx) {
+    Util.ensureSize(this.filledCanvas, ctx.canvas.width, ctx.canvas.height)
+    this.filledCtx = this.filledCanvas.getContext('2d')
+    this.color3.set(this.color)
+    this.fcolor.r = Math.round(this.color3.r * 255)
+    this.fcolor.g = Math.round(this.color3.g * 255)
+    this.fcolor.b = Math.round(this.color3.b * 255)
+  }
+  drawTo(ctx, x, y, {pressure=1.0} = {}) {
+    paintBucketApp.floodFill(ctx, Math.round(x), Math.round(y), this.fcolor, this.filledCtx)
+
+    ctx.globalAlpha = pressure
+    ctx.globalAlpha *= this.opacity
+    ctx.drawImage(this.filledCanvas, 0, 0)
+  }
+  drawOutline(ctx, x, y, {distance=0,rotation=0} = {})
+  {
+    ctx.drawImage(this.overlayImg, x, y)
   }
 }
 
