@@ -17,6 +17,9 @@ AFRAME.registerComponent('canvas-updater', {
     }
     this.needsSRGBConversion = false;
   },
+  remove() {
+    this.encodingConverter?.dispose()
+  },
 
   tick(t, dt) {
     var el = this.el;
@@ -35,22 +38,17 @@ AFRAME.registerComponent('canvas-updater', {
       this.needsSRGBConversion = true
     }
 
-    if (material.map.image === this.encodingConverter?.canvas && 
-      (this.encodingConverter?.canvas.width !== this.originalImage.width 
-      || this.encodingConverter?.canvas.height !== this.originalImage.height))
-    {
-      material.map.image = this.originalImage
-    }
-
-    if (this.needsSRGBConversion && material.map.image !== this.encodingConverter?.canvas)
+    if (this.needsSRGBConversion && material.map.image !== this.outputCanvas)
     {
       let originalImage = this.originalImage = material.map.image
-      this.encodingConverter = new CanvasShaderProcessor({canvas: Util.createCanvas(originalImage.width, originalImage.height), fx: 'srgb-to-linear'})
+      this.encodingConverter?.dispose()
+      this.encodingConverter = new CanvasShaderProcessor({fx: 'srgb-to-linear'})
+      this.outputCanvas = Util.createCanvas(this.encodingConverter.canvas.width, this.encodingConverter.canvas.height)
       material.map = new THREE.Texture()
       material.map.encoding = THREE.LinearEncoding
       material.map.generateMipmaps = false
       material.map.minFilter = THREE.LinearFilter
-      material.map.image = this.encodingConverter.canvas
+      material.map.image = this.outputCanvas
       material.map.image.touch = originalImage.touch?.bind(originalImage)
       material.map.image.getUpdateTime = originalImage.getUpdateTime?.bind(originalImage)
     }
@@ -59,6 +57,9 @@ AFRAME.registerComponent('canvas-updater', {
     {
       this.encodingConverter.setInputCanvas(this.originalImage)
       this.encodingConverter.update()
+      let ctx = this.outputCanvas.getContext('2d')
+      ctx.globalCompositeOperation = 'copy'
+      ctx.drawImage(this.encodingConverter.canvas, 0, 0)
     }
 
     material.map.needsUpdate = true;

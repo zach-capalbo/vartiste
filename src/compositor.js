@@ -1205,6 +1205,11 @@ AFRAME.registerComponent('compositor', {
     this.preOverlayCanvas.width = this.width
     this.preOverlayCanvas.height = this.height
 
+    if (this.encodingConverter)
+    {
+      this.encodingConverter.dispose()
+    }
+
     this.encodingConverter = new CanvasShaderProcessor({canvas: Util.createCanvas(width, height), fx: 'srgb-to-linear'})
 
 
