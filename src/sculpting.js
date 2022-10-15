@@ -1087,7 +1087,7 @@ Util.registerComponentSystem('threed-line-system', {
     let texture = new THREE.Texture;
     texture.image = canvas
     texture.needsUpdate = true
-    // texture.encoding = THREE.sRGBEncoding
+    texture.encoding = THREE.sRGBEncoding
     texture.generateMipmaps = false
     texture.minFilter = THREE.LinearFilter
     let materialType = THREE.MeshBasicMaterial;
