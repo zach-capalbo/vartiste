@@ -250,7 +250,7 @@ var paintBucketApp = (function () {
       	context = canvas.getContext('2d', {willReadFrequently: true})
 	  }
 
-	  outputContext ??= context
+	  outputContext = outputContext ?? context
 
 	  curColor = color
       drawingAreaWidth = canvasWidth = canvas.width
