@@ -990,6 +990,12 @@ AFRAME.registerComponent('compositor', {
 
       this.el.components['draw-canvas'].transform = this.activeLayer.transform
 
+      if (material.map.encoding !== THREE.LinearEncoding)
+      {
+        material.map.encoding = THREE.LinearEncoding
+        material.map.needsUpdate = true
+      }
+
       if (material.map.encoding === THREE.LinearEncoding)
       {
         this.encodingConverter.setInputCanvas(this.compositeCanvas)
