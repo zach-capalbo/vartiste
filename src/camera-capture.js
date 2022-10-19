@@ -1004,8 +1004,6 @@ AFRAME.registerComponent('spray-can-tool', {
     }
     let newTarget = this.newTarget
 
-    newTarget.texture.encoding = renderer.outputEncoding
-
     renderer.setRenderTarget(newTarget)
 
     renderer.render(this.el.sceneEl.object3D, camera);
