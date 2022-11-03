@@ -102,6 +102,7 @@ require('./controller-proxy')
 require('./extras')
 require('./decorators')
 require('./popup-book')
+require('./simplified-interface.js')
 
 require('./hubs-connector-shim.js')
 
@@ -124,6 +125,7 @@ let params = new URLSearchParams(document.location.search)
 if (params.get("simplified"))
 {
   document.write(require('./simplified-interface.html.slm'))
+  document.querySelector('#simplified-ui').setAttribute('gltf-model', require('./secondary-assets/simplified-ui.glb'))
 }
 else
 {

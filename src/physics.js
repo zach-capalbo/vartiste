@@ -659,7 +659,10 @@ AFRAME.registerComponent('physx-body', {
     // simulation engine (at a performance cost).
     highPrecision: {default: false},
 
-    shapeOffset: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
+    shapeOffset: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
+
+    // If true, will enable extra-precise collision detection
+    speculativeCCD: {default: false},
   },
   events: {
     stateadded: function(e) {
@@ -761,6 +764,11 @@ AFRAME.registerComponent('physx-body', {
         this.rigidBody.setSolverIterationCounts(4, 2);
         this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_CCD, true)
       }
+
+      if (this.data.speculativeCCD)
+      {
+        this.rigidBody.setRigidBodyFlag(PhysX.PxRigidBodyFlag.eENABLE_SPECULATIVE_CCD, true);
+      }
     }
 
     if (!oldData || this.data.mass !== oldData.mass) this.el.emit('object3dset', {})
@@ -824,6 +832,58 @@ AFRAME.registerComponent('physx-body', {
     worldBasis.getWorldScale(worldScale);
     let convexMesh = this.system.cooking.createConvexMesh(vectors, this.system.physics)
     return new PhysX.PxConvexMeshGeometry(convexMesh, new PhysX.PxMeshScale({x: worldScale.x, y: worldScale.y, z: worldScale.z}, {w: 1, x: 0, y: 0, z: 0}), new PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS.value))
+  },
+  createTriangleMeshGeometry(mesh, rootAncestor) {
+    let vectors = new PhysX.PxVec3Vector()
+    let indices = new PhysX.PxU32Vector()
+
+    let g = mesh.geometry.attributes.position
+    if (!g) return;
+    if (g.count < 3) return;
+    if (g.itemSize != 3) return;
+    let t = new THREE.Vector3;
+
+    if (rootAncestor)
+    {
+      let matrix = new THREE.Matrix4();
+      mesh.updateMatrix();
+      matrix.copy(mesh.matrix)
+      let ancestor = mesh.parent;
+      while(ancestor && ancestor !== rootAncestor)
+      {
+          ancestor.updateMatrix();
+          matrix.premultiply(ancestor.matrix);
+          ancestor = ancestor.parent;
+      }
+      for (let i = 0; i < g.count; ++i) {
+        t.fromBufferAttribute(g, i)
+        t.applyMatrix4(matrix);
+        vectors.push_back(Object.assign({}, t));
+      }
+    }
+    else
+    {
+      for (let i = 0; i < g.count; ++i) {
+        t.fromBufferAttribute(g, i)
+        vectors.push_back(Object.assign({}, t));
+      }
+    }
+
+    for (let i = 0; i < mesh.geometry.index.count; ++i)
+    {
+      indices.push_back(mesh.geometry.index.array[i])
+    }
+
+    // console.log("Creating triangle mesh", mesh.geometry, vectors, indices)
+
+    let worldScale = new THREE.Vector3;
+    let worldBasis = (rootAncestor || mesh);
+    worldBasis.updateMatrixWorld();
+    worldBasis.getWorldScale(worldScale);
+    let convexMesh = this.system.cooking.createTriMesh(vectors, indices, this.system.physics)
+
+    return new PhysX.PxTriangleMeshGeometry(convexMesh, new PhysX.PxMeshScale({x: worldScale.x, y: worldScale.y, z: worldScale.z}, {w: 1, x: 0, y: 0, z: 0}), new PhysX.PxMeshGeometryFlags(100))
+
   },
   createShape(physics, geometry, materialData)
   {

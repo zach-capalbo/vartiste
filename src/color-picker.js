@@ -236,6 +236,18 @@ AFRAME.registerComponent("show-current-color", {
   }
 })
 
+AFRAME.registerComponent("show-current-color3", {
+  init() {
+    this.onColorChanged = (e) => {
+      this.el.getObject3D('mesh')?.material.color.set(e.detail.color)
+    }
+    this.el.sceneEl.addEventListener('colorchanged', this.onColorChanged)
+  },
+  remove() {
+    this.el.sceneEl.removeEventListener('colorchanged', this.onColorChanged)
+  }
+})
+
 // Provides a little display for the current brush in the [`paint-system`](#paint-system)
 AFRAME.registerComponent("show-current-brush", {
   init() {
