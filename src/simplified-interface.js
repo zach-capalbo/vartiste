@@ -1,6 +1,13 @@
 import {Util} from './util.js'
 import {okhsl_to_srgb, okhsv_to_srgb} from './framework/oklab.js'
 
+AFRAME.registerComponent('simplified-ui', {
+    schema: {},
+    init() {
+        AFRAME.components['reference-glb'].dependencies.push('physx-body')
+    }
+})
+
 AFRAME.registerComponent('glb-pencil-tool', {
     dependencies: ['pencil-tool'],
     async init() {
@@ -144,8 +151,6 @@ AFRAME.registerComponent('main-menu-binder', {
         this.el.object3D.getWorldDirection(this.topDirection)
         this.binderBase.object3D.getWorldDirection(this.bottomDirection)
         let angle = this.bottomDirection.angleTo(this.topDirection)
-
-        console.log("Angle", angle)
 
         // let openRadians = this.data.openAngle * Math.PI / 180.0;
         // let closeRadians = this.data.closeAngle * Math.PI / 180.0;
