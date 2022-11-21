@@ -25,7 +25,7 @@ Util.registerComponentSystem('volumetrics', {
     this.proc = proc
     this.initializeGeometry()
 
-    this.dilateProc  = new CanvasShaderProcessor({fx: 'dilate'})
+    this.dilateProc  = new CanvasShaderProcessor({fx: 'dilate', canvas: Util.createCanvas(canvas.width, canvas.height)})
 
     this.active = function() {};
     this.tick = AFRAME.utils.throttleTick(this._tick, 10, this)
@@ -278,8 +278,6 @@ function registerVolumeTool(name, toolOpts) {
       ctx.drawImage(procCanvas,
                     0, 0, procCanvas.width, procCanvas.height,
                     0, 0, destinationCanvas.width, destinationCanvas.height)
-
-
 
       if (destinationCanvas.touch) destinationCanvas.touch()
     }
