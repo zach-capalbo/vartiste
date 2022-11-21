@@ -806,8 +806,12 @@ AFRAME.registerComponent('camera-tool', {
     renderer.setRenderTarget(newTarget)
     renderer.render(this.el.sceneEl.object3D, this.camera);
 
-    this.preview.components.material.material.map = newTarget
-    this.preview.components.material.material.needsUpdate = true
+    if (this.preview.components.material.material.map !== newTarget.texture)
+    {
+      this.preview.components.material.material.map = newTarget.texture
+      // console.log("Trying to set texture", this.preview.components.material, newTarget)
+      this.preview.components.material.material.needsUpdate = true
+    }
 
     // console.log("preview", this.preview.components.material.material.map)
     renderer.xr.enabled = wasXREnabled;

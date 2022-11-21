@@ -18,7 +18,7 @@ uniform bool u_noisy;
 uniform bool u_bristles;
 uniform float u_size;
 
-const int u_shape = 3;
+const int u_shape = 5;
 const float u_userScale = 1.0;
 
 #include "ops.glsl"
@@ -33,7 +33,7 @@ float sampleSDF( vec3 p, bool normalPass ) {
   /* p = opTwist(p, 10.0); */
   float d = makeBrush(p);
 
-	d = normalPass ? d : opWireFrame(d, p, 0.05, 0.003);
+	// d = normalPass ? d : opWireFrame(d, p, 0.05, 0.003);
 	/* d = sdSphere(p, 0.4); */
   /* d = opSubtraction(d, sdVerticalCapsule(p + 0.1, 0.7, 0.3)); */
   /* d = opOnion(d, 0.3); */
