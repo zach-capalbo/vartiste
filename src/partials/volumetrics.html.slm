@@ -2,6 +2,7 @@
     a-entity scale="0.7 0.7 0.7"
       - x = 0
       - spacing = 0.3
+      a-entity volume-fanbrush-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric fan brush"
       a-entity volume-sphere-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Sphere Brush"
       a-entity volume-cone-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Cone Brush"
       a-entity volume-cube-tool="" position="${x++ * spacing} 0 0" preactivate-tooltip="Volumetric Cube Brush"

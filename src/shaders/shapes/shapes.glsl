@@ -57,3 +57,13 @@ float sdBrush(vec3 p)
 
   return min(teeth, base);
 }
+
+float sdFanBrush(vec3 p)
+{
+  vec3 pCone = vec3(p.x / (p.y + u_size * 3.0) * 2.0, - p.y, p.z * 2.0);
+  float cone = sdCone(pCone, vec2(0.9486832980505139, 0.31622776601683794), u_size * 3.0);
+
+  vec3 pSphere = vec3(p.x / 2.0, p.y, p.z);
+  float sphere = sdSphere(pSphere, u_size * 1.5);
+  return opSmoothIntersection(cone, sphere, 0.5);
+}

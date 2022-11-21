@@ -332,6 +332,21 @@ registerVolumeTool('brush', {
   shape: 4,
 })
 
+registerVolumeTool('fanbrush', {
+  createTip() {
+    let tip = document.createElement('a-entity')
+    tip.setAttribute('gltf-model', '#asset-fanbrush')
+    tip.setAttribute('apply-material-to-mesh', '')
+    Util.whenLoaded(tip, () => tip.getObject3D('mesh').scale.set(0.1, 0.1, 0.1))
+
+    // let tip = document.createElement('a-entity')
+    // tip.setAttribute('sdf-brush-render-box', `boxSize: ${this.data.baseSize * 3} ${this.data.baseSize * 3} ${this.data.baseSize * 3}; u_size: 0.04`)
+    // tip.setAttribute('geometry', `width: ; height: ${this.data.baseSize * 3}; depth: ${this.data.baseSize * 3}`)
+    return tip
+  },
+  shape: 5,
+})
+
 AFRAME.registerComponent('instance-splat', {
   init() {
     let numPoints = 75
