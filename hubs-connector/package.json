@@ -10,6 +10,6 @@
   "dependencies": {
     "bson": "^4.4.0",
     "hubs-client-bot": "^0.8.0",
-    "socket.io": "^4.1.2"
+    "socket.io": "^4.5.3"
   }
 }
