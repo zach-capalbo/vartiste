@@ -105,6 +105,15 @@ AFRAME.registerComponent('compositor', {
         this.updateRedirectorTransformation()
       }
     })
+    this.el.addEventListener('bbuttondown', e => {
+      if (this.redirector.is('grabbed'))
+      {
+        let layerIdx = this.layers.indexOf(this.activeLayer)
+        let nextLayerIdx = layerIdx - 1
+        if (nextLayerIdx < 0) nextLayerIdx += this.layers.length
+        this.mergeLayers(this.activeLayer, this.layers[nextLayerIdx])
+      }
+    })
 
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
 
