@@ -69,6 +69,7 @@ Util.registerComponentSystem('compositor-history-recorder', {
     recording: {default: false},
     throttle: {default: 300},
     maxFrames: {default: 2000},
+    frameRate: {default: 25},
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
@@ -111,7 +112,7 @@ Util.registerComponentSystem('compositor-history-recorder', {
   async download() {
     const extension = "mp4"
     const args = ["-pix_fmt", "yuv420p"]
-    await ffmpeg.run('-r', `${Compositor.component.data.frameRate}`, '-i', '%d.png', ...args, `output.${extension}`);
+    await ffmpeg.run('-r', `${this.data.frameRate}`, '-i', '%d.png', ...args, `output.${extension}`);
     let data = ffmpeg.FS('readFile', `output.${extension}`);
 
     this.el.sceneEl.systems['settings-system'].download("data:application/x-binary;base64," + base64ArrayBuffer(data), {extension}, "Canvas Recording")
