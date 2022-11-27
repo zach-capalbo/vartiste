@@ -24,6 +24,7 @@ a-entity.grab-root timeline-shelf="" shelf="name: Animation Shelf; closeable: tr
       a-entity icon-button="#asset-gif" system-click-action="system:timeline-system; action: exportGif" tooltip="Export GIF of Number of Frames"
       a-entity icon-button="#asset-swap-horizontal-variant" system-click-action="system:timeline-system; action: makeUVScrollable" tooltip="**EXPERIMENTAL** Make animation UV-Scrollable"
       a-entity icon-button="#asset-badge-account-horizontal-outline" system-click-action="system: timeline-system; action: makeReference" tooltip="Make animated reference object"
+      a-entity icon-button="#asset-brush" toggle-button="target: a-scene; component: compositor-history-recorder; property: recording" tooltip="Record canvas history"
 
     a-entity icon-row="mergeButtons: true"
       a-entity icon-button="#asset-delete" click-action="deleteFrame" tooltip="Delete Frame"
