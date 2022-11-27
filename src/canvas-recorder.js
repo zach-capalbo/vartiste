@@ -64,75 +64,11 @@ class CanvasRecorder {
 
 export {CanvasRecorder}
 
-
-Util.registerComponentSystem('mediarecorder-compositor-history-recorder', {
-  schema: {
-    recording: {default: false},
-    throttle: {default: Math.round(1000 / 25)}
-  },
-  init() {
-    this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
-    this.hasStarted = false
-  },
-  update(oldData) {
-    if (this.data.recording !== oldData.recording)
-    {
-      if (this.data.recording)
-      {
-        this.startRecording()
-      }
-      else if (oldData.recording)
-      {
-        this.stopRecording()
-      }
-    }
-  },
-  startRecording() {
-    // if (!ffmpeg.isLoaded())
-    // {
-    //   ffmpeg.load().then(() => this.startRecording())
-    //   return;
-    // }
-
-    if (this.hasStarted) return;
-    this.hasStarted = true;
-    this.data.recording = true;
-    this.lastFrameT = 0;
-
-    this.canvasRecorder = new CanvasRecorder
-    this.canvasRecorder.start()
-  },
-  async stopRecording() {
-    if (this.isStopping) return;
-    if (!this.hasStarted) return;
-    this.isStopping = true;
-
-    await this.canvasRecorder.stop()
-
-    this.isStopping = false;
-  },
-  download() {
-    this.el.sceneEl.systems['settings-system'].download(this.canvasRecorder.createURL(), `${this.el.sceneEl.systems['settings-system'].projectName}-${this.el.sceneEl.systems['settings-system'].formatFileDate()}.webm`, "Video Recording")
-  },
-  tick(t, dt)
-  {
-    if (!this.data.recording) return;
-    if (!this.hasStarted) return;
-
-    if (this.lastFrameT < Compositor.component.drawnT)
-    {
-      console.log("Capturing frame", Compositor.component.drawnT, this.lastFrameT)
-      this.canvasRecorder.captureFrame()
-      this.lastFrameT = t;
-    }
-  }
-})
-
-
 Util.registerComponentSystem('compositor-history-recorder', {
   schema: {
     recording: {default: false},
-    throttle: {default: 300}
+    throttle: {default: 300},
+    maxFrames: {default: 2000},
   },
   init() {
     this.tick = AFRAME.utils.throttleTick(this.tick, this.data.throttle, this)
@@ -162,14 +98,14 @@ Util.registerComponentSystem('compositor-history-recorder', {
     this.hasStarted = true;
     this.data.recording = true;
     this.lastFrameT = 0;
-    this.frameIndex = 0
+    this.frameIndex = 0;
   },
   async stopRecording() {
     if (this.isStopping) return;
     if (!this.hasStarted) return;
     this.isStopping = true;
-
-
+    this.data.recording = false;
+    this.hasStarted = false;
     this.isStopping = false;
   },
   async download() {
@@ -182,18 +118,27 @@ Util.registerComponentSystem('compositor-history-recorder', {
 
   },
   async captureFrame() {
-    ffmpeg.FS('writeFile', `${this.frameIndex++}`.padStart("0", 8) + ".png", await ffmpeg.fetchFile(Compositor.component.compositeCanvas.toDataURL()))
+    ffmpeg.FS('writeFile', `${this.frameIndex++}`.padStart("0", 8) + ".png", await ffmpeg.fetchFile(Compositor.component.preOverlayCanvas.toDataURL()))
   },
   tick(t, dt)
   {
     if (!this.data.recording) return;
     if (!this.hasStarted) return;
     
-    if (this.lastFrameT < Compositor.component.drawnT)
+    if (this.lastFrameT < Compositor.component.nonOverlayUpdateT)
     {
-      console.log("Capturing frame", Compositor.component.drawnT, this.lastFrameT)
+      console.log("Capturing frame", Compositor.component.nonOverlayUpdateT, this.lastFrameT)
       this.captureFrame()
       this.lastFrameT = t;
+
+      if (this.data.maxFrames > 0 && this.frameIndex > this.data.maxFrames)
+      {
+        (async () => {
+          await this.stopRecording()
+          await this.download()
+          this.startRecording()
+        })();
+      }
     }
   }
 })

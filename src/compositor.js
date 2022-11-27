@@ -986,10 +986,16 @@ AFRAME.registerComponent('compositor', {
         preOverlayCtx.drawImage(this.compositeCanvas, 0, 0)
       }
 
-      anyUpdates = this.drawOverlay(ctx) || anyUpdates
+      let overlayUpdates = this.drawOverlay(ctx)
+      let nonOverlayUpdates = anyUpdates
+      anyUpdates = overlayUpdates || anyUpdates
       if (!anyUpdates && !this.lastTimeHadUpdates) return;
       this.lastTimeHadUpdates = anyUpdates
       this.drawnT = this.el.sceneEl.time
+      if (nonOverlayUpdates)
+      {
+        this.nonOverlayUpdateT = this.drawnT
+      }
 
       if (!this.textureUpdatedT || this.el.sceneEl.time - this.textureUpdatedT > this.data.textureThrottle)
       {
