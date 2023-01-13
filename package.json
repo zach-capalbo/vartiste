@@ -24,7 +24,7 @@
     "color": "^3.1.2",
     "colorsys": "^1.0.22",
     "css-loader": "^0.28.4",
-    "csv-loader": "^2.1.1",
+    "csv-loader": "^3.0.5",
     "escodegen": "^2.0.0",
     "exports-loader": "^2.0.0",
     "express": "^4.15.3",
