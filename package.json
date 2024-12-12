@@ -37,7 +37,7 @@
     "html-webpack-plugin": "^5.5.0",
     "js-yaml": "^4.1.0",
     "ls": "git+https://github.com/zach-capalbo/ls.git",
-    "markdown-loader": "^5.1.0",
+    "markdown-loader": "^8.0.0",
     "node-fetch": "^2.6.1",
     "npm-license-crawler": "^0.2.1",
     "pug": "^2.0.4",
