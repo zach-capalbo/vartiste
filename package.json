@@ -79,7 +79,7 @@
     "aframe-troika-text": "^0.6.0",
     "bson": "^4.4.0",
     "convolve": "^0.1.0",
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "gif.js": "^0.2.0",
     "handsfree": "^8.4.4",
     "highlight.js": "^10.6.0",
